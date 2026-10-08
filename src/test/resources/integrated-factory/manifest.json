@@ -1,0 +1,62 @@
+{
+  "sourceSha256": "129b3167a86d569830a84b7ce19f1da2fd43bfbde7178c3f581dac091e332e17",
+  "size": [
+    49,
+    31,
+    49
+  ],
+  "sourceController": [
+    24,
+    15,
+    0
+  ],
+  "controllerPosition": [
+    24,
+    15,
+    48
+  ],
+  "counts": {
+    " ": 53810,
+    "A": 18020,
+    "B": 824,
+    "C": 1,
+    "D": 244,
+    "E": 416,
+    "F": 32,
+    "G": 14,
+    "I": 924,
+    "J": 4,
+    "Q": 118,
+    "X": 24
+  },
+  "palette": {
+    "minecraft:air": " ",
+    "minecraft:diamond_block": "C",
+    "minecraft:diamond_ore": "X",
+    "gtlcore:multi_functional_casing": "A",
+    "gtceu:mv_machine_casing": "B",
+    "gtceu:solid_machine_casing": "D",
+    "gtceu:steel_gearbox": "E",
+    "gtceu:steel_pipe_casing": "F",
+    "gtceu:cupronickel_coil_block[active=false]": "G",
+    "ae2:quartz_glass": "I",
+    "gtceu:white_lamp[bloom=false,inverted=true,lit=true,powered=false]": "J"
+  },
+  "frontHatchSymbols": [
+    "Q",
+    "X"
+  ],
+  "hatchPanelBounds": {
+    "x": [
+      19,
+      29
+    ],
+    "y": [
+      9,
+      21
+    ],
+    "z": 48
+  },
+  "hatchPositions": 142,
+  "sha256": "fe528e226b9e49a94ea062ee78d0d7451e5486e55859dc1ef3ff450114a6bfda"
+}

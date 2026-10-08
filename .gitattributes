@@ -1,0 +1,10 @@
+# Windows batch files require CRLF line endings
+*.bat text eol=crlf
+
+# Source code is UTF-8 with LF
+*.java text
+*.py text
+*.json text
+*.toml text
+*.md text
+*.snbt text

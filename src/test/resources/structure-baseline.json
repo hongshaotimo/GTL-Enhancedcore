@@ -1,0 +1,140 @@
+{
+  "ivsijiantao.pattern.gz": {
+    "width": 18,
+    "height": 20,
+    "depth": 18,
+    "sha256": "ec1ecdc6bc1236c0767f8ba542014ce3c6fc0dd2ab6846cab570ecdbb135d3e3",
+    "characters": [
+      " ",
+      "A",
+      "B",
+      "C",
+      "D",
+      "E",
+      "F",
+      "G",
+      "I",
+      "J",
+      "X"
+    ]
+  },
+  "large_furnace.pattern.gz": {
+    "width": 11,
+    "height": 10,
+    "depth": 12,
+    "sha256": "aca9724a03d7cd1f308da70990d1611b6ee16eb08fb55a2162d56452b21bb2f8",
+    "characters": [
+      " ",
+      "A",
+      "B",
+      "C",
+      "D",
+      "E",
+      "G",
+      "H",
+      "I",
+      "J",
+      "K",
+      "L",
+      "M"
+    ]
+  },
+  "l_v_wireless_charger.pattern.gz": {
+    "width": 7,
+    "height": 9,
+    "depth": 6,
+    "sha256": "17ef6dec1f2350c34097f2b7f9e977d8fadf89c85eea157b729c9670d97ea85d",
+    "characters": [
+      " ",
+      "B",
+      "C"
+    ]
+  },
+  "m_v_wireless_charger.pattern.gz": {
+    "width": 13,
+    "height": 8,
+    "depth": 8,
+    "sha256": "9fedc253f4be89325c59f07b2c3618b28b020f5b197a33d9efe6d460120fbdf3",
+    "characters": [
+      " ",
+      "A",
+      "B",
+      "C"
+    ]
+  },
+  "ore_plant.pattern.gz": {
+    "width": 7,
+    "height": 6,
+    "depth": 12,
+    "sha256": "0444764257f374de939f23c4a313a81a9946177fa12f5a8c75b8156e1b6aadfc",
+    "characters": [
+      " ",
+      "A",
+      "B",
+      "C",
+      "D",
+      "E",
+      "X"
+    ]
+  },
+  "qdys.pattern.gz": {
+    "width": 283,
+    "height": 116,
+    "depth": 283,
+    "sha256": "e7503b10d0fc850bca787f46ffd15cd774278f593a0b90a0e6bb615773b0ad26",
+    "characters": [
+      " ",
+      "A",
+      "B",
+      "C",
+      "D",
+      "E",
+      "F",
+      "G",
+      "H",
+      "I",
+      "J",
+      "K",
+      "L",
+      "M",
+      "N",
+      "O",
+      "X",
+      "~"
+    ]
+  },
+  "steam_platform.pattern.gz": {
+    "width": 7,
+    "height": 8,
+    "depth": 6,
+    "sha256": "48bf928f94da9ac02cc23b1304a7fb94c3d93ae6fa8592fe51519281b81811d9",
+    "characters": [
+      " ",
+      "A",
+      "B",
+      "C",
+      "D",
+      "E",
+      "F",
+      "H",
+      "X"
+    ]
+  },
+  "zzkzgc.pattern.gz": {
+    "width": 15,
+    "height": 21,
+    "depth": 13,
+    "sha256": "313e76841a2af70afef1257e2e5eca565b4ad0446fd1273ce3bddf6ad8855bcf",
+    "characters": [
+      " ",
+      "A",
+      "B",
+      "C",
+      "D",
+      "E",
+      "F",
+      "G",
+      "I"
+    ]
+  }
+}

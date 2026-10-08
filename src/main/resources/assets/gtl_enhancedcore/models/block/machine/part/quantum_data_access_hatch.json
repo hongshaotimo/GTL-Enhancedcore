@@ -1,0 +1,7 @@
+{
+  "parent": "gtceu:block/overlay/front_emissive",
+  "textures": {
+    "overlay": "gtl_enhancedcore:block/machine/part/quantum_data_access_hatch",
+    "overlay_emissive": "gtl_enhancedcore:block/machine/part/quantum_data_access_hatch_emissive"
+  }
+}

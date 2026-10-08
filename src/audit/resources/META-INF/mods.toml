@@ -1,0 +1,13 @@
+modLoader = "javafml"
+loaderVersion = "[47,48)"
+license = "MIT"
+[[mods]]
+modId = "enhancedcore_audit"
+version = "1"
+displayName = "Enhancedcore Isolated Audit Helper"
+[[dependencies.enhancedcore_audit]]
+modId = "gtl_enhancedcore"
+mandatory = true
+versionRange = "[2.6.4,)"
+ordering = "AFTER"
+side = "BOTH"

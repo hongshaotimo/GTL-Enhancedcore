@@ -1,0 +1,54 @@
+{
+  "literal_machine_ids": [
+    "basic_ore_processing_plant",
+    "causality_terminal",
+    "circuit_encoder_hatch",
+    "claim_replacement_terminal",
+    "creative_computation_receiver_hatch",
+    "dragon_field_proliferation_core",
+    "hyperstructural_chemical_distorter",
+    "industrial_steam_platform",
+    "infinity_singularity_compressor",
+    "universal_joint_factory",
+    "large_furnace",
+    "me_drive",
+    "neutron_control_factory",
+    "platinum_refining_matrix",
+    "quantum_data_access_hatch",
+    "stellar_confinement_fusion_reactor",
+    "void_constrained_mining_field",
+    "weather_anchor"
+  ],
+  "plus_factory_ids": [
+    "assembling_plus",
+    "mixing_plus",
+    "processing_plus",
+    "separating_plus"
+  ],
+  "tiered_machine_ids": [
+    "hadron_catalytic_refinery",
+    "plasma_machine_tool",
+    "quantum_mass_spectrum_array",
+    "superconducting_fusion_assembler"
+  ],
+  "resonator_tiers": [
+    "LV",
+    "MV",
+    "HV",
+    "EV",
+    "IV",
+    "LuV",
+    "ZPM",
+    "UV",
+    "UHV",
+    "UEV",
+    "UIV",
+    "UXV",
+    "OpV",
+    "MAX"
+  ],
+  "charger_tiers": [
+    "LV",
+    "MV"
+  ]
+}

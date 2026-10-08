@@ -1,0 +1,998 @@
+{
+  "machine": "cooling_tower",
+  "name": "冷却塔",
+  "revision": "R2-I2",
+  "file": "cooling_tower.schem",
+  "dimensions": [
+    89,
+    122,
+    89
+  ],
+  "core": [
+    44,
+    25,
+    0
+  ],
+  "entry": [
+    44,
+    24,
+    -2
+  ],
+  "ports": [
+    {
+      "id": "P1",
+      "position": [
+        42,
+        27,
+        0
+      ],
+      "normal": [
+        0,
+        0,
+        -1
+      ],
+      "outward": "north",
+      "purpose": "扩展仓室预留01",
+      "approach": [
+        42,
+        26,
+        -2
+      ]
+    },
+    {
+      "id": "P2",
+      "position": [
+        43,
+        27,
+        0
+      ],
+      "normal": [
+        0,
+        0,
+        -1
+      ],
+      "outward": "north",
+      "purpose": "扩展仓室预留02",
+      "approach": [
+        43,
+        26,
+        -2
+      ]
+    },
+    {
+      "id": "P3",
+      "position": [
+        44,
+        27,
+        0
+      ],
+      "normal": [
+        0,
+        0,
+        -1
+      ],
+      "outward": "north",
+      "purpose": "扩展仓室预留03",
+      "approach": [
+        44,
+        26,
+        -2
+      ]
+    },
+    {
+      "id": "P4",
+      "position": [
+        45,
+        27,
+        0
+      ],
+      "normal": [
+        0,
+        0,
+        -1
+      ],
+      "outward": "north",
+      "purpose": "扩展仓室预留04",
+      "approach": [
+        45,
+        26,
+        -2
+      ]
+    },
+    {
+      "id": "P5",
+      "position": [
+        46,
+        27,
+        0
+      ],
+      "normal": [
+        0,
+        0,
+        -1
+      ],
+      "outward": "north",
+      "purpose": "扩展仓室预留05",
+      "approach": [
+        46,
+        26,
+        -2
+      ]
+    },
+    {
+      "id": "P6",
+      "position": [
+        42,
+        26,
+        0
+      ],
+      "normal": [
+        0,
+        0,
+        -1
+      ],
+      "outward": "north",
+      "purpose": "扩展仓室预留06",
+      "approach": [
+        42,
+        25,
+        -2
+      ]
+    },
+    {
+      "id": "P7",
+      "position": [
+        43,
+        26,
+        0
+      ],
+      "normal": [
+        0,
+        0,
+        -1
+      ],
+      "outward": "north",
+      "purpose": "高温流体输入预留",
+      "approach": [
+        43,
+        25,
+        -2
+      ]
+    },
+    {
+      "id": "P8",
+      "position": [
+        44,
+        26,
+        0
+      ],
+      "normal": [
+        0,
+        0,
+        -1
+      ],
+      "outward": "north",
+      "purpose": "冷凝流体输出预留",
+      "approach": [
+        44,
+        25,
+        -2
+      ]
+    },
+    {
+      "id": "P9",
+      "position": [
+        45,
+        26,
+        0
+      ],
+      "normal": [
+        0,
+        0,
+        -1
+      ],
+      "outward": "north",
+      "purpose": "冷却介质输入预留",
+      "approach": [
+        45,
+        25,
+        -2
+      ]
+    },
+    {
+      "id": "P10",
+      "position": [
+        46,
+        26,
+        0
+      ],
+      "normal": [
+        0,
+        0,
+        -1
+      ],
+      "outward": "north",
+      "purpose": "扩展仓室预留07",
+      "approach": [
+        46,
+        25,
+        -2
+      ]
+    },
+    {
+      "id": "P11",
+      "position": [
+        42,
+        25,
+        0
+      ],
+      "normal": [
+        0,
+        0,
+        -1
+      ],
+      "outward": "north",
+      "purpose": "扩展仓室预留08",
+      "approach": [
+        42,
+        24,
+        -2
+      ]
+    },
+    {
+      "id": "P12",
+      "position": [
+        43,
+        25,
+        0
+      ],
+      "normal": [
+        0,
+        0,
+        -1
+      ],
+      "outward": "north",
+      "purpose": "冷却介质回流预留",
+      "approach": [
+        43,
+        24,
+        -2
+      ]
+    },
+    {
+      "id": "P13",
+      "position": [
+        45,
+        25,
+        0
+      ],
+      "normal": [
+        0,
+        0,
+        -1
+      ],
+      "outward": "north",
+      "purpose": "物品接口预留",
+      "approach": [
+        45,
+        24,
+        -2
+      ]
+    },
+    {
+      "id": "P14",
+      "position": [
+        46,
+        25,
+        0
+      ],
+      "normal": [
+        0,
+        0,
+        -1
+      ],
+      "outward": "north",
+      "purpose": "扩展仓室预留09",
+      "approach": [
+        46,
+        24,
+        -2
+      ]
+    },
+    {
+      "id": "P15",
+      "position": [
+        42,
+        24,
+        0
+      ],
+      "normal": [
+        0,
+        0,
+        -1
+      ],
+      "outward": "north",
+      "purpose": "扩展仓室预留10",
+      "approach": [
+        42,
+        23,
+        -2
+      ]
+    },
+    {
+      "id": "P16",
+      "position": [
+        43,
+        24,
+        0
+      ],
+      "normal": [
+        0,
+        0,
+        -1
+      ],
+      "outward": "north",
+      "purpose": "维护预留",
+      "approach": [
+        43,
+        23,
+        -2
+      ]
+    },
+    {
+      "id": "P17",
+      "position": [
+        44,
+        24,
+        0
+      ],
+      "normal": [
+        0,
+        0,
+        -1
+      ],
+      "outward": "north",
+      "purpose": "并行控制预留",
+      "approach": [
+        44,
+        23,
+        -2
+      ]
+    },
+    {
+      "id": "P18",
+      "position": [
+        45,
+        24,
+        0
+      ],
+      "normal": [
+        0,
+        0,
+        -1
+      ],
+      "outward": "north",
+      "purpose": "激光供能预留",
+      "approach": [
+        45,
+        23,
+        -2
+      ]
+    },
+    {
+      "id": "P19",
+      "position": [
+        46,
+        24,
+        0
+      ],
+      "normal": [
+        0,
+        0,
+        -1
+      ],
+      "outward": "north",
+      "purpose": "扩展仓室预留11",
+      "approach": [
+        46,
+        23,
+        -2
+      ]
+    },
+    {
+      "id": "P20",
+      "position": [
+        42,
+        23,
+        0
+      ],
+      "normal": [
+        0,
+        0,
+        -1
+      ],
+      "outward": "north",
+      "purpose": "扩展仓室预留12",
+      "approach": [
+        42,
+        22,
+        -2
+      ]
+    },
+    {
+      "id": "P21",
+      "position": [
+        43,
+        23,
+        0
+      ],
+      "normal": [
+        0,
+        0,
+        -1
+      ],
+      "outward": "north",
+      "purpose": "扩展仓室预留13",
+      "approach": [
+        43,
+        22,
+        -2
+      ]
+    },
+    {
+      "id": "P22",
+      "position": [
+        44,
+        23,
+        0
+      ],
+      "normal": [
+        0,
+        0,
+        -1
+      ],
+      "outward": "north",
+      "purpose": "扩展仓室预留14",
+      "approach": [
+        44,
+        22,
+        -2
+      ]
+    },
+    {
+      "id": "P23",
+      "position": [
+        45,
+        23,
+        0
+      ],
+      "normal": [
+        0,
+        0,
+        -1
+      ],
+      "outward": "north",
+      "purpose": "扩展仓室预留15",
+      "approach": [
+        45,
+        22,
+        -2
+      ]
+    },
+    {
+      "id": "P24",
+      "position": [
+        46,
+        23,
+        0
+      ],
+      "normal": [
+        0,
+        0,
+        -1
+      ],
+      "outward": "north",
+      "purpose": "扩展仓室预留16",
+      "approach": [
+        46,
+        22,
+        -2
+      ]
+    }
+  ],
+  "features": [
+    {
+      "name": "收腰冷却塔",
+      "description": "保留原版冰蓝塔壳、下部进气和收腰敞口，拉高比例；壳体有曲线加强筋、窄观察缝与内凹散热窗。"
+    },
+    {
+      "name": "开放进气带",
+      "description": "下部八组进气百叶具有真实间隙，每组配有小型执行机构，透过进气带可见内部换热层。"
+    },
+    {
+      "name": "分层换热芯",
+      "description": "五组径向散热片围绕冷却分配柱布置，四根回流立管、上部分配环与折流片构成连续设备关系。"
+    },
+    {
+      "name": "敞口排气冠",
+      "description": "顶部敞开并略向外展开，内置后掠风叶、固定电机支架和十二片短导流板。"
+    },
+    {
+      "name": "悬挂回流系统",
+      "description": "底部以八条倾斜回流管连接环形集液管汇和小型密闭接收器，保留管路之间的空隙，无落地底盘。"
+    },
+    {
+      "name": "内嵌5×5集中接口",
+      "description": "中央为主方块，周围24个仓室连续排列，全部共面并贴合机身。"
+    }
+  ],
+  "interfaceLayout": "5x5",
+  "interfaceAudit": {
+    "layout": "5x5",
+    "normal": [
+      0,
+      0,
+      -1
+    ],
+    "previousCore": [
+      44,
+      25,
+      0
+    ],
+    "previousPorts": [
+      {
+        "id": "P1",
+        "position": [
+          39,
+          21,
+          0
+        ],
+        "normal": [
+          0,
+          0,
+          -1
+        ],
+        "outward": "north",
+        "purpose": "物品输入预留",
+        "approach": [
+          39,
+          20,
+          -2
+        ]
+      },
+      {
+        "id": "P2",
+        "position": [
+          42,
+          21,
+          0
+        ],
+        "normal": [
+          0,
+          0,
+          -1
+        ],
+        "outward": "north",
+        "purpose": "高温流体输入预留",
+        "approach": [
+          42,
+          20,
+          -2
+        ]
+      },
+      {
+        "id": "P3",
+        "position": [
+          46,
+          21,
+          0
+        ],
+        "normal": [
+          0,
+          0,
+          -1
+        ],
+        "outward": "north",
+        "purpose": "冷凝流体输出预留",
+        "approach": [
+          46,
+          20,
+          -2
+        ]
+      },
+      {
+        "id": "P4",
+        "position": [
+          49,
+          21,
+          0
+        ],
+        "normal": [
+          0,
+          0,
+          -1
+        ],
+        "outward": "north",
+        "purpose": "物品输出预留",
+        "approach": [
+          49,
+          20,
+          -2
+        ]
+      },
+      {
+        "id": "P5",
+        "position": [
+          39,
+          25,
+          0
+        ],
+        "normal": [
+          0,
+          0,
+          -1
+        ],
+        "outward": "north",
+        "purpose": "冷却介质输入预留",
+        "approach": [
+          39,
+          24,
+          -2
+        ]
+      },
+      {
+        "id": "P6",
+        "position": [
+          49,
+          25,
+          0
+        ],
+        "normal": [
+          0,
+          0,
+          -1
+        ],
+        "outward": "north",
+        "purpose": "冷却介质回流预留",
+        "approach": [
+          49,
+          24,
+          -2
+        ]
+      },
+      {
+        "id": "P7",
+        "position": [
+          42,
+          27,
+          0
+        ],
+        "normal": [
+          0,
+          0,
+          -1
+        ],
+        "outward": "north",
+        "purpose": "维护预留",
+        "approach": [
+          42,
+          26,
+          -2
+        ]
+      },
+      {
+        "id": "P8",
+        "position": [
+          46,
+          27,
+          0
+        ],
+        "normal": [
+          0,
+          0,
+          -1
+        ],
+        "outward": "north",
+        "purpose": "并行控制预留",
+        "approach": [
+          46,
+          26,
+          -2
+        ]
+      },
+      {
+        "id": "P9",
+        "position": [
+          44,
+          29,
+          0
+        ],
+        "normal": [
+          0,
+          0,
+          -1
+        ],
+        "outward": "north",
+        "purpose": "激光供能预留",
+        "approach": [
+          44,
+          28,
+          -2
+        ]
+      }
+    ],
+    "restoredCells": [
+      {
+        "position": [
+          39,
+          21,
+          0
+        ],
+        "marker": 2,
+        "restored": "gtceu:frostproof_machine_casing"
+      },
+      {
+        "position": [
+          42,
+          21,
+          0
+        ],
+        "marker": 2,
+        "restored": "gtceu:frostproof_machine_casing"
+      },
+      {
+        "position": [
+          46,
+          21,
+          0
+        ],
+        "marker": 2,
+        "restored": "gtceu:frostproof_machine_casing"
+      },
+      {
+        "position": [
+          49,
+          21,
+          0
+        ],
+        "marker": 2,
+        "restored": "gtceu:frostproof_machine_casing"
+      },
+      {
+        "position": [
+          39,
+          25,
+          0
+        ],
+        "marker": 2,
+        "restored": "gtceu:frostproof_machine_casing"
+      },
+      {
+        "position": [
+          44,
+          25,
+          0
+        ],
+        "marker": 1,
+        "restored": "gtceu:frostproof_machine_casing"
+      },
+      {
+        "position": [
+          49,
+          25,
+          0
+        ],
+        "marker": 2,
+        "restored": "gtceu:frostproof_machine_casing"
+      },
+      {
+        "position": [
+          42,
+          27,
+          0
+        ],
+        "marker": 2,
+        "restored": "gtceu:frostproof_machine_casing"
+      },
+      {
+        "position": [
+          46,
+          27,
+          0
+        ],
+        "marker": 2,
+        "restored": "gtceu:frostproof_machine_casing"
+      },
+      {
+        "position": [
+          44,
+          29,
+          0
+        ],
+        "marker": 2,
+        "restored": "gtceu:frostproof_machine_casing"
+      }
+    ],
+    "absolute": [
+      52,
+      25,
+      8
+    ],
+    "location": "前侧进气冷凝组件，保持原主方块位置",
+    "recessCuts": [],
+    "radius": 2,
+    "previousPanelRestorations": [
+      {
+        "position": [
+          44,
+          25,
+          0
+        ],
+        "state": "gtceu:frostproof_machine_casing"
+      },
+      {
+        "position": [
+          43,
+          26,
+          0
+        ],
+        "state": "kubejs:laser_cooling_casing"
+      },
+      {
+        "position": [
+          44,
+          26,
+          0
+        ],
+        "state": "gtceu:frostproof_machine_casing"
+      },
+      {
+        "position": [
+          45,
+          26,
+          0
+        ],
+        "state": "kubejs:laser_cooling_casing"
+      },
+      {
+        "position": [
+          43,
+          25,
+          0
+        ],
+        "state": "kubejs:laser_cooling_casing"
+      },
+      {
+        "position": [
+          45,
+          25,
+          0
+        ],
+        "state": "kubejs:laser_cooling_casing"
+      },
+      {
+        "position": [
+          43,
+          24,
+          0
+        ],
+        "state": "kubejs:laser_cooling_casing"
+      },
+      {
+        "position": [
+          44,
+          24,
+          0
+        ],
+        "state": "gtceu:frostproof_machine_casing"
+      },
+      {
+        "position": [
+          45,
+          24,
+          0
+        ],
+        "state": "kubejs:laser_cooling_casing"
+      }
+    ]
+  },
+  "accessMode": "flight",
+  "controllerNormal": [
+    0,
+    0,
+    -1
+  ],
+  "scope": "建筑结构；没有修改多方块成型规则",
+  "sourceIdentity": "保留原版收腰冷却塔、防冻塔壳、下部进气和冷凝回流设定。",
+  "pasteAnchor": [
+    0,
+    0,
+    0
+  ],
+  "offset": [
+    0,
+    0,
+    0
+  ],
+  "recommendedBottomY": -60,
+  "occupiedWorldY": [
+    -60,
+    61
+  ],
+  "origin": "西北底角；X东、Y上、Z南；主接口朝北",
+  "generationCrop": [
+    8,
+    0,
+    8
+  ],
+  "ordinaryBlocks": 102359,
+  "nonAirBlocks": 102384,
+  "airBlocks": 863978,
+  "materials": [
+    {
+      "id": "gtceu:clean_machine_casing",
+      "count": 25346,
+      "percentage": 24.76186754462236
+    },
+    {
+      "id": "gtceu:watertight_casing",
+      "count": 13114,
+      "percentage": 12.81177033773288
+    },
+    {
+      "id": "gtceu:frostproof_machine_casing",
+      "count": 27611,
+      "percentage": 26.974667591516134
+    },
+    {
+      "id": "gtceu:laminated_glass",
+      "count": 504,
+      "percentage": 0.4923846461962309
+    },
+    {
+      "id": "kubejs:neutronium_pipe_casing",
+      "count": 2337,
+      "percentage": 2.2831407106360944
+    },
+    {
+      "id": "gtceu:tungstensteel_pipe_casing",
+      "count": 4223,
+      "percentage": 4.125675319219609
+    },
+    {
+      "id": "gtceu:tungstensteel_gearbox",
+      "count": 322,
+      "percentage": 0.3145790795142586
+    },
+    {
+      "id": "gtceu:luv_machine_casing",
+      "count": 1945,
+      "percentage": 1.9001748747056928
+    },
+    {
+      "id": "kubejs:laser_cooling_casing",
+      "count": 4042,
+      "percentage": 3.948846706200725
+    },
+    {
+      "id": "gtceu:heat_vent[active=false]",
+      "count": 21787,
+      "percentage": 21.284889457693023
+    },
+    {
+      "id": "gtceu:extreme_engine_intake_casing[active=false]",
+      "count": 1128,
+      "percentage": 1.102003731962993
+    }
+  ],
+  "categories": {
+    "gtceu": 95980,
+    "kubejs": 6379
+  },
+  "coreCount": 1,
+  "portCount": 24,
+  "sha256": "2a4f0d60bbeb2310960080ee8eb25682d0e425d4e3fedfd11add450b0e23ae99",
+  "noGameTest": true,
+  "noPreview": true,
+  "stageProof": "沿用原机已核对模型的用材，不声明全部前置在UHV闭环。"
+}

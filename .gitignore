@@ -1,0 +1,72 @@
+# Build caches and intermediate outputs (all subprojects)
+.gradle/
+build/
+out/
+*.class
+__pycache__/
+*.py[cod]
+
+# IDE and OS
+.idea/
+.vscode/
+*.iml
+.project
+.classpath
+.settings/
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Runtime, local evidence and deliverables
+run/
+logs/
+crash-reports/
+*.log
+build_log.txt
+/_audit/
+/_work/
+/.codex-backups/
+/dist/
+/output/
+/服务端/
+/libs/*.jar
+/SchemTool/*.jar
+
+# Preserve source tools, wrappers, inputs and compact documentation archives
+!gradle/wrapper/gradle-wrapper.jar
+/_tools/*.png
+/_tools/_diag/
+/_tools/preview_blackhole_metrics.txt
+
+# Legacy temporary directories; do not recreate them
+/_audit-scripts/
+/_gtlsrc*/
+/_decomp*/
+/_allmods/
+/_probe/
+/_classchk/
+/_classcheck/
+/_verifyfix/
+/_fixverify/
+/_gamelang*/
+/_langcheck*/
+/META-INF/
+/%SystemDrive%/
+*回退备份*/
+材质备份*/
+旧版备份*/
+
+# Local image helper contains credentials and must not enter Git
+/SchemTool/tools/gen_images.py
+
+# Third-party reference sources: never redistribute someone else's mod code
+/参考MOD/
+
+# Dev-instance runtime config / local data (not mod source)
+/config/
+/patchouli_data.json
+
+# Vendored jars and audit scratch inside subprojects
+/standalone/*/libs/*.jar
+/standalone/*/build/
+/standalone/*/_audit/

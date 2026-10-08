@@ -1,0 +1,7 @@
+{
+  "parent": "gtceu:block/overlay/front_emissive",
+  "textures": {
+    "overlay": "gtl_enhancedcore:block/machine/claim_replacement_terminal",
+    "overlay_emissive": "gtl_enhancedcore:block/machine/claim_replacement_terminal_emissive"
+  }
+}

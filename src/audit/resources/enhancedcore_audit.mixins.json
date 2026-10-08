@@ -1,0 +1,8 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "com.gtl.enhancedcore.audit.mixin",
+  "compatibilityLevel": "JAVA_17",
+  "mixins": ["HardwareReportMixin", "ChunkUnloadAuditMixin", "OreGenerationAuditMixin"],
+  "client": ["HiddenAuditWindowMixin", "StellarForgeRenderAuditMixin", "GlErrorTraceMixin"]
+}

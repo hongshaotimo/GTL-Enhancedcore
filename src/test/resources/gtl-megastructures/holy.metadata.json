@@ -1,0 +1,1032 @@
+{
+  "machine": "holy_separator",
+  "name": "神圣分离者",
+  "revision": "R2.1-I2",
+  "file": "holy_separator.schem",
+  "dimensions": [
+    113,
+    105,
+    53
+  ],
+  "core": [
+    56,
+    22,
+    13
+  ],
+  "entry": [
+    56,
+    21,
+    11
+  ],
+  "ports": [
+    {
+      "id": "P1",
+      "position": [
+        54,
+        24,
+        13
+      ],
+      "normal": [
+        0,
+        0,
+        -1
+      ],
+      "outward": "north",
+      "purpose": "扩展仓室预留01",
+      "approach": [
+        54,
+        23,
+        11
+      ]
+    },
+    {
+      "id": "P2",
+      "position": [
+        55,
+        24,
+        13
+      ],
+      "normal": [
+        0,
+        0,
+        -1
+      ],
+      "outward": "north",
+      "purpose": "扩展仓室预留02",
+      "approach": [
+        55,
+        23,
+        11
+      ]
+    },
+    {
+      "id": "P3",
+      "position": [
+        56,
+        24,
+        13
+      ],
+      "normal": [
+        0,
+        0,
+        -1
+      ],
+      "outward": "north",
+      "purpose": "扩展仓室预留03",
+      "approach": [
+        56,
+        23,
+        11
+      ]
+    },
+    {
+      "id": "P4",
+      "position": [
+        57,
+        24,
+        13
+      ],
+      "normal": [
+        0,
+        0,
+        -1
+      ],
+      "outward": "north",
+      "purpose": "扩展仓室预留04",
+      "approach": [
+        57,
+        23,
+        11
+      ]
+    },
+    {
+      "id": "P5",
+      "position": [
+        58,
+        24,
+        13
+      ],
+      "normal": [
+        0,
+        0,
+        -1
+      ],
+      "outward": "north",
+      "purpose": "扩展仓室预留05",
+      "approach": [
+        58,
+        23,
+        11
+      ]
+    },
+    {
+      "id": "P6",
+      "position": [
+        54,
+        23,
+        13
+      ],
+      "normal": [
+        0,
+        0,
+        -1
+      ],
+      "outward": "north",
+      "purpose": "扩展仓室预留06",
+      "approach": [
+        54,
+        22,
+        11
+      ]
+    },
+    {
+      "id": "P7",
+      "position": [
+        55,
+        23,
+        13
+      ],
+      "normal": [
+        0,
+        0,
+        -1
+      ],
+      "outward": "north",
+      "purpose": "物品输入预留",
+      "approach": [
+        55,
+        22,
+        11
+      ]
+    },
+    {
+      "id": "P8",
+      "position": [
+        56,
+        23,
+        13
+      ],
+      "normal": [
+        0,
+        0,
+        -1
+      ],
+      "outward": "north",
+      "purpose": "主产物输出预留",
+      "approach": [
+        56,
+        22,
+        11
+      ]
+    },
+    {
+      "id": "P9",
+      "position": [
+        57,
+        23,
+        13
+      ],
+      "normal": [
+        0,
+        0,
+        -1
+      ],
+      "outward": "north",
+      "purpose": "副产物输出预留",
+      "approach": [
+        57,
+        22,
+        11
+      ]
+    },
+    {
+      "id": "P10",
+      "position": [
+        58,
+        23,
+        13
+      ],
+      "normal": [
+        0,
+        0,
+        -1
+      ],
+      "outward": "north",
+      "purpose": "扩展仓室预留07",
+      "approach": [
+        58,
+        22,
+        11
+      ]
+    },
+    {
+      "id": "P11",
+      "position": [
+        54,
+        22,
+        13
+      ],
+      "normal": [
+        0,
+        0,
+        -1
+      ],
+      "outward": "north",
+      "purpose": "扩展仓室预留08",
+      "approach": [
+        54,
+        21,
+        11
+      ]
+    },
+    {
+      "id": "P12",
+      "position": [
+        55,
+        22,
+        13
+      ],
+      "normal": [
+        0,
+        0,
+        -1
+      ],
+      "outward": "north",
+      "purpose": "流体输出预留",
+      "approach": [
+        55,
+        21,
+        11
+      ]
+    },
+    {
+      "id": "P13",
+      "position": [
+        57,
+        22,
+        13
+      ],
+      "normal": [
+        0,
+        0,
+        -1
+      ],
+      "outward": "north",
+      "purpose": "流体输入预留",
+      "approach": [
+        57,
+        21,
+        11
+      ]
+    },
+    {
+      "id": "P14",
+      "position": [
+        58,
+        22,
+        13
+      ],
+      "normal": [
+        0,
+        0,
+        -1
+      ],
+      "outward": "north",
+      "purpose": "扩展仓室预留09",
+      "approach": [
+        58,
+        21,
+        11
+      ]
+    },
+    {
+      "id": "P15",
+      "position": [
+        54,
+        21,
+        13
+      ],
+      "normal": [
+        0,
+        0,
+        -1
+      ],
+      "outward": "north",
+      "purpose": "扩展仓室预留10",
+      "approach": [
+        54,
+        20,
+        11
+      ]
+    },
+    {
+      "id": "P16",
+      "position": [
+        55,
+        21,
+        13
+      ],
+      "normal": [
+        0,
+        0,
+        -1
+      ],
+      "outward": "north",
+      "purpose": "激光供能预留",
+      "approach": [
+        55,
+        20,
+        11
+      ]
+    },
+    {
+      "id": "P17",
+      "position": [
+        56,
+        21,
+        13
+      ],
+      "normal": [
+        0,
+        0,
+        -1
+      ],
+      "outward": "north",
+      "purpose": "并行控制预留",
+      "approach": [
+        56,
+        20,
+        11
+      ]
+    },
+    {
+      "id": "P18",
+      "position": [
+        57,
+        21,
+        13
+      ],
+      "normal": [
+        0,
+        0,
+        -1
+      ],
+      "outward": "north",
+      "purpose": "维护预留",
+      "approach": [
+        57,
+        20,
+        11
+      ]
+    },
+    {
+      "id": "P19",
+      "position": [
+        58,
+        21,
+        13
+      ],
+      "normal": [
+        0,
+        0,
+        -1
+      ],
+      "outward": "north",
+      "purpose": "扩展仓室预留11",
+      "approach": [
+        58,
+        20,
+        11
+      ]
+    },
+    {
+      "id": "P20",
+      "position": [
+        54,
+        20,
+        13
+      ],
+      "normal": [
+        0,
+        0,
+        -1
+      ],
+      "outward": "north",
+      "purpose": "扩展仓室预留12",
+      "approach": [
+        54,
+        19,
+        11
+      ]
+    },
+    {
+      "id": "P21",
+      "position": [
+        55,
+        20,
+        13
+      ],
+      "normal": [
+        0,
+        0,
+        -1
+      ],
+      "outward": "north",
+      "purpose": "扩展仓室预留13",
+      "approach": [
+        55,
+        19,
+        11
+      ]
+    },
+    {
+      "id": "P22",
+      "position": [
+        56,
+        20,
+        13
+      ],
+      "normal": [
+        0,
+        0,
+        -1
+      ],
+      "outward": "north",
+      "purpose": "扩展仓室预留14",
+      "approach": [
+        56,
+        19,
+        11
+      ]
+    },
+    {
+      "id": "P23",
+      "position": [
+        57,
+        20,
+        13
+      ],
+      "normal": [
+        0,
+        0,
+        -1
+      ],
+      "outward": "north",
+      "purpose": "扩展仓室预留15",
+      "approach": [
+        57,
+        19,
+        11
+      ]
+    },
+    {
+      "id": "P24",
+      "position": [
+        58,
+        20,
+        13
+      ],
+      "normal": [
+        0,
+        0,
+        -1
+      ],
+      "outward": "north",
+      "purpose": "扩展仓室预留16",
+      "approach": [
+        58,
+        19,
+        11
+      ]
+    }
+  ],
+  "features": [
+    {
+      "name": "银白离析冠",
+      "description": "一组开底冠环围绕透明工作腔，白色铱壳、深色结构芯与蓝色场发生节点表现神圣而精密的机器气质。"
+    },
+    {
+      "name": "三对机械刃翼",
+      "description": "三组不同角度、长度和前后深度的机械导向板向两侧展开，镂空槽、场导轨、夹持轴承和背部支架共同构成实体机械组件。"
+    },
+    {
+      "name": "可见分离机构",
+      "description": "透明棱面腔内设置贯穿主轴、上下夹头和错层刀盘，表达原机的切削、车削、粉碎及离心处理设定。"
+    },
+    {
+      "name": "背部双驱动匣",
+      "description": "两个带独立轴承端、散热槽和动力接头的棱面驱动匣延伸到腔体后方，连接主轴、冠环和刃翼根部。"
+    },
+    {
+      "name": "分叉收集回路",
+      "description": "工作腔下方的双股分离通道向两侧分出，再收拢进入锥形收集端，与冠环回路相接。"
+    },
+    {
+      "name": "分瓣镂空机械冠",
+      "description": "四片前后错层的银白冠瓣围合细长菱形玻璃晶核，蓝色场导线嵌入冠瓣内缘；顶部渐细分叉，保留中央和两肩的通透空间。"
+    },
+    {
+      "name": "悬空双尖构图",
+      "description": "上端为轻盈开放的机械冠，下端为窄收集尾部，整体悬空，无落地底座、楼梯或人员平台。"
+    },
+    {
+      "name": "内嵌5×5集中接口",
+      "description": "中央为主方块，周围24个仓室连续排列，全部共面并贴合机身。局部内凹嵌入原有壳体，保留外缘轮廓。"
+    }
+  ],
+  "interfaceLayout": "5x5",
+  "interfaceAudit": {
+    "layout": "5x5",
+    "normal": [
+      0,
+      0,
+      -1
+    ],
+    "previousCore": [
+      56,
+      19,
+      13
+    ],
+    "previousPorts": [
+      {
+        "id": "P1",
+        "position": [
+          54,
+          21,
+          13
+        ],
+        "normal": [
+          0,
+          0,
+          -1
+        ],
+        "outward": "north",
+        "purpose": "物品输入预留",
+        "approach": [
+          54,
+          20,
+          11
+        ]
+      },
+      {
+        "id": "P2",
+        "position": [
+          58,
+          21,
+          13
+        ],
+        "normal": [
+          0,
+          0,
+          -1
+        ],
+        "outward": "north",
+        "purpose": "主产物输出预留",
+        "approach": [
+          58,
+          20,
+          11
+        ]
+      },
+      {
+        "id": "P3",
+        "position": [
+          54,
+          17,
+          14
+        ],
+        "normal": [
+          0,
+          0,
+          -1
+        ],
+        "outward": "north",
+        "purpose": "副产物输出预留",
+        "approach": [
+          54,
+          16,
+          12
+        ]
+      },
+      {
+        "id": "P4",
+        "position": [
+          58,
+          17,
+          14
+        ],
+        "normal": [
+          0,
+          0,
+          -1
+        ],
+        "outward": "north",
+        "purpose": "流体输出预留",
+        "approach": [
+          58,
+          16,
+          12
+        ]
+      },
+      {
+        "id": "P5",
+        "position": [
+          51,
+          20,
+          16
+        ],
+        "normal": [
+          -1,
+          0,
+          0
+        ],
+        "outward": "west",
+        "purpose": "流体输入预留",
+        "approach": [
+          49,
+          19,
+          16
+        ]
+      },
+      {
+        "id": "P6",
+        "position": [
+          61,
+          20,
+          16
+        ],
+        "normal": [
+          1,
+          0,
+          0
+        ],
+        "outward": "east",
+        "purpose": "激光供能预留",
+        "approach": [
+          63,
+          19,
+          16
+        ]
+      },
+      {
+        "id": "P7",
+        "position": [
+          51,
+          16,
+          16
+        ],
+        "normal": [
+          -1,
+          0,
+          0
+        ],
+        "outward": "west",
+        "purpose": "并行控制预留",
+        "approach": [
+          49,
+          15,
+          16
+        ]
+      },
+      {
+        "id": "P8",
+        "position": [
+          61,
+          16,
+          16
+        ],
+        "normal": [
+          1,
+          0,
+          0
+        ],
+        "outward": "east",
+        "purpose": "维护预留",
+        "approach": [
+          63,
+          15,
+          16
+        ]
+      }
+    ],
+    "restoredCells": [
+      {
+        "position": [
+          51,
+          16,
+          16
+        ],
+        "marker": 2,
+        "restored": "gtlcore:molecular_casing"
+      },
+      {
+        "position": [
+          61,
+          16,
+          16
+        ],
+        "marker": 2,
+        "restored": "gtlcore:molecular_casing"
+      },
+      {
+        "position": [
+          54,
+          17,
+          14
+        ],
+        "marker": 2,
+        "restored": "gtlcore:iridium_casing"
+      },
+      {
+        "position": [
+          58,
+          17,
+          14
+        ],
+        "marker": 2,
+        "restored": "gtlcore:iridium_casing"
+      },
+      {
+        "position": [
+          56,
+          19,
+          13
+        ],
+        "marker": 1,
+        "restored": "gtlcore:iridium_casing"
+      },
+      {
+        "position": [
+          51,
+          20,
+          16
+        ],
+        "marker": 2,
+        "restored": "gtlcore:iridium_casing"
+      },
+      {
+        "position": [
+          61,
+          20,
+          16
+        ],
+        "marker": 2,
+        "restored": "gtlcore:iridium_casing"
+      },
+      {
+        "position": [
+          54,
+          21,
+          13
+        ],
+        "marker": 2,
+        "restored": "gtlcore:iridium_casing"
+      },
+      {
+        "position": [
+          58,
+          21,
+          13
+        ],
+        "marker": 2,
+        "restored": "gtlcore:iridium_casing"
+      }
+    ],
+    "absolute": [
+      65,
+      28,
+      30
+    ],
+    "location": "下部收集舱正面上移两格，局部内凹一格，保留收集舱原有弧形外缘",
+    "recessCuts": [
+      {
+        "position": [
+          54,
+          24,
+          12
+        ],
+        "state": "gtlcore:iridium_casing"
+      },
+      {
+        "position": [
+          55,
+          24,
+          12
+        ],
+        "state": "gtlcore:iridium_casing"
+      },
+      {
+        "position": [
+          56,
+          24,
+          12
+        ],
+        "state": "gtlcore:iridium_casing"
+      },
+      {
+        "position": [
+          57,
+          24,
+          12
+        ],
+        "state": "gtlcore:iridium_casing"
+      },
+      {
+        "position": [
+          58,
+          24,
+          12
+        ],
+        "state": "gtlcore:iridium_casing"
+      },
+      {
+        "position": [
+          55,
+          23,
+          12
+        ],
+        "state": "gtceu:high_power_casing"
+      },
+      {
+        "position": [
+          56,
+          23,
+          12
+        ],
+        "state": "gtceu:high_power_casing"
+      },
+      {
+        "position": [
+          57,
+          23,
+          12
+        ],
+        "state": "gtceu:high_power_casing"
+      },
+      {
+        "position": [
+          56,
+          22,
+          12
+        ],
+        "state": "gtlcore:iridium_casing"
+      }
+    ],
+    "radius": 2,
+    "previousPanelRestorations": [
+      {
+        "position": [
+          56,
+          20,
+          13
+        ],
+        "state": "gtlcore:iridium_casing"
+      },
+      {
+        "position": [
+          55,
+          21,
+          13
+        ],
+        "state": "gtlcore:iridium_casing"
+      },
+      {
+        "position": [
+          56,
+          21,
+          13
+        ],
+        "state": "gtlcore:iridium_casing"
+      },
+      {
+        "position": [
+          57,
+          21,
+          13
+        ],
+        "state": "gtlcore:iridium_casing"
+      },
+      {
+        "position": [
+          55,
+          20,
+          13
+        ],
+        "state": "gtlcore:iridium_casing"
+      },
+      {
+        "position": [
+          57,
+          20,
+          13
+        ],
+        "state": "gtlcore:iridium_casing"
+      },
+      {
+        "position": [
+          55,
+          19,
+          13
+        ],
+        "state": "gtlcore:iridium_casing"
+      },
+      {
+        "position": [
+          56,
+          19,
+          13
+        ],
+        "state": "gtlcore:iridium_casing"
+      },
+      {
+        "position": [
+          57,
+          19,
+          13
+        ],
+        "state": "gtlcore:iridium_casing"
+      }
+    ]
+  },
+  "mounting": "suspended",
+  "accessMode": "flight",
+  "controllerNormal": [
+    0,
+    0,
+    -1
+  ],
+  "scope": "建筑结构；没有修改多方块成型规则",
+  "sourceIdentity": "Original cutter, lathe, macerator and centrifuge roles retained; a suspended crowned separator replaces the original slender column.",
+  "pasteAnchor": [
+    0,
+    0,
+    0
+  ],
+  "offset": [
+    0,
+    0,
+    0
+  ],
+  "recommendedBottomY": -60,
+  "occupiedWorldY": [
+    -60,
+    44
+  ],
+  "origin": "西北底角；X东、Y上、Z南；主接口朝北",
+  "generationCrop": [
+    9,
+    6,
+    17
+  ],
+  "ordinaryBlocks": 32700,
+  "nonAirBlocks": 32725,
+  "airBlocks": 596120,
+  "materials": [
+    {
+      "id": "gtlcore:iridium_casing",
+      "count": 13910,
+      "percentage": 42.53822629969419
+    },
+    {
+      "id": "gtceu:fusion_glass",
+      "count": 1938,
+      "percentage": 5.926605504587156
+    },
+    {
+      "id": "kubejs:hollow_casing",
+      "count": 916,
+      "percentage": 2.801223241590214
+    },
+    {
+      "id": "kubejs:containment_field_generator",
+      "count": 610,
+      "percentage": 1.8654434250764527
+    },
+    {
+      "id": "gtlcore:hyper_mechanical_casing",
+      "count": 9673,
+      "percentage": 29.581039755351682
+    },
+    {
+      "id": "gtceu:high_power_casing",
+      "count": 3235,
+      "percentage": 9.892966360856269
+    },
+    {
+      "id": "gtlcore:molecular_casing",
+      "count": 2418,
+      "percentage": 7.394495412844036
+    }
+  ],
+  "categories": {
+    "gtlcore": 26001,
+    "gtceu": 5173,
+    "kubejs": 1526
+  },
+  "coreCount": 1,
+  "portCount": 24,
+  "sha256": "ecfb0e1de65ac9269a6665fa356c4c456ea48b65079a3350934d4f63420bd727",
+  "noGameTest": true,
+  "noPreview": true,
+  "stageProof": "沿用原机已核对模型的用材，不声明全部前置在UHV闭环。"
+}

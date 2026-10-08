@@ -1,0 +1,12 @@
+// 生成的方块谓词，链接到 LVWirelessChargerStructure.create() 之后。
+// 非控制器方块请用 requiredBlock("id") 校验（参见 GTLEnhancedcoreMachines.requiredBlock）：
+//   原版 BLOCK.get / ForgeRegistries.BLOCKS.getValue 对未注册 id 返回 AIR 而非 null，
+//   因此 requireNonNull 无法捕获缺失，必须显式判 AIR 才是有效校验。
+
+.where('C', Predicates.controller(Predicates.blocks(definition.get())))
+.where('X', requiredBlock("minecraft:diamond_ore"))
+.where('H', requiredBlock("gtceu:ulv_machine_hull").or(requiredBlock("gtceu:lv_machine_hull").or(requiredBlock("gtceu:mv_machine_hull").or(requiredBlock("gtceu:hv_machine_hull").or(requiredBlock("gtceu:ev_machine_hull").or(requiredBlock("gtceu:iv_machine_hull")))))))
+.where('A', requiredBlock("minecraft:lightning_rod"))
+.where('B', requiredBlock("gtceu:solid_machine_casing"))
+.where(' ', Predicates.air())
+.build();

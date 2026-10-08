@@ -1,0 +1,244 @@
+{
+  "ivsijiantao.pattern.gz": {
+    "width": 18,
+    "height": 20,
+    "depth": 18,
+    "sha256": "ec1ecdc6bc1236c0767f8ba542014ce3c6fc0dd2ab6846cab570ecdbb135d3e3",
+    "characters": [
+      " ",
+      "A",
+      "B",
+      "C",
+      "D",
+      "E",
+      "F",
+      "G",
+      "I",
+      "J",
+      "X"
+    ]
+  },
+  "large_furnace.pattern.gz": {
+    "width": 11,
+    "height": 13,
+    "depth": 12,
+    "sha256": "e6f60ad264661000208dd2ca8110fb5ddc192a784106bbc99b1487c38e99e8bd",
+    "characters": [
+      " ",
+      "A",
+      "B",
+      "C",
+      "D",
+      "E",
+      "G",
+      "H",
+      "I",
+      "J",
+      "K",
+      "L",
+      "M"
+    ]
+  },
+  "l_v_wireless_charger.pattern.gz": {
+    "width": 7,
+    "height": 9,
+    "depth": 6,
+    "sha256": "17ef6dec1f2350c34097f2b7f9e977d8fadf89c85eea157b729c9670d97ea85d",
+    "characters": [
+      " ",
+      "B",
+      "C"
+    ]
+  },
+  "m_v_wireless_charger.pattern.gz": {
+    "width": 13,
+    "height": 8,
+    "depth": 8,
+    "sha256": "9fedc253f4be89325c59f07b2c3618b28b020f5b197a33d9efe6d460120fbdf3",
+    "characters": [
+      " ",
+      "A",
+      "B",
+      "C"
+    ]
+  },
+  "ore_plant.pattern.gz": {
+    "width": 7,
+    "height": 6,
+    "depth": 12,
+    "sha256": "c66286a375365987eb8836304f1450fed88bb58cd6eabe3d4cdfc917f883d1e3",
+    "characters": [
+      " ",
+      "A",
+      "B",
+      "C",
+      "D",
+      "E",
+      "P",
+      "X"
+    ]
+  },
+  "qdys.pattern.gz": {
+    "width": 283,
+    "height": 116,
+    "depth": 283,
+    "sha256": "e88d8bfa276af45fc77dd1e2b99a3d89e223f051e7af0e4bf056f5004f5de4bc",
+    "characters": [
+      " ",
+      "A",
+      "B",
+      "C",
+      "D",
+      "E",
+      "F",
+      "G",
+      "H",
+      "K",
+      "L",
+      "M",
+      "N",
+      "O",
+      "X",
+      "~"
+    ]
+  },
+  "steam_platform.pattern.gz": {
+    "width": 7,
+    "height": 8,
+    "depth": 6,
+    "sha256": "9251332b1f14d53261e318fade4eac3c34c78d09f05f72f3c833f18b38f7e48a",
+    "characters": [
+      " ",
+      "A",
+      "B",
+      "C",
+      "D",
+      "E",
+      "F",
+      "H",
+      "X"
+    ]
+  },
+  "zzkzgc.pattern.gz": {
+    "width": 15,
+    "height": 21,
+    "depth": 13,
+    "sha256": "01a20cae6b4da2440dcfc315317051f92b0b8644825355e36ef43c5de436d784",
+    "characters": [
+      " ",
+      "A",
+      "B",
+      "C",
+      "D",
+      "E",
+      "F",
+      "G",
+      "I"
+    ]
+  },
+  "plasma_machine_tool.pattern.gz": {
+    "width": 17,
+    "height": 12,
+    "depth": 23,
+    "sha256": "524814dbca4b9041ac8e74ac353d312e9e77b4060f57b643eb7ee40e0fc524d7",
+    "characters": [
+      " ",
+      "A",
+      "B",
+      "C",
+      "D",
+      "G",
+      "I",
+      "J",
+      "Q",
+      "X"
+    ]
+  },
+  "hadron_catalytic_refinery.pattern.gz": {
+    "width": 17,
+    "height": 25,
+    "depth": 17,
+    "sha256": "780dbfd0a927cda9e29fdbb2122255f6f182f3401487065c4df5a47f2d0ab1ed",
+    "characters": [
+      " ",
+      "A",
+      "B",
+      "C",
+      "D",
+      "G",
+      "I",
+      "J",
+      "Q",
+      "X"
+    ]
+  },
+  "quantum_mass_spectrum_array.pattern.gz": {
+    "width": 23,
+    "height": 13,
+    "depth": 19,
+    "sha256": "c153c693731cc95532fe83326b5a7157c43af46f0c08940270239fc8024fb2aa",
+    "characters": [
+      " ",
+      "A",
+      "B",
+      "C",
+      "D",
+      "G",
+      "I",
+      "J",
+      "Q",
+      "X"
+    ]
+  },
+  "superconducting_fusion_assembler.pattern.gz": {
+    "width": 21,
+    "height": 14,
+    "depth": 21,
+    "sha256": "9cb1503a92aa74ab6ee0e5aeb2bc526e87c9aba6f8fade392677808e0d9eda46",
+    "characters": [
+      " ",
+      "A",
+      "B",
+      "C",
+      "G",
+      "I",
+      "J",
+      "Q",
+      "X"
+    ]
+  },
+  "weather_anchor.pattern.gz": {
+    "width": 23,
+    "height": 29,
+    "depth": 23,
+    "sha256": "b6d97648d874ab90ad0c7ca926e1bb4b9ffeb202ca817efe770b7073c7ede583",
+    "characters": [
+      " ",
+      "B",
+      "C",
+      "D",
+      "H",
+      "J",
+      "L",
+      "X"
+    ]
+  },
+  "causality_terminal.pattern.gz": {
+    "width": 181,
+    "height": 181,
+    "depth": 81,
+    "sha256": "aa0c2e8cd8c57d051f13a153d0ae230123dbac49ee608b8e8fb847da8fe9d4d5",
+    "characters": [
+      " ",
+      "C",
+      "F",
+      "H",
+      "J",
+      "K",
+      "L",
+      "S",
+      "W",
+      "X"
+    ]
+  }
+}

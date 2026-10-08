@@ -1,0 +1,913 @@
+{
+  "machine": "crystalline_infinity",
+  "name": "无限晶胞",
+  "revision": "R2-I2",
+  "file": "crystalline_infinity.schem",
+  "dimensions": [
+    105,
+    105,
+    105
+  ],
+  "core": [
+    29,
+    29,
+    24
+  ],
+  "entry": [
+    29,
+    28,
+    22
+  ],
+  "ports": [
+    {
+      "id": "P1",
+      "position": [
+        27,
+        31,
+        24
+      ],
+      "normal": [
+        0,
+        0,
+        -1
+      ],
+      "outward": "north",
+      "purpose": "扩展仓室预留01",
+      "approach": [
+        27,
+        30,
+        22
+      ]
+    },
+    {
+      "id": "P2",
+      "position": [
+        28,
+        31,
+        24
+      ],
+      "normal": [
+        0,
+        0,
+        -1
+      ],
+      "outward": "north",
+      "purpose": "扩展仓室预留02",
+      "approach": [
+        28,
+        30,
+        22
+      ]
+    },
+    {
+      "id": "P3",
+      "position": [
+        29,
+        31,
+        24
+      ],
+      "normal": [
+        0,
+        0,
+        -1
+      ],
+      "outward": "north",
+      "purpose": "扩展仓室预留03",
+      "approach": [
+        29,
+        30,
+        22
+      ]
+    },
+    {
+      "id": "P4",
+      "position": [
+        30,
+        31,
+        24
+      ],
+      "normal": [
+        0,
+        0,
+        -1
+      ],
+      "outward": "north",
+      "purpose": "扩展仓室预留04",
+      "approach": [
+        30,
+        30,
+        22
+      ]
+    },
+    {
+      "id": "P5",
+      "position": [
+        31,
+        31,
+        24
+      ],
+      "normal": [
+        0,
+        0,
+        -1
+      ],
+      "outward": "north",
+      "purpose": "扩展仓室预留05",
+      "approach": [
+        31,
+        30,
+        22
+      ]
+    },
+    {
+      "id": "P6",
+      "position": [
+        27,
+        30,
+        24
+      ],
+      "normal": [
+        0,
+        0,
+        -1
+      ],
+      "outward": "north",
+      "purpose": "扩展仓室预留06",
+      "approach": [
+        27,
+        29,
+        22
+      ]
+    },
+    {
+      "id": "P7",
+      "position": [
+        28,
+        30,
+        24
+      ],
+      "normal": [
+        0,
+        0,
+        -1
+      ],
+      "outward": "north",
+      "purpose": "物品输入预留",
+      "approach": [
+        28,
+        29,
+        22
+      ]
+    },
+    {
+      "id": "P8",
+      "position": [
+        29,
+        30,
+        24
+      ],
+      "normal": [
+        0,
+        0,
+        -1
+      ],
+      "outward": "north",
+      "purpose": "物品输出预留",
+      "approach": [
+        29,
+        29,
+        22
+      ]
+    },
+    {
+      "id": "P9",
+      "position": [
+        30,
+        30,
+        24
+      ],
+      "normal": [
+        0,
+        0,
+        -1
+      ],
+      "outward": "north",
+      "purpose": "流体输入预留",
+      "approach": [
+        30,
+        29,
+        22
+      ]
+    },
+    {
+      "id": "P10",
+      "position": [
+        31,
+        30,
+        24
+      ],
+      "normal": [
+        0,
+        0,
+        -1
+      ],
+      "outward": "north",
+      "purpose": "扩展仓室预留07",
+      "approach": [
+        31,
+        29,
+        22
+      ]
+    },
+    {
+      "id": "P11",
+      "position": [
+        27,
+        29,
+        24
+      ],
+      "normal": [
+        0,
+        0,
+        -1
+      ],
+      "outward": "north",
+      "purpose": "扩展仓室预留08",
+      "approach": [
+        27,
+        28,
+        22
+      ]
+    },
+    {
+      "id": "P12",
+      "position": [
+        28,
+        29,
+        24
+      ],
+      "normal": [
+        0,
+        0,
+        -1
+      ],
+      "outward": "north",
+      "purpose": "流体输出预留",
+      "approach": [
+        28,
+        28,
+        22
+      ]
+    },
+    {
+      "id": "P13",
+      "position": [
+        30,
+        29,
+        24
+      ],
+      "normal": [
+        0,
+        0,
+        -1
+      ],
+      "outward": "north",
+      "purpose": "激光供能预留",
+      "approach": [
+        30,
+        28,
+        22
+      ]
+    },
+    {
+      "id": "P14",
+      "position": [
+        31,
+        29,
+        24
+      ],
+      "normal": [
+        0,
+        0,
+        -1
+      ],
+      "outward": "north",
+      "purpose": "扩展仓室预留09",
+      "approach": [
+        31,
+        28,
+        22
+      ]
+    },
+    {
+      "id": "P15",
+      "position": [
+        27,
+        28,
+        24
+      ],
+      "normal": [
+        0,
+        0,
+        -1
+      ],
+      "outward": "north",
+      "purpose": "扩展仓室预留10",
+      "approach": [
+        27,
+        27,
+        22
+      ]
+    },
+    {
+      "id": "P16",
+      "position": [
+        28,
+        28,
+        24
+      ],
+      "normal": [
+        0,
+        0,
+        -1
+      ],
+      "outward": "north",
+      "purpose": "并行控制预留",
+      "approach": [
+        28,
+        27,
+        22
+      ]
+    },
+    {
+      "id": "P17",
+      "position": [
+        29,
+        28,
+        24
+      ],
+      "normal": [
+        0,
+        0,
+        -1
+      ],
+      "outward": "north",
+      "purpose": "维护预留",
+      "approach": [
+        29,
+        27,
+        22
+      ]
+    },
+    {
+      "id": "P18",
+      "position": [
+        30,
+        28,
+        24
+      ],
+      "normal": [
+        0,
+        0,
+        -1
+      ],
+      "outward": "north",
+      "purpose": "物品输入扩展预留",
+      "approach": [
+        30,
+        27,
+        22
+      ]
+    },
+    {
+      "id": "P19",
+      "position": [
+        31,
+        28,
+        24
+      ],
+      "normal": [
+        0,
+        0,
+        -1
+      ],
+      "outward": "north",
+      "purpose": "扩展仓室预留11",
+      "approach": [
+        31,
+        27,
+        22
+      ]
+    },
+    {
+      "id": "P20",
+      "position": [
+        27,
+        27,
+        24
+      ],
+      "normal": [
+        0,
+        0,
+        -1
+      ],
+      "outward": "north",
+      "purpose": "扩展仓室预留12",
+      "approach": [
+        27,
+        26,
+        22
+      ]
+    },
+    {
+      "id": "P21",
+      "position": [
+        28,
+        27,
+        24
+      ],
+      "normal": [
+        0,
+        0,
+        -1
+      ],
+      "outward": "north",
+      "purpose": "扩展仓室预留13",
+      "approach": [
+        28,
+        26,
+        22
+      ]
+    },
+    {
+      "id": "P22",
+      "position": [
+        29,
+        27,
+        24
+      ],
+      "normal": [
+        0,
+        0,
+        -1
+      ],
+      "outward": "north",
+      "purpose": "扩展仓室预留14",
+      "approach": [
+        29,
+        26,
+        22
+      ]
+    },
+    {
+      "id": "P23",
+      "position": [
+        30,
+        27,
+        24
+      ],
+      "normal": [
+        0,
+        0,
+        -1
+      ],
+      "outward": "north",
+      "purpose": "扩展仓室预留15",
+      "approach": [
+        30,
+        26,
+        22
+      ]
+    },
+    {
+      "id": "P24",
+      "position": [
+        31,
+        27,
+        24
+      ],
+      "normal": [
+        0,
+        0,
+        -1
+      ],
+      "outward": "north",
+      "purpose": "扩展仓室预留16",
+      "approach": [
+        31,
+        26,
+        22
+      ]
+    }
+  ],
+  "features": [
+    {
+      "name": "母晶胞与八个子晶胞",
+      "description": "中央菱形十二面体透明腔体包容主种晶与分子晶格，八个八面体子晶胞沿体对角线重复展开。"
+    },
+    {
+      "name": "棱线约束晶架",
+      "description": "赤色三钛约束架按菱形十二面体的二十四条棱布置，配对分子导轨、调节鞍和棱角接头保留大量通透空间。"
+    },
+    {
+      "name": "嵌套分子晶格",
+      "description": "中央种晶、内层晶格和子晶胞由连续供液与分子输运构件相接，以多尺度重复表达无限晶胞。"
+    },
+    {
+      "name": "原设定用材与核心",
+      "description": "沿用原机的透明腔体、分子线圈、三钛外壳与单个超能核心，保留结晶、浸洗与洗矿的设备表达。"
+    },
+    {
+      "name": "内嵌5×5集中接口",
+      "description": "中央为主方块，周围24个仓室连续排列，全部共面并贴合机身。"
+    }
+  ],
+  "interfaceLayout": "5x5",
+  "interfaceAudit": {
+    "layout": "5x5",
+    "normal": [
+      0,
+      0,
+      -1
+    ],
+    "previousCore": [
+      29,
+      29,
+      24
+    ],
+    "previousPorts": [
+      {
+        "id": "P1",
+        "position": [
+          26,
+          27,
+          24
+        ],
+        "normal": [
+          0,
+          0,
+          -1
+        ],
+        "outward": "north",
+        "purpose": "物品输入预留",
+        "approach": [
+          26,
+          26,
+          22
+        ]
+      },
+      {
+        "id": "P2",
+        "position": [
+          28,
+          26,
+          24
+        ],
+        "normal": [
+          0,
+          0,
+          -1
+        ],
+        "outward": "north",
+        "purpose": "物品输出预留",
+        "approach": [
+          28,
+          25,
+          22
+        ]
+      },
+      {
+        "id": "P3",
+        "position": [
+          31,
+          26,
+          24
+        ],
+        "normal": [
+          0,
+          0,
+          -1
+        ],
+        "outward": "north",
+        "purpose": "流体输入预留",
+        "approach": [
+          31,
+          25,
+          22
+        ]
+      },
+      {
+        "id": "P4",
+        "position": [
+          32,
+          29,
+          24
+        ],
+        "normal": [
+          0,
+          0,
+          -1
+        ],
+        "outward": "north",
+        "purpose": "流体输出预留",
+        "approach": [
+          32,
+          28,
+          22
+        ]
+      },
+      {
+        "id": "P5",
+        "position": [
+          31,
+          32,
+          24
+        ],
+        "normal": [
+          0,
+          0,
+          -1
+        ],
+        "outward": "north",
+        "purpose": "激光供能预留",
+        "approach": [
+          31,
+          31,
+          22
+        ]
+      },
+      {
+        "id": "P6",
+        "position": [
+          28,
+          32,
+          24
+        ],
+        "normal": [
+          0,
+          0,
+          -1
+        ],
+        "outward": "north",
+        "purpose": "并行控制预留",
+        "approach": [
+          28,
+          31,
+          22
+        ]
+      },
+      {
+        "id": "P7",
+        "position": [
+          26,
+          30,
+          24
+        ],
+        "normal": [
+          0,
+          0,
+          -1
+        ],
+        "outward": "north",
+        "purpose": "维护预留",
+        "approach": [
+          26,
+          29,
+          22
+        ]
+      }
+    ],
+    "restoredCells": [
+      {
+        "position": [
+          28,
+          26,
+          24
+        ],
+        "marker": 2,
+        "restored": "gtlcore:molecular_casing"
+      },
+      {
+        "position": [
+          31,
+          26,
+          24
+        ],
+        "marker": 2,
+        "restored": "gtlcore:molecular_casing"
+      },
+      {
+        "position": [
+          26,
+          27,
+          24
+        ],
+        "marker": 2,
+        "restored": "gtlcore:molecular_casing"
+      },
+      {
+        "position": [
+          29,
+          29,
+          24
+        ],
+        "marker": 1,
+        "restored": "gtlcore:molecular_casing"
+      },
+      {
+        "position": [
+          32,
+          29,
+          24
+        ],
+        "marker": 2,
+        "restored": "gtlcore:molecular_casing"
+      },
+      {
+        "position": [
+          26,
+          30,
+          24
+        ],
+        "marker": 2,
+        "restored": "gtlcore:molecular_casing"
+      },
+      {
+        "position": [
+          28,
+          32,
+          24
+        ],
+        "marker": 2,
+        "restored": "gtlcore:molecular_casing"
+      },
+      {
+        "position": [
+          31,
+          32,
+          24
+        ],
+        "marker": 2,
+        "restored": "gtlcore:molecular_casing"
+      }
+    ],
+    "absolute": [
+      34,
+      34,
+      29
+    ],
+    "location": "前下方棱角联控节点，保持原主方块位置",
+    "recessCuts": [],
+    "radius": 2,
+    "previousPanelRestorations": [
+      {
+        "position": [
+          29,
+          29,
+          24
+        ],
+        "state": "gtlcore:molecular_casing"
+      },
+      {
+        "position": [
+          28,
+          30,
+          24
+        ],
+        "state": "gtlcore:molecular_casing"
+      },
+      {
+        "position": [
+          29,
+          30,
+          24
+        ],
+        "state": "gtlcore:molecular_casing"
+      },
+      {
+        "position": [
+          30,
+          30,
+          24
+        ],
+        "state": "gtlcore:molecular_casing"
+      },
+      {
+        "position": [
+          28,
+          29,
+          24
+        ],
+        "state": "gtlcore:molecular_casing"
+      },
+      {
+        "position": [
+          30,
+          29,
+          24
+        ],
+        "state": "gtlcore:molecular_casing"
+      },
+      {
+        "position": [
+          28,
+          28,
+          24
+        ],
+        "state": "gtlcore:molecular_casing"
+      },
+      {
+        "position": [
+          29,
+          28,
+          24
+        ],
+        "state": "gtlcore:molecular_casing"
+      },
+      {
+        "position": [
+          30,
+          28,
+          24
+        ],
+        "state": "gtlcore:molecular_casing"
+      }
+    ]
+  },
+  "mounting": "suspended",
+  "accessMode": "flight",
+  "controllerNormal": [
+    0,
+    0,
+    -1
+  ],
+  "scope": "建筑结构；没有修改多方块成型规则",
+  "sourceIdentity": "Original autoclave, chemical-bath and ore-washing roles, transparent cell, molecular coils and single hyper core retained.",
+  "pasteAnchor": [
+    0,
+    0,
+    0
+  ],
+  "offset": [
+    0,
+    0,
+    0
+  ],
+  "recommendedBottomY": -60,
+  "occupiedWorldY": [
+    -60,
+    44
+  ],
+  "origin": "西北底角；X东、Y上、Z南；主接口朝北",
+  "generationCrop": [
+    5,
+    5,
+    5
+  ],
+  "ordinaryBlocks": 40036,
+  "nonAirBlocks": 40061,
+  "airBlocks": 1117564,
+  "materials": [
+    {
+      "id": "gtlcore:molecular_casing",
+      "count": 4396,
+      "percentage": 10.980117893895494
+    },
+    {
+      "id": "gtceu:fusion_glass",
+      "count": 9048,
+      "percentage": 22.599660305724846
+    },
+    {
+      "id": "kubejs:molecular_coil",
+      "count": 4528,
+      "percentage": 11.30982116095514
+    },
+    {
+      "id": "kubejs:hollow_casing",
+      "count": 3389,
+      "percentage": 8.464881606554101
+    },
+    {
+      "id": "gtlcore:extreme_strength_tritanium_casing",
+      "count": 18674,
+      "percentage": 46.643021280847236
+    },
+    {
+      "id": "gtlcore:hyper_core[active=false]",
+      "count": 1,
+      "percentage": 0.002497752023179139
+    }
+  ],
+  "categories": {
+    "gtlcore": 23071,
+    "gtceu": 9048,
+    "kubejs": 7917
+  },
+  "coreCount": 1,
+  "portCount": 24,
+  "sha256": "8640fca4fde90168c5b8343caafbf12d5f282ea60bf21d5fd3a961fe8632aaab",
+  "noGameTest": true,
+  "noPreview": true,
+  "stageProof": "沿用原机已核对模型的用材，不声明全部前置在UHV闭环。"
+}

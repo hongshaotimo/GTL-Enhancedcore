@@ -1,0 +1,951 @@
+{
+  "machine": "dimensional_focus_engraving_array",
+  "name": "维度聚焦激光蚀刻阵列",
+  "revision": "R2-I2",
+  "file": "dimensional_focus_engraving_array.schem",
+  "dimensions": [
+    109,
+    109,
+    109
+  ],
+  "core": [
+    20,
+    76,
+    54
+  ],
+  "entry": [
+    18,
+    75,
+    54
+  ],
+  "ports": [
+    {
+      "id": "P1",
+      "position": [
+        20,
+        78,
+        52
+      ],
+      "normal": [
+        -1,
+        0,
+        0
+      ],
+      "outward": "west",
+      "purpose": "扩展仓室预留01",
+      "approach": [
+        18,
+        77,
+        52
+      ]
+    },
+    {
+      "id": "P2",
+      "position": [
+        20,
+        78,
+        53
+      ],
+      "normal": [
+        -1,
+        0,
+        0
+      ],
+      "outward": "west",
+      "purpose": "扩展仓室预留02",
+      "approach": [
+        18,
+        77,
+        53
+      ]
+    },
+    {
+      "id": "P3",
+      "position": [
+        20,
+        78,
+        54
+      ],
+      "normal": [
+        -1,
+        0,
+        0
+      ],
+      "outward": "west",
+      "purpose": "扩展仓室预留03",
+      "approach": [
+        18,
+        77,
+        54
+      ]
+    },
+    {
+      "id": "P4",
+      "position": [
+        20,
+        78,
+        55
+      ],
+      "normal": [
+        -1,
+        0,
+        0
+      ],
+      "outward": "west",
+      "purpose": "扩展仓室预留04",
+      "approach": [
+        18,
+        77,
+        55
+      ]
+    },
+    {
+      "id": "P5",
+      "position": [
+        20,
+        78,
+        56
+      ],
+      "normal": [
+        -1,
+        0,
+        0
+      ],
+      "outward": "west",
+      "purpose": "扩展仓室预留05",
+      "approach": [
+        18,
+        77,
+        56
+      ]
+    },
+    {
+      "id": "P6",
+      "position": [
+        20,
+        77,
+        52
+      ],
+      "normal": [
+        -1,
+        0,
+        0
+      ],
+      "outward": "west",
+      "purpose": "扩展仓室预留06",
+      "approach": [
+        18,
+        76,
+        52
+      ]
+    },
+    {
+      "id": "P7",
+      "position": [
+        20,
+        77,
+        53
+      ],
+      "normal": [
+        -1,
+        0,
+        0
+      ],
+      "outward": "west",
+      "purpose": "物品输入预留",
+      "approach": [
+        18,
+        76,
+        53
+      ]
+    },
+    {
+      "id": "P8",
+      "position": [
+        20,
+        77,
+        54
+      ],
+      "normal": [
+        -1,
+        0,
+        0
+      ],
+      "outward": "west",
+      "purpose": "物品输出预留",
+      "approach": [
+        18,
+        76,
+        54
+      ]
+    },
+    {
+      "id": "P9",
+      "position": [
+        20,
+        77,
+        55
+      ],
+      "normal": [
+        -1,
+        0,
+        0
+      ],
+      "outward": "west",
+      "purpose": "流体输入预留",
+      "approach": [
+        18,
+        76,
+        55
+      ]
+    },
+    {
+      "id": "P10",
+      "position": [
+        20,
+        77,
+        56
+      ],
+      "normal": [
+        -1,
+        0,
+        0
+      ],
+      "outward": "west",
+      "purpose": "扩展仓室预留07",
+      "approach": [
+        18,
+        76,
+        56
+      ]
+    },
+    {
+      "id": "P11",
+      "position": [
+        20,
+        76,
+        52
+      ],
+      "normal": [
+        -1,
+        0,
+        0
+      ],
+      "outward": "west",
+      "purpose": "扩展仓室预留08",
+      "approach": [
+        18,
+        75,
+        52
+      ]
+    },
+    {
+      "id": "P12",
+      "position": [
+        20,
+        76,
+        53
+      ],
+      "normal": [
+        -1,
+        0,
+        0
+      ],
+      "outward": "west",
+      "purpose": "维护预留",
+      "approach": [
+        18,
+        75,
+        53
+      ]
+    },
+    {
+      "id": "P13",
+      "position": [
+        20,
+        76,
+        55
+      ],
+      "normal": [
+        -1,
+        0,
+        0
+      ],
+      "outward": "west",
+      "purpose": "光学数据接收预留",
+      "approach": [
+        18,
+        75,
+        55
+      ]
+    },
+    {
+      "id": "P14",
+      "position": [
+        20,
+        76,
+        56
+      ],
+      "normal": [
+        -1,
+        0,
+        0
+      ],
+      "outward": "west",
+      "purpose": "扩展仓室预留09",
+      "approach": [
+        18,
+        75,
+        56
+      ]
+    },
+    {
+      "id": "P15",
+      "position": [
+        20,
+        75,
+        52
+      ],
+      "normal": [
+        -1,
+        0,
+        0
+      ],
+      "outward": "west",
+      "purpose": "扩展仓室预留10",
+      "approach": [
+        18,
+        74,
+        52
+      ]
+    },
+    {
+      "id": "P16",
+      "position": [
+        20,
+        75,
+        53
+      ],
+      "normal": [
+        -1,
+        0,
+        0
+      ],
+      "outward": "west",
+      "purpose": "算力数据接收预留",
+      "approach": [
+        18,
+        74,
+        53
+      ]
+    },
+    {
+      "id": "P17",
+      "position": [
+        20,
+        75,
+        54
+      ],
+      "normal": [
+        -1,
+        0,
+        0
+      ],
+      "outward": "west",
+      "purpose": "能源输入预留",
+      "approach": [
+        18,
+        74,
+        54
+      ]
+    },
+    {
+      "id": "P18",
+      "position": [
+        20,
+        75,
+        55
+      ],
+      "normal": [
+        -1,
+        0,
+        0
+      ],
+      "outward": "west",
+      "purpose": "激光供能预留",
+      "approach": [
+        18,
+        74,
+        55
+      ]
+    },
+    {
+      "id": "P19",
+      "position": [
+        20,
+        75,
+        56
+      ],
+      "normal": [
+        -1,
+        0,
+        0
+      ],
+      "outward": "west",
+      "purpose": "扩展仓室预留11",
+      "approach": [
+        18,
+        74,
+        56
+      ]
+    },
+    {
+      "id": "P20",
+      "position": [
+        20,
+        74,
+        52
+      ],
+      "normal": [
+        -1,
+        0,
+        0
+      ],
+      "outward": "west",
+      "purpose": "扩展仓室预留12",
+      "approach": [
+        18,
+        73,
+        52
+      ]
+    },
+    {
+      "id": "P21",
+      "position": [
+        20,
+        74,
+        53
+      ],
+      "normal": [
+        -1,
+        0,
+        0
+      ],
+      "outward": "west",
+      "purpose": "扩展仓室预留13",
+      "approach": [
+        18,
+        73,
+        53
+      ]
+    },
+    {
+      "id": "P22",
+      "position": [
+        20,
+        74,
+        54
+      ],
+      "normal": [
+        -1,
+        0,
+        0
+      ],
+      "outward": "west",
+      "purpose": "扩展仓室预留14",
+      "approach": [
+        18,
+        73,
+        54
+      ]
+    },
+    {
+      "id": "P23",
+      "position": [
+        20,
+        74,
+        55
+      ],
+      "normal": [
+        -1,
+        0,
+        0
+      ],
+      "outward": "west",
+      "purpose": "扩展仓室预留15",
+      "approach": [
+        18,
+        73,
+        55
+      ]
+    },
+    {
+      "id": "P24",
+      "position": [
+        20,
+        74,
+        56
+      ],
+      "normal": [
+        -1,
+        0,
+        0
+      ],
+      "outward": "west",
+      "purpose": "扩展仓室预留16",
+      "approach": [
+        18,
+        73,
+        56
+      ]
+    }
+  ],
+  "features": [
+    {
+      "name": "六向共同焦点",
+      "description": "保留原版三轴六向注入结构，六条光学通道汇入同一个透明多面蚀刻腔。"
+    },
+    {
+      "name": "分段光学臂",
+      "description": "每条注入臂包含锥形物镜、分层透镜、五组线圈包、调焦叉和维度注入端，避免整块长箱体。"
+    },
+    {
+      "name": "交错校准弧",
+      "description": "三种半径的四分之一校准轨连接各臂，弧上有小型定位头与通向中央的透明校准光路。"
+    },
+    {
+      "name": "飞行接近",
+      "description": "取消地面底座、楼梯及人员平台；所有接口按空中接近保留空间。"
+    },
+    {
+      "name": "内嵌5×5集中接口",
+      "description": "中央为主方块，周围24个仓室连续排列，全部共面并贴合机身。"
+    }
+  ],
+  "interfaceLayout": "5x5",
+  "interfaceAudit": {
+    "layout": "5x5",
+    "normal": [
+      -1,
+      0,
+      0
+    ],
+    "previousCore": [
+      20,
+      76,
+      54
+    ],
+    "previousPorts": [
+      {
+        "id": "P1",
+        "position": [
+          20,
+          74,
+          53
+        ],
+        "normal": [
+          -1,
+          0,
+          0
+        ],
+        "purpose": "物品输入预留",
+        "outward": "west",
+        "approach": [
+          18,
+          73,
+          53
+        ]
+      },
+      {
+        "id": "P2",
+        "position": [
+          20,
+          74,
+          55
+        ],
+        "normal": [
+          -1,
+          0,
+          0
+        ],
+        "purpose": "物品输出预留",
+        "outward": "west",
+        "approach": [
+          18,
+          73,
+          55
+        ]
+      },
+      {
+        "id": "P3",
+        "position": [
+          20,
+          78,
+          53
+        ],
+        "normal": [
+          -1,
+          0,
+          0
+        ],
+        "purpose": "流体输入预留",
+        "outward": "west",
+        "approach": [
+          18,
+          77,
+          53
+        ]
+      },
+      {
+        "id": "P4",
+        "position": [
+          20,
+          78,
+          55
+        ],
+        "normal": [
+          -1,
+          0,
+          0
+        ],
+        "purpose": "维护预留",
+        "outward": "west",
+        "approach": [
+          18,
+          77,
+          55
+        ]
+      },
+      {
+        "id": "P5",
+        "position": [
+          20,
+          76,
+          51
+        ],
+        "normal": [
+          -1,
+          0,
+          0
+        ],
+        "purpose": "光学数据接收预留",
+        "outward": "west",
+        "approach": [
+          18,
+          75,
+          51
+        ]
+      },
+      {
+        "id": "P6",
+        "position": [
+          20,
+          76,
+          57
+        ],
+        "normal": [
+          -1,
+          0,
+          0
+        ],
+        "purpose": "算力数据接收预留",
+        "outward": "west",
+        "approach": [
+          18,
+          75,
+          57
+        ]
+      },
+      {
+        "id": "P7",
+        "position": [
+          23,
+          80,
+          53
+        ],
+        "normal": [
+          0,
+          1,
+          0
+        ],
+        "purpose": "能源输入预留",
+        "outward": "up",
+        "approach": [
+          23,
+          82,
+          53
+        ]
+      },
+      {
+        "id": "P8",
+        "position": [
+          25,
+          80,
+          55
+        ],
+        "normal": [
+          0,
+          1,
+          0
+        ],
+        "purpose": "激光供能预留",
+        "outward": "up",
+        "approach": [
+          25,
+          82,
+          55
+        ]
+      }
+    ],
+    "restoredCells": [
+      {
+        "position": [
+          20,
+          74,
+          53
+        ],
+        "marker": 2,
+        "restored": "gtceu:laser_safe_engraving_casing"
+      },
+      {
+        "position": [
+          20,
+          74,
+          55
+        ],
+        "marker": 2,
+        "restored": "gtceu:laser_safe_engraving_casing"
+      },
+      {
+        "position": [
+          20,
+          76,
+          51
+        ],
+        "marker": 2,
+        "restored": "gtceu:laser_safe_engraving_casing"
+      },
+      {
+        "position": [
+          20,
+          76,
+          54
+        ],
+        "marker": 1,
+        "restored": "gtceu:laser_safe_engraving_casing"
+      },
+      {
+        "position": [
+          20,
+          76,
+          57
+        ],
+        "marker": 2,
+        "restored": "gtceu:laser_safe_engraving_casing"
+      },
+      {
+        "position": [
+          20,
+          78,
+          53
+        ],
+        "marker": 2,
+        "restored": "gtceu:laser_safe_engraving_casing"
+      },
+      {
+        "position": [
+          20,
+          78,
+          55
+        ],
+        "marker": 2,
+        "restored": "gtceu:laser_safe_engraving_casing"
+      },
+      {
+        "position": [
+          23,
+          80,
+          53
+        ],
+        "marker": 2,
+        "restored": "gtlcore:dimensionally_transcendent_casing"
+      },
+      {
+        "position": [
+          25,
+          80,
+          55
+        ],
+        "marker": 2,
+        "restored": "kubejs:molecular_coil"
+      }
+    ],
+    "absolute": [
+      26,
+      82,
+      60
+    ],
+    "location": "左上离轴联控组件西侧，供能接口也收回同一面",
+    "recessCuts": [],
+    "radius": 2,
+    "previousPanelRestorations": [
+      {
+        "position": [
+          20,
+          76,
+          54
+        ],
+        "state": "gtceu:laser_safe_engraving_casing"
+      },
+      {
+        "position": [
+          20,
+          77,
+          53
+        ],
+        "state": "gtceu:laser_safe_engraving_casing"
+      },
+      {
+        "position": [
+          20,
+          77,
+          54
+        ],
+        "state": "gtceu:laser_safe_engraving_casing"
+      },
+      {
+        "position": [
+          20,
+          77,
+          55
+        ],
+        "state": "gtceu:laser_safe_engraving_casing"
+      },
+      {
+        "position": [
+          20,
+          76,
+          53
+        ],
+        "state": "gtceu:laser_safe_engraving_casing"
+      },
+      {
+        "position": [
+          20,
+          76,
+          55
+        ],
+        "state": "gtceu:laser_safe_engraving_casing"
+      },
+      {
+        "position": [
+          20,
+          75,
+          53
+        ],
+        "state": "gtceu:laser_safe_engraving_casing"
+      },
+      {
+        "position": [
+          20,
+          75,
+          54
+        ],
+        "state": "gtceu:laser_safe_engraving_casing"
+      },
+      {
+        "position": [
+          20,
+          75,
+          55
+        ],
+        "state": "gtceu:laser_safe_engraving_casing"
+      }
+    ]
+  },
+  "accessMode": "flight",
+  "controllerNormal": [
+    -1,
+    0,
+    0
+  ],
+  "scope": "建筑结构；没有修改多方块成型规则",
+  "sourceIdentity": "保留原版三轴六向维度注入、共同焦点、加热线圈和离轴联控的位置关系。",
+  "pasteAnchor": [
+    0,
+    0,
+    0
+  ],
+  "offset": [
+    0,
+    0,
+    0
+  ],
+  "recommendedBottomY": -60,
+  "occupiedWorldY": [
+    -60,
+    48
+  ],
+  "origin": "西北底角；X东、Y上、Z南；主接口朝西",
+  "generationCrop": [
+    6,
+    6,
+    6
+  ],
+  "ordinaryBlocks": 44349,
+  "nonAirBlocks": 44374,
+  "airBlocks": 1250655,
+  "materials": [
+    {
+      "id": "gtlcore:dimension_injection_casing",
+      "count": 8608,
+      "percentage": 19.409682292723623
+    },
+    {
+      "id": "gtceu:fusion_glass",
+      "count": 8433,
+      "percentage": 19.015084894811608
+    },
+    {
+      "id": "gtceu:laser_safe_engraving_casing",
+      "count": 8092,
+      "percentage": 18.246183679451622
+    },
+    {
+      "id": "gtlcore:dimensionally_transcendent_casing",
+      "count": 8216,
+      "percentage": 18.525784121400708
+    },
+    {
+      "id": "kubejs:containment_field_generator",
+      "count": 112,
+      "percentage": 0.25254233466369025
+    },
+    {
+      "id": "gtlcore:improved_superconductor_coil[active=false]",
+      "count": 4436,
+      "percentage": 10.00248032650116
+    },
+    {
+      "id": "gtceu:cupronickel_coil_block[active=false]",
+      "count": 4872,
+      "percentage": 10.985591557870526
+    },
+    {
+      "id": "kubejs:molecular_coil",
+      "count": 1580,
+      "percentage": 3.562650792577059
+    }
+  ],
+  "categories": {
+    "gtlcore": 21260,
+    "gtceu": 21397,
+    "kubejs": 1692
+  },
+  "coreCount": 1,
+  "portCount": 24,
+  "sha256": "6ed6c2f9017039f9c3f85d02a8221cf2b717aad92a7788b3890e31e90f2df381",
+  "noGameTest": true,
+  "noPreview": true,
+  "stageProof": "沿用原机已核对模型的用材，不声明全部前置在UHV闭环。"
+}

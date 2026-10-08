@@ -1,0 +1,1795 @@
+{
+  "schema": 1,
+  "recipes": [
+    {
+      "output": "industrial_steam_platform",
+      "tier": "ulv",
+      "method": "crafting",
+      "pattern": [
+        "ABA",
+        "CDC",
+        "AEA"
+      ],
+      "key": {
+        "A": {
+          "item": "gtceu:steam_machine_casing",
+          "count": 1
+        },
+        "B": {
+          "item": "gtceu:bronze_gear",
+          "count": 1
+        },
+        "C": {
+          "item": "kubejs:precision_steam_mechanism",
+          "count": 1
+        },
+        "D": {
+          "item": "gtceu:lp_steam_furnace",
+          "count": 1
+        },
+        "E": {
+          "item": "gtceu:double_bronze_plate",
+          "count": 1
+        }
+      }
+    },
+    {
+      "output": "large_furnace",
+      "tier": "lv",
+      "method": "assembler",
+      "duration": 400,
+      "ingredients": [
+        {
+          "item": "gtceu:lv_electric_furnace",
+          "count": 4
+        },
+        {
+          "item": "gtceu:steel_plate",
+          "count": 16
+        },
+        {
+          "tag": "gtceu:circuits/lv",
+          "count": 4
+        },
+        {
+          "item": "gtceu:lv_electric_piston",
+          "count": 2
+        },
+        {
+          "item": "gtceu:lv_conveyor_module",
+          "count": 2
+        },
+        {
+          "item": "gtceu:firebricks",
+          "count": 4
+        }
+      ],
+      "fluids": [
+        {
+          "fluid": "gtceu:soldering_alloy",
+          "amount": 288
+        }
+      ]
+    },
+    {
+      "output": "lv_wireless_charger",
+      "tier": "lv",
+      "method": "assembler",
+      "duration": 600,
+      "ingredients": [
+        {
+          "item": "gtceu:lv_machine_hull",
+          "count": 2
+        },
+        {
+          "item": "gtmthings:lv_wireless_energy_receive_cover",
+          "count": 4
+        },
+        {
+          "item": "gtceu:lv_sensor",
+          "count": 2
+        },
+        {
+          "item": "gtceu:lv_emitter",
+          "count": 2
+        },
+        {
+          "tag": "gtceu:circuits/lv",
+          "count": 4
+        },
+        {
+          "item": "gtceu:double_steel_plate",
+          "count": 8
+        },
+        {
+          "item": "minecraft:ender_pearl",
+          "count": 8
+        }
+      ],
+      "fluids": [
+        {
+          "fluid": "gtceu:soldering_alloy",
+          "amount": 288
+        }
+      ]
+    },
+    {
+      "output": "mv_wireless_charger",
+      "tier": "lv",
+      "method": "assembler",
+      "duration": 800,
+      "ingredients": [
+        {
+          "item": "gtceu:mv_electric_motor",
+          "count": 1
+        },
+        {
+          "item": "gtceu:mv_electric_piston",
+          "count": 1
+        },
+        {
+          "item": "gtceu:mv_conveyor_module",
+          "count": 1
+        },
+        {
+          "item": "gtceu:mv_robot_arm",
+          "count": 2
+        },
+        {
+          "item": "gtl_enhancedcore:lv_wireless_charger",
+          "count": 1
+        },
+        {
+          "item": "gtceu:mv_electric_pump",
+          "count": 3
+        },
+        {
+          "tag": "gtceu:circuits/lv",
+          "count": 4
+        }
+      ],
+      "fluids": [
+        {
+          "fluid": "gtceu:soldering_alloy",
+          "amount": 576
+        }
+      ]
+    },
+    {
+      "output": "processing_plus",
+      "tier": "mv",
+      "method": "assembler",
+      "duration": 800,
+      "ingredients": [
+        {"item": "gtceu:mv_bender", "count": 2},
+        {"item": "gtceu:mv_lathe", "count": 2},
+        {"item": "gtceu:mv_wiremill", "count": 2},
+        {"item": "gtlcore:multi_functional_casing", "count": 2},
+        {"item": "gtceu:mv_robot_arm", "count": 4},
+        {"item": "gtceu:mv_conveyor_module", "count": 4},
+        {"tag": "gtceu:circuits/mv", "count": 8},
+        {"item": "gtceu:double_aluminium_plate", "count": 8}
+      ],
+      "fluids": [{"fluid": "gtceu:soldering_alloy", "amount": 576}]
+    },
+    {
+      "output": "assembling_plus",
+      "tier": "mv",
+      "method": "assembler",
+      "duration": 800,
+      "ingredients": [
+        {"item": "gtceu:mv_assembler", "count": 2},
+        {"item": "gtceu:mv_circuit_assembler", "count": 2},
+        {"item": "gtceu:mv_forming_press", "count": 2},
+        {"item": "gtlcore:multi_functional_casing", "count": 2},
+        {"item": "gtceu:mv_robot_arm", "count": 4},
+        {"item": "gtceu:mv_conveyor_module", "count": 4},
+        {"tag": "gtceu:circuits/mv", "count": 8},
+        {"item": "gtceu:double_aluminium_plate", "count": 8}
+      ],
+      "fluids": [{"fluid": "gtceu:soldering_alloy", "amount": 576}]
+    },
+    {
+      "output": "separating_plus",
+      "tier": "mv",
+      "method": "assembler",
+      "duration": 800,
+      "ingredients": [
+        {"item": "gtceu:mv_centrifuge", "count": 2},
+        {"item": "gtceu:mv_electrolyzer", "count": 2},
+        {"item": "gtceu:mv_thermal_centrifuge", "count": 2},
+        {"item": "gtlcore:multi_functional_casing", "count": 2},
+        {"item": "gtceu:mv_robot_arm", "count": 4},
+        {"item": "gtceu:mv_conveyor_module", "count": 4},
+        {"tag": "gtceu:circuits/mv", "count": 8},
+        {"item": "gtceu:double_aluminium_plate", "count": 8}
+      ],
+      "fluids": [{"fluid": "gtceu:soldering_alloy", "amount": 576}]
+    },
+    {
+      "output": "mixing_plus",
+      "tier": "mv",
+      "method": "assembler",
+      "duration": 800,
+      "ingredients": [
+        {"item": "gtceu:mv_mixer", "count": 2},
+        {"item": "gtceu:mv_chemical_reactor", "count": 2},
+        {"item": "gtceu:mv_chemical_bath", "count": 2},
+        {"item": "gtlcore:multi_functional_casing", "count": 2},
+        {"item": "gtceu:mv_robot_arm", "count": 4},
+        {"item": "gtceu:mv_conveyor_module", "count": 4},
+        {"tag": "gtceu:circuits/mv", "count": 8},
+        {"item": "gtceu:double_aluminium_plate", "count": 8}
+      ],
+      "fluids": [{"fluid": "gtceu:soldering_alloy", "amount": 576}]
+    },
+    {
+      "output": "universal_joint_factory",
+      "tier": "mv",
+      "method": "assembler",
+      "duration": 800,
+      "ingredients": [
+        {"item": "gtl_enhancedcore:processing_plus", "count": 1},
+        {"item": "gtl_enhancedcore:assembling_plus", "count": 1},
+        {"item": "gtl_enhancedcore:separating_plus", "count": 1},
+        {"item": "gtl_enhancedcore:mixing_plus", "count": 1},
+        {"tag": "gtceu:circuits/mv", "count": 8},
+        {"item": "gtceu:phenolic_circuit_board", "count": 16}
+      ],
+      "fluids": [{"fluid": "gtceu:soldering_alloy", "amount": 576}]
+    },
+    {
+      "output": "basic_ore_processing_plant",
+      "tier": "mv",
+      "method": "assembler",
+      "duration": 1200,
+      "ingredients": [
+        {
+          "item": "gtceu:mv_macerator",
+          "count": 4
+        },
+        {
+          "item": "gtceu:mv_ore_washer",
+          "count": 4
+        },
+        {
+          "item": "gtceu:mv_thermal_centrifuge",
+          "count": 4
+        },
+        {
+          "item": "gtceu:mv_centrifuge",
+          "count": 4
+        },
+        {
+          "item": "gtceu:mv_robot_arm",
+          "count": 4
+        },
+        {
+          "tag": "gtceu:circuits/mv",
+          "count": 8
+        },
+        {
+          "item": "gtceu:aluminium_frame",
+          "count": 4
+        },
+        {
+          "item": "gtceu:mv_electric_pump",
+          "count": 4
+        }
+      ],
+      "fluids": [
+        {
+          "fluid": "gtceu:soldering_alloy",
+          "amount": 1152
+        }
+      ]
+    },
+    {
+      "output": "plasma_machine_tool",
+      "tier": "iv",
+      "method": "assembler",
+      "duration": 1200,
+      "ingredients": [
+        {
+          "item": "gtceu:iv_lathe",
+          "count": 4
+        },
+        {
+          "item": "gtceu:iv_bender",
+          "count": 4
+        },
+        {
+          "item": "gtceu:iv_cutter",
+          "count": 4
+        },
+        {
+          "item": "gtceu:iv_wiremill",
+          "count": 4
+        },
+        {
+          "item": "gtceu:iv_extruder",
+          "count": 4
+        },
+        {
+          "item": "gtceu:iv_robot_arm",
+          "count": 8
+        },
+        {
+          "item": "gtceu:iv_field_generator",
+          "count": 4
+        },
+        {
+          "tag": "gtceu:circuits/iv",
+          "count": 16
+        },
+        {
+          "item": "gtceu:tungsten_steel_frame",
+          "count": 8
+        }
+      ],
+      "fluids": [
+        {
+          "fluid": "gtceu:soldering_alloy",
+          "amount": 2304
+        }
+      ]
+    },
+    {
+      "output": "hadron_catalytic_refinery",
+      "tier": "iv",
+      "method": "assembler",
+      "duration": 1200,
+      "ingredients": [
+        {
+          "item": "gtceu:iv_mixer",
+          "count": 4
+        },
+        {
+          "item": "gtceu:iv_autoclave",
+          "count": 4
+        },
+        {
+          "item": "gtceu:iv_extractor",
+          "count": 4
+        },
+        {
+          "item": "gtceu:iv_distillery",
+          "count": 4
+        },
+        {
+          "item": "gtceu:iv_fluid_heater",
+          "count": 4
+        },
+        {
+          "item": "gtceu:iv_robot_arm",
+          "count": 8
+        },
+        {
+          "item": "gtceu:iv_field_generator",
+          "count": 4
+        },
+        {
+          "tag": "gtceu:circuits/iv",
+          "count": 16
+        },
+        {
+          "item": "gtceu:tungsten_steel_frame",
+          "count": 8
+        }
+      ],
+      "fluids": [
+        {
+          "fluid": "gtceu:soldering_alloy",
+          "amount": 2304
+        }
+      ]
+    },
+    {
+      "output": "quantum_mass_spectrum_array",
+      "tier": "iv",
+      "method": "assembler",
+      "duration": 1200,
+      "ingredients": [
+        {
+          "item": "gtceu:iv_macerator",
+          "count": 4
+        },
+        {
+          "item": "gtceu:iv_centrifuge",
+          "count": 4
+        },
+        {
+          "item": "gtceu:iv_electrolyzer",
+          "count": 4
+        },
+        {
+          "item": "gtceu:iv_sifter",
+          "count": 4
+        },
+        {
+          "item": "gtceu:iv_ore_washer",
+          "count": 4
+        },
+        {
+          "item": "gtceu:iv_robot_arm",
+          "count": 8
+        },
+        {
+          "item": "gtceu:iv_field_generator",
+          "count": 4
+        },
+        {
+          "tag": "gtceu:circuits/iv",
+          "count": 16
+        },
+        {
+          "item": "gtceu:tungsten_steel_frame",
+          "count": 8
+        }
+      ],
+      "fluids": [
+        {
+          "fluid": "gtceu:soldering_alloy",
+          "amount": 2304
+        }
+      ]
+    },
+    {
+      "output": "superconducting_fusion_assembler",
+      "tier": "iv",
+      "method": "assembler",
+      "duration": 1200,
+      "ingredients": [
+        {
+          "item": "gtceu:iv_arc_furnace",
+          "count": 4
+        },
+        {
+          "item": "gtceu:iv_lightning_processor",
+          "count": 4
+        },
+        {
+          "item": "gtceu:iv_assembler",
+          "count": 4
+        },
+        {
+          "item": "gtceu:iv_circuit_assembler",
+          "count": 4
+        },
+        {
+          "item": "gtceu:iv_forming_press",
+          "count": 4
+        },
+        {
+          "item": "gtceu:iv_robot_arm",
+          "count": 8
+        },
+        {
+          "item": "gtceu:iv_field_generator",
+          "count": 4
+        },
+        {
+          "tag": "gtceu:circuits/iv",
+          "count": 16
+        },
+        {
+          "item": "gtceu:tungsten_steel_frame",
+          "count": 8
+        }
+      ],
+      "fluids": [
+        {
+          "fluid": "gtceu:soldering_alloy",
+          "amount": 2304
+        }
+      ]
+    },
+    {
+      "output": "circuit_encoder_hatch",
+      "tier": "mv",
+      "method": "assembler",
+      "duration": 400,
+      "ingredients": [
+        {
+          "item": "gtceu:mv_input_bus",
+          "count": 1
+        },
+        {
+          "tag": "gtceu:circuits/mv",
+          "count": 4
+        },
+        {
+          "item": "gtceu:mv_robot_arm",
+          "count": 2
+        },
+        {
+          "item": "gtceu:good_electronic_circuit",
+          "count": 2
+        }
+      ],
+      "fluids": [
+        {
+          "fluid": "gtceu:soldering_alloy",
+          "amount": 288
+        }
+      ]
+    },
+    {
+      "output": "pattern_generator",
+      "tier": "ev",
+      "method": "assembler",
+      "duration": 600,
+      "ingredients": [
+        {
+          "item": "gtlcore:ultimate_terminal",
+          "count": 1
+        },
+        {
+          "item": "ae2:pattern_encoding_terminal",
+          "count": 1
+        },
+        {
+          "item": "gtceu:data_stick",
+          "count": 4
+        },
+        {
+          "tag": "gtceu:circuits/ev",
+          "count": 4
+        },
+        {
+          "item": "gtceu:ev_sensor",
+          "count": 2
+        },
+        {
+          "item": "gtceu:ev_emitter",
+          "count": 2
+        }
+      ],
+      "fluids": [
+        {
+          "fluid": "gtceu:soldering_alloy",
+          "amount": 576
+        }
+      ]
+    },
+    {
+      "output": "claim_replacement_terminal",
+      "tier": "ev",
+      "method": "assembler",
+      "duration": 800,
+      "ingredients": [
+        {
+          "item": "gtceu:ev_machine_hull",
+          "count": 2
+        },
+        {
+          "item": "gtlcore:ultimate_terminal",
+          "count": 1
+        },
+        {
+          "item": "ae2:wireless_terminal",
+          "count": 1
+        },
+        {
+          "item": "gtceu:ev_robot_arm",
+          "count": 4
+        },
+        {
+          "item": "gtceu:ev_conveyor_module",
+          "count": 4
+        },
+        {
+          "item": "gtceu:ev_sensor",
+          "count": 4
+        },
+        {
+          "tag": "gtceu:circuits/ev",
+          "count": 8
+        },
+        {
+          "item": "gtceu:double_titanium_plate",
+          "count": 8
+        }
+      ],
+      "fluids": [
+        {
+          "fluid": "gtceu:soldering_alloy",
+          "amount": 1152
+        }
+      ]
+    },
+    {
+      "output": "me_drive",
+      "tier": "luv",
+      "method": "assembly_line",
+      "duration": 1600,
+      "ingredients": [
+        {
+          "item": "ae2:drive",
+          "count": 16
+        },
+        {
+          "item": "ae2:cell_component_64k",
+          "count": 8
+        },
+        {
+          "item": "gtceu:luv_machine_hull",
+          "count": 2
+        },
+        {
+          "item": "gtceu:luv_robot_arm",
+          "count": 8
+        },
+        {
+          "item": "gtceu:luv_sensor",
+          "count": 4
+        },
+        {
+          "tag": "gtceu:circuits/luv",
+          "count": 8
+        },
+        {
+          "item": "ae2:engineering_processor",
+          "count": 32
+        },
+        {
+          "item": "gtceu:rhodium_plated_palladium_plate",
+          "count": 32
+        }
+      ],
+      "fluids": [
+        {
+          "fluid": "gtceu:soldering_alloy",
+          "amount": 4608
+        }
+      ]
+    },
+    {
+      "output": "quantum_data_access_hatch",
+      "tier": "zpm",
+      "method": "assembly_line",
+      "duration": 1800,
+      "ingredients": [
+        {
+          "item": "gtceu:advanced_data_access_hatch",
+          "count": 16
+        },
+        {
+          "item": "gtceu:data_module",
+          "count": 16
+        },
+        {
+          "item": "gtceu:zpm_machine_hull",
+          "count": 2
+        },
+        {
+          "item": "gtceu:zpm_sensor",
+          "count": 8
+        },
+        {
+          "item": "gtceu:zpm_emitter",
+          "count": 8
+        },
+        {
+          "tag": "gtceu:circuits/zpm",
+          "count": 16
+        },
+        {
+          "item": "gtceu:naquadah_alloy_plate",
+          "count": 32
+        },
+        {
+          "item": "ae2:engineering_processor",
+          "count": 64
+        }
+      ],
+      "fluids": [
+        {
+          "fluid": "gtceu:soldering_alloy",
+          "amount": 9216
+        }
+      ]
+    },
+    {
+      "output": "weather_anchor",
+      "tier": "zpm",
+      "method": "assembly_line",
+      "duration": 2400,
+      "ingredients": [
+        {
+          "item": "gtceu:weather_control",
+          "count": 4
+        },
+        {
+          "item": "gtceu:zpm_machine_hull",
+          "count": 4
+        },
+        {
+          "item": "gtceu:zpm_field_generator",
+          "count": 8
+        },
+        {
+          "item": "gtceu:zpm_sensor",
+          "count": 8
+        },
+        {
+          "item": "gtceu:zpm_emitter",
+          "count": 8
+        },
+        {
+          "tag": "gtceu:circuits/zpm",
+          "count": 16
+        },
+        {
+          "item": "gtceu:naquadah_alloy_frame",
+          "count": 16
+        },
+        {
+          "item": "minecraft:nether_star",
+          "count": 16
+        }
+      ],
+      "fluids": [
+        {
+          "fluid": "gtceu:soldering_alloy",
+          "amount": 9216
+        }
+      ]
+    },
+    {
+      "output": "neutron_control_factory",
+      "tier": "zpm",
+      "method": "assembly_line",
+      "duration": 2400,
+      "ingredients": [
+        {
+          "item": "gtceu:neutron_activator",
+          "count": 4
+        },
+        {
+          "item": "gtceu:zpm_machine_hull",
+          "count": 4
+        },
+        {
+          "item": "gtceu:zpm_field_generator",
+          "count": 16
+        },
+        {
+          "item": "gtceu:zpm_electric_pump",
+          "count": 8
+        },
+        {
+          "item": "gtceu:zpm_robot_arm",
+          "count": 8
+        },
+        {
+          "tag": "gtceu:circuits/zpm",
+          "count": 16
+        },
+        {
+          "item": "gtceu:naquadah_alloy_frame",
+          "count": 16
+        },
+        {
+          "item": "gtceu:zpm_muffler_hatch",
+          "count": 1
+        },
+        {
+          "item": "gtceu:hssg_coil_block",
+          "count": 8
+        }
+      ],
+      "fluids": [
+        {
+          "fluid": "gtceu:soldering_alloy",
+          "amount": 9216
+        }
+      ]
+    },
+    {
+      "output": "infinity_singularity_compressor",
+      "tier": "uiv",
+      "method": "assembly_line",
+      "duration": 6000,
+      "ingredients": [
+        {
+          "item": "gtceu:electric_implosion_compressor",
+          "count": 4
+        },
+        {
+          "item": "gtceu:uiv_machine_hull",
+          "count": 8
+        },
+        {
+          "item": "gtceu:uiv_field_generator",
+          "count": 16
+        },
+        {
+          "item": "gtceu:uiv_electric_piston",
+          "count": 16
+        },
+        {
+          "tag": "gtceu:circuits/uiv",
+          "count": 32
+        },
+        {
+          "item": "kubejs:suprachronal_mainframe_complex",
+          "count": 8
+        },
+        {
+          "item": "kubejs:dimension_creation_casing",
+          "count": 16
+        },
+        {
+          "item": "ae2:singularity",
+          "count": 64
+        },
+        {
+          "item": "gtceu:adamantium_frame",
+          "count": 32
+        }
+      ],
+      "fluids": [
+        {
+          "fluid": "gtceu:soldering_alloy",
+          "amount": 18432
+        }
+      ]
+    },
+    {
+      "output": "causality_terminal",
+      "tier": "max",
+      "method": "assembly_line",
+      "duration": 12000,
+      "ingredients": [
+        {
+          "item": "gtl_enhancedcore:infinity_singularity_compressor",
+          "count": 4
+        },
+        {
+          "item": "gtceu:max_machine_hull",
+          "count": 8
+        },
+        {
+          "item": "gtlcore:max_field_generator",
+          "count": 32
+        },
+        {
+          "item": "gtlcore:max_sensor",
+          "count": 16
+        },
+        {
+          "item": "gtlcore:max_emitter",
+          "count": 16
+        },
+        {
+          "tag": "gtceu:circuits/max",
+          "count": 32
+        },
+        {
+          "item": "kubejs:suprachronal_mainframe_complex",
+          "count": 32
+        },
+        {
+          "item": "kubejs:dimension_creation_casing",
+          "count": 64
+        },
+        {
+          "item": "gtceu:chaos_plate",
+          "count": 64
+        },
+        {
+          "item": "expatternprovider:fishbig",
+          "count": 16
+        }
+      ],
+      "fluids": [
+        {
+          "fluid": "gtceu:soldering_alloy",
+          "amount": 36864
+        }
+      ]
+    },
+    {
+      "output": "lv_crystal_resonator",
+      "tier": "lv",
+      "method": "assembler",
+      "duration": 600,
+      "ingredients": [
+        {
+          "item": "gtceu:lv_machine_hull",
+          "count": 2
+        },
+        {
+          "item": "gtceu:lv_field_generator",
+          "count": 4
+        },
+        {
+          "item": "gtceu:lv_sensor",
+          "count": 4
+        },
+        {
+          "item": "gtceu:lv_emitter",
+          "count": 4
+        },
+        {
+          "tag": "gtceu:circuits/lv",
+          "count": 8
+        },
+        {
+          "item": "gtceu:steel_plate",
+          "count": 16
+        },
+        {
+          "item": "minecraft:end_crystal",
+          "count": 4
+        },
+        {
+          "item": "minecraft:nether_star",
+          "count": 4
+        },
+        {
+          "item": "minecraft:obsidian",
+          "count": 64
+        }
+      ],
+      "fluids": [
+        {
+          "fluid": "gtceu:soldering_alloy",
+          "amount": 576
+        }
+      ]
+    },
+    {
+      "output": "mv_crystal_resonator",
+      "tier": "mv",
+      "method": "assembler",
+      "duration": 800,
+      "ingredients": [
+        {
+          "item": "gtceu:mv_machine_hull",
+          "count": 2
+        },
+        {
+          "item": "gtceu:mv_field_generator",
+          "count": 4
+        },
+        {
+          "item": "gtceu:mv_sensor",
+          "count": 4
+        },
+        {
+          "item": "gtceu:mv_emitter",
+          "count": 4
+        },
+        {
+          "tag": "gtceu:circuits/mv",
+          "count": 8
+        },
+        {
+          "item": "gtceu:aluminium_plate",
+          "count": 16
+        },
+        {
+          "item": "minecraft:end_crystal",
+          "count": 8
+        },
+        {
+          "item": "gtl_enhancedcore:lv_crystal_resonator",
+          "count": 1
+        }
+      ],
+      "fluids": [
+        {
+          "fluid": "gtceu:soldering_alloy",
+          "amount": 1152
+        }
+      ]
+    },
+    {
+      "output": "hv_crystal_resonator",
+      "tier": "hv",
+      "method": "assembler",
+      "duration": 1000,
+      "ingredients": [
+        {
+          "item": "gtceu:hv_machine_hull",
+          "count": 2
+        },
+        {
+          "item": "gtceu:hv_field_generator",
+          "count": 4
+        },
+        {
+          "item": "gtceu:hv_sensor",
+          "count": 4
+        },
+        {
+          "item": "gtceu:hv_emitter",
+          "count": 4
+        },
+        {
+          "tag": "gtceu:circuits/hv",
+          "count": 8
+        },
+        {
+          "item": "gtceu:stainless_steel_plate",
+          "count": 16
+        },
+        {
+          "item": "minecraft:end_crystal",
+          "count": 8
+        },
+        {
+          "item": "gtl_enhancedcore:mv_crystal_resonator",
+          "count": 1
+        }
+      ],
+      "fluids": [
+        {
+          "fluid": "gtceu:soldering_alloy",
+          "amount": 1728
+        }
+      ]
+    },
+    {
+      "output": "ev_crystal_resonator",
+      "tier": "ev",
+      "method": "assembler",
+      "duration": 1200,
+      "ingredients": [
+        {
+          "item": "gtceu:ev_machine_hull",
+          "count": 2
+        },
+        {
+          "item": "gtceu:ev_field_generator",
+          "count": 4
+        },
+        {
+          "item": "gtceu:ev_sensor",
+          "count": 4
+        },
+        {
+          "item": "gtceu:ev_emitter",
+          "count": 4
+        },
+        {
+          "tag": "gtceu:circuits/ev",
+          "count": 8
+        },
+        {
+          "item": "gtceu:titanium_plate",
+          "count": 16
+        },
+        {
+          "item": "minecraft:end_crystal",
+          "count": 8
+        },
+        {
+          "item": "gtl_enhancedcore:hv_crystal_resonator",
+          "count": 1
+        }
+      ],
+      "fluids": [
+        {
+          "fluid": "gtceu:soldering_alloy",
+          "amount": 2304
+        }
+      ]
+    },
+    {
+      "output": "iv_crystal_resonator",
+      "tier": "iv",
+      "method": "assembler",
+      "duration": 1400,
+      "ingredients": [
+        {
+          "item": "gtceu:iv_machine_hull",
+          "count": 2
+        },
+        {
+          "item": "gtceu:iv_field_generator",
+          "count": 4
+        },
+        {
+          "item": "gtceu:iv_sensor",
+          "count": 4
+        },
+        {
+          "item": "gtceu:iv_emitter",
+          "count": 4
+        },
+        {
+          "tag": "gtceu:circuits/iv",
+          "count": 8
+        },
+        {
+          "item": "gtceu:tungsten_steel_plate",
+          "count": 16
+        },
+        {
+          "item": "minecraft:end_crystal",
+          "count": 8
+        },
+        {
+          "item": "gtl_enhancedcore:ev_crystal_resonator",
+          "count": 1
+        }
+      ],
+      "fluids": [
+        {
+          "fluid": "gtceu:soldering_alloy",
+          "amount": 2880
+        }
+      ]
+    },
+    {
+      "output": "luv_crystal_resonator",
+      "tier": "luv",
+      "method": "assembly_line",
+      "duration": 1600,
+      "ingredients": [
+        {
+          "item": "gtceu:luv_machine_hull",
+          "count": 2
+        },
+        {
+          "item": "gtceu:luv_field_generator",
+          "count": 4
+        },
+        {
+          "item": "gtceu:luv_sensor",
+          "count": 4
+        },
+        {
+          "item": "gtceu:luv_emitter",
+          "count": 4
+        },
+        {
+          "tag": "gtceu:circuits/luv",
+          "count": 8
+        },
+        {
+          "item": "gtceu:rhodium_plated_palladium_plate",
+          "count": 16
+        },
+        {
+          "item": "minecraft:end_crystal",
+          "count": 8
+        },
+        {
+          "item": "gtl_enhancedcore:iv_crystal_resonator",
+          "count": 1
+        }
+      ],
+      "fluids": [
+        {
+          "fluid": "gtceu:soldering_alloy",
+          "amount": 3456
+        }
+      ]
+    },
+    {
+      "output": "zpm_crystal_resonator",
+      "tier": "zpm",
+      "method": "assembly_line",
+      "duration": 1800,
+      "ingredients": [
+        {
+          "item": "gtceu:zpm_machine_hull",
+          "count": 2
+        },
+        {
+          "item": "gtceu:zpm_field_generator",
+          "count": 4
+        },
+        {
+          "item": "gtceu:zpm_sensor",
+          "count": 4
+        },
+        {
+          "item": "gtceu:zpm_emitter",
+          "count": 4
+        },
+        {
+          "tag": "gtceu:circuits/zpm",
+          "count": 8
+        },
+        {
+          "item": "gtceu:naquadah_alloy_plate",
+          "count": 16
+        },
+        {
+          "item": "minecraft:end_crystal",
+          "count": 8
+        },
+        {
+          "item": "gtl_enhancedcore:luv_crystal_resonator",
+          "count": 1
+        }
+      ],
+      "fluids": [
+        {
+          "fluid": "gtceu:soldering_alloy",
+          "amount": 4032
+        }
+      ]
+    },
+    {
+      "output": "uv_crystal_resonator",
+      "tier": "uv",
+      "method": "assembly_line",
+      "duration": 2000,
+      "ingredients": [
+        {
+          "item": "gtceu:uv_machine_hull",
+          "count": 2
+        },
+        {
+          "item": "gtceu:uv_field_generator",
+          "count": 4
+        },
+        {
+          "item": "gtceu:uv_sensor",
+          "count": 4
+        },
+        {
+          "item": "gtceu:uv_emitter",
+          "count": 4
+        },
+        {
+          "tag": "gtceu:circuits/uv",
+          "count": 8
+        },
+        {
+          "item": "gtceu:darmstadtium_plate",
+          "count": 16
+        },
+        {
+          "item": "minecraft:end_crystal",
+          "count": 8
+        },
+        {
+          "item": "gtl_enhancedcore:zpm_crystal_resonator",
+          "count": 1
+        }
+      ],
+      "fluids": [
+        {
+          "fluid": "gtceu:soldering_alloy",
+          "amount": 4608
+        }
+      ]
+    },
+    {
+      "output": "uhv_crystal_resonator",
+      "tier": "uhv",
+      "method": "assembly_line",
+      "duration": 2200,
+      "ingredients": [
+        {
+          "item": "gtceu:uhv_machine_hull",
+          "count": 2
+        },
+        {
+          "item": "gtceu:uhv_field_generator",
+          "count": 4
+        },
+        {
+          "item": "gtceu:uhv_sensor",
+          "count": 4
+        },
+        {
+          "item": "gtceu:uhv_emitter",
+          "count": 4
+        },
+        {
+          "tag": "gtceu:circuits/uhv",
+          "count": 8
+        },
+        {
+          "item": "gtceu:neutronium_plate",
+          "count": 16
+        },
+        {
+          "item": "minecraft:end_crystal",
+          "count": 8
+        },
+        {
+          "item": "gtl_enhancedcore:uv_crystal_resonator",
+          "count": 1
+        }
+      ],
+      "fluids": [
+        {
+          "fluid": "gtceu:soldering_alloy",
+          "amount": 4608
+        }
+      ]
+    },
+    {
+      "output": "uev_crystal_resonator",
+      "tier": "uev",
+      "method": "assembly_line",
+      "duration": 2400,
+      "ingredients": [
+        {
+          "item": "gtceu:uev_machine_hull",
+          "count": 2
+        },
+        {
+          "item": "gtceu:uev_field_generator",
+          "count": 4
+        },
+        {
+          "item": "gtceu:uev_sensor",
+          "count": 4
+        },
+        {
+          "item": "gtceu:uev_emitter",
+          "count": 4
+        },
+        {
+          "tag": "gtceu:circuits/uev",
+          "count": 8
+        },
+        {
+          "item": "gtceu:quantanium_plate",
+          "count": 16
+        },
+        {
+          "item": "minecraft:end_crystal",
+          "count": 8
+        },
+        {
+          "item": "gtl_enhancedcore:uhv_crystal_resonator",
+          "count": 1
+        }
+      ],
+      "fluids": [
+        {
+          "fluid": "gtceu:soldering_alloy",
+          "amount": 4608
+        }
+      ]
+    },
+    {
+      "output": "uiv_crystal_resonator",
+      "tier": "uiv",
+      "method": "assembly_line",
+      "duration": 2600,
+      "ingredients": [
+        {
+          "item": "gtceu:uiv_machine_hull",
+          "count": 2
+        },
+        {
+          "item": "gtceu:uiv_field_generator",
+          "count": 4
+        },
+        {
+          "item": "gtceu:uiv_sensor",
+          "count": 4
+        },
+        {
+          "item": "gtceu:uiv_emitter",
+          "count": 4
+        },
+        {
+          "tag": "gtceu:circuits/uiv",
+          "count": 8
+        },
+        {
+          "item": "gtceu:adamantium_plate",
+          "count": 16
+        },
+        {
+          "item": "minecraft:end_crystal",
+          "count": 8
+        },
+        {
+          "item": "gtl_enhancedcore:uev_crystal_resonator",
+          "count": 1
+        }
+      ],
+      "fluids": [
+        {
+          "fluid": "gtceu:soldering_alloy",
+          "amount": 4608
+        }
+      ]
+    },
+    {
+      "output": "uxv_crystal_resonator",
+      "tier": "uxv",
+      "method": "assembly_line",
+      "duration": 2800,
+      "ingredients": [
+        {
+          "item": "gtceu:uxv_machine_hull",
+          "count": 2
+        },
+        {
+          "item": "gtceu:uxv_field_generator",
+          "count": 4
+        },
+        {
+          "item": "gtceu:uxv_sensor",
+          "count": 4
+        },
+        {
+          "item": "gtceu:uxv_emitter",
+          "count": 4
+        },
+        {
+          "tag": "gtceu:circuits/uxv",
+          "count": 8
+        },
+        {
+          "item": "gtceu:vibranium_plate",
+          "count": 16
+        },
+        {
+          "item": "minecraft:end_crystal",
+          "count": 8
+        },
+        {
+          "item": "gtl_enhancedcore:uiv_crystal_resonator",
+          "count": 1
+        }
+      ],
+      "fluids": [
+        {
+          "fluid": "gtceu:soldering_alloy",
+          "amount": 4608
+        }
+      ]
+    },
+    {
+      "output": "opv_crystal_resonator",
+      "tier": "opv",
+      "method": "assembly_line",
+      "duration": 3000,
+      "ingredients": [
+        {
+          "item": "gtceu:opv_machine_hull",
+          "count": 2
+        },
+        {
+          "item": "gtceu:opv_field_generator",
+          "count": 4
+        },
+        {
+          "item": "gtceu:opv_sensor",
+          "count": 4
+        },
+        {
+          "item": "gtceu:opv_emitter",
+          "count": 4
+        },
+        {
+          "tag": "gtceu:circuits/opv",
+          "count": 8
+        },
+        {
+          "item": "gtceu:draconium_plate",
+          "count": 16
+        },
+        {
+          "item": "minecraft:end_crystal",
+          "count": 8
+        },
+        {
+          "item": "gtl_enhancedcore:uxv_crystal_resonator",
+          "count": 1
+        }
+      ],
+      "fluids": [
+        {
+          "fluid": "gtceu:soldering_alloy",
+          "amount": 4608
+        }
+      ]
+    },
+    {
+      "output": "max_crystal_resonator",
+      "tier": "max",
+      "method": "assembly_line",
+      "duration": 3200,
+      "ingredients": [
+        {
+          "item": "gtceu:max_machine_hull",
+          "count": 2
+        },
+        {
+          "item": "gtlcore:max_field_generator",
+          "count": 4
+        },
+        {
+          "item": "gtlcore:max_sensor",
+          "count": 4
+        },
+        {
+          "item": "gtlcore:max_emitter",
+          "count": 4
+        },
+        {
+          "tag": "gtceu:circuits/max",
+          "count": 8
+        },
+        {
+          "item": "gtceu:chaos_plate",
+          "count": 16
+        },
+        {
+          "item": "minecraft:end_crystal",
+          "count": 8
+        },
+        {
+          "item": "gtl_enhancedcore:opv_crystal_resonator",
+          "count": 1
+        }
+      ],
+      "fluids": [
+        {
+          "fluid": "gtceu:soldering_alloy",
+          "amount": 4608
+        }
+      ]
+    },
+    {
+      "output": "platinum_refining_matrix",
+      "tier": "iv",
+      "method": "assembler",
+      "duration": 1200,
+      "ingredients": [
+        {
+          "item": "gtceu:iv_chemical_bath",
+          "count": 3
+        },
+        {
+          "item": "gtceu:iv_electrolyzer",
+          "count": 2
+        },
+        {
+          "item": "gtceu:hv_dehydrator",
+          "count": 1
+        },
+        {
+          "item": "gtceu:ev_centrifuge",
+          "count": 2
+        },
+        {
+          "item": "gtceu:nano_processor_computer",
+          "count": 5
+        },
+        {
+          "tag": "gtceu:circuits/iv",
+          "count": 4
+        }
+      ],
+      "fluids": [
+        {
+          "fluid": "gtceu:soldering_alloy",
+          "amount": 288
+        }
+      ]
+    },
+    {
+      "output": "void_constrained_mining_field",
+      "tier": "zpm",
+      "method": "assembler",
+      "duration": 2400,
+      "ingredients": [
+        {
+          "item": "gtceu:large_void_miner",
+          "count": 5
+        },
+        {
+          "item": "gtceu:wetware_processor_mainframe",
+          "count": 7
+        },
+        {
+          "item": "gtceu:zpm_field_generator",
+          "count": 32
+        },
+        {
+          "item": "gtceu:enriched_naquadah_trinium_europium_duranide_quadruple_wire",
+          "count": 12
+        },
+        {
+          "item": "gtceu:dense_naquadah_alloy_plate",
+          "count": 25
+        },
+        {
+          "tag": "gtceu:circuits/zpm",
+          "count": 8
+        }
+      ],
+      "fluids": [
+        {
+          "fluid": "gtceu:uranium",
+          "amount": 255
+        }
+      ]
+    },
+    {
+      "output": "dragon_field_proliferation_core",
+      "tier": "uev",
+      "method": "assembly_line",
+      "duration": 600,
+      "ingredients": [
+        {
+          "item": "kubejs:exotic_mainframe",
+          "count": 23
+        },
+        {
+          "item": "gtceu:holy_separator",
+          "count": 1
+        },
+        {
+          "item": "gtceu:large_chemical_plant",
+          "count": 1
+        },
+        {
+          "item": "gtceu:mega_alloy_blast_smelter",
+          "count": 1
+        },
+        {
+          "item": "kubejs:draconic_core",
+          "count": 5
+        },
+        {
+          "item": "minecraft:dragon_egg",
+          "count": 128
+        },
+        {
+          "item": "minecraft:dragon_head",
+          "count": 1
+        },
+        {
+          "tag": "gtceu:circuits/uev",
+          "count": 8
+        }
+      ],
+      "fluids": []
+    },
+    {
+      "output": "hyperstructural_chemical_distorter",
+      "tier": "uev",
+      "method": "assembly_line",
+      "duration": 3600,
+      "ingredients": [
+        {
+          "item": "gtceu:chemical_distort",
+          "count": 4
+        },
+        {
+          "item": "gtceu:uev_machine_hull",
+          "count": 16
+        },
+        {
+          "item": "gtceu:uev_field_generator",
+          "count": 32
+        },
+        {
+          "item": "gtceu:uev_electric_pump",
+          "count": 32
+        },
+        {
+          "item": "gtceu:uev_robot_arm",
+          "count": 16
+        },
+        {
+          "item": "gtceu:uev_emitter",
+          "count": 16
+        },
+        {
+          "item": "gtceu:uev_sensor",
+          "count": 16
+        },
+        {
+          "item": "gtlcore:uev_hermetic_casing",
+          "count": 32
+        },
+        {
+          "item": "gtceu:tritanium_frame",
+          "count": 16
+        },
+        {
+          "item": "kubejs:containment_field_generator",
+          "count": 8
+        },
+        {
+          "item": "kubejs:exotic_mainframe",
+          "count": 16
+        },
+        {
+          "tag": "gtceu:circuits/uev",
+          "count": 8
+        }
+      ],
+      "fluids": [
+        {
+          "fluid": "gtceu:soldering_alloy",
+          "amount": 4608
+        },
+        {
+          "fluid": "gtceu:polyetheretherketone",
+          "amount": 2304
+        }
+      ]
+    },
+    {
+      "output": "stellar_confinement_fusion_reactor",
+      "tier": "uiv",
+      "method": "assembly_line",
+      "duration": 7200,
+      "ingredients": [
+        {
+          "item": "gtceu:uev_fusion_reactor",
+          "count": 4
+        },
+        {
+          "item": "gtceu:uiv_machine_hull",
+          "count": 16
+        },
+        {
+          "item": "gtceu:uiv_field_generator",
+          "count": 32
+        },
+        {
+          "item": "gtceu:uiv_electric_pump",
+          "count": 32
+        },
+        {
+          "item": "gtceu:uiv_emitter",
+          "count": 16
+        },
+        {
+          "item": "gtceu:uiv_sensor",
+          "count": 16
+        },
+        {
+          "item": "gtceu:uiv_robot_arm",
+          "count": 16
+        },
+        {
+          "item": "gtlcore:fusion_casing_mk5",
+          "count": 32
+        },
+        {
+          "item": "gtlcore:fusion_coil_mk2",
+          "count": 32
+        },
+        {
+          "item": "gtceu:tritanium_frame",
+          "count": 32
+        },
+        {
+          "item": "kubejs:containment_field_generator",
+          "count": 16
+        },
+        {
+          "item": "kubejs:cosmic_mainframe",
+          "count": 16
+        },
+        {
+          "tag": "gtceu:circuits/uiv",
+          "count": 8
+        }
+      ],
+      "fluids": [
+        {
+          "fluid": "gtceu:soldering_alloy",
+          "amount": 9216
+        },
+        {
+          "fluid": "gtceu:polyetheretherketone",
+          "amount": 4608
+        }
+      ]
+    }
+  ]
+}

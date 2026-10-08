@@ -1,0 +1,12 @@
+{
+  "loader": "forge:obj",
+  "flip_v": false,
+  "automatic_culling": false,
+  "shade_quads": false,
+  "emissive_ambient": true,
+  "model": "gtl_enhancedcore:models/obj/causality_yang.obj",
+  "textures": {
+    "texture0": "gtl_enhancedcore:block/obj/causality_yang_layer",
+    "particle": "gtl_enhancedcore:block/obj/causality_yang_layer"
+  }
+}

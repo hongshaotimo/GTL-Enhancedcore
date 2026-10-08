@@ -1,0 +1,1730 @@
+{
+  "advanced_vacuum_drying_furnace": {
+    "originalSize": [
+      19,
+      14,
+      27
+    ],
+    "sourceSize": [
+      73,
+      78,
+      72
+    ],
+    "size": [
+      73,
+      78,
+      72
+    ],
+    "sourceController": [
+      16,
+      21,
+      11
+    ],
+    "sourceNormal": [
+      0,
+      0,
+      -1
+    ],
+    "controllerPosition": [
+      56,
+      21,
+      60
+    ],
+    "bindings": {
+      " ": {
+        "mode": "any"
+      },
+      "@": {
+        "mode": "original",
+        "sample": [
+          24,
+          3,
+          4
+        ]
+      },
+      "#": {
+        "mode": "hatch",
+        "sample": [
+          24,
+          2,
+          3
+        ],
+        "block": "gtceu:high_power_casing",
+        "fallback": "gtceu:high_power_casing"
+      },
+      "A": {
+        "mode": "original",
+        "sample": [
+          0,
+          6,
+          12
+        ],
+        "block": "gtceu:assembly_line_grating"
+      },
+      "B": {
+        "mode": "original",
+        "sample": [
+          1,
+          1,
+          2
+        ],
+        "block": "gtceu:clean_machine_casing"
+      },
+      "C": {
+        "mode": "original",
+        "sample": [
+          22,
+          1,
+          2
+        ],
+        "block": "gtceu:computer_casing"
+      },
+      "D": {
+        "mode": "original",
+        "sample": [
+          23,
+          3,
+          2
+        ],
+        "block": "gtceu:computer_heat_vent"
+      },
+      "E": {
+        "mode": "original",
+        "sample": [
+          2,
+          3,
+          12
+        ],
+        "block": "gtceu:cupronickel_coil_block"
+      },
+      "F": {
+        "mode": "original",
+        "sample": [
+          25,
+          6,
+          12
+        ],
+        "block": "gtceu:filter_casing"
+      },
+      "G": {
+        "mode": "casing",
+        "sample": [
+          24,
+          2,
+          3
+        ],
+        "block": "gtceu:high_power_casing"
+      },
+      "H": {
+        "mode": "original",
+        "sample": [
+          24,
+          3,
+          12
+        ],
+        "block": "gtceu:luv_hermetic_casing"
+      },
+      "I": {
+        "mode": "original",
+        "sample": [
+          0,
+          1,
+          3
+        ],
+        "block": "gtceu:stainless_steel_turbine_casing"
+      },
+      "J": {
+        "mode": "original",
+        "sample": [
+          24,
+          6,
+          8
+        ],
+        "block": "gtceu:tungstensteel_gearbox"
+      },
+      "K": {
+        "mode": "original",
+        "sample": [
+          2,
+          3,
+          13
+        ],
+        "block": "gtceu:tungstensteel_pipe_casing"
+      },
+      "L": {
+        "mode": "original",
+        "sample": [
+          0,
+          0,
+          10
+        ],
+        "block": "gtceu:tungstensteel_turbine_casing"
+      },
+      "M": {
+        "mode": "original",
+        "sample": [
+          0,
+          2,
+          13
+        ],
+        "block": "gtlcore:iridium_casing"
+      },
+      "N": {
+        "mode": "original",
+        "sample": [
+          1,
+          2,
+          11
+        ],
+        "block": "kubejs:red_steel_casing"
+      }
+    },
+    "counts": {
+      " ": 315437,
+      "J": 197,
+      "L": 25877,
+      "G": 453,
+      "K": 3011,
+      "M": 10614,
+      "F": 168,
+      "D": 1099,
+      "H": 19127,
+      "I": 21319,
+      "A": 1463,
+      "C": 3965,
+      "B": 3803,
+      "E": 1906,
+      "N": 1504,
+      "#": 24,
+      "@": 1
+    },
+    "hatches": [
+      "#"
+    ],
+    "controller": "@",
+    "diamondOreMarkers": 24,
+    "hatchFallback": "gtceu:high_power_casing",
+    "sourceSha256": "c491e303398ac22ab605cd8dc37f7eb2762c0928eab523d1979ab0af8438fcb6",
+    "sha256": "624c1dd68d56ad32aadf2ead304c503e947c887d0cb326613d5d6066157a692b"
+  },
+  "cooling_tower": {
+    "originalSize": [
+      64,
+      69,
+      64
+    ],
+    "sourceSize": [
+      89,
+      122,
+      89
+    ],
+    "size": [
+      89,
+      122,
+      89
+    ],
+    "sourceController": [
+      44,
+      25,
+      0
+    ],
+    "sourceNormal": [
+      0,
+      0,
+      -1
+    ],
+    "controllerPosition": [
+      44,
+      25,
+      88
+    ],
+    "bindings": {
+      " ": {
+        "mode": "any"
+      },
+      "@": {
+        "mode": "original",
+        "sample": [
+          60,
+          0,
+          31
+        ]
+      },
+      "#": {
+        "mode": "hatch",
+        "sample": [
+          2,
+          0,
+          26
+        ],
+        "block": "gtceu:frostproof_machine_casing",
+        "fallback": "gtceu:frostproof_machine_casing"
+      },
+      "A": {
+        "mode": "original",
+        "sample": [
+          3,
+          0,
+          25
+        ],
+        "block": "gtceu:clean_machine_casing"
+      },
+      "B": {
+        "mode": "original",
+        "sample": [
+          3,
+          2,
+          22
+        ],
+        "block": "gtceu:extreme_engine_intake_casing"
+      },
+      "C": {
+        "mode": "casing",
+        "sample": [
+          2,
+          0,
+          26
+        ],
+        "block": "gtceu:frostproof_machine_casing"
+      },
+      "D": {
+        "mode": "original",
+        "sample": [
+          3,
+          2,
+          23
+        ],
+        "block": "gtceu:heat_vent"
+      },
+      "E": {
+        "mode": "original",
+        "sample": [
+          2,
+          9,
+          28
+        ],
+        "block": "gtceu:laminated_glass"
+      },
+      "F": {
+        "mode": "original",
+        "sample": [
+          7,
+          24,
+          30
+        ],
+        "block": "gtceu:luv_machine_casing"
+      },
+      "G": {
+        "mode": "original",
+        "sample": [
+          2,
+          4,
+          28
+        ],
+        "block": "gtceu:tungstensteel_gearbox"
+      },
+      "H": {
+        "mode": "original",
+        "sample": [
+          18,
+          8,
+          18
+        ],
+        "block": "gtceu:tungstensteel_pipe_casing"
+      },
+      "I": {
+        "mode": "original",
+        "sample": [
+          3,
+          1,
+          31
+        ],
+        "block": "gtceu:watertight_casing"
+      },
+      "J": {
+        "mode": "original",
+        "sample": [
+          19,
+          8,
+          28
+        ],
+        "block": "kubejs:laser_cooling_casing"
+      },
+      "K": {
+        "mode": "original",
+        "sample": [
+          23,
+          8,
+          23
+        ],
+        "block": "kubejs:neutronium_pipe_casing"
+      }
+    },
+    "counts": {
+      " ": 863978,
+      "C": 27611,
+      "A": 25346,
+      "E": 504,
+      "D": 21787,
+      "I": 13114,
+      "H": 4223,
+      "B": 1128,
+      "G": 322,
+      "F": 1945,
+      "J": 4042,
+      "K": 2337,
+      "#": 24,
+      "@": 1
+    },
+    "hatches": [
+      "#"
+    ],
+    "controller": "@",
+    "diamondOreMarkers": 24,
+    "hatchFallback": "gtceu:frostproof_machine_casing",
+    "sourceSha256": "2a4f0d60bbeb2310960080ee8eb25682d0e425d4e3fedfd11add450b0e23ae99",
+    "sha256": "b2901990960928b39d5872c1c780c5147e1357052c5fef03669b588e0f5bfdab"
+  },
+  "crystalline_infinity": {
+    "originalSize": [
+      31,
+      32,
+      36
+    ],
+    "sourceSize": [
+      105,
+      105,
+      105
+    ],
+    "size": [
+      105,
+      105,
+      105
+    ],
+    "sourceController": [
+      29,
+      29,
+      24
+    ],
+    "sourceNormal": [
+      0,
+      0,
+      -1
+    ],
+    "controllerPosition": [
+      75,
+      29,
+      80
+    ],
+    "bindings": {
+      " ": {
+        "mode": "any"
+      },
+      "@": {
+        "mode": "original",
+        "sample": [
+          34,
+          0,
+          15
+        ]
+      },
+      "#": {
+        "mode": "hatch",
+        "sample": [
+          0,
+          10,
+          14
+        ],
+        "block": "gtlcore:extreme_strength_tritanium_casing",
+        "fallback": "gtlcore:extreme_strength_tritanium_casing"
+      },
+      "A": {
+        "mode": "original",
+        "sample": [
+          5,
+          14,
+          15
+        ],
+        "block": "gtceu:fusion_glass"
+      },
+      "B": {
+        "mode": "casing",
+        "sample": [
+          0,
+          10,
+          14
+        ],
+        "block": "gtlcore:extreme_strength_tritanium_casing"
+      },
+      "C": {
+        "mode": "original",
+        "sample": [
+          17,
+          16,
+          15
+        ],
+        "block": "gtlcore:hyper_core"
+      },
+      "D": {
+        "mode": "casing",
+        "sample": [
+          0,
+          10,
+          14
+        ],
+        "block": "gtlcore:extreme_strength_tritanium_casing"
+      },
+      "E": {
+        "mode": "original",
+        "sample": [
+          1,
+          16,
+          15
+        ],
+        "block": "kubejs:hollow_casing"
+      },
+      "F": {
+        "mode": "original",
+        "sample": [
+          1,
+          15,
+          15
+        ],
+        "block": "kubejs:molecular_coil"
+      }
+    },
+    "counts": {
+      " ": 1117564,
+      "B": 18674,
+      "E": 3389,
+      "F": 4528,
+      "D": 4396,
+      "A": 9048,
+      "C": 1,
+      "#": 24,
+      "@": 1
+    },
+    "hatches": [
+      "#"
+    ],
+    "controller": "@",
+    "diamondOreMarkers": 24,
+    "hatchFallback": "gtlcore:extreme_strength_tritanium_casing",
+    "sourceSha256": "8640fca4fde90168c5b8343caafbf12d5f282ea60bf21d5fd3a961fe8632aaab",
+    "sha256": "ea09be33082a0e316cbe85c978f0deedb1ab4bc5fd185486632fd062d2796122",
+    "casingReplacements": {
+      "gtlcore:molecular_casing": "gtlcore:extreme_strength_tritanium_casing"
+    }
+  },
+  "dimensional_focus_engraving_array": {
+    "originalSize": [
+      89,
+      89,
+      89
+    ],
+    "sourceSize": [
+      109,
+      109,
+      109
+    ],
+    "size": [
+      109,
+      109,
+      109
+    ],
+    "sourceController": [
+      20,
+      76,
+      54
+    ],
+    "sourceNormal": [
+      -1,
+      0,
+      0
+    ],
+    "controllerPosition": [
+      54,
+      76,
+      88
+    ],
+    "bindings": {
+      " ": {
+        "mode": "any"
+      },
+      "@": {
+        "mode": "original",
+        "sample": [
+          44,
+          62,
+          22
+        ]
+      },
+      "#": {
+        "mode": "hatch",
+        "sample": [
+          6,
+          41,
+          43
+        ],
+        "block": "gtceu:laser_safe_engraving_casing",
+        "fallback": "gtceu:laser_safe_engraving_casing"
+      },
+      "A": {
+        "mode": "original",
+        "sample": [
+          7,
+          40,
+          43
+        ],
+        "block": "gtceu:cupronickel_coil_block"
+      },
+      "B": {
+        "mode": "original",
+        "sample": [
+          1,
+          43,
+          44
+        ],
+        "block": "gtceu:fusion_glass"
+      },
+      "C": {
+        "mode": "casing",
+        "sample": [
+          6,
+          41,
+          43
+        ],
+        "block": "gtceu:laser_safe_engraving_casing"
+      },
+      "D": {
+        "mode": "original",
+        "sample": [
+          2,
+          41,
+          43
+        ],
+        "block": "gtlcore:dimension_injection_casing"
+      },
+      "E": {
+        "mode": "original",
+        "sample": [
+          0,
+          44,
+          44
+        ],
+        "block": "gtlcore:dimensionally_transcendent_casing"
+      },
+      "F": {
+        "mode": "original",
+        "sample": [
+          5,
+          42,
+          44
+        ],
+        "block": "gtlcore:improved_superconductor_coil"
+      },
+      "G": {
+        "mode": "original",
+        "sample": [
+          3,
+          42,
+          44
+        ],
+        "block": "kubejs:containment_field_generator"
+      },
+      "H": {
+        "mode": "original",
+        "sample": [
+          2,
+          42,
+          43
+        ],
+        "block": "kubejs:molecular_coil"
+      }
+    },
+    "counts": {
+      " ": 1250655,
+      "E": 8216,
+      "G": 112,
+      "B": 8433,
+      "D": 8608,
+      "C": 8092,
+      "H": 1580,
+      "F": 4436,
+      "A": 4872,
+      "#": 24,
+      "@": 1
+    },
+    "hatches": [
+      "#"
+    ],
+    "controller": "@",
+    "diamondOreMarkers": 24,
+    "hatchFallback": "gtceu:laser_safe_engraving_casing",
+    "sourceSha256": "6ed6c2f9017039f9c3f85d02a8221cf2b717aad92a7788b3890e31e90f2df381",
+    "sha256": "877401769aba90508200a3b6e4ec95f6353e700b03a88bf59fec81f6df3ac616"
+  },
+  "field_extruder_factory": {
+    "originalSize": [
+      15,
+      9,
+      63
+    ],
+    "sourceSize": [
+      75,
+      59,
+      107
+    ],
+    "size": [
+      75,
+      59,
+      107
+    ],
+    "sourceController": [
+      58,
+      26,
+      9
+    ],
+    "sourceNormal": [
+      0,
+      0,
+      -1
+    ],
+    "controllerPosition": [
+      16,
+      26,
+      97
+    ],
+    "bindings": {
+      " ": {
+        "mode": "any"
+      },
+      "@": {
+        "mode": "original",
+        "sample": [
+          62,
+          1,
+          7
+        ]
+      },
+      "#": {
+        "mode": "hatch",
+        "sample": [
+          0,
+          0,
+          0
+        ],
+        "block": "gtlcore:iridium_casing",
+        "fallback": "gtlcore:iridium_casing"
+      },
+      "A": {
+        "mode": "original",
+        "sample": [
+          1,
+          2,
+          6
+        ],
+        "block": "gtceu:cleanroom_glass"
+      },
+      "B": {
+        "mode": "original",
+        "sample": [
+          0,
+          0,
+          2
+        ],
+        "block": "gtlcore:hyper_mechanical_casing"
+      },
+      "C": {
+        "mode": "casing",
+        "sample": [
+          0,
+          0,
+          0
+        ],
+        "block": "gtlcore:iridium_casing"
+      },
+      "D": {
+        "mode": "original",
+        "sample": [
+          1,
+          1,
+          6
+        ],
+        "block": "gtlcore:molecular_casing"
+      },
+      "E": {
+        "mode": "original",
+        "sample": [
+          1,
+          1,
+          7
+        ],
+        "block": "kubejs:containment_field_generator"
+      },
+      "F": {
+        "mode": "original",
+        "sample": [
+          1,
+          1,
+          3
+        ],
+        "block": "kubejs:hollow_casing"
+      }
+    },
+    "counts": {
+      " ": 403700,
+      "C": 22491,
+      "D": 14213,
+      "B": 22628,
+      "E": 1161,
+      "F": 2847,
+      "A": 6410,
+      "#": 24,
+      "@": 1
+    },
+    "hatches": [
+      "#"
+    ],
+    "controller": "@",
+    "diamondOreMarkers": 24,
+    "hatchFallback": "gtlcore:iridium_casing",
+    "sourceSha256": "2c6320f6b89260bc8d54a4b61d358d54c8260772f34d8cb004cdfd1191b19c6a",
+    "sha256": "94b1fc542cef4ea1ad4a0ef4e5944468326975c6980023a5355839b658dea5e4"
+  },
+  "holy_separator": {
+    "originalSize": [
+      15,
+      71,
+      15
+    ],
+    "sourceSize": [
+      113,
+      105,
+      53
+    ],
+    "size": [
+      113,
+      105,
+      53
+    ],
+    "sourceController": [
+      56,
+      22,
+      13
+    ],
+    "sourceNormal": [
+      0,
+      0,
+      -1
+    ],
+    "controllerPosition": [
+      56,
+      22,
+      39
+    ],
+    "bindings": {
+      " ": {
+        "mode": "any"
+      },
+      "@": {
+        "mode": "original",
+        "sample": [
+          14,
+          1,
+          7
+        ]
+      },
+      "#": {
+        "mode": "hatch",
+        "sample": [
+          1,
+          0,
+          4
+        ],
+        "block": "gtlcore:iridium_casing",
+        "fallback": "gtlcore:iridium_casing"
+      },
+      "A": {
+        "mode": "original",
+        "sample": [
+          6,
+          3,
+          7
+        ],
+        "block": "gtceu:fusion_glass"
+      },
+      "B": {
+        "mode": "original",
+        "sample": [
+          0,
+          6,
+          7
+        ],
+        "block": "gtceu:high_power_casing"
+      },
+      "C": {
+        "mode": "original",
+        "sample": [
+          2,
+          0,
+          6
+        ],
+        "block": "gtlcore:hyper_mechanical_casing"
+      },
+      "D": {
+        "mode": "casing",
+        "sample": [
+          1,
+          0,
+          4
+        ],
+        "block": "gtlcore:iridium_casing"
+      },
+      "E": {
+        "mode": "original",
+        "sample": [
+          2,
+          70,
+          6
+        ],
+        "block": "gtlcore:molecular_casing"
+      },
+      "F": {
+        "mode": "original",
+        "sample": [
+          0,
+          5,
+          7
+        ],
+        "block": "kubejs:containment_field_generator"
+      },
+      "G": {
+        "mode": "original",
+        "sample": [
+          7,
+          3,
+          7
+        ],
+        "block": "kubejs:hollow_casing"
+      }
+    },
+    "counts": {
+      " ": 596120,
+      "B": 3235,
+      "E": 2418,
+      "D": 13910,
+      "G": 916,
+      "F": 610,
+      "C": 9673,
+      "A": 1938,
+      "#": 24,
+      "@": 1
+    },
+    "hatches": [
+      "#"
+    ],
+    "controller": "@",
+    "diamondOreMarkers": 24,
+    "hatchFallback": "gtlcore:iridium_casing",
+    "sourceSha256": "ecfb0e1de65ac9269a6665fa356c4c456ea48b65079a3350934d4f63420bd727",
+    "sha256": "1b99343307cd73bd3a06ff930a5849fecdc0808383049c809f83ced65414c54d"
+  },
+  "mega_canner": {
+    "originalSize": [
+      9,
+      18,
+      15
+    ],
+    "sourceSize": [
+      94,
+      59,
+      84
+    ],
+    "size": [
+      84,
+      59,
+      94
+    ],
+    "sourceController": [
+      0,
+      24,
+      52
+    ],
+    "sourceNormal": [
+      -1,
+      0,
+      0
+    ],
+    "controllerPosition": [
+      52,
+      24,
+      93
+    ],
+    "bindings": {
+      " ": {
+        "mode": "any"
+      },
+      "@": {
+        "mode": "original",
+        "sample": [
+          14,
+          2,
+          4
+        ]
+      },
+      "#": {
+        "mode": "hatch",
+        "sample": [
+          0,
+          0,
+          0
+        ],
+        "block": "gtlcore:lafium_mechanical_casing",
+        "fallback": "gtlcore:lafium_mechanical_casing"
+      },
+      "A": {
+        "mode": "original",
+        "sample": [
+          3,
+          11,
+          4
+        ],
+        "block": "gtceu:laminated_glass"
+      },
+      "B": {
+        "mode": "original",
+        "sample": [
+          2,
+          8,
+          4
+        ],
+        "block": "gtceu:stress_proof_casing"
+      },
+      "C": {
+        "mode": "original",
+        "sample": [
+          4,
+          6,
+          4
+        ],
+        "block": "gtceu:superconducting_coil"
+      },
+      "D": {
+        "mode": "original",
+        "sample": [
+          3,
+          10,
+          3
+        ],
+        "block": "gtceu:uv_machine_casing"
+      },
+      "E": {
+        "mode": "original",
+        "sample": [
+          2,
+          9,
+          3
+        ],
+        "block": "gtlcore:enhance_hyper_mechanical_casing"
+      },
+      "F": {
+        "mode": "casing",
+        "sample": [
+          0,
+          0,
+          0
+        ],
+        "block": "gtlcore:lafium_mechanical_casing"
+      }
+    },
+    "counts": {
+      " ": 415467,
+      "B": 17752,
+      "A": 6265,
+      "F": 18078,
+      "E": 4756,
+      "D": 1744,
+      "C": 1777,
+      "#": 24,
+      "@": 1
+    },
+    "hatches": [
+      "#"
+    ],
+    "controller": "@",
+    "diamondOreMarkers": 24,
+    "hatchFallback": "gtlcore:lafium_mechanical_casing",
+    "sourceSha256": "3dd1b81bf10be3f31f1db7b1a9ee7da470da1ba1671daa57d841cf28fc933a1d",
+    "sha256": "27fd19d643f0f0d158a61d7c6139859d076fd9a86cf2dc02235c877d4316daec"
+  },
+  "mega_distillery": {
+    "originalSize": [
+      31,
+      52,
+      31
+    ],
+    "sourceSize": [
+      87,
+      140,
+      62
+    ],
+    "size": [
+      87,
+      140,
+      62
+    ],
+    "sourceController": [
+      43,
+      15,
+      4
+    ],
+    "sourceNormal": [
+      0,
+      0,
+      -1
+    ],
+    "controllerPosition": [
+      43,
+      15,
+      57
+    ],
+    "bindings": {
+      " ": {
+        "mode": "any"
+      },
+      "@": {
+        "mode": "original",
+        "sample": [
+          30,
+          5,
+          15
+        ]
+      },
+      "#": {
+        "mode": "hatch",
+        "sample": [
+          0,
+          2,
+          12
+        ],
+        "block": "gtceu:clean_machine_casing",
+        "fallback": "gtceu:clean_machine_casing"
+      },
+      "A": {
+        "mode": "casing",
+        "sample": [
+          0,
+          2,
+          12
+        ],
+        "block": "gtceu:clean_machine_casing"
+      },
+      "B": {
+        "mode": "original",
+        "sample": [
+          1,
+          4,
+          14
+        ],
+        "block": "gtceu:tritanium_coil_block"
+      },
+      "C": {
+        "mode": "original",
+        "sample": [
+          0,
+          8,
+          12
+        ],
+        "block": "gtceu:watertight_casing"
+      },
+      "D": {
+        "mode": "casing",
+        "sample": [
+          0,
+          2,
+          12
+        ],
+        "block": "gtceu:clean_machine_casing"
+      }
+    },
+    "counts": {
+      " ": 672298,
+      "C": 24242,
+      "A": 40256,
+      "D": 17369,
+      "B": 970,
+      "#": 24,
+      "@": 1
+    },
+    "hatches": [
+      "#"
+    ],
+    "controller": "@",
+    "diamondOreMarkers": 24,
+    "hatchFallback": "gtceu:clean_machine_casing",
+    "sourceSha256": "43427f83f7abb8694891fb741edc9cd5569b59b96d0fc2b49601a7aa6ca3e800",
+    "sha256": "89df217d0f611a94f5960f5c4501116e8462f7b9ea15993bd857def106fb61ac",
+    "casingReplacements": {
+      "gtlcore:uev_hermetic_casing": "gtceu:clean_machine_casing"
+    }
+  },
+  "mega_extractor": {
+    "originalSize": [
+      15,
+      20,
+      15
+    ],
+    "sourceSize": [
+      73,
+      99,
+      60
+    ],
+    "size": [
+      73,
+      99,
+      60
+    ],
+    "sourceController": [
+      32,
+      21,
+      11
+    ],
+    "sourceNormal": [
+      0,
+      0,
+      -1
+    ],
+    "controllerPosition": [
+      40,
+      21,
+      48
+    ],
+    "bindings": {
+      " ": {
+        "mode": "any"
+      },
+      "@": {
+        "mode": "original",
+        "sample": [
+          14,
+          1,
+          7
+        ]
+      },
+      "#": {
+        "mode": "hatch",
+        "sample": [
+          0,
+          0,
+          6
+        ],
+        "block": "gtlcore:hyper_mechanical_casing",
+        "fallback": "gtlcore:hyper_mechanical_casing"
+      },
+      "A": {
+        "mode": "original",
+        "sample": [
+          5,
+          2,
+          7
+        ],
+        "block": "gtceu:cupronickel_coil_block"
+      },
+      "B": {
+        "mode": "original",
+        "sample": [
+          7,
+          2,
+          7
+        ],
+        "block": "gtceu:tungstensteel_pipe_casing"
+      },
+      "C": {
+        "mode": "casing",
+        "sample": [
+          0,
+          0,
+          6
+        ],
+        "block": "gtlcore:hyper_mechanical_casing"
+      },
+      "D": {
+        "mode": "original",
+        "sample": [
+          4,
+          9,
+          7
+        ],
+        "block": "gtlcore:iridium_casing"
+      },
+      "E": {
+        "mode": "casing",
+        "sample": [
+          0,
+          0,
+          6
+        ],
+        "block": "gtlcore:hyper_mechanical_casing"
+      }
+    },
+    "counts": {
+      " ": 397563,
+      "B": 7134,
+      "D": 14892,
+      "E": 6899,
+      "C": 4115,
+      "A": 2992,
+      "#": 24,
+      "@": 1
+    },
+    "hatches": [
+      "#"
+    ],
+    "controller": "@",
+    "diamondOreMarkers": 24,
+    "hatchFallback": "gtlcore:hyper_mechanical_casing",
+    "sourceSha256": "9e33c486f205ef3d66cbde2b9c8f99e2080d899d53627d107d79c201fa39ae69",
+    "sha256": "b339da741cecefc2ac991b65b1a9504c2b460d389c07799fa1760b8b9f1a353d",
+    "casingReplacements": {
+      "gtlcore:molecular_casing": "gtlcore:hyper_mechanical_casing"
+    }
+  },
+  "mega_presser": {
+    "originalSize": [
+      15,
+      15,
+      25
+    ],
+    "sourceSize": [
+      79,
+      74,
+      64
+    ],
+    "size": [
+      79,
+      74,
+      64
+    ],
+    "sourceController": [
+      14,
+      5,
+      17
+    ],
+    "sourceNormal": [
+      0,
+      0,
+      -1
+    ],
+    "controllerPosition": [
+      64,
+      5,
+      46
+    ],
+    "bindings": {
+      " ": {
+        "mode": "any"
+      },
+      "@": {
+        "mode": "original",
+        "sample": [
+          24,
+          7,
+          7
+        ]
+      },
+      "#": {
+        "mode": "hatch",
+        "sample": [
+          0,
+          1,
+          7
+        ],
+        "block": "gtlcore:molecular_casing",
+        "fallback": "gtlcore:molecular_casing"
+      },
+      "A": {
+        "mode": "original",
+        "sample": [
+          1,
+          6,
+          7
+        ],
+        "block": "gtceu:assembly_line_unit"
+      },
+      "B": {
+        "mode": "original",
+        "sample": [
+          8,
+          4,
+          6
+        ],
+        "block": "gtceu:cupronickel_coil_block"
+      },
+      "C": {
+        "mode": "original",
+        "sample": [
+          1,
+          2,
+          5
+        ],
+        "block": "gtceu:superconducting_coil"
+      },
+      "D": {
+        "mode": "original",
+        "sample": [
+          5,
+          1,
+          5
+        ],
+        "block": "gtceu:tempered_glass"
+      },
+      "E": {
+        "mode": "original",
+        "sample": [
+          0,
+          1,
+          5
+        ],
+        "block": "gtlcore:iridium_casing"
+      },
+      "F": {
+        "mode": "casing",
+        "sample": [
+          0,
+          1,
+          7
+        ],
+        "block": "gtlcore:molecular_casing"
+      }
+    },
+    "counts": {
+      " ": 298483,
+      "E": 17299,
+      "F": 50117,
+      "D": 187,
+      "C": 5630,
+      "B": 504,
+      "A": 1899,
+      "#": 24,
+      "@": 1
+    },
+    "hatches": [
+      "#"
+    ],
+    "controller": "@",
+    "diamondOreMarkers": 24,
+    "hatchFallback": "gtlcore:molecular_casing",
+    "sourceSha256": "7c06e7d4bed410f97452cacaff23b796f55cec4ee5b365af65f29b9b3b55272c",
+    "sha256": "1f20980236d9b53f83fcb9d82766b23e7d4c9e305a17a5434d54529ab244e257"
+  },
+  "mega_wiremill": {
+    "originalSize": [
+      7,
+      7,
+      27
+    ],
+    "sourceSize": [
+      79,
+      55,
+      102
+    ],
+    "size": [
+      102,
+      55,
+      79
+    ],
+    "sourceController": [
+      0,
+      5,
+      35
+    ],
+    "sourceNormal": [
+      -1,
+      0,
+      0
+    ],
+    "controllerPosition": [
+      35,
+      5,
+      78
+    ],
+    "bindings": {
+      " ": {
+        "mode": "any"
+      },
+      "@": {
+        "mode": "original",
+        "sample": [
+          26,
+          1,
+          3
+        ]
+      },
+      "#": {
+        "mode": "hatch",
+        "sample": [
+          0,
+          0,
+          2
+        ],
+        "block": "gtlcore:oxidation_resistant_hastelloy_n_mechanical_casing",
+        "fallback": "gtlcore:oxidation_resistant_hastelloy_n_mechanical_casing"
+      },
+      "A": {
+        "mode": "original",
+        "sample": [
+          5,
+          3,
+          2
+        ],
+        "block": "gtceu:cupronickel_coil_block"
+      },
+      "B": {
+        "mode": "original",
+        "sample": [
+          5,
+          2,
+          2
+        ],
+        "block": "gtceu:heatproof_machine_casing"
+      },
+      "C": {
+        "mode": "original",
+        "sample": [
+          2,
+          3,
+          2
+        ],
+        "block": "gtlcore:hyper_mechanical_casing"
+      },
+      "D": {
+        "mode": "original",
+        "sample": [
+          0,
+          3,
+          2
+        ],
+        "block": "gtlcore:iridium_casing"
+      },
+      "E": {
+        "mode": "casing",
+        "sample": [
+          0,
+          0,
+          2
+        ],
+        "block": "gtlcore:oxidation_resistant_hastelloy_n_mechanical_casing"
+      },
+      "F": {
+        "mode": "original",
+        "sample": [
+          2,
+          4,
+          3
+        ],
+        "block": "kubejs:hollow_casing"
+      }
+    },
+    "counts": {
+      " ": 371616,
+      "D": 17047,
+      "E": 27008,
+      "C": 15927,
+      "F": 2776,
+      "A": 6164,
+      "B": 2627,
+      "#": 24,
+      "@": 1
+    },
+    "hatches": [
+      "#"
+    ],
+    "controller": "@",
+    "diamondOreMarkers": 24,
+    "hatchFallback": "gtlcore:oxidation_resistant_hastelloy_n_mechanical_casing",
+    "sourceSha256": "ffdef966bb33a9be48f9a5e0763c6ba5e01185f6f0ae1c000589f5996b34268c",
+    "sha256": "950ed2b6b0e8fc5ff096df8bf063a585a9b6bf943561caae8bcda0f2ed4864ce"
+  },
+  "suprachronal_assembly_line": {
+    "originalSize": [
+      35,
+      131,
+      35
+    ],
+    "sourceSize": [
+      71,
+      71,
+      157
+    ],
+    "size": [
+      71,
+      71,
+      157
+    ],
+    "sourceController": [
+      35,
+      35,
+      1
+    ],
+    "sourceNormal": [
+      0,
+      0,
+      -1
+    ],
+    "controllerPosition": [
+      35,
+      35,
+      155
+    ],
+    "bindings": {
+      " ": {
+        "mode": "any"
+      },
+      "@": {
+        "mode": "original",
+        "sample": [
+          17,
+          0,
+          17
+        ]
+      },
+      "#": {
+        "mode": "hatch",
+        "sample": [
+          9,
+          0,
+          15
+        ],
+        "block": "gtlcore:molecular_casing",
+        "fallback": "gtlcore:molecular_casing"
+      },
+      "A": {
+        "mode": "original",
+        "sample": [
+          2,
+          13,
+          15
+        ],
+        "block": "gtceu:filter_casing"
+      },
+      "B": {
+        "mode": "original",
+        "sample": [
+          14,
+          3,
+          16
+        ],
+        "block": "gtceu:fusion_glass"
+      },
+      "C": {
+        "mode": "original",
+        "sample": [
+          9,
+          1,
+          15
+        ],
+        "block": "gtceu:high_power_casing"
+      },
+      "D": {
+        "mode": "original",
+        "sample": [
+          8,
+          1,
+          15
+        ],
+        "block": "gtlcore:dimension_injection_casing"
+      },
+      "E": {
+        "mode": "casing",
+        "sample": [
+          9,
+          0,
+          15
+        ],
+        "block": "gtlcore:molecular_casing"
+      },
+      "F": {
+        "mode": "casing",
+        "sample": [
+          9,
+          0,
+          15
+        ],
+        "block": "gtlcore:molecular_casing"
+      },
+      "G": {
+        "mode": "original",
+        "sample": [
+          17,
+          5,
+          17
+        ],
+        "block": "kubejs:dimensional_bridge_casing"
+      },
+      "H": {
+        "mode": "original",
+        "sample": [
+          15,
+          9,
+          16
+        ],
+        "block": "kubejs:hollow_casing"
+      },
+      "I": {
+        "mode": "original",
+        "sample": [
+          14,
+          2,
+          16
+        ],
+        "block": "kubejs:molecular_coil"
+      },
+      "J": {
+        "mode": "original",
+        "sample": [
+          1,
+          5,
+          15
+        ],
+        "block": "kubejs:spacetime_assembly_line_casing"
+      },
+      "K": {
+        "mode": "original",
+        "sample": [
+          4,
+          5,
+          16
+        ],
+        "block": "kubejs:spacetime_assembly_line_unit"
+      }
+    },
+    "counts": {
+      " ": 737826,
+      "F": 20820,
+      "H": 4244,
+      "D": 7308,
+      "K": 751,
+      "J": 5992,
+      "E": 7605,
+      "B": 4508,
+      "G": 534,
+      "C": 237,
+      "I": 683,
+      "A": 904,
+      "#": 24,
+      "@": 1
+    },
+    "hatches": [
+      "#"
+    ],
+    "controller": "@",
+    "diamondOreMarkers": 24,
+    "hatchFallback": "gtlcore:molecular_casing",
+    "sourceSha256": "d7708d24706354e35465539cd627f900cfc126ceda656763cf7e7498506e2b1d",
+    "sha256": "22f4e0f8f9e0c9d40b8883a911caf0a4f551abc29bfa24dff2a8f1032b09acc6",
+    "casingReplacements": {
+      "gtlcore:dimensionally_transcendent_casing": "gtlcore:molecular_casing"
+    }
+  }
+}

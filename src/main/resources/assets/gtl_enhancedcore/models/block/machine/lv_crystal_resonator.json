@@ -1,0 +1,9 @@
+{
+  "parent": "gtl_enhancedcore:block/machine/crystal_resonator",
+  "textures": {
+    "bottom": "gtceu:block/casings/voltage/lv/bottom",
+    "top": "gtceu:block/casings/voltage/lv/top",
+    "side": "gtceu:block/casings/voltage/lv/side",
+    "front": "gtl_enhancedcore:block/machine/crystal_resonator/lv_front"
+  }
+}

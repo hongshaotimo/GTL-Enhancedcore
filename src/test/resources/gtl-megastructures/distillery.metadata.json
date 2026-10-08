@@ -1,0 +1,993 @@
+{
+  "machine": "mega_distillery",
+  "name": "超级蒸馏塔",
+  "revision": "R2-I2",
+  "file": "mega_distillery.schem",
+  "dimensions": [
+    87,
+    140,
+    62
+  ],
+  "core": [
+    43,
+    15,
+    4
+  ],
+  "entry": [
+    43,
+    14,
+    2
+  ],
+  "ports": [
+    {
+      "id": "P1",
+      "position": [
+        41,
+        17,
+        4
+      ],
+      "normal": [
+        0,
+        0,
+        -1
+      ],
+      "outward": "north",
+      "purpose": "扩展仓室预留01",
+      "approach": [
+        41,
+        16,
+        2
+      ]
+    },
+    {
+      "id": "P2",
+      "position": [
+        42,
+        17,
+        4
+      ],
+      "normal": [
+        0,
+        0,
+        -1
+      ],
+      "outward": "north",
+      "purpose": "扩展仓室预留02",
+      "approach": [
+        42,
+        16,
+        2
+      ]
+    },
+    {
+      "id": "P3",
+      "position": [
+        43,
+        17,
+        4
+      ],
+      "normal": [
+        0,
+        0,
+        -1
+      ],
+      "outward": "north",
+      "purpose": "扩展仓室预留03",
+      "approach": [
+        43,
+        16,
+        2
+      ]
+    },
+    {
+      "id": "P4",
+      "position": [
+        44,
+        17,
+        4
+      ],
+      "normal": [
+        0,
+        0,
+        -1
+      ],
+      "outward": "north",
+      "purpose": "扩展仓室预留04",
+      "approach": [
+        44,
+        16,
+        2
+      ]
+    },
+    {
+      "id": "P5",
+      "position": [
+        45,
+        17,
+        4
+      ],
+      "normal": [
+        0,
+        0,
+        -1
+      ],
+      "outward": "north",
+      "purpose": "扩展仓室预留05",
+      "approach": [
+        45,
+        16,
+        2
+      ]
+    },
+    {
+      "id": "P6",
+      "position": [
+        41,
+        16,
+        4
+      ],
+      "normal": [
+        0,
+        0,
+        -1
+      ],
+      "outward": "north",
+      "purpose": "扩展仓室预留06",
+      "approach": [
+        41,
+        15,
+        2
+      ]
+    },
+    {
+      "id": "P7",
+      "position": [
+        42,
+        16,
+        4
+      ],
+      "normal": [
+        0,
+        0,
+        -1
+      ],
+      "outward": "north",
+      "purpose": "原料流体输入预留",
+      "approach": [
+        42,
+        15,
+        2
+      ]
+    },
+    {
+      "id": "P8",
+      "position": [
+        43,
+        16,
+        4
+      ],
+      "normal": [
+        0,
+        0,
+        -1
+      ],
+      "outward": "north",
+      "purpose": "馏分输出预留一",
+      "approach": [
+        43,
+        15,
+        2
+      ]
+    },
+    {
+      "id": "P9",
+      "position": [
+        44,
+        16,
+        4
+      ],
+      "normal": [
+        0,
+        0,
+        -1
+      ],
+      "outward": "north",
+      "purpose": "馏分输出预留二",
+      "approach": [
+        44,
+        15,
+        2
+      ]
+    },
+    {
+      "id": "P10",
+      "position": [
+        45,
+        16,
+        4
+      ],
+      "normal": [
+        0,
+        0,
+        -1
+      ],
+      "outward": "north",
+      "purpose": "扩展仓室预留07",
+      "approach": [
+        45,
+        15,
+        2
+      ]
+    },
+    {
+      "id": "P11",
+      "position": [
+        41,
+        15,
+        4
+      ],
+      "normal": [
+        0,
+        0,
+        -1
+      ],
+      "outward": "north",
+      "purpose": "扩展仓室预留08",
+      "approach": [
+        41,
+        14,
+        2
+      ]
+    },
+    {
+      "id": "P12",
+      "position": [
+        42,
+        15,
+        4
+      ],
+      "normal": [
+        0,
+        0,
+        -1
+      ],
+      "outward": "north",
+      "purpose": "馏分输出预留三",
+      "approach": [
+        42,
+        14,
+        2
+      ]
+    },
+    {
+      "id": "P13",
+      "position": [
+        44,
+        15,
+        4
+      ],
+      "normal": [
+        0,
+        0,
+        -1
+      ],
+      "outward": "north",
+      "purpose": "馏分输出预留四",
+      "approach": [
+        44,
+        14,
+        2
+      ]
+    },
+    {
+      "id": "P14",
+      "position": [
+        45,
+        15,
+        4
+      ],
+      "normal": [
+        0,
+        0,
+        -1
+      ],
+      "outward": "north",
+      "purpose": "扩展仓室预留09",
+      "approach": [
+        45,
+        14,
+        2
+      ]
+    },
+    {
+      "id": "P15",
+      "position": [
+        41,
+        14,
+        4
+      ],
+      "normal": [
+        0,
+        0,
+        -1
+      ],
+      "outward": "north",
+      "purpose": "扩展仓室预留10",
+      "approach": [
+        41,
+        13,
+        2
+      ]
+    },
+    {
+      "id": "P16",
+      "position": [
+        42,
+        14,
+        4
+      ],
+      "normal": [
+        0,
+        0,
+        -1
+      ],
+      "outward": "north",
+      "purpose": "激光供能预留",
+      "approach": [
+        42,
+        13,
+        2
+      ]
+    },
+    {
+      "id": "P17",
+      "position": [
+        43,
+        14,
+        4
+      ],
+      "normal": [
+        0,
+        0,
+        -1
+      ],
+      "outward": "north",
+      "purpose": "维护预留",
+      "approach": [
+        43,
+        13,
+        2
+      ]
+    },
+    {
+      "id": "P18",
+      "position": [
+        44,
+        14,
+        4
+      ],
+      "normal": [
+        0,
+        0,
+        -1
+      ],
+      "outward": "north",
+      "purpose": "并行控制预留",
+      "approach": [
+        44,
+        13,
+        2
+      ]
+    },
+    {
+      "id": "P19",
+      "position": [
+        45,
+        14,
+        4
+      ],
+      "normal": [
+        0,
+        0,
+        -1
+      ],
+      "outward": "north",
+      "purpose": "扩展仓室预留11",
+      "approach": [
+        45,
+        13,
+        2
+      ]
+    },
+    {
+      "id": "P20",
+      "position": [
+        41,
+        13,
+        4
+      ],
+      "normal": [
+        0,
+        0,
+        -1
+      ],
+      "outward": "north",
+      "purpose": "扩展仓室预留12",
+      "approach": [
+        41,
+        12,
+        2
+      ]
+    },
+    {
+      "id": "P21",
+      "position": [
+        42,
+        13,
+        4
+      ],
+      "normal": [
+        0,
+        0,
+        -1
+      ],
+      "outward": "north",
+      "purpose": "扩展仓室预留13",
+      "approach": [
+        42,
+        12,
+        2
+      ]
+    },
+    {
+      "id": "P22",
+      "position": [
+        43,
+        13,
+        4
+      ],
+      "normal": [
+        0,
+        0,
+        -1
+      ],
+      "outward": "north",
+      "purpose": "扩展仓室预留14",
+      "approach": [
+        43,
+        12,
+        2
+      ]
+    },
+    {
+      "id": "P23",
+      "position": [
+        44,
+        13,
+        4
+      ],
+      "normal": [
+        0,
+        0,
+        -1
+      ],
+      "outward": "north",
+      "purpose": "扩展仓室预留15",
+      "approach": [
+        44,
+        12,
+        2
+      ]
+    },
+    {
+      "id": "P24",
+      "position": [
+        45,
+        13,
+        4
+      ],
+      "normal": [
+        0,
+        0,
+        -1
+      ],
+      "outward": "north",
+      "purpose": "扩展仓室预留16",
+      "approach": [
+        45,
+        12,
+        2
+      ]
+    }
+  ],
+  "features": [
+    {
+      "name": "高瘦主分馏塔",
+      "description": "主塔由较宽的下部提馏段过渡到细长精馏段，内置六层分离塔盘，顶部采用封闭压力头与主汽桥。"
+    },
+    {
+      "name": "再沸热区",
+      "description": "左下方小型再沸器使用三组原机三钛线圈，配有隔热护板、承托鞍座、独立液体回路和蒸汽回塔管。"
+    },
+    {
+      "name": "冷凝回流侧脊",
+      "description": "右侧折板冷凝器、低位回流罐与独立上升回流管构成紧凑回路，冷凝器骨架直接落在设备基础上。"
+    },
+    {
+      "name": "分区落地底座",
+      "description": "主塔环形承重裙座、再沸器机座和回流设备基础按设备轮廓分区，锚固肋、管槽及低位横梁形成连续承重与管路空间。"
+    },
+    {
+      "name": "原机材质延续",
+      "description": "仅使用原机已核对的洁净外壳、水密外壳、UEV气密外壳和三钛线圈，以银白主塔、青黑管汇、绿色密封区和局部暗红加热区区分功能。"
+    },
+    {
+      "name": "内嵌5×5集中接口",
+      "description": "中央为主方块，周围24个仓室连续排列，全部共面并贴合机身。"
+    }
+  ],
+  "interfaceLayout": "5x5",
+  "interfaceAudit": {
+    "layout": "5x5",
+    "normal": [
+      0,
+      0,
+      -1
+    ],
+    "previousCore": [
+      43,
+      15,
+      4
+    ],
+    "previousPorts": [
+      {
+        "id": "P1",
+        "position": [
+          39,
+          14,
+          4
+        ],
+        "normal": [
+          0,
+          0,
+          -1
+        ],
+        "outward": "north",
+        "purpose": "原料流体输入预留",
+        "approach": [
+          39,
+          13,
+          2
+        ]
+      },
+      {
+        "id": "P2",
+        "position": [
+          39,
+          17,
+          4
+        ],
+        "normal": [
+          0,
+          0,
+          -1
+        ],
+        "outward": "north",
+        "purpose": "馏分一输出预留",
+        "approach": [
+          39,
+          16,
+          2
+        ]
+      },
+      {
+        "id": "P3",
+        "position": [
+          41,
+          19,
+          4
+        ],
+        "normal": [
+          0,
+          0,
+          -1
+        ],
+        "outward": "north",
+        "purpose": "馏分二输出预留",
+        "approach": [
+          41,
+          18,
+          2
+        ]
+      },
+      {
+        "id": "P4",
+        "position": [
+          44,
+          20,
+          4
+        ],
+        "normal": [
+          0,
+          0,
+          -1
+        ],
+        "outward": "north",
+        "purpose": "馏分三输出预留",
+        "approach": [
+          44,
+          19,
+          2
+        ]
+      },
+      {
+        "id": "P5",
+        "position": [
+          47,
+          18,
+          4
+        ],
+        "normal": [
+          0,
+          0,
+          -1
+        ],
+        "outward": "north",
+        "purpose": "馏分四输出预留",
+        "approach": [
+          47,
+          17,
+          2
+        ]
+      },
+      {
+        "id": "P6",
+        "position": [
+          48,
+          15,
+          4
+        ],
+        "normal": [
+          0,
+          0,
+          -1
+        ],
+        "outward": "north",
+        "purpose": "馏分五输出预留",
+        "approach": [
+          48,
+          14,
+          2
+        ]
+      },
+      {
+        "id": "P7",
+        "position": [
+          46,
+          12,
+          4
+        ],
+        "normal": [
+          0,
+          0,
+          -1
+        ],
+        "outward": "north",
+        "purpose": "馏分六输出预留",
+        "approach": [
+          46,
+          11,
+          2
+        ]
+      },
+      {
+        "id": "P8",
+        "position": [
+          41,
+          11,
+          4
+        ],
+        "normal": [
+          0,
+          0,
+          -1
+        ],
+        "outward": "north",
+        "purpose": "激光供能预留",
+        "approach": [
+          41,
+          10,
+          2
+        ]
+      },
+      {
+        "id": "P9",
+        "position": [
+          43,
+          11,
+          4
+        ],
+        "normal": [
+          0,
+          0,
+          -1
+        ],
+        "outward": "north",
+        "purpose": "维护预留",
+        "approach": [
+          43,
+          10,
+          2
+        ]
+      },
+      {
+        "id": "P10",
+        "position": [
+          39,
+          11,
+          4
+        ],
+        "normal": [
+          0,
+          0,
+          -1
+        ],
+        "outward": "north",
+        "purpose": "并行控制预留",
+        "approach": [
+          39,
+          10,
+          2
+        ]
+      }
+    ],
+    "restoredCells": [
+      {
+        "position": [
+          39,
+          11,
+          4
+        ],
+        "marker": 2,
+        "restored": "gtlcore:uev_hermetic_casing"
+      },
+      {
+        "position": [
+          41,
+          11,
+          4
+        ],
+        "marker": 2,
+        "restored": "gtlcore:uev_hermetic_casing"
+      },
+      {
+        "position": [
+          43,
+          11,
+          4
+        ],
+        "marker": 2,
+        "restored": "gtlcore:uev_hermetic_casing"
+      },
+      {
+        "position": [
+          46,
+          12,
+          4
+        ],
+        "marker": 2,
+        "restored": "gtlcore:uev_hermetic_casing"
+      },
+      {
+        "position": [
+          39,
+          14,
+          4
+        ],
+        "marker": 2,
+        "restored": "gtlcore:uev_hermetic_casing"
+      },
+      {
+        "position": [
+          43,
+          15,
+          4
+        ],
+        "marker": 1,
+        "restored": "gtlcore:uev_hermetic_casing"
+      },
+      {
+        "position": [
+          48,
+          15,
+          4
+        ],
+        "marker": 2,
+        "restored": "gtlcore:uev_hermetic_casing"
+      },
+      {
+        "position": [
+          39,
+          17,
+          4
+        ],
+        "marker": 2,
+        "restored": "gtlcore:uev_hermetic_casing"
+      },
+      {
+        "position": [
+          47,
+          18,
+          4
+        ],
+        "marker": 2,
+        "restored": "gtlcore:uev_hermetic_casing"
+      },
+      {
+        "position": [
+          41,
+          19,
+          4
+        ],
+        "marker": 2,
+        "restored": "gtlcore:uev_hermetic_casing"
+      },
+      {
+        "position": [
+          44,
+          20,
+          4
+        ],
+        "marker": 2,
+        "restored": "gtlcore:uev_hermetic_casing"
+      }
+    ],
+    "absolute": [
+      51,
+      15,
+      17
+    ],
+    "location": "前侧汇流节点，保持原主方块位置",
+    "recessCuts": [],
+    "radius": 2,
+    "previousPanelRestorations": [
+      {
+        "position": [
+          43,
+          15,
+          4
+        ],
+        "state": "gtlcore:uev_hermetic_casing"
+      },
+      {
+        "position": [
+          42,
+          16,
+          4
+        ],
+        "state": "gtlcore:uev_hermetic_casing"
+      },
+      {
+        "position": [
+          43,
+          16,
+          4
+        ],
+        "state": "gtlcore:uev_hermetic_casing"
+      },
+      {
+        "position": [
+          44,
+          16,
+          4
+        ],
+        "state": "gtlcore:uev_hermetic_casing"
+      },
+      {
+        "position": [
+          42,
+          15,
+          4
+        ],
+        "state": "gtlcore:uev_hermetic_casing"
+      },
+      {
+        "position": [
+          44,
+          15,
+          4
+        ],
+        "state": "gtlcore:uev_hermetic_casing"
+      },
+      {
+        "position": [
+          42,
+          14,
+          4
+        ],
+        "state": "gtlcore:uev_hermetic_casing"
+      },
+      {
+        "position": [
+          43,
+          14,
+          4
+        ],
+        "state": "gtlcore:uev_hermetic_casing"
+      },
+      {
+        "position": [
+          44,
+          14,
+          4
+        ],
+        "state": "gtlcore:uev_hermetic_casing"
+      }
+    ]
+  },
+  "mounting": "ground",
+  "accessMode": "flight",
+  "controllerNormal": [
+    0,
+    0,
+    -1
+  ],
+  "scope": "建筑结构；没有修改多方块成型规则",
+  "sourceIdentity": "Original distillery, distillation and evaporation roles retained; grounded tower and differentiated heating, condensing and reflux equipment.",
+  "pasteAnchor": [
+    0,
+    0,
+    0
+  ],
+  "offset": [
+    0,
+    0,
+    0
+  ],
+  "recommendedBottomY": -60,
+  "occupiedWorldY": [
+    -60,
+    79
+  ],
+  "origin": "西北底角；X东、Y上、Z南；主接口朝北",
+  "generationCrop": [
+    8,
+    0,
+    13
+  ],
+  "ordinaryBlocks": 82837,
+  "nonAirBlocks": 82862,
+  "airBlocks": 672298,
+  "materials": [
+    {
+      "id": "gtceu:watertight_casing",
+      "count": 24242,
+      "percentage": 29.2647005565146
+    },
+    {
+      "id": "gtceu:clean_machine_casing",
+      "count": 40256,
+      "percentage": 48.59664159735384
+    },
+    {
+      "id": "gtlcore:uev_hermetic_casing",
+      "count": 17369,
+      "percentage": 20.967683523063364
+    },
+    {
+      "id": "gtceu:tritanium_coil_block[active=false]",
+      "count": 970,
+      "percentage": 1.1709743230681942
+    }
+  ],
+  "categories": {
+    "gtceu": 65468,
+    "gtlcore": 17369
+  },
+  "coreCount": 1,
+  "portCount": 24,
+  "sha256": "43427f83f7abb8694891fb741edc9cd5569b59b96d0fc2b49601a7aa6ca3e800",
+  "noGameTest": true,
+  "noPreview": true,
+  "stageProof": "沿用原机已核对模型的用材，不声明全部前置在UHV闭环。"
+}

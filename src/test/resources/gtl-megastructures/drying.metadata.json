@@ -1,0 +1,932 @@
+{
+  "machine": "advanced_vacuum_drying_furnace",
+  "name": "进阶真空干燥炉",
+  "revision": "R3-I2",
+  "file": "advanced_vacuum_drying_furnace.schem",
+  "dimensions": [
+    73,
+    78,
+    72
+  ],
+  "core": [
+    16,
+    21,
+    11
+  ],
+  "entry": [
+    16,
+    20,
+    9
+  ],
+  "ports": [
+    {
+      "id": "P1",
+      "position": [
+        14,
+        23,
+        11
+      ],
+      "normal": [
+        0,
+        0,
+        -1
+      ],
+      "outward": "north",
+      "purpose": "扩展仓室预留01",
+      "approach": [
+        14,
+        22,
+        9
+      ]
+    },
+    {
+      "id": "P2",
+      "position": [
+        15,
+        23,
+        11
+      ],
+      "normal": [
+        0,
+        0,
+        -1
+      ],
+      "outward": "north",
+      "purpose": "扩展仓室预留02",
+      "approach": [
+        15,
+        22,
+        9
+      ]
+    },
+    {
+      "id": "P3",
+      "position": [
+        16,
+        23,
+        11
+      ],
+      "normal": [
+        0,
+        0,
+        -1
+      ],
+      "outward": "north",
+      "purpose": "扩展仓室预留03",
+      "approach": [
+        16,
+        22,
+        9
+      ]
+    },
+    {
+      "id": "P4",
+      "position": [
+        17,
+        23,
+        11
+      ],
+      "normal": [
+        0,
+        0,
+        -1
+      ],
+      "outward": "north",
+      "purpose": "扩展仓室预留04",
+      "approach": [
+        17,
+        22,
+        9
+      ]
+    },
+    {
+      "id": "P5",
+      "position": [
+        18,
+        23,
+        11
+      ],
+      "normal": [
+        0,
+        0,
+        -1
+      ],
+      "outward": "north",
+      "purpose": "扩展仓室预留05",
+      "approach": [
+        18,
+        22,
+        9
+      ]
+    },
+    {
+      "id": "P6",
+      "position": [
+        14,
+        22,
+        11
+      ],
+      "normal": [
+        0,
+        0,
+        -1
+      ],
+      "outward": "north",
+      "purpose": "扩展仓室预留06",
+      "approach": [
+        14,
+        21,
+        9
+      ]
+    },
+    {
+      "id": "P7",
+      "position": [
+        15,
+        22,
+        11
+      ],
+      "normal": [
+        0,
+        0,
+        -1
+      ],
+      "outward": "north",
+      "purpose": "物品输入预留",
+      "approach": [
+        15,
+        21,
+        9
+      ]
+    },
+    {
+      "id": "P8",
+      "position": [
+        16,
+        22,
+        11
+      ],
+      "normal": [
+        0,
+        0,
+        -1
+      ],
+      "outward": "north",
+      "purpose": "物品输出预留",
+      "approach": [
+        16,
+        21,
+        9
+      ]
+    },
+    {
+      "id": "P9",
+      "position": [
+        17,
+        22,
+        11
+      ],
+      "normal": [
+        0,
+        0,
+        -1
+      ],
+      "outward": "north",
+      "purpose": "流体输出预留",
+      "approach": [
+        17,
+        21,
+        9
+      ]
+    },
+    {
+      "id": "P10",
+      "position": [
+        18,
+        22,
+        11
+      ],
+      "normal": [
+        0,
+        0,
+        -1
+      ],
+      "outward": "north",
+      "purpose": "扩展仓室预留07",
+      "approach": [
+        18,
+        21,
+        9
+      ]
+    },
+    {
+      "id": "P11",
+      "position": [
+        14,
+        21,
+        11
+      ],
+      "normal": [
+        0,
+        0,
+        -1
+      ],
+      "outward": "north",
+      "purpose": "扩展仓室预留08",
+      "approach": [
+        14,
+        20,
+        9
+      ]
+    },
+    {
+      "id": "P12",
+      "position": [
+        15,
+        21,
+        11
+      ],
+      "normal": [
+        0,
+        0,
+        -1
+      ],
+      "outward": "north",
+      "purpose": "流体输入预留",
+      "approach": [
+        15,
+        20,
+        9
+      ]
+    },
+    {
+      "id": "P13",
+      "position": [
+        17,
+        21,
+        11
+      ],
+      "normal": [
+        0,
+        0,
+        -1
+      ],
+      "outward": "north",
+      "purpose": "维护预留",
+      "approach": [
+        17,
+        20,
+        9
+      ]
+    },
+    {
+      "id": "P14",
+      "position": [
+        18,
+        21,
+        11
+      ],
+      "normal": [
+        0,
+        0,
+        -1
+      ],
+      "outward": "north",
+      "purpose": "扩展仓室预留09",
+      "approach": [
+        18,
+        20,
+        9
+      ]
+    },
+    {
+      "id": "P15",
+      "position": [
+        14,
+        20,
+        11
+      ],
+      "normal": [
+        0,
+        0,
+        -1
+      ],
+      "outward": "north",
+      "purpose": "扩展仓室预留10",
+      "approach": [
+        14,
+        19,
+        9
+      ]
+    },
+    {
+      "id": "P16",
+      "position": [
+        15,
+        20,
+        11
+      ],
+      "normal": [
+        0,
+        0,
+        -1
+      ],
+      "outward": "north",
+      "purpose": "激光供能预留",
+      "approach": [
+        15,
+        19,
+        9
+      ]
+    },
+    {
+      "id": "P17",
+      "position": [
+        16,
+        20,
+        11
+      ],
+      "normal": [
+        0,
+        0,
+        -1
+      ],
+      "outward": "north",
+      "purpose": "物品输入扩展预留",
+      "approach": [
+        16,
+        19,
+        9
+      ]
+    },
+    {
+      "id": "P18",
+      "position": [
+        17,
+        20,
+        11
+      ],
+      "normal": [
+        0,
+        0,
+        -1
+      ],
+      "outward": "north",
+      "purpose": "流体输出扩展预留",
+      "approach": [
+        17,
+        19,
+        9
+      ]
+    },
+    {
+      "id": "P19",
+      "position": [
+        18,
+        20,
+        11
+      ],
+      "normal": [
+        0,
+        0,
+        -1
+      ],
+      "outward": "north",
+      "purpose": "扩展仓室预留11",
+      "approach": [
+        18,
+        19,
+        9
+      ]
+    },
+    {
+      "id": "P20",
+      "position": [
+        14,
+        19,
+        11
+      ],
+      "normal": [
+        0,
+        0,
+        -1
+      ],
+      "outward": "north",
+      "purpose": "扩展仓室预留12",
+      "approach": [
+        14,
+        18,
+        9
+      ]
+    },
+    {
+      "id": "P21",
+      "position": [
+        15,
+        19,
+        11
+      ],
+      "normal": [
+        0,
+        0,
+        -1
+      ],
+      "outward": "north",
+      "purpose": "扩展仓室预留13",
+      "approach": [
+        15,
+        18,
+        9
+      ]
+    },
+    {
+      "id": "P22",
+      "position": [
+        16,
+        19,
+        11
+      ],
+      "normal": [
+        0,
+        0,
+        -1
+      ],
+      "outward": "north",
+      "purpose": "扩展仓室预留14",
+      "approach": [
+        16,
+        18,
+        9
+      ]
+    },
+    {
+      "id": "P23",
+      "position": [
+        17,
+        19,
+        11
+      ],
+      "normal": [
+        0,
+        0,
+        -1
+      ],
+      "outward": "north",
+      "purpose": "扩展仓室预留15",
+      "approach": [
+        17,
+        18,
+        9
+      ]
+    },
+    {
+      "id": "P24",
+      "position": [
+        18,
+        19,
+        11
+      ],
+      "normal": [
+        0,
+        0,
+        -1
+      ],
+      "outward": "north",
+      "purpose": "扩展仓室预留16",
+      "approach": [
+        18,
+        18,
+        9
+      ]
+    }
+  ],
+  "features": [
+    {
+      "name": "立式热真空炉",
+      "description": "以批次装料、分区加热、低压排湿重新组织机器，立式封闭炉腔带后倾装料面和五层料架。"
+    },
+    {
+      "name": "双扇压紧炉门",
+      "description": "棱面双门、连续红钢密封边和三层独立压紧机构构成正面主体，强化真空炉的密封与锁闭特征。"
+    },
+    {
+      "name": "嵌入式加热夹层",
+      "description": "侧壁三段铜镍加热区收在浅色隔热护板内，通过内凹窗口可见线圈与接线端。"
+    },
+    {
+      "name": "收拢式承力框",
+      "description": "前后两组不同斜率的承力构件向炉顶收拢，并直接落在两侧机脚上，顶压盖与炉体形成紧凑整体。"
+    },
+    {
+      "name": "背部抽空冷凝脊",
+      "description": "双级方形真空组件、侧面冷凝片、抽气管和底部集液器全部整合进背部设备脊。"
+    },
+    {
+      "name": "一体落地机座",
+      "description": "两侧中空承重脚、中央设备龙骨和三根横梁形成有留空的底座，管槽、检修格栅和排液阀贴合机器布局。"
+    },
+    {
+      "name": "内嵌5×5集中接口",
+      "description": "中央为主方块，周围24个仓室连续排列，全部共面并贴合机身。"
+    }
+  ],
+  "interfaceLayout": "5x5",
+  "interfaceAudit": {
+    "layout": "5x5",
+    "normal": [
+      0,
+      0,
+      -1
+    ],
+    "previousCore": [
+      16,
+      21,
+      11
+    ],
+    "previousPorts": [
+      {
+        "id": "P1",
+        "position": [
+          13,
+          18,
+          11
+        ],
+        "normal": [
+          0,
+          0,
+          -1
+        ],
+        "outward": "north",
+        "purpose": "物品输入预留",
+        "approach": [
+          13,
+          17,
+          9
+        ]
+      },
+      {
+        "id": "P2",
+        "position": [
+          16,
+          18,
+          11
+        ],
+        "normal": [
+          0,
+          0,
+          -1
+        ],
+        "outward": "north",
+        "purpose": "物品输出预留",
+        "approach": [
+          16,
+          17,
+          9
+        ]
+      },
+      {
+        "id": "P3",
+        "position": [
+          19,
+          18,
+          11
+        ],
+        "normal": [
+          0,
+          0,
+          -1
+        ],
+        "outward": "north",
+        "purpose": "流体输出预留",
+        "approach": [
+          19,
+          17,
+          9
+        ]
+      },
+      {
+        "id": "P4",
+        "position": [
+          13,
+          24,
+          12
+        ],
+        "normal": [
+          0,
+          0,
+          -1
+        ],
+        "outward": "north",
+        "purpose": "流体输入预留",
+        "approach": [
+          13,
+          23,
+          10
+        ]
+      },
+      {
+        "id": "P5",
+        "position": [
+          16,
+          24,
+          12
+        ],
+        "normal": [
+          0,
+          0,
+          -1
+        ],
+        "outward": "north",
+        "purpose": "维护预留",
+        "approach": [
+          16,
+          23,
+          10
+        ]
+      },
+      {
+        "id": "P6",
+        "position": [
+          19,
+          24,
+          12
+        ],
+        "normal": [
+          0,
+          0,
+          -1
+        ],
+        "outward": "north",
+        "purpose": "激光供能预留",
+        "approach": [
+          19,
+          23,
+          10
+        ]
+      }
+    ],
+    "restoredCells": [
+      {
+        "position": [
+          13,
+          18,
+          11
+        ],
+        "marker": 2,
+        "restored": "gtceu:high_power_casing"
+      },
+      {
+        "position": [
+          16,
+          18,
+          11
+        ],
+        "marker": 2,
+        "restored": "gtceu:high_power_casing"
+      },
+      {
+        "position": [
+          19,
+          18,
+          11
+        ],
+        "marker": 2,
+        "restored": "gtceu:high_power_casing"
+      },
+      {
+        "position": [
+          16,
+          21,
+          11
+        ],
+        "marker": 1,
+        "restored": "gtceu:high_power_casing"
+      },
+      {
+        "position": [
+          13,
+          24,
+          12
+        ],
+        "marker": 2,
+        "restored": "gtceu:high_power_casing"
+      },
+      {
+        "position": [
+          16,
+          24,
+          12
+        ],
+        "marker": 2,
+        "restored": "gtceu:high_power_casing"
+      },
+      {
+        "position": [
+          19,
+          24,
+          12
+        ],
+        "marker": 2,
+        "restored": "gtceu:high_power_casing"
+      }
+    ],
+    "absolute": [
+      28,
+      21,
+      18
+    ],
+    "location": "左下方炉框，保持原主方块位置",
+    "recessCuts": [],
+    "radius": 2,
+    "previousPanelRestorations": [
+      {
+        "position": [
+          16,
+          21,
+          11
+        ],
+        "state": "gtceu:high_power_casing"
+      },
+      {
+        "position": [
+          15,
+          22,
+          11
+        ],
+        "state": "gtceu:high_power_casing"
+      },
+      {
+        "position": [
+          16,
+          22,
+          11
+        ],
+        "state": "gtceu:high_power_casing"
+      },
+      {
+        "position": [
+          17,
+          22,
+          11
+        ],
+        "state": "gtceu:high_power_casing"
+      },
+      {
+        "position": [
+          15,
+          21,
+          11
+        ],
+        "state": "gtceu:high_power_casing"
+      },
+      {
+        "position": [
+          17,
+          21,
+          11
+        ],
+        "state": "gtceu:high_power_casing"
+      },
+      {
+        "position": [
+          15,
+          20,
+          11
+        ],
+        "state": "gtceu:high_power_casing"
+      },
+      {
+        "position": [
+          16,
+          20,
+          11
+        ],
+        "state": "gtceu:high_power_casing"
+      },
+      {
+        "position": [
+          17,
+          20,
+          11
+        ],
+        "state": "gtceu:high_power_casing"
+      }
+    ]
+  },
+  "mounting": "ground",
+  "accessMode": "flight",
+  "controllerNormal": [
+    0,
+    0,
+    -1
+  ],
+  "scope": "建筑结构；没有修改多方块成型规则",
+  "sourceIdentity": "保留真空干燥、脱水、加热线圈及激光供能设定；重新设计为立式炉腔、侧壁加热夹层和背部抽空冷凝脊。",
+  "pasteAnchor": [
+    0,
+    0,
+    0
+  ],
+  "offset": [
+    0,
+    0,
+    0
+  ],
+  "recommendedBottomY": -60,
+  "occupiedWorldY": [
+    -60,
+    17
+  ],
+  "origin": "西北底角；X东、Y上、Z南；主接口朝北",
+  "generationCrop": [
+    12,
+    0,
+    7
+  ],
+  "ordinaryBlocks": 94506,
+  "nonAirBlocks": 94531,
+  "airBlocks": 315437,
+  "materials": [
+    {
+      "id": "gtceu:tungstensteel_turbine_casing",
+      "count": 25877,
+      "percentage": 27.381330285907772
+    },
+    {
+      "id": "gtceu:stainless_steel_turbine_casing",
+      "count": 21319,
+      "percentage": 22.55835608321165
+    },
+    {
+      "id": "gtlcore:iridium_casing",
+      "count": 10614,
+      "percentage": 11.23103295028887
+    },
+    {
+      "id": "gtceu:assembly_line_grating",
+      "count": 1463,
+      "percentage": 1.5480498592681946
+    },
+    {
+      "id": "gtceu:tungstensteel_gearbox",
+      "count": 197,
+      "percentage": 0.20845237339428185
+    },
+    {
+      "id": "gtceu:luv_hermetic_casing",
+      "count": 19127,
+      "percentage": 20.2389266289971
+    },
+    {
+      "id": "gtceu:tungstensteel_pipe_casing",
+      "count": 3011,
+      "percentage": 3.1860410979197087
+    },
+    {
+      "id": "gtceu:cupronickel_coil_block[active=false]",
+      "count": 1906,
+      "percentage": 2.016803165936554
+    },
+    {
+      "id": "gtceu:clean_machine_casing",
+      "count": 3803,
+      "percentage": 4.024083126997228
+    },
+    {
+      "id": "gtceu:high_power_casing",
+      "count": 453,
+      "percentage": 0.47933464541933846
+    },
+    {
+      "id": "kubejs:red_steel_casing",
+      "count": 1504,
+      "percentage": 1.5914333481472076
+    },
+    {
+      "id": "gtceu:computer_heat_vent",
+      "count": 1099,
+      "percentage": 1.1628891287325673
+    },
+    {
+      "id": "gtceu:computer_casing",
+      "count": 3965,
+      "percentage": 4.195500814763084
+    },
+    {
+      "id": "gtceu:filter_casing",
+      "count": 168,
+      "percentage": 0.1777664910164434
+    }
+  ],
+  "categories": {
+    "gtceu": 82388,
+    "gtlcore": 10614,
+    "kubejs": 1504
+  },
+  "coreCount": 1,
+  "portCount": 24,
+  "sha256": "c491e303398ac22ab605cd8dc37f7eb2762c0928eab523d1979ab0af8438fcb6",
+  "noGameTest": true,
+  "noPreview": true,
+  "stageProof": "沿用原机已核对模型的用材，不声明全部前置在UHV闭环。"
+}

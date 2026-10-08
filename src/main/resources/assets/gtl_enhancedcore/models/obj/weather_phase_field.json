@@ -1,0 +1,12 @@
+{
+  "loader": "forge:obj",
+  "flip_v": false,
+  "automatic_culling": false,
+  "shade_quads": false,
+  "emissive_ambient": true,
+  "model": "gtl_enhancedcore:models/obj/weather_phase_field.obj",
+  "textures": {
+    "texture0": "gtl_enhancedcore:block/obj/weather_phase_field_layer",
+    "particle": "gtl_enhancedcore:block/obj/weather_phase_field_layer"
+  }
+}

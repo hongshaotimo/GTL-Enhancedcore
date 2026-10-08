@@ -1,0 +1,12 @@
+{
+  "loader": "forge:obj",
+  "flip_v": false,
+  "automatic_culling": true,
+  "shade_quads": false,
+  "emissive_ambient": true,
+  "model": "gtl_enhancedcore:models/obj/causality_eyes.obj",
+  "textures": {
+    "texture0": "gtl_enhancedcore:block/obj/causality_eyes_layer",
+    "particle": "gtl_enhancedcore:block/obj/causality_eyes_layer"
+  }
+}

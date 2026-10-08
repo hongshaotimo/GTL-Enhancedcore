@@ -1,0 +1,149 @@
+buildscript {
+    repositories {
+        mavenCentral()
+        maven { url = "https://maven.minecraftforge.net" }
+        maven { url = "https://repo.spongepowered.org/repository/maven-public/" }
+    }
+    dependencies {
+        classpath group: "net.minecraftforge.gradle", name: "ForgeGradle", version: "6.0.54"
+        classpath "org.spongepowered:mixingradle:0.7.38"
+    }
+}
+
+apply plugin: "net.minecraftforge.gradle"
+apply plugin: "org.spongepowered.mixin"
+apply plugin: "eclipse"
+
+// 21：gtladditions 3.2.8 与 gtlcore 1.2.3.2-fix2 起按 Java 21（class 65.0）发布，
+// 游戏实际运行时也是 Java 21（Adoptium 21.0.12）。工具链保持 17 会报“类文件具有错误的版本 65.0”。
+java.toolchain.languageVersion = JavaLanguageVersion.of(21)
+
+version = providers.gradleProperty("modVersion").get()
+group = "com.gtl.enhancedcore"
+base { archivesName = "GTL-Enhancedcore" }
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = "UTF-8"
+}
+
+minecraft {
+    mappings channel: "official", version: "1.20.1"
+    // 注意：本工程以整合包成品 JAR 作为编译依赖（libs/），runClient/runServer 在此模式下
+    // 因 SRG/official 命名错位无法直接启动，正式验证以 build.bat 部署后进游戏为准。
+    runs {
+        client {
+            workingDirectory project.file("run")
+            property "forge.logging.console.level", "debug"
+            mods { gtl_enhancedcore { source sourceSets.main } }
+        }
+        server {
+            workingDirectory project.file("run")
+            mods { gtl_enhancedcore { source sourceSets.main } }
+        }
+    }
+}
+
+mixin {
+    add sourceSets.main, "gtl_enhancedcore.refmap.json"
+    config "gtl_enhancedcore.mixins.json"
+}
+
+repositories {
+    mavenCentral()
+    maven { url = "https://repo.spongepowered.org/repository/maven-public/" }
+}
+
+dependencies {
+    minecraft "net.minecraftforge:forge:1.20.1-47.3.7"
+    def localDependencies = new groovy.json.JsonSlurper().parse(file("gradle/local-dependencies.json"))
+    localDependencies.each { scope, names ->
+        names.each { name -> add(scope, files("libs/${name}")) }
+    }
+    annotationProcessor "org.spongepowered:mixin:0.8.5:processor"
+}
+
+tasks.register("verifyLocalDependencies") {
+    doLast {
+        def required = new groovy.json.JsonSlurper().parse(file("gradle/local-dependencies.json")).values().flatten()
+        def missing = required.findAll { !file("libs/${it}").isFile() }
+        if (!missing.isEmpty()) {
+            throw new GradleException("Missing local dependencies: ${missing.join(', ')}")
+        }
+    }
+}
+
+tasks.named("compileJava") { dependsOn("verifyLocalDependencies") }
+
+jar {
+    manifest {
+        attributes([
+            "Specification-Title": "GTL-Enhancedcore",
+            "Specification-Vendor": "S_Fast",
+            "Specification-Version": version,
+            "Implementation-Title": project.name,
+            "Implementation-Version": version,
+            "MixinConfigs": "gtl_enhancedcore.mixins.json",
+        ])
+    }
+}
+
+processResources {
+    filteringCharset = 'UTF-8'
+    inputs.property("modVersion", project.version)
+    filesMatching("META-INF/mods.toml") { expand(version: project.version) }
+}
+
+tasks.withType(AbstractArchiveTask).configureEach {
+    preserveFileTimestamps = false
+    reproducibleFileOrder = true
+}
+
+sourceSets {
+    audit {
+        java.setSrcDirs(["src/audit/java"])
+        resources.setSrcDirs(["src/audit/resources"])
+        compileClasspath += sourceSets.main.output + configurations.compileClasspath
+    }
+    regression {
+        java.srcDir "src/test/java"
+        resources.srcDir "src/test/resources"
+        compileClasspath += sourceSets.main.output + configurations.compileClasspath
+        runtimeClasspath += output + compileClasspath
+    }
+    test { java.setSrcDirs([]); resources.setSrcDirs([]) }
+}
+
+tasks.register("regressionTest", JavaExec) {
+    dependsOn regressionClasses
+    classpath = sourceSets.regression.runtimeClasspath
+    mainClass = "com.gtl.enhancedcore.RegressionSuite"
+    workingDir = projectDir
+    // 必须与 compileJava 同用 Java 21 工具链：默认会用 JAVA_HOME（本机为 JDK 17），
+    // 无法加载按 Java 21 编译的 class（UnsupportedClassVersionError 65.0 > 61.0）。
+    javaLauncher = javaToolchains.launcherFor {
+        languageVersion = JavaLanguageVersion.of(21)
+    }
+}
+
+tasks.named("check") { dependsOn "regressionTest" }
+
+// Explicit opt-in helper, never included in the production jar or the normal build.
+tasks.register("auditRuntimeJar", Jar) {
+    archiveClassifier = "audit-runtime"
+    from sourceSets.audit.output
+    from("src/test/resources/gtl-megastructures") {
+        include "*.schem"
+        into "gtl-structure-fixtures"
+    }
+    from("src/test/resources/gtl-structure-upgrades") {
+        include "*.schem", "original-bindings.json"
+        into "gtl-upgrade-fixtures"
+    }
+    from("src/test/resources/gtl-structure-upgrades-20260927") {
+        include "*.schem", "original-bindings.json"
+        into "gtl-upgrade-20260927-fixtures"
+    }
+    exclude "gtl_enhancedcore.refmap.json"
+    doFirst { manifest.attributes.put("MixinConfigs", "enhancedcore_audit.mixins.json") }
+}
+reobf { auditRuntimeJar {} }

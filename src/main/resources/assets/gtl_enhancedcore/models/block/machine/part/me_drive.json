@@ -1,0 +1,22 @@
+{
+  "parent": "block/block",
+  "textures": {
+    "particle": "#overlay",
+    "overlay": "gtl_enhancedcore:block/machine/part/me_drive"
+  },
+  "elements": [
+    {
+      "from": [0, 0, 0],
+      "to": [16, 16, 0],
+      "faces": {
+        "north": {
+          "uv": [0, 0, 16, 16],
+          "texture": "#overlay",
+          "cullface": "north",
+          "tintindex": -101,
+          "emissivity": 15
+        }
+      }
+    }
+  ]
+}
