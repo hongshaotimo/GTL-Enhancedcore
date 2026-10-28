@@ -69,21 +69,4 @@ public abstract class IvNativeMachineUiMixin implements com.gregtechceu.gtceu.ap
                 true, () -> { boolean accepting = !iv$accepting(); iv$buffers().forEach(buffer -> IvCancellation.setAccepting(buffer, accepting)); }));
         cir.setReturnValue(group);
     }
-    // The virtual addDisplayText callback may be completely overridden by GTLCore/ADD subclasses.
-    // Project only after it returns, for both initial text and subsequent server updates.
-    @ModifyArg(method = "createUIWidget", at = @At(value = "INVOKE",
-            target = "Lcom/lowdragmc/lowdraglib/gui/widget/ComponentPanelWidget;<init>(IILjava/util/function/Consumer;)V"),
-            index = 2, require = 1, allow = 1)
-    private java.util.function.Consumer<List<Component>> iv$initialDisplay(
-            java.util.function.Consumer<List<Component>> upstream) {
-        return IvMachineDisplay.wrap(iv$self(), upstream);
-    }
-
-    @ModifyArg(method = "createUIWidget", at = @At(value = "INVOKE",
-            target = "Lcom/lowdragmc/lowdraglib/gui/widget/ComponentPanelWidget;textSupplier(Ljava/util/function/Consumer;)Lcom/lowdragmc/lowdraglib/gui/widget/ComponentPanelWidget;"),
-            index = 0, require = 1, allow = 1)
-    private java.util.function.Consumer<List<Component>> iv$updatedDisplay(
-            java.util.function.Consumer<List<Component>> upstream) {
-        return IvMachineDisplay.wrap(iv$self(), upstream);
-    }
 }

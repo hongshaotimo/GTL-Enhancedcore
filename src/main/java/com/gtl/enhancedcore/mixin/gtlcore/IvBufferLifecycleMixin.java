@@ -36,6 +36,8 @@ public abstract class IvBufferLifecycleMixin extends MEIOPartMachine implements 
         return state != null && (!state.jobs.isEmpty() || !state.healthy()) || super.isFormed();
     }
     @Override public boolean hasController(net.minecraft.core.BlockPos pos) {
+        if ((Object)this instanceof com.gtl.enhancedcore.common.cloud.CloudPatternBufferMachine)
+            return super.hasController(pos);
         var state = IvBuffers.state(this);
         if (state != null && (!state.jobs.isEmpty() || !state.healthy())) {
             var candidate = com.gregtechceu.gtceu.api.machine.MetaMachine.getMachine(getLevel(), pos);
@@ -60,6 +62,7 @@ public abstract class IvBufferLifecycleMixin extends MEIOPartMachine implements 
     }
     @Inject(method = "saveCustomPersistedData", at = @At("TAIL"))
     private void iv$save(CompoundTag tag, boolean forDrop, CallbackInfo ci) {
+        if ((Object)this instanceof com.gtl.enhancedcore.common.cloud.CloudPatternBufferMachine) return;
         IvBufferState state = IvBuffers.state(this);
         if (state != null && state.dedicated()) {
             tag.put(IvBuffers.SAVE_KEY, state.save());
@@ -68,6 +71,7 @@ public abstract class IvBufferLifecycleMixin extends MEIOPartMachine implements 
     }
     @Inject(method = "loadCustomPersistedData", at = @At("TAIL"))
     private void iv$load(CompoundTag tag, CallbackInfo ci) {
+        if ((Object)this instanceof com.gtl.enhancedcore.common.cloud.CloudPatternBufferMachine) return;
         IvBufferState state = IvBuffers.state(this);
         if (state != null && tag.contains(IvBuffers.SAVE_KEY)) {
             state.load(tag.getCompound(IvBuffers.SAVE_KEY));

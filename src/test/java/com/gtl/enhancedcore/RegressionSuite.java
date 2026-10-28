@@ -25,17 +25,34 @@ public final class RegressionSuite {
 
     public static void main(String[] args) throws Exception {
         configParsing();
+        assertions += CloudLedgerRegression.run();
+        assertions += CloudStoreNbtRegression.run();
+        assertions += com.gtl.enhancedcore.common.cloud.transfer.CloudTransferRegression.run();
+        assertions += IvTimeAccelerationRegression.run();
+        assertions += FtbQuestBookmarkRegression.run();
+        assertions += QuestVisibilityCycleGuardRegression.run();
+        assertions += ExPatternTerminalRegression.run();
+        assertions += GalaxyBatchAccountingRegression.run();
+        assertions += GalaxyConnectionCapacityRegression.run();
+        assertions += GalaxyWirelessHandlerRegression.run();
+        assertions += com.gtl.enhancedcore.client.renderer.StellarVortexSpinRegression.run();
+        assertions += MapImagePacingRegression.run();
+        assertions += FtbClaimMapRegression.run();
+        assertions += BloomPacingRegression.run();
         assertions += PlotWorldRegression.run();
+        assertions += PlotRoadAlignmentRegression.run();
         assertions += PlotPreviewRegression.run();
         assertions += PlotPresetShareRegression.run();
         assertions += WirelessChargerRegression.run();
         assertions += PersonalPlotWorldRegression.run();
         structureMigration();
         assertions += HollowStructureRegression.run();
+        assertions += NativeStructureHollowingRegression.run();
         assertions += NativeHiddenStructureRegression.run();
         fairScheduling();
         atomicFiles();
         assertions += WeatherAnchorPowerRegression.run();
+        assertions += WeatherAnchorModesRegression.run();
         assertions += CreativeComputationPolicyRegression.run();
         assertions += EquipmentRecipesRegression.run();
         assertions += StarCoreStripperRegression.run();
@@ -45,6 +62,7 @@ public final class RegressionSuite {
         assertions += TerminalExtrasRegression.run();
         assertions += RemoteProviderRangeRegression.run();
         assertions += RemoteProviderMixinRegression.run();
+        assertions += TravelAnchorsRegression.run();
         assertions += TerminalDismantleRegression.run();
         assertions += DismantleEmptyProbeRegression.run();
         assertions += DismantleResumeLayoutsRegression.run();
@@ -60,6 +78,8 @@ public final class RegressionSuite {
         assertions += StellarForgeRegression.run();
         assertions += IvIsolationRegression.run();
         assertions += FuxiIsolationUpstreamRegression.run();
+        assertions += WoodDistillationAllocationRegression.run();
+        assertions += BiosphereModulePowerRegression.run();
         assertions += IvBufferDispatchRegression.run();
         assertions += IvVirtualIngredientRegression.run();
         assertions += IvDisplayRegression.run();
@@ -75,10 +95,14 @@ public final class RegressionSuite {
         assertions += UpstreamPreviewContractRegression.run();
         assertions += IntegratedFactoryRegression.run();
         assertions += ThreadBudgetRegression.run();
+        assertions += MapRasterThreadBudgetRegression.run();
+        assertions += MapRasterTransformRegression.run();
         assertions += FlightStateConcurrencyRegression.run();
         assertions += CoilDebugToolRegression.run();
         assertions += RecipeRecoveryRegression.run();
         assertions += GridRecipePaymentRegression.run();
+        assertions += GridNetworkTerminalBigIntegerRegression.run();
+        assertions += SuperBufferWideInventoryRegression.run();
         assertions += ChunkUnloadRegression.run();
         assertions += ActiveBlockSnapshotRegression.run();
         assertions += CellPersistenceRegression.run();
@@ -105,6 +129,14 @@ public final class RegressionSuite {
      * 必须用无线多配方基类，不能再挂回 GTCEu 原生聚变堆的预热修饰器与字段托管。
      */
     private static void stellarWirelessContract() throws Exception {
+        String galaxyRegistration = Files.readString(Path.of(
+                "src/main/java/com/gtl/enhancedcore/common/registration/GalaxyMachineRegistration.java"));
+        check(galaxyRegistration.contains(".abilities(PartAbility.IMPORT_ITEMS)"),
+                "galaxy connection source and target must register as ordinary input-port abilities");
+        String nativeHatches = Files.readString(Path.of(
+                "src/main/java/com/gtl/enhancedcore/common/recipe/iv/IvNativeHatches.java"));
+        check(nativeHatches.contains("isConnectionPortBlock(block)"),
+                "galaxy connection ports must stay separate from IV material-port accounting");
         String machine = Files.readString(Path.of(
                 "src/main/java/com/gtl/enhancedcore/common/machine/StellarConfinementFusionReactorMachine.java"));
         check(machine.contains("extends GTLAddWirelessWorkableElectricMultipleRecipesMachine"),

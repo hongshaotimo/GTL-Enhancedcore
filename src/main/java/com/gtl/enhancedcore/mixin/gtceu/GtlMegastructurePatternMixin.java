@@ -7,6 +7,8 @@ import com.gregtechceu.gtceu.api.pattern.MultiblockShapeInfo;
 import com.gtl.enhancedcore.common.structure.GtlMegastructurePatterns;
 import com.gtl.enhancedcore.common.structure.SpaceElevatorMaintenance;
 import com.gtl.enhancedcore.common.structure.NativeIsolationPatterns;
+import com.gtl.enhancedcore.common.structure.NativeStructureHollowing;
+import com.gtl.enhancedcore.common.structure.RetiredLightHunter;
 import com.gtl.enhancedcore.common.config.MachineOverrideConfig;
 import java.util.List;
 import java.util.function.Supplier;
@@ -22,25 +24,32 @@ public abstract class GtlMegastructurePatternMixin {
         boolean enhance = MachineOverrideConfig.current().enhanceOriginalMachines();
         boolean replace = MachineOverrideConfig.current().replaceOriginalStructures();
         if (enhance && SpaceElevatorMaintenance.matches(definition.getId()))
-            return Suppliers.memoize(() -> SpaceElevatorMaintenance.forbidden(original.get()));
+            return Suppliers.memoize(() -> {
+                var pattern = SpaceElevatorMaintenance.forbidden(original.get());
+                return replace ? NativeStructureHollowing.optimize(definition.getId(), pattern) : pattern;
+            });
         if (enhance && (NativeIsolationPatterns.targets(definition.getId())
                 || !replace && com.gtl.enhancedcore.common.recipe.iv.IvMachineScope.nativeTarget(definition.getId())))
-            return Suppliers.memoize(() -> NativeIsolationPatterns.restrict(definition.getId(), original.get()));
-        if (!replace || !GtlMegastructurePatterns.targets(definition.getId())) return original;
-        return GtlMegastructurePatterns.wrapFactory(definition.getId(), original);
+            return Suppliers.memoize(() -> {
+                var pattern = NativeIsolationPatterns.restrict(definition.getId(), original.get());
+                return replace ? NativeStructureHollowing.optimize(definition.getId(), pattern) : pattern;
+            });
+        if (!replace) return original;
+        if (GtlMegastructurePatterns.targets(definition.getId()))
+            return GtlMegastructurePatterns.wrapFactory(definition.getId(), original);
+        return Suppliers.memoize(() -> NativeStructureHollowing.optimize(definition.getId(), original.get()));
     }
 
     @ModifyVariable(method = "setShapes", at = @At("HEAD"), argsOnly = true)
     private Supplier<List<MultiblockShapeInfo>> enhanced$useMatchingPreview(Supplier<List<MultiblockShapeInfo>> original) {
         var definition = (MultiblockMachineDefinition) (Object) this;
-        if (!(MachineOverrideConfig.current().replaceOriginalStructures()
-                && GtlMegastructurePatterns.targets(definition.getId()))
-                && !(MachineOverrideConfig.current().enhanceOriginalMachines()
-                && SpaceElevatorMaintenance.matches(definition.getId()))) return original;
+        boolean replace = MachineOverrideConfig.current().replaceOriginalStructures();
+        boolean enhance = MachineOverrideConfig.current().enhanceOriginalMachines();
+        if (RetiredLightHunter.contains(definition.getId())
+                || !(replace || enhance && SpaceElevatorMaintenance.matches(definition.getId()))) return original;
         return Suppliers.memoize(() -> {
             var pattern = definition.getPatternFactory().get();
-            int[] repetitions = new int[pattern.aisleRepetitions.length];
-            java.util.Arrays.fill(repetitions, 1);
+            int[] repetitions = NativeStructureHollowing.minimumRepetitions(pattern.aisleRepetitions);
             return List.of(new MultiblockShapeInfo(pattern.getPreview(repetitions)));
         });
     }

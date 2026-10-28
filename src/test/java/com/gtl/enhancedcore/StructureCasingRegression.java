@@ -15,14 +15,12 @@ final class StructureCasingRegression {
         var expected = Map.ofEntries(
                 Map.entry("crystalline_infinity", "gtlcore:extreme_strength_tritanium_casing"),
                 Map.entry("mega_distillery", "gtceu:clean_machine_casing"),
-                Map.entry("mega_extractor", "gtlcore:hyper_mechanical_casing"),
                 Map.entry("suprachronal_assembly_line", "gtlcore:molecular_casing"),
                 Map.entry("mega_fluid_heater", "gtlcore:iridium_casing"),
                 Map.entry("advanced_sps_crafting", "gtceu:fusion_casing_mk2"),
                 Map.entry("star_ultimate_material_forge_factory", "gtlcore:molecular_casing"),
                 Map.entry("nano_core", "gtlcore:hyper_mechanical_casing"),
                 Map.entry("advanced_neutron_activator", "gtlcore:sps_casing"),
-                Map.entry("antientropy_condensation_center", "gtlcore:antifreeze_heatproof_machine_casing"),
                 Map.entry("advanced_integrated_ore_processor", "gtceu:robust_machine_casing"),
                 Map.entry("atomic_energy_excitation_plant", "gtlcore:dimensionally_transcendent_casing"),
                 Map.entry("mage_assembler", "gtlcore:iridium_casing"),
@@ -39,6 +37,13 @@ final class StructureCasingRegression {
                 check(!spec.has("appearance"), name + ": native appearance retained");
                 check(bindings.getAsJsonObject("@").size() == 2, name + ": controller binding unchanged");
                 check(hatch.get("fallback").equals(spec.get("hatchFallback")), name + ": hatch casing metadata");
+                if (name.equals("mega_extractor") || name.equals("antientropy_condensation_center")) {
+                    String casing = name.equals("mega_extractor") ? "gtlcore:hyper_mechanical_casing"
+                            : "gtlcore:antifreeze_heatproof_machine_casing";
+                    check(hatch.get("fallback").getAsString().equals(casing), name + ": requested empty port casing");
+                    check(spec.get("sourceRevision").getAsString().equals("user-request-20261027"),
+                            name + ": new palette follows reviewed source rather than old recoloring");
+                }
                 for (var value : bindings.entrySet())
                     check(!value.getValue().getAsJsonObject().has("override"), name + ": no previous overrides");
                 if (expected.containsKey(name)) {
@@ -68,6 +73,7 @@ final class StructureCasingRegression {
             }
         }
         check(machines == 27 && changed.equals(expected.keySet()), "exact native palette scope");
+        checks += RequestedStructuresRegression.run();
         return checks;
     }
 

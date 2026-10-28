@@ -22,6 +22,16 @@ public abstract class PreviewPatternMemoryMixin implements PreviewPatternMemory 
     @Shadow @Final Map<BlockPos, BlockInfo> blockMap;
     @Shadow @Final Set<BlockPos> moduleOnlyBlocks;
     @Shadow @Final IMultiController controllerBase;
+    @org.spongepowered.asm.mixin.Unique private List<BlockPos> enhanced$chambers;
+
+    @Override public List<BlockPos> enhanced$chamberPositions() {
+        if (enhanced$chambers == null) {
+            var classifier = new com.gtl.enhancedcore.common.structure.ChamberPositions();
+            enhanced$chambers = predicateMap.entrySet().stream().filter(e -> classifier.isChamber(e.getValue()))
+                    .map(e -> e.getKey().immutable()).toList();
+        }
+        return enhanced$chambers;
+    }
 
     @Override
     public void enhanced$releasePreviewMemory() {
@@ -29,6 +39,7 @@ public abstract class PreviewPatternMemoryMixin implements PreviewPatternMemory 
         // Do not touch a controller attached to a real level.
         if (!(controllerBase.self().getLevel() instanceof TrackedDummyWorld)) return;
         parts.clear();
+        enhanced$chambers = null;
         predicateMap.clear();
         blockMap.clear();
         moduleOnlyBlocks.clear();
@@ -38,13 +49,6 @@ public abstract class PreviewPatternMemoryMixin implements PreviewPatternMemory 
         if (predicateMap instanceof it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap<?, ?> map) map.trim();
         if (blockMap instanceof it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap<?, ?> map) map.trim();
         if (moduleOnlyBlocks instanceof it.unimi.dsi.fastutil.objects.ObjectOpenHashSet<?> set) set.trim();
-        var state = controllerBase.getMultiblockState();
-        if (state != null) {
-            state.getMatchContext().reset();
-            state.cache.clear();
-            state.cache.trim();
-            state.getGlobalCount().clear();
-            state.getLayerCount().clear();
-        }
+        PreviewPatternMemory.releaseState(controllerBase.getMultiblockState());
     }
 }

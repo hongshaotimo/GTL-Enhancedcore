@@ -22,7 +22,12 @@
     "stellar_confinement_fusion_reactor",
     "universal_joint_factory",
     "void_constrained_mining_field",
-    "weather_anchor"
+    "weather_anchor",
+    "stellar_vortex_space_station",
+    "galaxy_connection_source_hatch",
+    "galaxy_connection_target_hatch",
+    "cloud_pattern_library",
+    "cloud_pattern_buffer"
   ],
   "plus_factory_ids": [
     "assembling_plus",

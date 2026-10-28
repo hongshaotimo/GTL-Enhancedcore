@@ -22,6 +22,9 @@ import java.util.List;
  */
 public final class GTLEnhancedcoreMachines {
 
+    private static volatile MachineDefinition galaxySourceHatch, galaxyTargetHatch;
+    private static volatile MachineDefinition cloudPatternLibrary, cloudPatternBuffer;
+    private static volatile MultiblockMachineDefinition stellarVortexStation;
     private static volatile MachineDefinition meDrive;
     private static volatile MachineDefinition claimReplacementTerminal;
     private static volatile MachineDefinition quantumDataAccessHatch;
@@ -65,6 +68,11 @@ public final class GTLEnhancedcoreMachines {
             return;
         }
         GTLEnhancedcoreRecipeTypes.init();
+        galaxySourceHatch = GalaxyMachineRegistration.hatch(true);
+        galaxyTargetHatch = GalaxyMachineRegistration.hatch(false);
+        stellarVortexStation = GalaxyMachineRegistration.station();
+        cloudPatternLibrary = CloudPatternRegistration.library();
+        cloudPatternBuffer = CloudPatternRegistration.buffer();
         meDrive = PartMachineRegistration.registerMEDrive();
         circuitEncoderHatch = PartMachineRegistration.registerCircuitEncoderHatch();
         adaptiveMaintenanceHatch = PartMachineRegistration.registerAdaptiveMaintenanceHatch();
@@ -114,6 +122,12 @@ public final class GTLEnhancedcoreMachines {
 
     // ==================== 访问器（外部唯一入口） ====================
 
+
+    public static MachineDefinition getGalaxySourceHatch() { return galaxySourceHatch; }
+    public static MachineDefinition getGalaxyTargetHatch() { return galaxyTargetHatch; }
+    public static MultiblockMachineDefinition getStellarVortexStation() { return stellarVortexStation; }
+    public static MachineDefinition getCloudPatternLibrary() { return cloudPatternLibrary; }
+    public static MachineDefinition getCloudPatternBuffer() { return cloudPatternBuffer; }
 
     public static MachineDefinition getMEDrive() {
         return meDrive;
@@ -240,6 +254,8 @@ public final class GTLEnhancedcoreMachines {
     public static List<MachineDefinition> all() {
         if (!initialized) return List.of();
         List<MachineDefinition> result = new ArrayList<>(List.of(
+                galaxySourceHatch, galaxyTargetHatch, stellarVortexStation,
+                cloudPatternLibrary, cloudPatternBuffer,
                 meDrive, circuitEncoderHatch, adaptiveMaintenanceHatch, claimReplacementTerminal, quantumDataAccessHatch,
                 creativeComputationReceiverHatch,
                 largeFurnace, steamPlatform, plasmaMachineTool, hadronRefinery, quantumMassArray,

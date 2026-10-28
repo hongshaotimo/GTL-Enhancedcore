@@ -1,8 +1,6 @@
 package com.gtl.enhancedcore.client.ftbchunks;
 
-/**
- * 当前区块选择模式（FREEHAND / RECTANGLE）。
- */
+/** Current claim selection mode. */
 public final class ClaimModeState {
     private static ClaimMode current = ClaimMode.RECTANGLE;
 

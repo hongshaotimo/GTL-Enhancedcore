@@ -24,7 +24,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
         "com.xingmot.gtmadvancedhatch.api.NoConsumeNotifiabbleLaserContainer"
 }, remap = false)
 public abstract class GridEnergyRecipeInputMixin extends NotifiableEnergyContainer implements GridEnergyRecipeInput {
-    @Shadow public UUID owner_uuid;
+    @Shadow(remap = false) public UUID owner_uuid;
 
     protected GridEnergyRecipeInputMixin(MetaMachine machine, long capacity, long inputVoltage,
                                         long inputAmperage, long outputVoltage, long outputAmperage) {

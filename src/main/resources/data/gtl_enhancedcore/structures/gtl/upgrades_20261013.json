@@ -193,29 +193,29 @@
   "skeleton_shift_rift_engine": {
     "namespace": "gtladditions",
     "sourceSize": [
-      140,
-      160,
-      200
+      31,
+      31,
+      48
     ],
     "size": [
-      200,
-      160,
-      140
+      31,
+      31,
+      48
     ],
     "sourceController": [
-      0,
-      52,
-      82
-    ],
-    "sourceNormal": [
-      -1,
-      0,
+      15,
+      5,
       0
     ],
+    "sourceNormal": [
+      0,
+      0,
+      -1
+    ],
     "controllerPosition": [
-      82,
-      52,
-      139
+      15,
+      5,
+      47
     ],
     "bindings": {
       " ": {
@@ -249,13 +249,13 @@
         "block": "gtlcore:iridium_casing"
       },
       "B": {
-        "mode": "original",
+        "mode": "casing",
         "sample": [
-          0,
+          10,
           1,
-          13
+          31
         ],
-        "block": "gtceu:high_power_casing"
+        "block": "gtlcore:hyper_mechanical_casing"
       },
       "D": {
         "mode": "original",
@@ -269,67 +269,58 @@
       "E": {
         "mode": "original",
         "sample": [
-          0,
-          4,
-          4
-        ],
-        "block": "gtlcore:sps_casing"
-      },
-      "F": {
-        "mode": "original",
-        "sample": [
-          0,
-          7,
-          5
-        ],
-        "block": "gtceu:black_steel_frame"
-      },
-      "G": {
-        "mode": "original",
-        "sample": [
-          1,
-          1,
-          13
-        ],
-        "block": "kubejs:neutronium_pipe_casing"
-      },
-      "I": {
-        "mode": "original",
-        "sample": [
           1,
           1,
           21
         ],
         "block": "gtlcore:dimensionally_transcendent_casing"
       },
-      "J": {
-        "mode": "casing",
+      "F": {
+        "mode": "original",
         "sample": [
-          10,
-          1,
-          31
+          0,
+          4,
+          4
         ],
-        "block": "gtlcore:hyper_mechanical_casing"
+        "block": "gtlcore:sps_casing"
+      },
+      "G": {
+        "mode": "original",
+        "sample": [
+          8,
+          5,
+          5
+        ],
+        "block": "gtlcore:degenerate_rhenium_constrained_casing"
+      },
+      "I": {
+        "mode": "original",
+        "sample": [
+          11,
+          2,
+          7
+        ],
+        "block": "gtlcore:ultimate_stellar_containment_casing"
+      },
+      "J": {
+        "mode": "original",
+        "sample": [
+          7,
+          9,
+          15
+        ],
+        "block": "kubejs:naquadriatictaranium_coil_block"
       },
       "K": {
         "mode": "original",
         "sample": [
-          1,
-          2,
-          22
+          3,
+          7,
+          12
         ],
-        "block": "kubejs:dimensional_bridge_casing"
+        "block": "gtceu:fusion_glass"
       },
       "L": {
-        "mode": "original",
-        "sample": [
-          2,
-          2,
-          22
-        ],
-        "block": "gtceu:steel_pipe_casing"
-      },
-      "N": {
         "mode": "original",
         "sample": [
           3,
@@ -338,14 +329,23 @@
         ],
         "block": "gtlcore:hyper_core"
       },
+      "N": {
+        "mode": "original",
+        "sample": [
+          1,
+          2,
+          22
+        ],
+        "block": "kubejs:dimensional_bridge_casing"
+      },
       "O": {
         "mode": "original",
         "sample": [
-          3,
-          7,
-          12
+          1,
+          1,
+          13
         ],
-        "block": "gtceu:fusion_glass"
+        "block": "kubejs:neutronium_pipe_casing"
       },
       "P": {
         "mode": "original",
@@ -357,47 +357,20 @@
         "block": "gtceu:tungstensteel_gearbox"
       },
       "Q": {
-        "mode": "original",
-        "sample": [
-          7,
-          9,
-          15
-        ],
-        "block": "kubejs:naquadriatictaranium_coil_block"
-      },
-      "R": {
-        "mode": "original",
-        "sample": [
-          8,
-          5,
-          5
-        ],
-        "block": "gtlcore:degenerate_rhenium_constrained_casing"
-      },
-      "S": {
-        "mode": "original",
-        "sample": [
-          11,
-          2,
-          7
-        ],
-        "block": "gtlcore:ultimate_stellar_containment_casing"
-      },
-      "T": {
         "mode": "literal",
         "block": "gtceu:cyan_lamp",
         "properties": {
-          "bloom": "true",
+          "bloom": "false",
           "inverted": "true",
           "lit": "true",
           "powered": "false"
         }
       },
-      "U": {
+      "R": {
         "mode": "literal",
         "block": "gtceu:orange_lamp",
         "properties": {
-          "bloom": "true",
+          "bloom": "false",
           "inverted": "true",
           "lit": "true",
           "powered": "false"
@@ -405,31 +378,28 @@
       }
     },
     "counts": {
-      " ": 3866943,
-      "A": 106112,
-      "J": 235678,
-      "D": 106759,
-      "T": 1713,
-      "B": 1564,
-      "P": 4604,
-      "U": 517,
-      "N": 8025,
-      "E": 35592,
-      "G": 16477,
-      "O": 32813,
-      "F": 9124,
-      "R": 22472,
-      "Q": 9582,
-      "L": 312,
-      "I": 11657,
-      "K": 401,
-      "S": 9630,
-      "#": 24,
+      " ": 33386,
+      "A": 1316,
+      "R": 18,
+      "B": 3942,
+      "G": 152,
+      "E": 1588,
+      "D": 1099,
+      "#": 80,
+      "Q": 85,
+      "I": 1186,
+      "K": 625,
+      "O": 24,
+      "L": 3,
+      "F": 697,
+      "J": 1887,
+      "P": 34,
+      "N": 5,
       "@": 1
     },
-    "diamondOreMarkers": 24,
-    "sourceSha256": "688b6204d6633ea20ebb01c89a8900b483756770e75131ba9119bf23a7d15e7c",
-    "sha256": "3e5c9b847936dc4247fd7808e9b54a354205a819eddb2eeccdd216e45f00ed68",
+    "diamondOreMarkers": 80,
+    "sourceSha256": "4b0a559502f4ef257674a899f0c05c67a64d45489f949c6de397d5fe4b020699",
+    "sha256": "2c88b55cf401b10c78ff3cb1bac67d41f5823e06f165016207176f3abb20cf8c",
     "originalSize": [
       32,
       23,
@@ -439,7 +409,1535 @@
     "hatches": [
       "#"
     ],
-    "hatchFallback": "gtlcore:hyper_mechanical_casing"
+    "hatchFallback": "gtlcore:hyper_mechanical_casing",
+    "sourceSchematic": "SchemTool/input/skeleton_shift_rift_engine.schem",
+    "sourceRevision": "user-request-20261027",
+    "markerAccess": [
+      {
+        "sourcePosition": [
+          15,
+          5,
+          0
+        ],
+        "airDirections": [
+          [
+            0,
+            0,
+            -1
+          ]
+        ]
+      },
+      {
+        "sourcePosition": [
+          0,
+          4,
+          40
+        ],
+        "airDirections": [
+          [
+            -1,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            -1
+          ]
+        ]
+      },
+      {
+        "sourcePosition": [
+          30,
+          4,
+          40
+        ],
+        "airDirections": [
+          [
+            1,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            -1
+          ]
+        ]
+      },
+      {
+        "sourcePosition": [
+          0,
+          4,
+          41
+        ],
+        "airDirections": [
+          [
+            -1,
+            0,
+            0
+          ]
+        ]
+      },
+      {
+        "sourcePosition": [
+          30,
+          4,
+          41
+        ],
+        "airDirections": [
+          [
+            1,
+            0,
+            0
+          ]
+        ]
+      },
+      {
+        "sourcePosition": [
+          0,
+          4,
+          42
+        ],
+        "airDirections": [
+          [
+            -1,
+            0,
+            0
+          ],
+          [
+            1,
+            0,
+            0
+          ]
+        ]
+      },
+      {
+        "sourcePosition": [
+          30,
+          4,
+          42
+        ],
+        "airDirections": [
+          [
+            -1,
+            0,
+            0
+          ],
+          [
+            1,
+            0,
+            0
+          ]
+        ]
+      },
+      {
+        "sourcePosition": [
+          0,
+          4,
+          43
+        ],
+        "airDirections": [
+          [
+            -1,
+            0,
+            0
+          ],
+          [
+            1,
+            0,
+            0
+          ]
+        ]
+      },
+      {
+        "sourcePosition": [
+          30,
+          4,
+          43
+        ],
+        "airDirections": [
+          [
+            -1,
+            0,
+            0
+          ],
+          [
+            1,
+            0,
+            0
+          ]
+        ]
+      },
+      {
+        "sourcePosition": [
+          0,
+          4,
+          44
+        ],
+        "airDirections": [
+          [
+            -1,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            1
+          ]
+        ]
+      },
+      {
+        "sourcePosition": [
+          30,
+          4,
+          44
+        ],
+        "airDirections": [
+          [
+            1,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            1
+          ]
+        ]
+      },
+      {
+        "sourcePosition": [
+          2,
+          5,
+          3
+        ],
+        "airDirections": [
+          [
+            -1,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            -1
+          ]
+        ]
+      },
+      {
+        "sourcePosition": [
+          3,
+          5,
+          3
+        ],
+        "airDirections": [
+          [
+            0,
+            0,
+            -1
+          ],
+          [
+            0,
+            0,
+            1
+          ]
+        ]
+      },
+      {
+        "sourcePosition": [
+          4,
+          5,
+          3
+        ],
+        "airDirections": [
+          [
+            0,
+            0,
+            -1
+          ],
+          [
+            0,
+            0,
+            1
+          ]
+        ]
+      },
+      {
+        "sourcePosition": [
+          5,
+          5,
+          3
+        ],
+        "airDirections": [
+          [
+            0,
+            0,
+            -1
+          ],
+          [
+            0,
+            0,
+            1
+          ]
+        ]
+      },
+      {
+        "sourcePosition": [
+          6,
+          5,
+          3
+        ],
+        "airDirections": [
+          [
+            1,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            -1
+          ]
+        ]
+      },
+      {
+        "sourcePosition": [
+          24,
+          5,
+          3
+        ],
+        "airDirections": [
+          [
+            -1,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            -1
+          ]
+        ]
+      },
+      {
+        "sourcePosition": [
+          25,
+          5,
+          3
+        ],
+        "airDirections": [
+          [
+            0,
+            0,
+            -1
+          ],
+          [
+            0,
+            0,
+            1
+          ]
+        ]
+      },
+      {
+        "sourcePosition": [
+          26,
+          5,
+          3
+        ],
+        "airDirections": [
+          [
+            0,
+            0,
+            -1
+          ],
+          [
+            0,
+            0,
+            1
+          ]
+        ]
+      },
+      {
+        "sourcePosition": [
+          27,
+          5,
+          3
+        ],
+        "airDirections": [
+          [
+            0,
+            0,
+            -1
+          ],
+          [
+            0,
+            0,
+            1
+          ]
+        ]
+      },
+      {
+        "sourcePosition": [
+          28,
+          5,
+          3
+        ],
+        "airDirections": [
+          [
+            1,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            -1
+          ]
+        ]
+      },
+      {
+        "sourcePosition": [
+          0,
+          5,
+          40
+        ],
+        "airDirections": [
+          [
+            -1,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            -1
+          ]
+        ]
+      },
+      {
+        "sourcePosition": [
+          30,
+          5,
+          40
+        ],
+        "airDirections": [
+          [
+            1,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            -1
+          ]
+        ]
+      },
+      {
+        "sourcePosition": [
+          0,
+          5,
+          41
+        ],
+        "airDirections": [
+          [
+            -1,
+            0,
+            0
+          ],
+          [
+            1,
+            0,
+            0
+          ]
+        ]
+      },
+      {
+        "sourcePosition": [
+          30,
+          5,
+          41
+        ],
+        "airDirections": [
+          [
+            -1,
+            0,
+            0
+          ],
+          [
+            1,
+            0,
+            0
+          ]
+        ]
+      },
+      {
+        "sourcePosition": [
+          0,
+          5,
+          42
+        ],
+        "airDirections": [
+          [
+            -1,
+            0,
+            0
+          ],
+          [
+            1,
+            0,
+            0
+          ]
+        ]
+      },
+      {
+        "sourcePosition": [
+          30,
+          5,
+          42
+        ],
+        "airDirections": [
+          [
+            -1,
+            0,
+            0
+          ],
+          [
+            1,
+            0,
+            0
+          ]
+        ]
+      },
+      {
+        "sourcePosition": [
+          0,
+          5,
+          43
+        ],
+        "airDirections": [
+          [
+            -1,
+            0,
+            0
+          ],
+          [
+            1,
+            0,
+            0
+          ]
+        ]
+      },
+      {
+        "sourcePosition": [
+          30,
+          5,
+          43
+        ],
+        "airDirections": [
+          [
+            -1,
+            0,
+            0
+          ],
+          [
+            1,
+            0,
+            0
+          ]
+        ]
+      },
+      {
+        "sourcePosition": [
+          0,
+          5,
+          44
+        ],
+        "airDirections": [
+          [
+            -1,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            1
+          ]
+        ]
+      },
+      {
+        "sourcePosition": [
+          30,
+          5,
+          44
+        ],
+        "airDirections": [
+          [
+            1,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            1
+          ]
+        ]
+      },
+      {
+        "sourcePosition": [
+          2,
+          6,
+          3
+        ],
+        "airDirections": [
+          [
+            -1,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            -1
+          ]
+        ]
+      },
+      {
+        "sourcePosition": [
+          3,
+          6,
+          3
+        ],
+        "airDirections": [
+          [
+            0,
+            0,
+            -1
+          ],
+          [
+            0,
+            0,
+            1
+          ]
+        ]
+      },
+      {
+        "sourcePosition": [
+          4,
+          6,
+          3
+        ],
+        "airDirections": [
+          [
+            0,
+            0,
+            -1
+          ],
+          [
+            0,
+            0,
+            1
+          ]
+        ]
+      },
+      {
+        "sourcePosition": [
+          5,
+          6,
+          3
+        ],
+        "airDirections": [
+          [
+            0,
+            0,
+            -1
+          ],
+          [
+            0,
+            0,
+            1
+          ]
+        ]
+      },
+      {
+        "sourcePosition": [
+          6,
+          6,
+          3
+        ],
+        "airDirections": [
+          [
+            1,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            -1
+          ]
+        ]
+      },
+      {
+        "sourcePosition": [
+          24,
+          6,
+          3
+        ],
+        "airDirections": [
+          [
+            -1,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            -1
+          ]
+        ]
+      },
+      {
+        "sourcePosition": [
+          25,
+          6,
+          3
+        ],
+        "airDirections": [
+          [
+            0,
+            0,
+            -1
+          ],
+          [
+            0,
+            0,
+            1
+          ]
+        ]
+      },
+      {
+        "sourcePosition": [
+          26,
+          6,
+          3
+        ],
+        "airDirections": [
+          [
+            0,
+            0,
+            -1
+          ],
+          [
+            0,
+            0,
+            1
+          ]
+        ]
+      },
+      {
+        "sourcePosition": [
+          27,
+          6,
+          3
+        ],
+        "airDirections": [
+          [
+            0,
+            0,
+            -1
+          ],
+          [
+            0,
+            0,
+            1
+          ]
+        ]
+      },
+      {
+        "sourcePosition": [
+          28,
+          6,
+          3
+        ],
+        "airDirections": [
+          [
+            1,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            -1
+          ]
+        ]
+      },
+      {
+        "sourcePosition": [
+          0,
+          6,
+          40
+        ],
+        "airDirections": [
+          [
+            -1,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            -1
+          ]
+        ]
+      },
+      {
+        "sourcePosition": [
+          30,
+          6,
+          40
+        ],
+        "airDirections": [
+          [
+            1,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            -1
+          ]
+        ]
+      },
+      {
+        "sourcePosition": [
+          0,
+          6,
+          41
+        ],
+        "airDirections": [
+          [
+            -1,
+            0,
+            0
+          ],
+          [
+            1,
+            0,
+            0
+          ]
+        ]
+      },
+      {
+        "sourcePosition": [
+          30,
+          6,
+          41
+        ],
+        "airDirections": [
+          [
+            -1,
+            0,
+            0
+          ],
+          [
+            1,
+            0,
+            0
+          ]
+        ]
+      },
+      {
+        "sourcePosition": [
+          0,
+          6,
+          42
+        ],
+        "airDirections": [
+          [
+            -1,
+            0,
+            0
+          ],
+          [
+            1,
+            0,
+            0
+          ]
+        ]
+      },
+      {
+        "sourcePosition": [
+          30,
+          6,
+          42
+        ],
+        "airDirections": [
+          [
+            -1,
+            0,
+            0
+          ],
+          [
+            1,
+            0,
+            0
+          ]
+        ]
+      },
+      {
+        "sourcePosition": [
+          0,
+          6,
+          43
+        ],
+        "airDirections": [
+          [
+            -1,
+            0,
+            0
+          ],
+          [
+            1,
+            0,
+            0
+          ]
+        ]
+      },
+      {
+        "sourcePosition": [
+          30,
+          6,
+          43
+        ],
+        "airDirections": [
+          [
+            -1,
+            0,
+            0
+          ],
+          [
+            1,
+            0,
+            0
+          ]
+        ]
+      },
+      {
+        "sourcePosition": [
+          0,
+          6,
+          44
+        ],
+        "airDirections": [
+          [
+            -1,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            1
+          ]
+        ]
+      },
+      {
+        "sourcePosition": [
+          30,
+          6,
+          44
+        ],
+        "airDirections": [
+          [
+            1,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            1
+          ]
+        ]
+      },
+      {
+        "sourcePosition": [
+          2,
+          7,
+          3
+        ],
+        "airDirections": [
+          [
+            -1,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            -1
+          ]
+        ]
+      },
+      {
+        "sourcePosition": [
+          3,
+          7,
+          3
+        ],
+        "airDirections": [
+          [
+            0,
+            0,
+            -1
+          ],
+          [
+            0,
+            0,
+            1
+          ]
+        ]
+      },
+      {
+        "sourcePosition": [
+          4,
+          7,
+          3
+        ],
+        "airDirections": [
+          [
+            0,
+            0,
+            -1
+          ],
+          [
+            0,
+            0,
+            1
+          ]
+        ]
+      },
+      {
+        "sourcePosition": [
+          5,
+          7,
+          3
+        ],
+        "airDirections": [
+          [
+            0,
+            0,
+            -1
+          ],
+          [
+            0,
+            0,
+            1
+          ]
+        ]
+      },
+      {
+        "sourcePosition": [
+          6,
+          7,
+          3
+        ],
+        "airDirections": [
+          [
+            1,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            -1
+          ]
+        ]
+      },
+      {
+        "sourcePosition": [
+          24,
+          7,
+          3
+        ],
+        "airDirections": [
+          [
+            -1,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            -1
+          ]
+        ]
+      },
+      {
+        "sourcePosition": [
+          25,
+          7,
+          3
+        ],
+        "airDirections": [
+          [
+            0,
+            0,
+            -1
+          ],
+          [
+            0,
+            0,
+            1
+          ]
+        ]
+      },
+      {
+        "sourcePosition": [
+          26,
+          7,
+          3
+        ],
+        "airDirections": [
+          [
+            0,
+            0,
+            -1
+          ],
+          [
+            0,
+            0,
+            1
+          ]
+        ]
+      },
+      {
+        "sourcePosition": [
+          27,
+          7,
+          3
+        ],
+        "airDirections": [
+          [
+            0,
+            0,
+            -1
+          ],
+          [
+            0,
+            0,
+            1
+          ]
+        ]
+      },
+      {
+        "sourcePosition": [
+          28,
+          7,
+          3
+        ],
+        "airDirections": [
+          [
+            1,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            -1
+          ]
+        ]
+      },
+      {
+        "sourcePosition": [
+          0,
+          7,
+          40
+        ],
+        "airDirections": [
+          [
+            -1,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            -1
+          ]
+        ]
+      },
+      {
+        "sourcePosition": [
+          30,
+          7,
+          40
+        ],
+        "airDirections": [
+          [
+            1,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            -1
+          ]
+        ]
+      },
+      {
+        "sourcePosition": [
+          0,
+          7,
+          41
+        ],
+        "airDirections": [
+          [
+            -1,
+            0,
+            0
+          ],
+          [
+            1,
+            0,
+            0
+          ]
+        ]
+      },
+      {
+        "sourcePosition": [
+          30,
+          7,
+          41
+        ],
+        "airDirections": [
+          [
+            -1,
+            0,
+            0
+          ],
+          [
+            1,
+            0,
+            0
+          ]
+        ]
+      },
+      {
+        "sourcePosition": [
+          0,
+          7,
+          42
+        ],
+        "airDirections": [
+          [
+            -1,
+            0,
+            0
+          ],
+          [
+            1,
+            0,
+            0
+          ]
+        ]
+      },
+      {
+        "sourcePosition": [
+          30,
+          7,
+          42
+        ],
+        "airDirections": [
+          [
+            -1,
+            0,
+            0
+          ],
+          [
+            1,
+            0,
+            0
+          ]
+        ]
+      },
+      {
+        "sourcePosition": [
+          0,
+          7,
+          43
+        ],
+        "airDirections": [
+          [
+            -1,
+            0,
+            0
+          ],
+          [
+            1,
+            0,
+            0
+          ]
+        ]
+      },
+      {
+        "sourcePosition": [
+          30,
+          7,
+          43
+        ],
+        "airDirections": [
+          [
+            -1,
+            0,
+            0
+          ],
+          [
+            1,
+            0,
+            0
+          ]
+        ]
+      },
+      {
+        "sourcePosition": [
+          0,
+          7,
+          44
+        ],
+        "airDirections": [
+          [
+            -1,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            1
+          ]
+        ]
+      },
+      {
+        "sourcePosition": [
+          30,
+          7,
+          44
+        ],
+        "airDirections": [
+          [
+            1,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            1
+          ]
+        ]
+      },
+      {
+        "sourcePosition": [
+          2,
+          8,
+          3
+        ],
+        "airDirections": [
+          [
+            -1,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            -1
+          ]
+        ]
+      },
+      {
+        "sourcePosition": [
+          3,
+          8,
+          3
+        ],
+        "airDirections": [
+          [
+            0,
+            0,
+            -1
+          ],
+          [
+            0,
+            0,
+            1
+          ]
+        ]
+      },
+      {
+        "sourcePosition": [
+          4,
+          8,
+          3
+        ],
+        "airDirections": [
+          [
+            0,
+            0,
+            -1
+          ],
+          [
+            0,
+            0,
+            1
+          ]
+        ]
+      },
+      {
+        "sourcePosition": [
+          5,
+          8,
+          3
+        ],
+        "airDirections": [
+          [
+            0,
+            0,
+            -1
+          ],
+          [
+            0,
+            0,
+            1
+          ]
+        ]
+      },
+      {
+        "sourcePosition": [
+          6,
+          8,
+          3
+        ],
+        "airDirections": [
+          [
+            1,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            -1
+          ]
+        ]
+      },
+      {
+        "sourcePosition": [
+          24,
+          8,
+          3
+        ],
+        "airDirections": [
+          [
+            -1,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            -1
+          ]
+        ]
+      },
+      {
+        "sourcePosition": [
+          25,
+          8,
+          3
+        ],
+        "airDirections": [
+          [
+            0,
+            0,
+            -1
+          ],
+          [
+            0,
+            0,
+            1
+          ]
+        ]
+      },
+      {
+        "sourcePosition": [
+          26,
+          8,
+          3
+        ],
+        "airDirections": [
+          [
+            0,
+            0,
+            -1
+          ],
+          [
+            0,
+            0,
+            1
+          ]
+        ]
+      },
+      {
+        "sourcePosition": [
+          27,
+          8,
+          3
+        ],
+        "airDirections": [
+          [
+            0,
+            0,
+            -1
+          ],
+          [
+            0,
+            0,
+            1
+          ]
+        ]
+      },
+      {
+        "sourcePosition": [
+          28,
+          8,
+          3
+        ],
+        "airDirections": [
+          [
+            1,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            -1
+          ]
+        ]
+      }
+    ]
   },
   "pcb_factory": {
     "namespace": "gtceu",

@@ -14,6 +14,12 @@ public final class IvJob {
     public final int slot;
     public final GTRecipe recipe;
     public final CompoundTag pattern;
+    /** Central original identity, independent of a replacement buffer's local slot assignment. */
+    public UUID cloudPattern;
+    /** Shared endpoints retain the exact accepting controller instance per order. */
+    public UUID cloudMachine;
+    public boolean ivGalaxy;
+    public BigInteger ivGalaxyEUt = BigInteger.ZERO;
     public final Map<AEKey, Long> inventory;
     public final Map<AEKey, Long> virtual;
     public final Map<AEKey, Long> pending = new LinkedHashMap<>();
@@ -96,6 +102,9 @@ public final class IvJob {
     public CompoundTag save() {
         CompoundTag tag = new CompoundTag();
         tag.putUUID("id", id); tag.putInt("slot", slot);
+        tag.putBoolean("ivGalaxy", ivGalaxy); tag.putString("ivGalaxyEUt", ivGalaxyEUt.toString());
+        if (cloudPattern != null) tag.putUUID("cloudPattern", cloudPattern);
+        if (cloudMachine != null) tag.putUUID("cloudMachine", cloudMachine);
         tag.put("recipe", GTRecipeSerializer.CODEC.encodeStart(NbtOps.INSTANCE, recipe).getOrThrow(false, ignored -> {}));
         tag.putString("recipeId", recipe.id.toString()); tag.put("pattern", pattern.copy());
         tag.put("input", saveStock(inventory)); tag.put("virtual", saveStock(virtual));
@@ -120,6 +129,11 @@ public final class IvJob {
         recipe.id = new ResourceLocation(tag.getString("recipeId"));
         IvJob job = new IvJob(tag.getUUID("id"), tag.getInt("slot"), recipe, tag.getCompound("pattern"),
                 loadStock(tag.getList("input", Tag.TAG_COMPOUND)), loadStock(tag.getList("virtual", Tag.TAG_COMPOUND)), tag.getLong("remaining"));
+        job.cloudPattern = tag.hasUUID("cloudPattern") ? tag.getUUID("cloudPattern") : null;
+        job.cloudMachine = tag.hasUUID("cloudMachine") ? tag.getUUID("cloudMachine") : null;
+        job.ivGalaxy = tag.getBoolean("ivGalaxy");
+        job.ivGalaxyEUt = tag.contains("ivGalaxyEUt") ? new BigInteger(tag.getString("ivGalaxyEUt")) : BigInteger.ZERO;
+        if (job.ivGalaxyEUt.signum() < 0) throw new IllegalArgumentException("Invalid stellar IV rate");
         job.pending.putAll(loadStock(tag.getList("pending", Tag.TAG_COMPOUND)));
         job.completion.putAll(loadStock(tag.getList("completion", Tag.TAG_COMPOUND)));
         job.parallel = tag.getLong("parallel"); job.eut = tag.getLong("eut");
@@ -150,7 +164,7 @@ public final class IvJob {
         if (job.slot < 0 || job.remaining < 0 || job.parallel < 0 || job.eut < 0 || job.duration < 0 || job.elapsed < 0 || job.energyLeft.signum() < 0)
             throw new IllegalArgumentException("Invalid isolated task counters");
         if (job.energyTotal.signum()<0 || job.energyLeft.compareTo(job.energyTotal)>0 || job.supplyPower<0) throw new IllegalArgumentException("Invalid isolated energy ledger");
-        if (job.active() && (job.duration < 1 || !job.pending.isEmpty() || job.energyLeft.compareTo((job.nativeWireless ? job.nativeWirelessEUt : BigInteger.valueOf(job.eut)).multiply(BigInteger.valueOf(job.duration))) > 0)
+        if (job.active() && (job.duration < 1 || !job.pending.isEmpty() || job.energyLeft.compareTo((job.ivGalaxy ? job.ivGalaxyEUt : job.nativeWireless ? job.nativeWirelessEUt : BigInteger.valueOf(job.eut)).multiply(BigInteger.valueOf(job.duration))) > 0)
                 || !job.active() && !job.completion.isEmpty()) throw new IllegalArgumentException("Invalid isolated task phase");
         job.validateAccounting();
         return job;

@@ -21,7 +21,7 @@ public final class IntegratedFactoryStructure {
         var abilities = Predicates.abilities(PartAbility.MAINTENANCE).setMaxGlobalLimited(1).setPreviewCount(1)
                 .or(Predicates.abilities(PartAbility.INPUT_ENERGY).setMinGlobalLimited(1)
                         .setMaxGlobalLimited(2).setPreviewCount(1))
-                .or(IvBufferRegistry.materialPorts(30));
+                .or(IvBufferRegistry.materialPorts(1));
         var hatches = requiredBlock("gtlcore:multi_functional_casing").or(abilities);
         return StructurePatterns.start("/data/gtl_enhancedcore/structures/integrated_universal_factory.pattern.gz")
                 .where('C', Predicates.controller(Predicates.blocks(definition.get())))

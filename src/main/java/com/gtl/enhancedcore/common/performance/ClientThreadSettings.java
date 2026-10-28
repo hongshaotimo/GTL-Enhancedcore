@@ -46,6 +46,11 @@ public final class ClientThreadSettings {
         }
     }
 
+    public static int mapRasterThreads() {
+        return MapRasterThreadBudget.plan(Runtime.getRuntime().availableProcessors(), Runtime.getRuntime().maxMemory(),
+                SETTINGS.mapRasterThreads(), SETTINGS.autoThreads());
+    }
+
     private static int configured(String key, int fallback) {
         int value = key.equals("backgroundThreads") ? SETTINGS.backgroundThreads() : SETTINGS.builderThreads();
         return value == 0 ? fallback : value;

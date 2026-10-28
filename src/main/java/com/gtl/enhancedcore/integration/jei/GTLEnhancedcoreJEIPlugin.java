@@ -11,14 +11,15 @@ import mezz.jei.api.recipe.RecipeType;
 import mezz.jei.api.registration.IRecipeCatalystRegistration;
 import mezz.jei.api.registration.ISubtypeRegistration;
 import mezz.jei.api.registration.IExtraIngredientRegistration;
+import mezz.jei.api.registration.IGuiHandlerRegistration;
 import mezz.jei.api.ingredients.subtypes.IIngredientSubtypeInterpreter;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
+import net.minecraftforge.fml.ModList;
 
 /**
- * JEI 集成 —— 把大型熔炉注册为原版熔炼配方的催化剂。
- * 任务点击跳转 JEI 功能已于 2026-08-04 按用户要求整体移除（FluidJEIHelper/ItemJEIHelper 已删除）。
+ * JEI 集成：熔炼催化剂、灯变体以及 FTB 任务详情物品的标准 GUI ingredient 接口。
  *
  * 规则（见 API标准.md）：机器通过 getter 获取，避免过早触发静态注册；
  * getLargeFurnace() 可能为 null（注册事件未触发），必须判空。
@@ -31,6 +32,24 @@ public class GTLEnhancedcoreJEIPlugin implements IModPlugin {
     @Override
     public ResourceLocation getPluginUid() {
         return UID;
+    }
+
+    @Override
+    public void onRuntimeAvailable(mezz.jei.api.runtime.IJeiRuntime runtime) {
+        var manager = runtime.getIngredientManager();
+        var retired = manager.getAllIngredients(mezz.jei.api.constants.VanillaTypes.ITEM_STACK).stream()
+                .filter(stack -> {
+                    var id = ForgeRegistries.ITEMS.getKey(stack.getItem());
+                    return id != null && com.gtl.enhancedcore.common.registration.RetiredMachines.contains(id.toString());
+                }).toList();
+        manager.removeIngredientsAtRuntime(mezz.jei.api.constants.VanillaTypes.ITEM_STACK, retired);
+    }
+
+    @Override
+    public void registerGuiHandlers(IGuiHandlerRegistration registration) {
+        if (ModList.get().isLoaded("ftbquests") && ModList.get().isLoaded("ftblibrary")) {
+            FtbQuestItemGuiHandler.register(registration);
+        }
     }
 
     @Override

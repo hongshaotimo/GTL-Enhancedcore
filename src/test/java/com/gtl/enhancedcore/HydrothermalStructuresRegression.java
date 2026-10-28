@@ -27,11 +27,11 @@ final class HydrothermalStructuresRegression {
         check(muffler.get("count").getAsInt() == 2 && muffler.get("sample").toString().equals("[10,7,9]"),
                 "the two fixed upstream mufflers become two required panel hatches");
         var skeleton = manifest.getAsJsonObject("skeleton_shift_rift_engine").getAsJsonObject("bindings");
-        check(skeleton.getAsJsonObject("Q").get("mode").getAsString().equals("original")
-                        && skeleton.getAsJsonObject("Q").get("sample").toString().equals("[7,9,15]"),
+        check(skeleton.getAsJsonObject("J").get("mode").getAsString().equals("original")
+                        && skeleton.getAsJsonObject("J").get("sample").toString().equals("[7,9,15]"),
                 "skeleton heating coils retain temperature context and same-coil validation");
-        check(skeleton.getAsJsonObject("S").get("mode").getAsString().equals("original")
-                        && skeleton.getAsJsonObject("S").get("sample").toString().equals("[11,2,7]"),
+        check(skeleton.getAsJsonObject("I").get("mode").getAsString().equals("original")
+                        && skeleton.getAsJsonObject("I").get("sample").toString().equals("[11,2,7]"),
                 "skeleton stellar casings retain SCTier instead of becoming a literal block");
         for (var entry : manifest.entrySet()) {
             var bindings = entry.getValue().getAsJsonObject().getAsJsonObject("bindings");

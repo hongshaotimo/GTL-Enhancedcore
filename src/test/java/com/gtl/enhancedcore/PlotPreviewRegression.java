@@ -9,7 +9,7 @@ import java.util.Arrays;
 final class PlotPreviewRegression {
     static int run() {
         int checks = 0;
-        int[] markerPalette = {0, 0, 0, 0xffffff, 0};
+        int[] markerPalette = {0, 0, 0, 0, 0xffffff, 0};
         for (int chunks = 1; chunks <= 11; chunks++) for (int plots : new int[] {1, 2}) {
             PlotSettings settings = PlotSettings.defaults().withPlotChunks(chunks)
                     .withRoadStyle(PlotSettings.RoadStyle.NONE);
@@ -54,16 +54,28 @@ final class PlotPreviewRegression {
             }
         }
         PlotSettings highway = PlotSettings.defaults().withPlotChunks(11)
-                .withRoadPreset(PlotSettings.RoadPreset.HIGHWAY).withMarkerMode(PlotSettings.MarkerMode.NONE);
-        int[] linePalette = {0, 0, 0, 0, 0xffffff};
+                .withRoadPreset(PlotSettings.RoadPreset.HIGHWAY).withMarkerMode(PlotSettings.MarkerMode.NONE)
+                .withPlotEdgeWidth(0);
+        int[] linePalette = {0, 0, 0, 0, 0, 0xffffff};
         int[] dashed = PlotPreviewRaster.render(highway, 64, 2, linePalette);
         int[] unmarked = PlotPreviewRaster.render(highway.withLineStyle(PlotSettings.LineStyle.NONE), 64, 2, linePalette);
         check(!Arrays.equals(dashed, unmarked), "One-block road markings survive downsampling a large four-plot view"); checks++;
         check(Arrays.stream(unmarked).allMatch(rgb -> rgb == 0xff000000),
                 "Disabled line and center markers never leave synthetic marks"); checks++;
-        int[] redPalette = {0x123456, 0x123456, 0x123456, 0x123456, 0x123456};
+        int[] redPalette = {0x123456, 0x123456, 0x123456, 0x123456, 0x123456, 0x123456};
         check(Arrays.stream(PlotPreviewRaster.render(highway, 93, 2, redPalette)).allMatch(rgb -> rgb == 0xff123456),
                 "Coverage averaging preserves opaque RGB colors without changing channels"); checks++;
+        PlotSettings symmetric = PlotSettings.defaults().withPlotChunks(3).withRoadPreset(PlotSettings.RoadPreset.CITY)
+                .withPlotEdgeWidth(3).withMarkerMode(PlotSettings.MarkerMode.NONE);
+        for (int pixels : new int[] {31, 64, 137, 257}) {
+            int[] raster = PlotPreviewRaster.render(symmetric, pixels, 2, new int[] {1, 2, 3, 4, 5, 6});
+            for (int z = 0; z < pixels; z++) for (int x = 0; x < pixels; x++) {
+                check(raster[z * pixels + x] == raster[z * pixels + pixels - 1 - x],
+                        "Odd and even preview widths preserve exact horizontal mirror symmetry"); checks++;
+                check(raster[z * pixels + x] == raster[(pixels - 1 - z) * pixels + x],
+                        "Odd and even preview heights preserve exact vertical mirror symmetry"); checks++;
+            }
+        }
         for (int pixels : new int[] {0, PlotPreviewRaster.MAX_PIXELS + 1}) {
             try {
                 PlotPreviewRaster.render(highway, pixels, 2, redPalette);

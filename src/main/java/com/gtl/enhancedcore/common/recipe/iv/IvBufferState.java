@@ -13,6 +13,8 @@ public final class IvBufferState {
     public boolean accepting = true;
     /** Runtime-only cursor so a full/filtered ME cannot starve other recoverable stock. */
     int returnCursor;
+    /** Next remainder recipient for shared cloud admission; paid jobs keep their exact owner. */
+    int cloudDispatchCursor;
     private CompoundTag unreadable;
     public boolean dedicated() { return !owner.isEmpty() || unreadable != null; }
     public boolean healthy() { return unreadable == null; }
@@ -25,6 +27,7 @@ public final class IvBufferState {
         if (unreadable != null) return unreadable.copy();
         CompoundTag tag = new CompoundTag(); tag.putInt("version", 1); tag.putUUID("identity", identity);
         tag.putString("owner", owner); tag.putBoolean("accepting",accepting); ListTag queue = new ListTag();
+        tag.putInt("cloudDispatchCursor",cloudDispatchCursor);
         for (IvJob job : jobs) queue.add(job.save());
         tag.put("jobs", queue); return tag;
     }
@@ -42,7 +45,10 @@ public final class IvBufferState {
                 restored.add(job);
             }
             if (!restored.isEmpty() && restoredOwner.isEmpty()) throw new IllegalArgumentException("Unowned tasks");
-            identity = restoredId; owner = restoredOwner; jobs.addAll(restored); accepting=!tag.contains("accepting") || tag.getBoolean("accepting"); unreadable = null;
+            int restoredCursor=tag.getInt("cloudDispatchCursor");
+            if(restoredCursor<0)throw new IllegalArgumentException("Negative dispatch cursor");
+            identity = restoredId; owner = restoredOwner; jobs.addAll(restored); cloudDispatchCursor=restoredCursor;
+            accepting=!tag.contains("accepting") || tag.getBoolean("accepting"); unreadable = null;
         } catch (RuntimeException failure) {
             message = "gtl_enhancedcore.diagnostic.iv_unreadable";
             IvTaskLog.error(null, null, "LOAD_BUFFER", failure);

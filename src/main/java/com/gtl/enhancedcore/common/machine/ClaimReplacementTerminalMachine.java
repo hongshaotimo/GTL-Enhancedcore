@@ -447,7 +447,8 @@ public class ClaimReplacementTerminalMachine extends MetaMachine
         } else {
             available = countReplacementInInventory(player, repl);
         }
-        if (available <= 0L || available < this.totalCount) {
+        // Partial supplies start the queue; payment remains per block.
+        if (available <= 0L) {
             player.sendSystemMessage(Component.translatable("gtl_enhancedcore.claim_replacement.insufficient"));
             return;
         }

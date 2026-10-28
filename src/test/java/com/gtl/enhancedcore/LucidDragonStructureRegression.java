@@ -64,8 +64,8 @@ final class LucidDragonStructureRegression {
                     "lucid every symbol has a runtime predicate");
 
         List<String[]> dragon = read(STRUCTURES.resolve("dragonfieldproliferationcorestructure.pattern.gz"));
-        check(dragon.size() == 78 && dragon.getFirst().length == 73 && dragon.getFirst()[0].length() == 75,
-                "dragon structure dimensions retained");
+        check(dragon.size() == 120 && dragon.getFirst().length == 108 && dragon.getFirst()[0].length() == 252,
+                "dragon current schematic dimensions");
         int dragonHatches = 0;
         for (int z = 0; z < dragon.size(); z++) {
             for (int y = 0; y < dragon.get(z).length; y++) {
@@ -73,16 +73,8 @@ final class LucidDragonStructureRegression {
                 for (int x = 0; x < row.length(); x++) if (row.charAt(x) == 'X') dragonHatches++;
             }
         }
-        check(dragonHatches == 101, "dragon panel has original 14 plus 87 new hatch slots");
-        for (int y = 3; y <= 8; y++) {
-            String row = dragon.get(70)[y];
-            for (int x = 29; x <= 45; x++) {
-                check(row.charAt(x) == ((x == 37 && y == 5) ? 'C' : 'X'),
-                        "dragon entire controller panel accepts hatches");
-            }
-        }
-        check(dragon.get(69)[5].charAt(37) == 'B' && dragon.get(70)[1].charAt(37) == 'A',
-                "dragon rear and roof casings remain structural");
+        check(dragonHatches == 24, "dragon reviewed schematic marks 24 hatch slots");
+        check(dragon.get(112)[5].charAt(126) == 'C', "dragon MIN_Z controller anchor");
         return checks;
     }
 

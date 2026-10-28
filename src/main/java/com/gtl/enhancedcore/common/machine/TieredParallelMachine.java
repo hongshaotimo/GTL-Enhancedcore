@@ -37,6 +37,7 @@ public class TieredParallelMachine extends GTLAddWorkableElectricParallelHatchMu
     /** 无并行控制仓时并行数固定为 1（单配方运行），装仓后使用仓的并行数。 */
     @Override
     public int getMaxParallel() {
+        if (com.gtl.enhancedcore.common.machine.galaxy.GalaxyLinks.unlimited(this)) return Integer.MAX_VALUE;
         return getParts().stream().anyMatch(IParallelHatch.class::isInstance)
                 ? Math.max(1, super.getMaxParallel()) : 1;
     }

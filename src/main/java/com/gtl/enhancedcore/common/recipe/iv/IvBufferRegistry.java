@@ -16,7 +16,10 @@ import org.gtlcore.gtlcore.common.machine.multiblock.part.ae.MEPatternBufferPart
 /** Explicit block qualification shared by structure candidates and the isolated-order engine. */
 public final class IvBufferRegistry {
     private static final Set<ResourceLocation> BLOCKS = ConcurrentHashMap.newKeySet();
-    static { BLOCKS.add(new ResourceLocation("gtladditions", "me_super_pattern_buffer")); }
+    static {
+        BLOCKS.add(new ResourceLocation("gtladditions", "me_super_pattern_buffer"));
+        BLOCKS.add(new ResourceLocation("gtl_enhancedcore", "cloud_pattern_buffer"));
+    }
 
     private IvBufferRegistry() {}
 
@@ -54,24 +57,28 @@ public final class IvBufferRegistry {
                 .map(block -> new BlockInfo(block.defaultBlockState())).toArray(BlockInfo[]::new));
     }
 
-    /** Qualified buffers cannot use an ordinary ability branch to evade the assembly count limit. */
+    /** Qualified buffers and ordinary materials share one counter; connection ports are independent. */
     public static TraceabilityPredicate ordinaryMaterialPorts() {
         return new TraceabilityPredicate(world -> {
             var block = world.getBlockState().getBlock();
-            return !contains(ForgeRegistries.BLOCKS.getKey(block)) && IvNativeHatches.materials(block);
+            return com.gtl.enhancedcore.common.machine.galaxy.GalaxyConnectionHatch.isConnectionPortBlock(block)
+                    || !contains(ForgeRegistries.BLOCKS.getKey(block)) && IvNativeHatches.materials(block);
         }, () -> Stream.of(PartAbility.IMPORT_ITEMS, PartAbility.EXPORT_ITEMS,
                         PartAbility.IMPORT_FLUIDS, PartAbility.EXPORT_FLUIDS)
-                .flatMap(ability -> ability.getAllBlocks().stream()).distinct()
+                .flatMap(ability -> ability.getAllBlocks().stream())
+                .filter(block -> com.gtl.enhancedcore.common.machine.galaxy.GalaxyConnectionHatch.isConnectionPortBlock(block)
+                        || IvNativeHatches.materials(block)).distinct()
                 .filter(block -> !contains(ForgeRegistries.BLOCKS.getKey(block)))
                 .map(block -> new BlockInfo(block.defaultBlockState())).toArray(BlockInfo[]::new));
     }
 
-    /** One shared quota accepts either ordinary material ports or isolated buffers, never both. */
+    /** Ordinary materials and isolated buffers share one quota; connection ports are independent. */
     public static TraceabilityPredicate materialPorts(int maxSuperBuffers) {
         if (maxSuperBuffers < 0 && maxSuperBuffers != -1)
             throw new IllegalArgumentException("Maximum buffer count must be -1 (unlimited) or non-negative");
         return new TraceabilityPredicate(world -> {
             var block = world.getBlockState().getBlock();
+            if (com.gtl.enhancedcore.common.machine.galaxy.GalaxyConnectionHatch.isConnectionPortBlock(block)) return true;
             boolean isolated = contains(ForgeRegistries.BLOCKS.getKey(block));
             if (!isolated && !IvNativeHatches.materials(block)) return false;
 
@@ -87,7 +94,9 @@ public final class IvBufferRegistry {
         }, () -> Stream.concat(Stream.of(PartAbility.IMPORT_ITEMS, PartAbility.EXPORT_ITEMS,
                                 PartAbility.IMPORT_FLUIDS, PartAbility.EXPORT_FLUIDS)
                         .flatMap(ability -> ability.getAllBlocks().stream())
-                        .filter(block -> !contains(ForgeRegistries.BLOCKS.getKey(block))),
+                        .filter(block -> !contains(ForgeRegistries.BLOCKS.getKey(block))
+                                && (com.gtl.enhancedcore.common.machine.galaxy.GalaxyConnectionHatch.isConnectionPortBlock(block)
+                                || IvNativeHatches.materials(block))),
                 registeredIds().stream().sorted().map(ForgeRegistries.BLOCKS::getValue)
                         .filter(block -> block != null && block != Blocks.AIR))
                 .distinct().map(block -> new BlockInfo(block.defaultBlockState())).toArray(BlockInfo[]::new))

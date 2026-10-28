@@ -84,7 +84,9 @@ final class StructureUpgradeRegression {
             });
             check(aisles[0] == d, name + " depth");
             check(HexFormat.of().formatHex(hash.digest()).equals(spec.get("sha256").getAsString()), name + " payload hash");
-            check(counts['@'] == 1 && counts['#'] == 24, name + " marker count");
+            check(counts['@'] == 1 && counts['#'] == (name.equals("antientropy_condensation_center") ? 196
+                    : name.equals("skeleton_shift_rift_engine") ? 80 : 24),
+                    name + " source marker count");
             if (name.equals("superconducting_electromagnetism")) {
                 check(counts['J'] == 180 && counts['K'] == 0, name + " five UEV casings and one lamp replaced");
                 check(!bindings.has("K"), name + " unused white lamp binding removed");
@@ -112,7 +114,8 @@ final class StructureUpgradeRegression {
             if (!name.equals("wood_distillation") && !name.equals("pcb_factory"))
                 check(lamps[0] > 0, name + " lamp states imported");
             check(HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256")
-                    .digest(Files.readAllBytes(sourceDirectory.resolve(name + ".schem"))))
+                    .digest(Files.readAllBytes(spec.has("sourceSchematic") ? Path.of(spec.get("sourceSchematic").getAsString())
+                            : sourceDirectory.resolve(name + ".schem"))))
                     .equals(spec.get("sourceSha256").getAsString()), name + " exact source schematic");
             check((spec.get("namespace").getAsString() + ":" + name)
                     .equals(original.getAsJsonObject(name).get("id").getAsString()), name + " exact registered namespace");

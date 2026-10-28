@@ -7,8 +7,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+import com.llamalad7.mixinextras.injector.ModifyReturnValue;
 
 import java.util.List;
 import java.util.function.BiConsumer;
@@ -23,13 +22,14 @@ public abstract class MachineDefinitionDimensionalFocusEngravingArrayTooltipMixi
 
     private static final ResourceLocation TARGET_ID = new ResourceLocation("gtceu", "dimensional_focus_engraving_array");
 
-    @Inject(method = "getTooltipBuilder", at = @At("RETURN"), cancellable = true, remap = false)
-    private void gtlcore$dimensionalFocusRecipeMapTooltip(CallbackInfoReturnable<BiConsumer<ItemStack, List<Component>>> cir) {
+    @ModifyReturnValue(method = "getTooltipBuilder", at = @At("RETURN"), remap = false)
+    private BiConsumer<ItemStack, List<Component>> gtlcore$dimensionalFocusRecipeMapTooltip(BiConsumer<ItemStack, List<Component>> upstream) {
         MachineDefinition self = (MachineDefinition) (Object) this;
         ResourceLocation id = self.getId();
         if (id == null || !TARGET_ID.equals(id)) {
-            return;
+            return upstream;
         }
-        cir.setReturnValue(MachineTooltips.modifyNative(cir.getReturnValue(), id.getPath(), self.getRecipeTypes()));
+        upstream = MachineTooltips.modifyNative(upstream, id.getPath(), self.getRecipeTypes());
+        return upstream;
     }
 }

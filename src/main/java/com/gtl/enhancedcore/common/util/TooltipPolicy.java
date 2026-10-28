@@ -17,6 +17,9 @@ public final class TooltipPolicy {
     public static final int RECIPES_PER_LINE = 4;
     public static final String SHIFT_HINT = "tooltip.gtl_enhancedcore.hold_shift";
     public static final String SOURCE_KEY = "tooltip.gtl_enhancedcore.credit_modified";
+    /** 自有物品署名行：动态彩虹，永远最后一行（2026-10-25 用户定稿）。 */
+    public static final String CREDIT_KEY = "tooltip.gtl_enhancedcore.credit_added";
+    public static final String GALAXY_ALLOWED_KEY = "tooltip.gtl_enhancedcore.galaxy.allowed";
     public static final String CROSS_RECIPE_KEY = "tooltip.gtl_enhancedcore.iv_cross_recipe_toggle";
     public static final String STAR_CROSS_RECIPE_KEY = "tooltip.gtl_enhancedcore.star_core_stripper.cross_recipe";
     public static final String RECIPE_HEADER = "tooltip.gtl_enhancedcore.recipe_types";
@@ -28,6 +31,11 @@ public final class TooltipPolicy {
     /** Minecraft colour/format codes; allowed inline in tips and stripped before width checks. */
     private static final Pattern FORMAT_CODE = Pattern.compile("\u00a7[0-9a-fk-orA-FK-OR]");
     private static final Map<String, Layout<String>> PAGES = Map.ofEntries(
+            // 用户 2026-10-25 指定文案（item_tooltips.json 优化版）。
+            Map.entry("cloud_library", page(List.of("cloud.library.flavor", "cloud.library.intro", "cloud.library.usage",
+                    "cloud.library.catalyst", "cloud.library.terminal", "cloud.library.isolation"), List.of())),
+            Map.entry("cloud_buffer", page(List.of("cloud.buffer.intro", "cloud.buffer.modes", "cloud.buffer.multiple",
+                    "cloud.buffer.catalyst"), List.of())),
             Map.entry("large_furnace", page(
                     List.of("large_furnace.efficient", "large_furnace.base_parallel", "large_furnace.base_threads",
                             "large_furnace.cross_recipe_parallel", "large_furnace.voltage_scaling",
@@ -57,6 +65,11 @@ public final class TooltipPolicy {
                     List.of("add_threads.cross_recipe", "add_threads.threads"), List.of())),
             Map.entry("wood_distillation", page(
                     List.of("wood_distillation.cross_recipe", "wood_distillation.threads"), List.of())),
+            // 用户 2026-10-25 指定文案；“1万线程/64星阵解锁”按实际逻辑（靶仓接通即无限）改写为 buff 行。
+            Map.entry("stellar_vortex", page(List.of("stellar_vortex.flavor", "stellar_vortex.intro", "stellar_vortex.power",
+                    "stellar_vortex.circuit", "stellar_vortex.buff", "stellar_vortex.pair"), List.of())),
+            Map.entry("galaxy_source", page(List.of("galaxy_source.intro", "galaxy_source.pair", "galaxy_source.targets"), List.of())),
+            Map.entry("galaxy_target", page(List.of("galaxy_target.intro", "galaxy_target.pair", "galaxy_target.loss", "galaxy_target.reset"), List.of())),
             Map.entry("weather_anchor", page(
                     List.of("weather_anchor.flavor", "weather_anchor.intro", "weather_anchor.power",
                             "weather_anchor.supply", "supports_laser_hatch"),
@@ -80,10 +93,10 @@ public final class TooltipPolicy {
                             "star_core_stripper.power_hatches", "star_core_stripper.processing"), List.of())),
             Map.entry("high_flux_breeder_reactor", page(
                     List.of("high_flux_breeder_reactor.flavor", "high_flux_breeder_reactor.cross_recipe",
-                            "high_flux_breeder_reactor.intro", "high_flux_breeder_reactor.threads",
+                            "high_flux_breeder_reactor.threads",
                             "high_flux_breeder_reactor.parallel", "high_flux_breeder_reactor.hatches"), List.of())),
             Map.entry("hydrothermal_leaching_complex", page(
-                    List.of("hydrothermal_leaching_complex.flavor", "hydrothermal_leaching_complex.intro",
+                    List.of("hydrothermal_leaching_complex.flavor",
                             "iv_cross_recipe_toggle", "hydrothermal_leaching_complex.threads",
                             "hydrothermal_leaching_complex.parallel_hatch", "supports_laser_hatch",
                             "iv_only_super_buffer", "iv_cancel", "iv_break"), List.of())),
@@ -117,11 +130,10 @@ public final class TooltipPolicy {
                     List.of("circuit_encoder_hatch.intro", "circuit_encoder_hatch.mechanism", "circuit_encoder_hatch.limit"),
                     List.of())),
             Map.entry("adaptive_maintenance_hatch", page(
-                    List.of("adaptive_maintenance_hatch.intro", "adaptive_maintenance_hatch.shared",
+                    List.of("adaptive_maintenance_hatch.intro",
                             "adaptive_maintenance_hatch.cleanroom_title", "adaptive_maintenance_hatch.cleanroom_absolute",
                             "adaptive_maintenance_hatch.cleanroom_standard", "adaptive_maintenance_hatch.cleanroom_sterile",
-                            "adaptive_maintenance_hatch.gravity", "adaptive_maintenance_hatch.credit",
-                            "adaptive_maintenance_hatch.brand"), List.of())),
+                            "adaptive_maintenance_hatch.gravity"), List.of())),
             Map.entry("me_drive", page(
                     List.of("me_drive.intro", "me_drive.auto_fill_desc"),
                     List.of("me_drive.priority_desc"))),
@@ -274,6 +286,11 @@ public final class TooltipPolicy {
 
     public static boolean isTooltipKey(String key) {
         return key.startsWith(PREFIX) || key.startsWith("gtl_enhancedcore.tooltip.");
+    }
+
+    public static boolean isAnimatedKey(String key) {
+        return key.equals(CROSS_RECIPE_KEY) || key.equals(STAR_CROSS_RECIPE_KEY)
+                || key.equals(SOURCE_KEY) || key.equals(CREDIT_KEY) || key.equals(GALAXY_ALLOWED_KEY);
     }
 
     public static Map<Integer, Integer> placeholders(String text) {

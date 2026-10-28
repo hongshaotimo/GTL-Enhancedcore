@@ -40,7 +40,8 @@ public final class ExtremeReactorRegression {
     }
 
     private static void fuelCycle() {
-        check(ExtremeReactorFuel.GENERATION_EUT == 5_000_000_000_000L, "Output is the requested 5E12 EU/t");
+        check(ExtremeReactorFuel.GENERATION_EUT == 500_000_000_000_000L,
+                "Output is the requested 100x 5E12 EU/t");
         check(ExtremeReactorFuel.FLUID_ID.equals("gtceu:concentration_mixing_hyper_fuel_2")
                         && ExtremeReactorFuel.AMOUNT_MB == 1 && ExtremeReactorFuel.DURATION_TICKS == 200,
                 "Fuel units and burn duration follow the advanced hyper reactor");
@@ -57,11 +58,11 @@ public final class ExtremeReactorRegression {
             }
         }
         check(deposits.size() == 10 && deposits.stream().allMatch(amount ->
-                        amount.equals(BigInteger.valueOf(100_000_000_000_000L))),
-                "Twenty committed ticks generate exactly 100 trillion EU per deposit");
+                        amount.equals(BigInteger.valueOf(10_000_000_000_000_000L))),
+                "Twenty committed ticks generate exactly 10 quadrillion EU per deposit");
         check(deposits.stream().reduce(BigInteger.ZERO, BigInteger::add)
-                        .equals(new BigInteger("1000000000000000")) && buffer.pendingEU().signum() == 0,
-                "A complete 1 mB burn produces one quadrillion EU without leftover credit");
+                        .equals(new BigInteger("100000000000000000")) && buffer.pendingEU().signum() == 0,
+                "A complete 1 mB burn produces 100 quadrillion EU without leftover credit");
     }
 
     private static void failedDeposits() {

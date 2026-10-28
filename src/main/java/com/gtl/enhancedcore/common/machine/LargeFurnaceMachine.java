@@ -75,6 +75,7 @@ public class LargeFurnaceMachine extends GTLAddWorkableElectricParallelHatchMult
     /** 总并行 = 电压并行 × 并行控制仓倍率（官方 GTLRecipeModifiers.getHatchParallel，只乘一次）。 */
     @Override
     public int getMaxParallel() {
+        if (com.gtl.enhancedcore.common.machine.galaxy.GalaxyLinks.unlimited(this)) return Integer.MAX_VALUE;
         long result = (long) this.getParallelForTier() * (long) GTLRecipeModifiers.getHatchParallel(this);
         return (int) Math.min(Integer.MAX_VALUE, result);
     }

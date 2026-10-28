@@ -63,6 +63,7 @@ public abstract class AddThreadMutableMachine extends MutableElectricParallelHat
      */
     @Override
     public int getMaxParallel() {
+        if (com.gtl.enhancedcore.common.machine.galaxy.GalaxyLinks.unlimited(this)) return Integer.MAX_VALUE;
         int baseline = parallelBaseline();
         return baseline > 0 ? baseline : super.getMaxParallel();
     }
@@ -91,6 +92,8 @@ public abstract class AddThreadMutableMachine extends MutableElectricParallelHat
 
         @Override
         public int getMultipleThreads() {
+            if (com.gtl.enhancedcore.common.machine.galaxy.GalaxyLinks.active(owner))
+                return com.gtl.enhancedcore.common.machine.galaxy.GalaxyLinks.threads(owner, (int)Math.min(Integer.MAX_VALUE, (long)owner.threadBaseline() + Math.max(0, owner.getAdditionalThread())));
             long total = (long) owner.threadBaseline()
                     + Math.max(0, owner.getAdditionalThread());
             return (int) Math.max(1L, Math.min(Integer.MAX_VALUE, total));

@@ -37,6 +37,17 @@ public final class IvNativeMatchContext {
         try { return action.get(); }
         finally { if (previous == null) CURRENT.remove(); else CURRENT.set(previous); }
     }
+    /** Native RecipeLogic applies batching at input payment, after doModifyRecipe. Isolated
+     * orders own payment and must run that preparation explicitly against this order's stock. */
+    public GTRecipe prepare(GTRecipe origin) {
+        return simulate(() -> {
+            GTRecipe copy = origin.copy(); copy.data = origin.data.copy();
+            GTRecipe modified = machine.doModifyRecipe(copy,
+                    new com.gregtechceu.gtceu.api.recipe.logic.OCParams(),
+                    new com.gregtechceu.gtceu.api.recipe.logic.OCResult());
+            return com.gtl.enhancedcore.common.recipe.RecipeBatchPreparation.apply(machine, origin, modified);
+        });
+    }
     public long limit(GTRecipe recipe, long requested) {
         long existing = Math.max(1, IGTRecipe.of(recipe).getRealParallels());
         return IvRecipeInputs.maxParallel(recipe, input, virtual, Math.min(Math.max(0, requested), operations / existing));

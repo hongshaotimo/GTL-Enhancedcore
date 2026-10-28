@@ -60,6 +60,7 @@ public class RetryableRecipeLogic extends RecipeLogic {
 
     @Override
     public void findAndHandleRecipe() {
+        if (GalaxyRecipeBatch.applicable(this)) { super.findAndHandleRecipe(); return; }
         GTRecipe previous = lastOriginRecipe;
         lastRecipe = null;
         lastOriginRecipe = null;

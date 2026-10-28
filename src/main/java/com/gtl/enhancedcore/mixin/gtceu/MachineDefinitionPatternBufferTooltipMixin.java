@@ -8,8 +8,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+import com.llamalad7.mixinextras.injector.ModifyReturnValue;
 
 import java.util.List;
 import java.util.Map;
@@ -24,19 +23,20 @@ public abstract class MachineDefinitionPatternBufferTooltipMixin {
             "assembly_line", "circuit_assembly_line"
     );
 
-    @Inject(method = "getTooltipBuilder", at = @At("RETURN"), cancellable = true, remap = false)
-    private void gtlcore$patternBufferTooltip(CallbackInfoReturnable<BiConsumer<ItemStack, List<Component>>> cir) {
+    @ModifyReturnValue(method = "getTooltipBuilder", at = @At("RETURN"), remap = false)
+    private BiConsumer<ItemStack, List<Component>> gtlcore$patternBufferTooltip(BiConsumer<ItemStack, List<Component>> upstream) {
         MachineDefinition self = (MachineDefinition) (Object) this;
         ResourceLocation id = self.getId();
         if (id == null || !"gtceu".equals(id.getNamespace()) || !TARGET_IDS.contains(id.getPath())) {
-            return;
+            return upstream;
         }
         if ("assembly_line".equals(id.getPath())) {
-            cir.setReturnValue(MachineTooltips.modifyWithRecipes(cir.getReturnValue(), "assembly_line",
+            upstream = MachineTooltips.modifyWithRecipes(upstream, "assembly_line",
                     Map.of("tooltip.gtl_enhancedcore.assembly_line.parallel_fixed",
-                            new Object[]{MachineRecipeModifiers.ASSEMBLY_LINE_PARALLEL}), self.getRecipeTypes()));
+                            new Object[]{MachineRecipeModifiers.ASSEMBLY_LINE_PARALLEL}), self.getRecipeTypes());
         } else {
-            cir.setReturnValue(MachineTooltips.modifyWithRecipes(cir.getReturnValue(), "pattern_buffer", self.getRecipeTypes()));
+            upstream = MachineTooltips.modifyWithRecipes(upstream, "pattern_buffer", self.getRecipeTypes());
         }
+        return upstream;
     }
 }

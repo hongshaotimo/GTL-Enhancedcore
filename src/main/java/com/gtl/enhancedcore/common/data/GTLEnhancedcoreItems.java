@@ -38,11 +38,13 @@ public final class GTLEnhancedcoreItems {
                 .onRegister(item -> item.attachComponents(
                         PatternGeneratorBehavior.INSTANCE,
                         (IAddInformation) (stack, level, lines, flag) -> {
+                            // 2026-10-25 定稿格式：首行用途深青，其余白色，署名动态彩虹永远最后。
                             for (String line : java.util.List.of("open", "choose", "generate", "fill", "presets")) {
                                 lines.add(Component.translatable("tooltip.gtl_enhancedcore.pattern_generator." + line)
-                                        .withStyle(ChatFormatting.GRAY));
+                                        .withStyle(line.equals("open") ? ChatFormatting.DARK_AQUA : ChatFormatting.WHITE));
                             }
-                            lines.add(LargeFurnaceMachine.getCreditLine());
+                            lines.add(com.gtl.enhancedcore.common.util.PlayerTooltipStyles.rainbow(
+                                    com.gtl.enhancedcore.common.util.TooltipPolicy.CREDIT_KEY));
                         }))
                 .model(com.tterrag.registrate.util.nullness.NonNullBiConsumer.noop())
                 .register();

@@ -13,7 +13,7 @@ import net.minecraftforge.fml.loading.FMLPaths;
 public final class StartupConfig {
     public static final String FILE = "startup.properties";
     public record Settings(boolean replaceOriginalStructures, boolean enhanceOriginalMachines,
-                           boolean autoThreads, int backgroundThreads, int builderThreads) {}
+                           boolean autoThreads, int backgroundThreads, int builderThreads, int mapRasterThreads) {}
     private StartupConfig() {}
     private static final class Loaded {
         private static final Settings SETTINGS = loadDirectory(FMLPaths.CONFIGDIR.get().resolve("GTL-Enhancedcore"));
@@ -39,7 +39,7 @@ public final class StartupConfig {
             return parse(Files.readString(path));
         } catch (IOException error) { throw new UncheckedIOException(error); }
     }
-    public static Settings defaults() { return new Settings(true, true, true, 0, 0); }
+    public static Settings defaults() { return new Settings(true, true, true, 0, 0, 0); }
     public static Settings parse(String text) { return parse(properties(text)); }
     private static Properties properties(String text) {
         var result = new Properties();
@@ -49,7 +49,8 @@ public final class StartupConfig {
     }
     private static Settings parse(Properties p) {
         return new Settings(flag(p, "replaceOriginalStructures"), flag(p, "enhanceOriginalMachines"),
-                flag(p, "autoThreads"), count(p, "backgroundThreads"), count(p, "builderThreads"));
+                flag(p, "autoThreads"), count(p, "backgroundThreads"), count(p, "builderThreads"),
+                count(p, "mapRasterThreads", 8));
     }
     private static boolean flag(Properties p, String key) {
         String value = p.getProperty(key, "true").trim();
@@ -58,8 +59,11 @@ public final class StartupConfig {
         throw new IllegalArgumentException(key + ": expected true / false");
     }
     private static int count(Properties p, String key) {
+        return count(p, key, 255);
+    }
+    private static int count(Properties p, String key, int max) {
         int value = Integer.parseInt(p.getProperty(key, "0").trim());
-        if (value < 0 || value > 255) throw new IllegalArgumentException(key + ": expected 0..255");
+        if (value < 0 || value > max) throw new IllegalArgumentException(key + ": expected 0.." + max);
         return value;
     }
     public static String serialize(Settings settings) { return serialize(settings, new Properties()); }
@@ -74,10 +78,12 @@ public final class StartupConfig {
         p.setProperty("autoThreads", Boolean.toString(s.autoThreads()));
         p.setProperty("backgroundThreads", Integer.toString(s.backgroundThreads()));
         p.setProperty("builderThreads", Integer.toString(s.builderThreads()));
+        p.setProperty("mapRasterThreads", Integer.toString(s.mapRasterThreads()));
         var writer = new StringWriter();
         writer.write("# 修改后完整重启游戏/服务端 / Restart required. 0 threads = auto.\n"
-                + "# replaceOriginalStructures: 替换第三方结构；enhanceOriginalMachines: 加强第三方机器（相互独立）。\n"
-                + "# autoThreads/backgroundThreads/builderThreads: 客户端线程设置。\n");
+                + "# replaceOriginalStructures: 替换第三方结构并启用已审查的隐藏方块优化；enhanceOriginalMachines: 加强第三方机器（相互独立）。\n"
+                + "# autoThreads/backgroundThreads/builderThreads: 客户端线程设置。\n"
+                + "# mapRasterThreads: FTB地图像素线程；0=按硬件自动，1=串行，2..8=指定worker。\n");
         try { p.store(writer, null); } catch (IOException impossible) { throw new UncheckedIOException(impossible); }
         return writer.toString();
     }

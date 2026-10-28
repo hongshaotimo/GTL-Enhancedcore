@@ -238,18 +238,12 @@ public final class GTLStructures {
                 .where(' ', Predicates.any())
                 .build();
     }
-    /** 由 SchemTool 从 high_flux_breeder_reactor.schem 生成（87 x 111 x 93）。
-     *  字符映射：C=控制器（正面最后 aisle，y=81 中间），X=钻石矿仓室位（24 个），
-     *  A=gtlcore:fission_reactor_casing（主体外壳，2026-10-12 用户指定），B=gtlcore:cooler，
-     *  D=gtlcore:supercritical_turbine_casing，E=gtceu:tungstensteel_pipe_casing，
-     *  F=gtceu:laminated_glass，G=gtceu:tungstensteel_turbine_casing，I=gtceu:uhv_hermetic_casing，
-     *  J/K/L=白/青/橙灯，' '=任意（不校验，规则 14/15）。
-     *  2026-10-12 用户指定仓室：维护仓、输入/输出仓、并行控制仓、激光靶仓、能源仓；
-     *  仓室位替换方块为 gtlcore:fission_reactor_casing。 */
+    /** Reviewed 2026-10-27 schematic: 47 x 55 x 48, 112 source hatch markers.
+     * Fixed palette is loaded by HighFluxBreederReactorStructure; all X slots share these limits. */
     public static BlockPattern highFluxBreederReactor(MultiblockMachineDefinition def) {
         return HighFluxBreederReactorStructure.create()
                 .where('C', controller(def))
-                .where('X', block("gtlcore:fission_reactor_casing")
+                .where('X', block("gtlcore:supercritical_turbine_casing")
                         .or(Predicates.abilities(PartAbility.MAINTENANCE).setPreviewCount(1).setMaxGlobalLimited(1))
                         .or(Predicates.abilities(PartAbility.INPUT_ENERGY).setPreviewCount(1).setMaxGlobalLimited(4))
                         .or(Predicates.abilities(PartAbility.INPUT_LASER).setPreviewCount(1).setMaxGlobalLimited(2))
@@ -258,16 +252,6 @@ public final class GTLStructures {
                         .or(Predicates.abilities(PartAbility.EXPORT_ITEMS).setPreviewCount(1).setMaxGlobalLimited(8))
                         .or(Predicates.abilities(PartAbility.IMPORT_FLUIDS).setPreviewCount(1).setMaxGlobalLimited(8))
                         .or(Predicates.abilities(PartAbility.EXPORT_FLUIDS).setPreviewCount(1).setMaxGlobalLimited(8)))
-                .where('A', block("gtlcore:fission_reactor_casing"))
-                .where('B', block("gtlcore:cooler"))
-                .where('D', block("gtlcore:supercritical_turbine_casing"))
-                .where('E', block("gtceu:tungstensteel_pipe_casing"))
-                .where('F', block("gtceu:laminated_glass"))
-                .where('G', block("gtceu:tungstensteel_turbine_casing"))
-                .where('I', block("gtceu:uhv_hermetic_casing"))
-                .where('J', block("gtceu:white_lamp"))
-                .where('K', block("gtceu:cyan_lamp"))
-                .where('L', block("gtceu:orange_lamp"))
                 .where(' ', Predicates.any())
                 .build();
     }
@@ -432,31 +416,12 @@ public final class GTLStructures {
                 .build();
     }
 
-    // ==================== 龙式场约束增殖核心（UEV）：GT_Multiblock_UEV_DragonClaw.schem，75×73×78 ====================
-    /**
-     * 由 SchemTool 从 GT_Multiblock_UEV_DragonClaw.schem 生成。原始 28 个钻石块中有 27 个是装饰性
-     * 3×3×3 立方体，经 `SchemTool prepare` 降级为空气（下游绑定为任意方块，不校验）。
-     * <p>
-     * <b>控制器在主方块所在的那一整面 UHV 仓室面板上（用户指定）</b>：面板位于 y=3~8，
-     * 控制器在面板正中（资源坐标 37,5,70）。原 14 个钻石矿仓室位之外，
-     * 正面面板 x=29..45、y=3..8 的 87 个 UHV 外壳位也开放为仓室，共 101 个位置。
-     * 该面板不在结构包围盒边界上（z=7 而包围盒 z=0..77）——GTCEu 允许控制器在结构内部
-     * （`BlockPattern` 以控制器为锚点、用 `centerOffset` 记录偏移），
-     * 生成器已由「必须位于边界」放宽为「就近选面」。
-     * <p>
-     * 字符映射：C=控制器，X=原钻石矿位与新增面板仓室位（替代方块 uhv_machine_casing），
-     * A=uhv_machine_casing，B=gtlcore:fusion_casing_mk5，D=fusion_casing_mk3，E=uev_machine_casing，
-     * F=iridium_casing，G=fusion_coil，I=cyan_lamp，J=fusion_casing_mk2，K=purple_lamp，
-     * L=fusion_glass，N=black_metal_sheet，O=purple_metal_sheet，P=white_lamp，
-     * ' '=任意方块（不校验，禁止绑定空气，规则 12）。
-     * <p>
-     * 仓室（用户指定）：物品输入/输出仓、维护仓、并行控制仓、能源仓、激光靶仓。
-     * 并行同样必须挂 {@link GTRecipeModifiers#PARALLEL_HATCH} 才会生效。
-     */
+    /** Reviewed dragon_field_proliferation_core.schem: 252 x 108 x 120.
+     * The 24 source hatch markers share the existing global capability limits below. */
     public static BlockPattern dragonFieldProliferationCore(MultiblockMachineDefinition def) {
         return DragonFieldProliferationCoreStructure.create()
                 .where('C', controller(def))
-                .where('X', block("gtceu:uhv_machine_casing")
+                .where('X', block("gtlcore:dragon_strength_tritanium_casing")
                         .or(Predicates.abilities(PartAbility.INPUT_ENERGY).setPreviewCount(1).setMinGlobalLimited(1).setMaxGlobalLimited(2))
                         .or(Predicates.abilities(PartAbility.INPUT_LASER).setPreviewCount(1).setMaxGlobalLimited(2))
                         .or(Predicates.abilities(PartAbility.MAINTENANCE).setPreviewCount(1).setMaxGlobalLimited(1))
@@ -467,19 +432,6 @@ public final class GTLStructures {
                         // 2026-09-25 用户要求：为龙式场约束增殖核心补上 Ω-天球分歧引擎（THREAD_MODIFIER）仓室位。
                         // 与大型熔炉同款写法（ProcessingMachineRegistration 第 59 行）；上限 1 个，与包内 23 处用法一致。
                         .or(Predicates.abilities(GTLAddPartAbility.INSTANCE.getTHREAD_MODIFIER()).setPreviewCount(1).setMaxGlobalLimited(1)))
-                .where('A', block("gtceu:uhv_machine_casing"))
-                .where('B', block("gtlcore:fusion_casing_mk5"))
-                .where('D', block("gtceu:fusion_casing_mk3"))
-                .where('E', block("gtceu:uev_machine_casing"))
-                .where('F', block("gtlcore:iridium_casing"))
-                .where('G', block("gtceu:fusion_coil"))
-                .where('I', block("gtceu:cyan_lamp"))
-                .where('J', block("gtceu:fusion_casing_mk2"))
-                .where('K', block("gtceu:purple_lamp"))
-                .where('L', block("gtceu:fusion_glass"))
-                .where('N', block("gtceu:black_metal_sheet"))
-                .where('O', block("gtceu:purple_metal_sheet"))
-                .where('P', block("gtceu:white_lamp"))
                 .where(' ', Predicates.any())
                 .build();
     }

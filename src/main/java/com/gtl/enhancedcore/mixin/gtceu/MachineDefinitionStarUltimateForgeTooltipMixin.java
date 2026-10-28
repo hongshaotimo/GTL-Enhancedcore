@@ -7,8 +7,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+import com.llamalad7.mixinextras.injector.ModifyReturnValue;
 
 import java.util.List;
 import java.util.function.BiConsumer;
@@ -19,13 +18,14 @@ public abstract class MachineDefinitionStarUltimateForgeTooltipMixin {
 
     private static final String TARGET_MACHINE = "star_ultimate_material_forge_factory";
 
-    @Inject(method = "getTooltipBuilder", at = @At("RETURN"), cancellable = true, remap = false)
-    private void gtlcore$starUltimateForgeTooltip(CallbackInfoReturnable<BiConsumer<ItemStack, List<Component>>> cir) {
+    @ModifyReturnValue(method = "getTooltipBuilder", at = @At("RETURN"), remap = false)
+    private BiConsumer<ItemStack, List<Component>> gtlcore$starUltimateForgeTooltip(BiConsumer<ItemStack, List<Component>> upstream) {
         MachineDefinition self = (MachineDefinition) (Object) this;
         ResourceLocation id = self.getId();
         if (id == null || !"gtceu".equals(id.getNamespace()) || !TARGET_MACHINE.equals(id.getPath())) {
-            return;
+            return upstream;
         }
-        cir.setReturnValue(MachineTooltips.modifyWithRecipes(cir.getReturnValue(), "star_ultimate_material_forge", self.getRecipeTypes()));
+        upstream = MachineTooltips.modifyWithRecipes(upstream, "star_ultimate_material_forge", self.getRecipeTypes());
+        return upstream;
     }
 }

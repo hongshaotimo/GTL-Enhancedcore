@@ -20,7 +20,7 @@ import org.objectweb.asm.tree.InsnNode;
 import org.objectweb.asm.tree.VarInsnNode;
 import com.gtl.enhancedcore.common.integration.MultiblockPreviewLaziness;
 
-/** Preview/terminal packaging and ownership contract; runtime behavior is checked by the audit. */
+/** Preview ownership, packaging, and real GTCEu state cleanup; GUI injection needs the runtime audit. */
 public final class UpstreamPreviewContractRegression {
     private static final Path MAIN = Path.of("src/main/java/com/gtl/enhancedcore");
     private static final Path RESOURCES = Path.of("src/main/resources");
@@ -29,7 +29,7 @@ public final class UpstreamPreviewContractRegression {
     private UpstreamPreviewContractRegression() {}
 
     public static void main(String[] args) throws Exception {
-        System.out.println("Upstream preview contract passed: " + run() + " assertions (packaging and ownership only)");
+        System.out.println("Upstream preview contract passed: " + run() + " assertions (ownership, packaging and nullable state cleanup)");
     }
 
     static int run() throws Exception {
@@ -37,15 +37,52 @@ public final class UpstreamPreviewContractRegression {
         localOwnership();
         upstreamPackaging();
         lazyPostApply();
+        previewStateCleanup();
         return assertions;
+    }
+
+    private static void previewStateCleanup() throws Exception {
+        var state = new com.gregtechceu.gtceu.api.pattern.MultiblockState(null, null);
+        check(state.cache == null && state.getGlobalCount() == null && state.getLayerCount() == null,
+                "GTCEu preview states legitimately have no caches before pattern checking");
+        state.getMatchContext().set("retainedPreview", new Object());
+        com.gtl.enhancedcore.client.preview.PreviewPatternMemory.releaseState(state);
+        check(!state.getMatchContext().containsKey("retainedPreview"),
+                "Closing an unchecked preview still releases its match context");
+        check(state.cache == null && state.getGlobalCount() == null && state.getLayerCount() == null,
+                "Cleanup does not allocate absent pattern-check caches");
+        com.gtl.enhancedcore.client.preview.PreviewPatternMemory.releaseState(state);
+        com.gtl.enhancedcore.client.preview.PreviewPatternMemory.releaseState(null);
+
+        // Exercise initialized, partially initialized, and repeated cleanup using real GTCEu state.
+        state.cache = new it.unimi.dsi.fastutil.longs.LongOpenHashSet(16_384);
+        state.cache.add(42L);
+        var globalField = state.getClass().getDeclaredField("globalCount");
+        globalField.setAccessible(true);
+        globalField.set(state, new java.util.HashMap<>());
+        state.getGlobalCount().put(null, 7);
+        com.gtl.enhancedcore.client.preview.PreviewPatternMemory.releaseState(state);
+        check(state.cache.isEmpty() && state.getGlobalCount().isEmpty() && state.getLayerCount() == null,
+                "Partial initialization releases existing caches and tolerates the absent layer map");
+        var layerField = state.getClass().getDeclaredField("layerCount");
+        layerField.setAccessible(true);
+        layerField.set(state, new java.util.HashMap<>());
+        state.getLayerCount().put(null, 3);
+        state.cache.add(99L);
+        state.getMatchContext().set("retainedPreview", new Object());
+        com.gtl.enhancedcore.client.preview.PreviewPatternMemory.releaseState(state);
+        com.gtl.enhancedcore.client.preview.PreviewPatternMemory.releaseState(state);
+        check(state.cache.isEmpty() && state.getGlobalCount().isEmpty() && state.getLayerCount().isEmpty()
+                        && !state.getMatchContext().containsKey("retainedPreview"),
+                "Repeated cleanup of a checked preview releases every retained collection");
     }
 
     private static void localOwnership() throws Exception {
         try (var files = Files.list(MAIN.resolve("client/preview"))) {
             var names = files.filter(Files::isRegularFile).map(path -> path.getFileName().toString()).toList();
             check(Set.copyOf(names).equals(Set.of("PreviewEffectAnchors.java",
-                            "LazyMultiblockPreviewWidget.java", "PreviewPatternMemory.java")),
-                    "Local preview helpers only provide the custom effect anchor and bounded lazy lifecycle");
+                            "LazyMultiblockPreviewWidget.java", "PreviewPatternMemory.java", "ChamberPreviewOverlay.java")),
+                    "Local preview helpers provide effect anchors, lazy lifecycle and requested chamber positions");
         }
         var local = JsonParser.parseString(Files.readString(RESOURCES.resolve("gtl_enhancedcore.mixins.json"))).getAsJsonObject();
         var registered = entries(local);

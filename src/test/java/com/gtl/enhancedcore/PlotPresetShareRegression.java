@@ -24,6 +24,9 @@ final class PlotPresetShareRegression {
         check(PlotPresetShare.encode(PlotPresetShare.decode(encoded)).equals(encoded), "Export is deterministic");
         check(encoded.length() < PlotPresetShare.MAX_TEXT_LENGTH, "Complete presets fit the bounded editor");
         check(PlotPresetShare.decode("  \n" + encoded + "\r\n").equals(custom), "Pasted whitespace is harmless");
+        PlotSettings edgeCustom = custom.withPlotEdgeBlock("minecraft:cyan_concrete").withPlotEdgeWidth(7);
+        check(PlotPresetShare.decode(PlotPresetShare.encode(edgeCustom)).equals(edgeCustom),
+                "Plot edge material and width survive share roundtrip");
         for (var road : PlotSettings.RoadStyle.values()) for (var line : PlotSettings.LineStyle.values()) {
             var settings = custom.withRoadStyle(road).withLineStyle(line);
             check(PlotPresetShare.decode(PlotPresetShare.encode(settings)).equals(settings), "All supported road and lane enums roundtrip");
@@ -45,7 +48,7 @@ final class PlotPresetShareRegression {
         mutateSettings(encoded, values -> values.addProperty("road_style", "INVALID"), "enum");
         mutateSettings(encoded, values -> values.addProperty("marker_mode", "plot"), "enum");
         mutateSettings(encoded, values -> values.addProperty("line_style", "INVALID"), "enum");
-        reject(encoded.replace("\"version\": 1", "\"version\": 1, \"version\": 1"), "schema");
+        reject(encoded.replace("\"version\": 2", "\"version\": 2, \"version\": 2"), "schema");
         reject(encoded.replace("\"plot_chunks\": 11", "\"plot_chunks\": 11, \"plot_chunks\": 11"), "schema");
         for (String number : new String[] {"11.0", "1e1", "2147483648"})
             reject(encoded.replace("\"plot_chunks\": 11", "\"plot_chunks\": " + number), number.equals("2147483648") ? "settings" : "schema");

@@ -42,6 +42,7 @@ public final class ClientTooltipConfig {
         var complete = parsed.include(itemIds());
         if (!candidate.exists() || !parsed.items().keySet().equals(complete.items().keySet())) candidate.save(complete.serialize());
         config = complete; file = candidate; error = "";
+        PARSED.clear();
     }
     public static void initialize() {
         try { reload(); }
@@ -56,6 +57,7 @@ public final class ClientTooltipConfig {
         validate(updated);
         file.save(updated.serialize());
         config = updated;
+        PARSED.clear();
     }
     private static void validate(TooltipOverrides candidate) {
         for (Entry entry : candidate.items().values()) for (Line line : entry.lines()) {
@@ -74,7 +76,9 @@ public final class ClientTooltipConfig {
     public static boolean isAnimated(Component component) {
         return containsTranslatable(component, com.gtl.enhancedcore.common.util.TooltipPolicy.CROSS_RECIPE_KEY)
                 || containsTranslatable(component, com.gtl.enhancedcore.common.util.TooltipPolicy.STAR_CROSS_RECIPE_KEY)
-                || containsTranslatable(component, com.gtl.enhancedcore.common.util.TooltipPolicy.SOURCE_KEY);
+                || containsTranslatable(component, com.gtl.enhancedcore.common.util.TooltipPolicy.SOURCE_KEY)
+                || containsTranslatable(component, com.gtl.enhancedcore.common.util.TooltipPolicy.CREDIT_KEY)
+                || containsTranslatable(component, com.gtl.enhancedcore.common.util.TooltipPolicy.GALAXY_ALLOWED_KEY);
     }
     private static boolean containsTranslatable(Component component, String key) {
         if (component.getContents() instanceof net.minecraft.network.chat.contents.TranslatableContents contents) {
@@ -98,11 +102,21 @@ public final class ClientTooltipConfig {
         try { return original(stack); }
         finally { config = saved; }
     }
+    /**
+     * 悬停时提示框每帧都会重建；行 JSON 只在配置变化时改变，因此按原文缓存解析结果。
+     * 配置重载/保存时整体清空，避免旧条目长期驻留。
+     */
+    private static final Map<String, Optional<Component>> PARSED = new HashMap<>();
+
+    private static Component parsed(String json) {
+        return PARSED.computeIfAbsent(json, key -> Optional.ofNullable(Component.Serializer.fromJson(key))).orElse(null);
+    }
+
     public static List<Component> render(Entry entry, boolean shift) {
         var result = new ArrayList<Component>();
         for (Line line : entry.lines()) {
             if (!line.visible(shift)) continue;
-            Component component = Component.Serializer.fromJson(line.component());
+            Component component = parsed(line.component().toString());
             if (component != null) result.add(styledText(component, line.rainbow()));
         }
         return result;

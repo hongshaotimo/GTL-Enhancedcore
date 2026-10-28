@@ -51,5 +51,6 @@ public class GTLEnhancedcoreGTAddon implements IGTAddon {
         PlatinumRefiningRecipeLoader.registerRecipes(provider);
         ExoticProliferationRecipeLoader.registerRecipes(provider);
         ExtremeReactionRecipeLoader.registerRecipes(provider);
+        com.gtl.enhancedcore.common.data.machine.BrilliantStarsRecipeLoader.registerRecipes(provider);
     }
 }

@@ -77,3 +77,7 @@ build_log.txt
 
 # Stray build artifact: the real Mixin config lives in src/main/resources
 /gtl_enhancedcore.mixins.json
+
+# Pack-instance KubeJS scripts and third-party mod guide docs (not this mod's source)
+/instance/
+/assets/

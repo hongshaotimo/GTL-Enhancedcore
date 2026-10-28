@@ -9,8 +9,10 @@ public final class ForeignMachineMixinPolicy {
             "gtceu.GtlMegastructurePatternMixin", "gtceu.LucidEtchdreamerPreviewMixin",
             "gtlcore.client.LucidSparsePreviewShapeMixin");
     private static final Set<String> ENHANCEMENT_MIXINS = Set.of(
-            "gtceu.IvNativeRecipeLogicMixin", "gtceu.IvNativeParallelMixin", "gtceu.IvNativeModifierMixin",
-            "gtceu.IvNativeMutableAccessor", "gtceu.LightHunterRecipeBuilderMixin",
+            "gtladditions.SuperBufferWideInventoryMixin",
+            "gtladditions.SuperBufferWideLimitInventoryMixin",
+            "gtceu.IvNativeRecipeLogicMixin", "gtceu.IvNativeModifierMixin",
+            "gtceu.IvNativeMutableAccessor",
             "gtlcore.IvNativeMultipleAccessor", "gtlcore.IvComputationRecipesMixin", "gtlcore.IvComputationScopeMixin",
             "gtlcore.IvNativeAddMultipleAccessor",
             "gtlcore.IvNativeBatchMixin", "gtlcore.IvNativeMultipleGuardMixin",

@@ -6,19 +6,19 @@
       27
     ],
     "sourceSize": [
-      73,
-      78,
-      72
+      57,
+      49,
+      69
     ],
     "size": [
-      73,
-      78,
-      72
+      57,
+      49,
+      69
     ],
     "sourceController": [
-      16,
-      21,
-      11
+      28,
+      26,
+      1
     ],
     "sourceNormal": [
       0,
@@ -26,9 +26,9 @@
       -1
     ],
     "controllerPosition": [
-      56,
-      21,
-      60
+      28,
+      26,
+      67
     ],
     "bindings": {
       " ": {
@@ -53,60 +53,6 @@
         "fallback": "gtceu:high_power_casing"
       },
       "A": {
-        "mode": "original",
-        "sample": [
-          0,
-          6,
-          12
-        ],
-        "block": "gtceu:assembly_line_grating"
-      },
-      "B": {
-        "mode": "original",
-        "sample": [
-          1,
-          1,
-          2
-        ],
-        "block": "gtceu:clean_machine_casing"
-      },
-      "C": {
-        "mode": "original",
-        "sample": [
-          22,
-          1,
-          2
-        ],
-        "block": "gtceu:computer_casing"
-      },
-      "D": {
-        "mode": "original",
-        "sample": [
-          23,
-          3,
-          2
-        ],
-        "block": "gtceu:computer_heat_vent"
-      },
-      "E": {
-        "mode": "original",
-        "sample": [
-          2,
-          3,
-          12
-        ],
-        "block": "gtceu:cupronickel_coil_block"
-      },
-      "F": {
-        "mode": "original",
-        "sample": [
-          25,
-          6,
-          12
-        ],
-        "block": "gtceu:filter_casing"
-      },
-      "G": {
         "mode": "casing",
         "sample": [
           24,
@@ -115,43 +61,7 @@
         ],
         "block": "gtceu:high_power_casing"
       },
-      "H": {
-        "mode": "original",
-        "sample": [
-          24,
-          3,
-          12
-        ],
-        "block": "gtceu:luv_hermetic_casing"
-      },
-      "I": {
-        "mode": "original",
-        "sample": [
-          0,
-          1,
-          3
-        ],
-        "block": "gtceu:stainless_steel_turbine_casing"
-      },
-      "J": {
-        "mode": "original",
-        "sample": [
-          24,
-          6,
-          8
-        ],
-        "block": "gtceu:tungstensteel_gearbox"
-      },
-      "K": {
-        "mode": "original",
-        "sample": [
-          2,
-          3,
-          13
-        ],
-        "block": "gtceu:tungstensteel_pipe_casing"
-      },
-      "L": {
+      "B": {
         "mode": "original",
         "sample": [
           0,
@@ -160,16 +70,25 @@
         ],
         "block": "gtceu:tungstensteel_turbine_casing"
       },
-      "M": {
+      "D": {
         "mode": "original",
         "sample": [
           0,
-          2,
-          13
+          1,
+          3
         ],
-        "block": "gtlcore:iridium_casing"
+        "block": "gtceu:stainless_steel_turbine_casing"
       },
-      "N": {
+      "E": {
+        "mode": "original",
+        "sample": [
+          1,
+          1,
+          2
+        ],
+        "block": "gtceu:clean_machine_casing"
+      },
+      "F": {
         "mode": "original",
         "sample": [
           1,
@@ -177,35 +96,126 @@
           11
         ],
         "block": "kubejs:red_steel_casing"
+      },
+      "G": {
+        "mode": "original",
+        "sample": [
+          2,
+          3,
+          13
+        ],
+        "block": "gtceu:tungstensteel_pipe_casing"
+      },
+      "I": {
+        "mode": "original",
+        "sample": [
+          2,
+          3,
+          12
+        ],
+        "block": "gtceu:cupronickel_coil_block"
+      },
+      "J": {
+        "mode": "original",
+        "sample": [
+          22,
+          1,
+          2
+        ],
+        "block": "gtceu:computer_casing"
+      },
+      "K": {
+        "mode": "original",
+        "sample": [
+          23,
+          3,
+          2
+        ],
+        "block": "gtceu:computer_heat_vent"
+      },
+      "L": {
+        "mode": "original",
+        "sample": [
+          25,
+          6,
+          12
+        ],
+        "block": "gtceu:filter_casing"
+      },
+      "N": {
+        "mode": "original",
+        "sample": [
+          24,
+          6,
+          8
+        ],
+        "block": "gtceu:tungstensteel_gearbox"
+      },
+      "O": {
+        "mode": "original",
+        "sample": [
+          0,
+          6,
+          12
+        ],
+        "block": "gtceu:assembly_line_grating"
+      },
+      "P": {
+        "mode": "literal",
+        "block": "gtceu:tempered_glass",
+        "properties": {}
+      },
+      "Q": {
+        "mode": "literal",
+        "block": "gtceu:cyan_lamp",
+        "properties": {
+          "bloom": "false",
+          "inverted": "true",
+          "lit": "true",
+          "powered": "false"
+        }
+      },
+      "R": {
+        "mode": "literal",
+        "block": "gtceu:white_lamp",
+        "properties": {
+          "bloom": "false",
+          "inverted": "true",
+          "lit": "true",
+          "powered": "false"
+        }
       }
     },
     "counts": {
-      " ": 315437,
-      "J": 197,
-      "L": 25877,
-      "G": 453,
-      "K": 3011,
-      "M": 10614,
-      "F": 168,
-      "D": 1099,
-      "H": 19127,
-      "I": 21319,
-      "A": 1463,
-      "C": 3965,
-      "B": 3803,
-      "E": 1906,
-      "N": 1504,
-      "#": 24,
+      " ": 146910,
+      "N": 187,
+      "D": 18849,
+      "B": 12179,
+      "E": 7964,
+      "J": 479,
+      "R": 42,
+      "K": 146,
+      "Q": 36,
+      "P": 340,
+      "G": 1185,
+      "L": 102,
+      "I": 3042,
+      "O": 840,
+      "F": 148,
+      "A": 209,
+      "#": 58,
       "@": 1
     },
     "hatches": [
       "#"
     ],
     "controller": "@",
-    "diamondOreMarkers": 24,
+    "diamondOreMarkers": 58,
     "hatchFallback": "gtceu:high_power_casing",
-    "sourceSha256": "c491e303398ac22ab605cd8dc37f7eb2762c0928eab523d1979ab0af8438fcb6",
-    "sha256": "624c1dd68d56ad32aadf2ead304c503e947c887d0cb326613d5d6066157a692b"
+    "sourceSha256": "d64412d4fd6439d59d161b17ef6f7b7009f8a88b00df529db65fbcc22ceb812f",
+    "sha256": "07ae524fdf5e05bb86ef9e514b09860c473bda021ff2f644987774b47f303d6f",
+    "sourceRevision": "user-request-20261027",
+    "sourceSchematic": "SchemTool/input/advanced_vacuum_drying_furnace.schem"
   },
   "cooling_tower": {
     "originalSize": [
@@ -1176,19 +1186,19 @@
       15
     ],
     "sourceSize": [
-      73,
-      99,
-      60
+      97,
+      97,
+      61
     ],
     "size": [
-      73,
-      99,
-      60
+      97,
+      97,
+      61
     ],
     "sourceController": [
-      32,
-      21,
-      11
+      48,
+      25,
+      0
     ],
     "sourceNormal": [
       0,
@@ -1196,9 +1206,9 @@
       -1
     ],
     "controllerPosition": [
-      40,
-      21,
-      48
+      48,
+      25,
+      60
     ],
     "bindings": {
       " ": {
@@ -1223,15 +1233,24 @@
         "fallback": "gtlcore:hyper_mechanical_casing"
       },
       "A": {
+        "mode": "casing",
+        "sample": [
+          0,
+          0,
+          6
+        ],
+        "block": "gtlcore:hyper_mechanical_casing"
+      },
+      "B": {
         "mode": "original",
         "sample": [
-          5,
+          6,
           2,
           7
         ],
-        "block": "gtceu:cupronickel_coil_block"
+        "block": "gtlcore:molecular_casing"
       },
-      "B": {
+      "D": {
         "mode": "original",
         "sample": [
           7,
@@ -1240,55 +1259,57 @@
         ],
         "block": "gtceu:tungstensteel_pipe_casing"
       },
-      "C": {
-        "mode": "casing",
-        "sample": [
-          0,
-          0,
-          6
-        ],
-        "block": "gtlcore:hyper_mechanical_casing"
-      },
-      "D": {
+      "E": {
         "mode": "original",
         "sample": [
-          4,
-          9,
+          5,
+          2,
           7
         ],
-        "block": "gtlcore:iridium_casing"
+        "block": "gtceu:cupronickel_coil_block"
       },
-      "E": {
-        "mode": "casing",
-        "sample": [
-          0,
-          0,
-          6
-        ],
-        "block": "gtlcore:hyper_mechanical_casing"
+      "F": {
+        "mode": "literal",
+        "block": "gtceu:cyan_lamp",
+        "properties": {
+          "bloom": "false",
+          "inverted": "true",
+          "lit": "true",
+          "powered": "false"
+        }
+      },
+      "G": {
+        "mode": "literal",
+        "block": "gtceu:white_lamp",
+        "properties": {
+          "bloom": "false",
+          "inverted": "true",
+          "lit": "true",
+          "powered": "false"
+        }
       }
     },
     "counts": {
-      " ": 397563,
-      "B": 7134,
-      "D": 14892,
-      "E": 6899,
-      "C": 4115,
-      "A": 2992,
-      "#": 24,
+      " ": 504704,
+      "E": 5282,
+      "B": 36155,
+      "A": 24582,
+      "G": 182,
+      "F": 122,
+      "D": 2747,
+      "#": 174,
       "@": 1
     },
     "hatches": [
       "#"
     ],
     "controller": "@",
-    "diamondOreMarkers": 24,
+    "diamondOreMarkers": 174,
     "hatchFallback": "gtlcore:hyper_mechanical_casing",
-    "sourceSha256": "9e33c486f205ef3d66cbde2b9c8f99e2080d899d53627d107d79c201fa39ae69",
-    "sha256": "b339da741cecefc2ac991b65b1a9504c2b460d389c07799fa1760b8b9f1a353d",
-    "casingReplacements": {
-      "gtlcore:molecular_casing": "gtlcore:hyper_mechanical_casing"
-    }
+    "sourceSha256": "9fa0a7a01c28a83ef617ac7e3fecb7c4c967ff534914e97d0df7016b82e90268",
+    "sha256": "00787d412125df6bdc170179bdbc6cb278927eb28fe0bd44128d150f2c6a7c8f",
+    "sourceRevision": "user-request-20261027",
+    "sourceSchematic": "SchemTool/input/mega_extractor.schem"
   },
   "mega_presser": {
     "originalSize": [

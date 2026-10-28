@@ -63,9 +63,10 @@ final class AddedFeaturesRegression {
                         && gravityMixin.contains("cir.setReturnValue(true)"),
                 "Adaptive MAX hatch satisfies both discrete GTLCore gravity conditions"); checks++;
         String tips = Files.readString(Path.of("src/main/java/com/gtl/enhancedcore/common/util/MachineTooltips.java"));
+        // 2026-10-25 用户定稿配色：洁净/重力能力行保持绿色，其余行白色，署名为动态彩虹。
         check(tips.contains("ChatFormatting.RED") && tips.contains("ChatFormatting.GREEN")
-                        && tips.contains("ChatFormatting.AQUA") && tips.contains("ChatFormatting.DARK_PURPLE, ChatFormatting.ITALIC"),
-                "Adaptive MAX hatch tooltip uses the reference warning and cleanroom/source styling"); checks++;
+                        && tips.contains("ChatFormatting.WHITE") && tips.contains("TooltipPolicy.CREDIT_KEY"),
+                "Adaptive MAX hatch tooltip uses the cleanroom styling and the shared credit row"); checks++;
         return checks;
     }
 

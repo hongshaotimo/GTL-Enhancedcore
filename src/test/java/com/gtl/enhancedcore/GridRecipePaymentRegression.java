@@ -3,6 +3,7 @@ package com.gtl.enhancedcore;
 import com.gtl.enhancedcore.common.recipe.GridRecipePayment;
 import com.gtl.enhancedcore.common.recipe.GridEnergyInputs;
 import com.gtl.enhancedcore.common.recipe.GridEnergyRecipeInput;
+import com.gtl.enhancedcore.common.recipe.EnergyContainerListView;
 import java.math.BigInteger;
 import java.util.List;
 
@@ -10,6 +11,7 @@ final class GridRecipePaymentRegression {
     private static int assertions;
 
     static int run() {
+        multiTargetShadowContract();
         var grid = new Grid(new BigInteger("1000000000000000000000000000000"));
         long screenshotEUt = 4_323_455_640_262_410_240L;
         long localBuffer = 2_305_847_407_260_205_056L;
@@ -54,10 +56,46 @@ final class GridRecipePaymentRegression {
         grid.rejectTransfer = true;
         check(GridEnergyInputs.remove(null, grid, screenshotEUt) == 0 && grid.balance.equals(before),
                 "Failed isolated payment grants no energy or progress");
+
+        var hiddenGrid = new Grid(BigInteger.valueOf(8_000_000_000L));
+        EnergyContainerListView aggregate = () -> List.of(hiddenGrid);
+        check(GridEnergyInputs.findIn(List.of(aggregate)) == hiddenGrid,
+                "An adaptive grid hatch remains discoverable inside GTCEu's aggregate energy container");
+        check(GridRecipePayment.availableAsLong(GridEnergyInputs.findIn(List.of(aggregate)).gridEnergyAvailable())
+                        == 8_000_000_000L,
+                "Grid preflight reads the account balance instead of the aggregate's local hatch cache");
         return assertions;
     }
 
-    private static final class Grid implements GridEnergyRecipeInput {
+    /** Mixin 0.8.5 rejects remappable shadows in a mixin with multiple targets before applying it. */
+    private static void multiTargetShadowContract() {
+        String resource = "/com/gtl/enhancedcore/mixin/gtmadvancedhatch/GridEnergyRecipeInputMixin.class";
+        try (var input = GridRecipePaymentRegression.class.getResourceAsStream(resource)) {
+            var node = new org.objectweb.asm.tree.ClassNode();
+            new org.objectweb.asm.ClassReader(input).accept(node,
+                    org.objectweb.asm.ClassReader.SKIP_CODE | org.objectweb.asm.ClassReader.SKIP_DEBUG);
+            var mixin = node.invisibleAnnotations.stream()
+                    .filter(a -> a.desc.equals("Lorg/spongepowered/asm/mixin/Mixin;")).findFirst().orElseThrow();
+            check(((List<?>) annotationValue(mixin, "targets")).size() == 2,
+                    "The payment bridge still targets both energy and laser grid containers");
+            var owner = node.fields.stream().filter(f -> f.name.equals("owner_uuid")).findFirst().orElseThrow();
+            var shadow = owner.visibleAnnotations.stream()
+                    .filter(a -> a.desc.equals("Lorg/spongepowered/asm/mixin/Shadow;")).findFirst().orElseThrow();
+            check(Boolean.FALSE.equals(annotationValue(shadow, "remap")),
+                    "Both third-party targets pass Mixin's multi-target shadow validation (default remap=true is invalid)");
+        } catch (java.io.IOException e) {
+            throw new AssertionError("Cannot inspect the compiled grid bridge", e);
+        }
+    }
+
+    private static Object annotationValue(org.objectweb.asm.tree.AnnotationNode annotation, String key) {
+        for (int i = 0; i < annotation.values.size(); i += 2) {
+            if (annotation.values.get(i).equals(key)) return annotation.values.get(i + 1);
+        }
+        return null;
+    }
+
+    private static final class Grid implements GridEnergyRecipeInput, com.gregtechceu.gtceu.api.capability.IEnergyContainer {
         private BigInteger balance;
         private int transfers;
         private boolean rejectTransfer;
@@ -72,6 +110,14 @@ final class GridRecipePaymentRegression {
             balance = balance.add(delta);
             return true;
         }
+
+        @Override public long acceptEnergyFromNetwork(net.minecraft.core.Direction side, long voltage, long amperage) { return 0; }
+        @Override public boolean inputsEnergy(net.minecraft.core.Direction side) { return true; }
+        @Override public long changeEnergy(long difference) { return 0; }
+        @Override public long getEnergyStored() { return 0; }
+        @Override public long getEnergyCapacity() { return 268_435_456L; }
+        @Override public long getInputAmperage() { return 1; }
+        @Override public long getInputVoltage() { return 16_777_216L; }
 
         private boolean pay(List<Long> amounts, boolean simulate) {
             return GridRecipePayment.pay(amounts, simulate, this::gridEnergyAvailable, this::gridEnergyTransfer);

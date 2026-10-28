@@ -27,7 +27,7 @@ final class ConfigurationFilesRegression {
             var moved = ConfigConsolidation.consolidate(directory);
             check(moved.size() == 6, "Only the six known retired files are moved");
             var settings = StartupConfig.read(directory.resolve(StartupConfig.FILE));
-            check(settings.equals(new StartupConfig.Settings(false, true, false, 7, 3)), "Machine and worker settings survive consolidation independently");
+            check(settings.equals(new StartupConfig.Settings(false, true, false, 7, 3, 0)), "Machine and worker settings survive consolidation independently");
             check(Files.readString(directory.resolve("item_tooltips.json")).equals("preserve user tips exactly"), "User Tips are byte-preserved");
             check(Files.readString(directory.resolve("ae_pins.json")).equals("[{\"unique\":42}]"), "Empty duplicate does not overwrite current pins");
             check(ConfigConsolidation.consolidate(directory).isEmpty(), "Consolidation is idempotent");
@@ -37,12 +37,13 @@ final class ConfigurationFilesRegression {
             Files.writeString(directory.resolve("gtl_enhancedcore_ae_pins.json"), "[{\"unique\":43}]");
             check(ConfigConsolidation.consolidate(directory).isEmpty(), "Conflicting nonempty duplicate pins are preserved");
             for (boolean structure : new boolean[]{false, true}) for (boolean enhance : new boolean[]{false, true}) {
-                var sample = new StartupConfig.Settings(structure, enhance, true, 0, 255);
+                var sample = new StartupConfig.Settings(structure, enhance, true, 0, 255, 8);
                 check(StartupConfig.parse(StartupConfig.serialize(sample)).equals(sample), "Every independent combination round-trips");
             }
             String broken = "backgroundThreads=256\n";
             invalid(() -> StartupConfig.parse(broken));
             invalid(() -> StartupConfig.parse("autoThreads=perhaps"));
+            invalid(() -> StartupConfig.parse("mapRasterThreads=9"));
             String common = "[claim_replacement_terminal]\nenabled=false\nreplace_interval_ticks=1\n";
             check(ConfigCatalog.claimSettings(common).equals(new ConfigCatalog.ClaimSettings(false, 1)), "Common editor reads exact live values");
             invalid(() -> ConfigCatalog.COMMON.validate(common.replace("=1", "=0")));

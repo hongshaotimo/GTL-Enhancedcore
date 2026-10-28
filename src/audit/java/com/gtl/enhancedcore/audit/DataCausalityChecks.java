@@ -311,8 +311,8 @@ public final class DataCausalityChecks {
             String key = "tooltip.gtl_enhancedcore." + definition.getId().getPath() + ".tips";
             var intro = lines.stream().filter(c -> hasKey(c, key)).findFirst().orElseThrow();
             check(intro.getStyle().getColor() != null
-                    && intro.getStyle().getColor().getValue() == net.minecraft.ChatFormatting.AQUA.getColor(),
-                    "Requested intro lost its aqua color");
+                    && intro.getStyle().getColor().getValue() == net.minecraft.ChatFormatting.DARK_AQUA.getColor(),
+                    "Requested intro lost its dark-aqua color");
         }
         log("all_ten_isolated_machines_and_optional_maintenance_tooltips_four_nested_wrappers=OK");
     }

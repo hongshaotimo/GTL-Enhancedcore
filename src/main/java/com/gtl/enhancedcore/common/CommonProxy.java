@@ -16,6 +16,7 @@ public final class CommonProxy {
         bus.addListener((FMLCommonSetupEvent event) -> event.enqueueWork(() -> {
             GTLEnhancedcoreNetworkHandler.init();
             com.gtl.enhancedcore.network.RemoteProviderPackets.register();
+            com.gtl.enhancedcore.network.ChamberPackets.register();
             com.gtl.enhancedcore.common.world.plotinfo.PlotWorldInfoNetwork.register();
             com.gtl.enhancedcore.common.world.personalplot.PersonalPlotNetwork.register();
             FlightStateConcurrency.install();
