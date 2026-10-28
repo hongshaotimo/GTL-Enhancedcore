@@ -18,6 +18,42 @@ import org.gtlcore.gtlcore.common.item.VirtualIngredientBehavior;
 /** Same recipe admission as IV, evaluated incrementally before publishing a lease. */
 public final class CloudPatternMatching {
     private CloudPatternMatching() {}
+    private static final Map<net.minecraft.server.MinecraftServer, Map<net.minecraft.resources.ResourceLocation, RecipeIndex>> INDEXES = new WeakHashMap<>();
+    static RecipeIndex index(net.minecraft.world.level.Level level, com.gregtechceu.gtceu.api.recipe.GTRecipeType type) {
+        var server = Objects.requireNonNull(level.getServer(), "Server recipe index required");
+        return INDEXES.computeIfAbsent(server, ignored -> new HashMap<>()).computeIfAbsent(type.registryName,
+                ignored -> new RecipeIndex(recipes(level, type)));
+    }
+    static void clear(net.minecraft.server.MinecraftServer server) { INDEXES.remove(server); }
+    /** Shared candidates only; callers still validate live catalysts, inputs and controller capabilities. */
+    public static List<GTRecipe> candidates(net.minecraft.world.level.Level level,
+            com.gregtechceu.gtceu.api.recipe.GTRecipeType type, Map<AEKey, Long> outputs) {
+        return index(level, type).candidates(outputs);
+    }
+    static final class RecipeIndex {
+        final List<GTRecipe> all;
+        final Map<AEKey, List<GTRecipe>> byOutput = new HashMap<>();
+        int cursor;
+        RecipeIndex(List<GTRecipe> recipes) { all = recipes; }
+        boolean buildStep() {
+            if (cursor >= all.size()) return false;
+            var recipe = all.get(cursor++);
+            try { IvRecipeInputs.outputs(recipe.outputs).keySet().forEach(key -> byOutput.computeIfAbsent(key, ignored -> new ArrayList<>()).add(recipe)); }
+            catch (IllegalArgumentException | ArithmeticException unsupported) { /* Unsupported capabilities fail admission too. */ }
+            return true;
+        }
+        List<GTRecipe> candidates(CloudPatternMatching.Probe probe) { return candidates(probe.outputs()); }
+        List<GTRecipe> candidates(Map<AEKey, Long> outputs) {
+            // A partially built index cannot prove a recipe is absent.
+            if (cursor < all.size()) return all;
+            List<GTRecipe> smallest = all;
+            for (AEKey output : outputs.keySet()) {
+                List<GTRecipe> group = byOutput.getOrDefault(output, List.of());
+                if (group.size() < smallest.size()) smallest = group;
+            }
+            return smallest;
+        }
+    }
     public static Map<AEKey, Long> virtual(CompoundTag config, ItemStack circuit) {
         Map<AEKey, Long> result = new LinkedHashMap<>();
         for (String key : List.of("configuredVirtualItems", "configuredVirtualFluids"))

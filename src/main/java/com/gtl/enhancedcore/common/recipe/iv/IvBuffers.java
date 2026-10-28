@@ -110,9 +110,20 @@ public final class IvBuffers {
     }
     public static WorkableElectricMultiblockMachine controller(MEPatternBufferPartMachineBase buffer) {
         if (buffer instanceof CloudPatternBufferMachine cloud) {
-            return cloudControllers(cloud).stream().filter(machine -> !genericCloudMixedInputs(machine))
-                    .min(Comparator.comparingInt((WorkableElectricMultiblockMachine machine) -> jobs(cloud, machine).size())
-                            .thenComparing(IvBuffers::ownerKey)).orElse(null);
+            WorkableElectricMultiblockMachine selected = null;
+            int leastJobs = Integer.MAX_VALUE;
+            var state = cloud.iv$getState(); var node = cloud.cloudNode();
+            for (var machine : cloudControllers(cloud)) {
+                if (genericCloudMixedInputs(machine)) continue;
+                UUID instance = ((com.gtl.enhancedcore.common.cloud.store.CloudMachineIdentity)machine).cloud$machineInstance(false);
+                boolean legacyOwner = state.owner.equals(ownerKey(machine));
+                int count = 0;
+                for (var job : state.jobs) if (com.gtl.enhancedcore.common.cloud.CloudEndpointPolicy.ownsJob(
+                        job.cloudMachine, instance, node == null ? null : node.machineInstance(), legacyOwner)) count++;
+                // cloudControllers is already in owner-key order, so the first equal count wins.
+                if (selected == null || count < leastJobs) { selected = machine; leastJobs = count; }
+            }
+            return selected;
         }
         if (!controllersLoaded(buffer)) return null;
         var controllers = loadedControllers(buffer);
@@ -319,7 +330,10 @@ public final class IvBuffers {
             for (var type : machine.getDefinition().getRecipeTypes()) {
                 if (buffer instanceof CloudPatternBufferMachine cloud && !cloud.cloudAcceptsMode(type.registryName)) continue;
                 if (!IvPatternAdmission.allowsType(types, type.registryName)) continue;
-                for (GTRecipe recipe : com.gtl.enhancedcore.common.cloud.CloudPatternMatching.recipes(machine.getLevel(), type)) {
+                var candidates = buffer instanceof CloudPatternBufferMachine
+                        ? com.gtl.enhancedcore.common.cloud.CloudPatternMatching.candidates(machine.getLevel(), type, expected)
+                        : com.gtl.enhancedcore.common.cloud.CloudPatternMatching.recipes(machine.getLevel(), type);
+                for (GTRecipe recipe : candidates) {
                     if (!supported(recipe, machine)) continue;
                     long scale = IvRecipeInputs.patternOperations(recipe, unit, virtual, expected);
                     if (scale > 0) { matches.add(recipe); scales.put(recipe, scale); }

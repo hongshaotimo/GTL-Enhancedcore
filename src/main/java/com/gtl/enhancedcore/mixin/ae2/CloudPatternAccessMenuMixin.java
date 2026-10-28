@@ -88,6 +88,7 @@ public abstract class CloudPatternAccessMenuMixin extends AEBaseMenu implements 
         var library=CloudPatternStore.get(player.serverLevel()).library(binding.libraryId());
         if(!Objects.equals(cloud$library,binding.libraryId())||cloud$revision!=library.catalogRevision()){
             cloud$hideProjection();
+            if (!CloudLibraryService.catalogReady(library, player.serverLevel())) return;
             cloud$matches=CloudLibraryService.terminalCatalogue(library,player.serverLevel(),cloud$input,cloud$output,
                     cloud$inputItems,cloud$inputFluids,cloud$outputItems,cloud$outputFluids);
             cloud$rows=List.of();

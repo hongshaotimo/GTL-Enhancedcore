@@ -97,9 +97,11 @@ public final class CloudPatternLibraryMachine extends MultiblockControllerMachin
         if (getLevel() instanceof ServerLevel) {
             CloudLibraryNetwork.loaded(this);
             CloudImportJournal.reconcile(this);
+            CloudLibraryService.warmCatalog(serverLevel(), libraryId);
             subscribeServerTick(this::importTick);
-            online = serviceGrid() != null;
-            connected = serviceGrid() != null && !cloud$importQuarantined();
+            var grid = serviceGrid();
+            online = grid != null;
+            connected = grid != null && !cloud$importQuarantined();
         }
     }
     @Override public void onStructureFormed() {
@@ -398,8 +400,9 @@ public final class CloudPatternLibraryMachine extends MultiblockControllerMachin
         }, CloudImportJournal.sink(serverLevel(), libraryId, player.getUUID()), simulate ? 0 : importCursor, 64, simulate);
     }
     private void importTick() {
-        online = serviceGrid() != null;
-        connected = serviceGrid() != null && !cloud$importQuarantined();
+        var grid = serviceGrid();
+        online = grid != null;
+        connected = grid != null && !cloud$importQuarantined();
         CloudNetworkPatternImport.tick(this);
         if (inboxActor != null && !cloud$importQuarantined() && isFormed()) {
             ServerPlayer actor = serverLevel().getServer().getPlayerList().getPlayer(inboxActor);

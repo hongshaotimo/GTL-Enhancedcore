@@ -63,6 +63,10 @@ public class CloudPatternBufferMachine extends MEPatternBufferPartMachine implem
     private record Query(String text, CloudPatternSearch localized) {}
     private final LinkedHashMap<Query, List<UUID>> searches = new LinkedHashMap<>(8, .75f, true);
     private boolean searchScopeDirty = true;
+    private Map<Integer, UUID> uiSlotSnapshot;
+    private Set<UUID> uiInvalidSnapshot = Set.of();
+    private List<UUID> uiEntrySnapshot = List.of();
+    private Map<UUID, LeaseDisplay> uiDisplaySnapshot = Map.of();
     private long[] searchItems = new long[0], searchFluids = new long[0];
     private final Set<UUID> invalidLeases = new HashSet<>();
     private final Set<UUID> validatedLeases = new HashSet<>();
@@ -159,8 +163,8 @@ public class CloudPatternBufferMachine extends MEPatternBufferPartMachine implem
             for (var type : machine.getDefinition().getRecipeTypes()) {
                 if (!cloudAcceptsMode(type.registryName)
                         || !IvPatternAdmission.allowsType(types, type.registryName)) continue;
-                for (var recipe : CloudPatternMatching.recipes(getLevel(), type)) {
-                    if (!CloudPatternMatching.matches(recipe, machine, probe)) continue;
+                for (var recipe : CloudPatternMatching.candidates(getLevel(), type, probe.outputs())) {
+                    if (!CloudPatternMatching.supported(recipe, machine)) continue;
                     maximum = Math.max(maximum, IvRecipeInputs.patternOperations(
                             recipe, probe.inputs(), probe.virtual(), probe.outputs()));
                 }
@@ -547,14 +551,18 @@ public class CloudPatternBufferMachine extends MEPatternBufferPartMachine implem
         var store = cloudStore();
         var savedNode = node != null ? node : store.node(nodeId);
         if (!savedNode.libraryId().equals(libraryId)) return List.of();
+        var slots = savedNode.slots();
+        if (uiSlotSnapshot == slots && uiInvalidSnapshot.equals(invalidLeases)) return uiEntrySnapshot;
         var entries = new ArrayList<UUID>();
-        for (var slot : new TreeMap<>(savedNode.slots()).entrySet()) {
+        for (var slot : new TreeMap<>(slots).entrySet()) {
             var entry = store.library(libraryId).entry(slot.getValue());
             var lease = entry.lease();
             if (lease != null && lease.nodeId().equals(nodeId) && lease.stableSlot() == slot.getKey()
                     && !invalidLeases.contains(entry.id())) entries.add(entry.id());
         }
-        return List.copyOf(entries);
+        uiSlotSnapshot = slots; uiInvalidSnapshot = Set.copyOf(invalidLeases);
+        uiEntrySnapshot = List.copyOf(entries); invalidateSearches();
+        return uiEntrySnapshot;
     }
     private LeaseDisplay cachedLeaseDisplay(CloudPatternStore.Entry entry) {
         CompoundTag metadata = entry.displayMetadata();
@@ -575,7 +583,7 @@ public class CloudPatternBufferMachine extends MEPatternBufferPartMachine implem
         return new LeaseDisplay(name, name.toLowerCase(Locale.ROOT), metadata.getString("nameJson"), List.copyOf(outputs));
     }
     private void appendSearchScope(CompoundTag tag, Map<UUID, LeaseDisplay> displays) {
-        {
+        if (searchScopeDirty) {
             var items = new BitSet(); var fluids = new BitSet();
             for (var display : displays.values()) for (var output : display.outputs()) {
                 if (output instanceof AEItemKey item) {
@@ -626,11 +634,16 @@ public class CloudPatternBufferMachine extends MEPatternBufferPartMachine implem
                 ? statusLabel : CloudLibraryNetwork.resolve(getGrid(), player).translationKey());
         tag.putBoolean("manualBinding", manualBinding);
         var uiEntries = uiLeaseEntries();
-        var uiDisplays = new LinkedHashMap<UUID, LeaseDisplay>();
-        if (libraryId != null) for (UUID id : uiEntries) {
-            var entry = cloudStore().library(libraryId).entry(id);
-            uiDisplays.put(id, leaseDisplays.getOrDefault(id, cachedLeaseDisplay(entry)));
+        if (searchScopeDirty) {
+            var displays = new LinkedHashMap<UUID, LeaseDisplay>();
+            if (libraryId != null) for (UUID id : uiEntries) {
+                var display = leaseDisplays.get(id);
+                if (display == null) display = cachedLeaseDisplay(cloudStore().library(libraryId).entry(id));
+                displays.put(id, display);
+            }
+            uiDisplaySnapshot = Map.copyOf(displays);
         }
+        var uiDisplays = uiDisplaySnapshot;
         appendSearchScope(tag, uiDisplays);
         if (libraryId == null) { tag.putInt("pages", 1); tag.put("entries", new ListTag()); return tag; }
         ListTag modes = new ListTag(); var machine = IvBuffers.controller(this);

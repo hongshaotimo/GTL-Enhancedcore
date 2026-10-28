@@ -5,8 +5,6 @@ import com.gregtechceu.gtceu.api.recipe.GTRecipe;
 import com.gtl.enhancedcore.common.cloud.store.CloudLedger;
 import com.gtl.enhancedcore.common.cloud.store.CloudPatternStore;
 import com.gtl.enhancedcore.common.recipe.iv.IvBuffers;
-import com.gtl.enhancedcore.common.recipe.iv.IvRecipeInputs;
-import appeng.api.stacks.AEKey;
 import net.minecraft.resources.ResourceLocation;
 import java.util.*;
 import net.minecraft.server.MinecraftServer;
@@ -29,7 +27,6 @@ public final class CloudPatternAllocator {
         final Deque<CloudPatternBufferMachine> order = new ArrayDeque<>();
         final Map<CloudPatternBufferMachine, Scan> scans = new IdentityHashMap<>();
         final Set<CloudPatternBufferMachine> endpoints = Collections.newSetFromMap(new IdentityHashMap<>());
-        final Map<ResourceLocation, RecipeIndex> indexes = new HashMap<>();
         final Map<Group, NavigableMap<Long, CloudPatternBufferMachine>> groups = new HashMap<>();
         final Map<CloudPatternBufferMachine, Membership> memberships = new IdentityHashMap<>();
         long sequence;
@@ -49,27 +46,6 @@ public final class CloudPatternAllocator {
             group.remove(old.sequence); if (group.isEmpty()) groups.remove(old.group);
         }
     }
-    private static final class RecipeIndex {
-        final List<GTRecipe> all;
-        final Map<AEKey, List<GTRecipe>> byOutput = new HashMap<>();
-        int cursor;
-        RecipeIndex(List<GTRecipe> recipes) { all = recipes; }
-        boolean buildStep() {
-            if (cursor >= all.size()) return false;
-            var recipe = all.get(cursor++);
-            try { IvRecipeInputs.outputs(recipe.outputs).keySet().forEach(key -> byOutput.computeIfAbsent(key, ignored -> new ArrayList<>()).add(recipe)); }
-            catch (IllegalArgumentException | ArithmeticException unsupported) { /* Unsupported capabilities fail admission too. */ }
-            return true;
-        }
-        List<GTRecipe> candidates(CloudPatternMatching.Probe probe) {
-            List<GTRecipe> smallest = all;
-            for (AEKey output : probe.outputs().keySet()) {
-                List<GTRecipe> group = byOutput.getOrDefault(output, List.of());
-                if (group.size() < smallest.size()) smallest = group;
-            }
-            return smallest;
-        }
-    }
     private static final class Scan {
         final WorkableElectricMultiblockMachine machine;
         final CloudPatternStore.Library library;
@@ -79,7 +55,7 @@ public final class CloudPatternAllocator {
         final int entryCount;
         List<UUID> page = List.of();
         int pageOffset;
-        final RecipeIndex index;
+        final CloudPatternMatching.RecipeIndex index;
         List<GTRecipe> recipes = List.of();
         long observedRevision;
         int cursor, recipeCursor, matches;
@@ -97,11 +73,10 @@ public final class CloudPatternAllocator {
             observedRevision = library.allocationRevision(); entryCount = library.entryCount();
             var type = Arrays.stream(machine.getDefinition().getRecipeTypes()).filter(t -> buffer.cloudAcceptsMode(t.registryName)).findFirst().orElseThrow();
             var level = (net.minecraft.server.level.ServerLevel)buffer.getLevel();
-            index = QUEUES.computeIfAbsent(level.getServer(), ignored -> new Queue()).indexes.computeIfAbsent(type.registryName,
-                    ignored -> new RecipeIndex(CloudPatternMatching.recipes(machine.getLevel(), type)));
+            index = CloudPatternMatching.index(level, type);
         }
         boolean step(CloudPatternBufferMachine buffer) {
-            if (!buffer.cloudReady(true) || IvBuffers.controller(buffer) != machine) return false;
+            if (IvBuffers.controller(buffer) != machine || !buffer.cloudReady(false)) return false;
             if (!nodeId.equals(buffer.cloudNodeId()) || !libraryId.equals(buffer.cloudLibraryId()) || !mode.equals(buffer.cloudMode())) return false;
             if (allocationEpoch != buffer.cloudAllocationEpoch()) return false;
             // Pages are stable only for the observed catalogue. Successful leases do not
@@ -134,11 +109,12 @@ public final class CloudPatternAllocator {
                     var group = queue.groups.get(new Group(libraryId, mode));
                     if (selectionCandidate != null) {
                         var candidate = selectionCandidate;
-                        if (!candidate.cloudReady(true) || !candidate.iv$getState().accepting) { selectionCandidate = null; return true; }
+                        var candidateMachine = IvBuffers.controller(candidate);
+                        if (candidateMachine == null || !candidate.cloudReady(false) || !candidate.iv$getState().accepting) { selectionCandidate = null; return true; }
                         // A contender must have its own unique match. In particular a native
                         // CWU-capable machine may be ambiguous where an own IV machine is not.
                         if (selectionRecipeCursor < recipes.size()
-                                && CloudPatternMatching.matches(recipes.get(selectionRecipeCursor++), IvBuffers.controller(candidate), probe)) selectionMatches++;
+                                && CloudPatternMatching.matches(recipes.get(selectionRecipeCursor++), candidateMachine, probe)) selectionMatches++;
                         if (selectionMatches > 1) { selectionCandidate = null; return true; }
                         if (selectionRecipeCursor < recipes.size()) return true;
                         if (selectionMatches == 1 && (preferred == null || compare(candidate, preferred, level) < 0)) preferred = candidate;
@@ -243,11 +219,12 @@ public final class CloudPatternAllocator {
             }
         }
     }
-    @SubscribeEvent public static void stopped(ServerStoppedEvent event) { QUEUES.remove(event.getServer()); }
+    @SubscribeEvent public static void stopped(ServerStoppedEvent event) { QUEUES.remove(event.getServer()); CloudPatternMatching.clear(event.getServer()); }
     @SubscribeEvent public static void reloaded(net.minecraftforge.event.OnDatapackSyncEvent event) {
         if (event.getPlayer() != null) return;
+        CloudPatternMatching.clear(event.getPlayerList().getServer());
         Queue queue = QUEUES.get(event.getPlayerList().getServer()); if (queue == null) return;
-        queue.indexes.clear(); queue.scans.clear(); queue.order.clear();
+        queue.scans.clear(); queue.order.clear();
         queue.endpoints.forEach(CloudPatternBufferMachine::cloudRecipesChanged);
     }
 }

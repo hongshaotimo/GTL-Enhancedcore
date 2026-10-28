@@ -22,6 +22,7 @@ import net.minecraft.nbt.CompoundTag;
 /** Runtime bindings follow the controller's real loaded wired/wireless AE grid, never a player's default library. */
 public final class CloudLibraryNetwork {
     private static final List<WeakReference<CloudPatternLibraryMachine>> LOADED = new ArrayList<>();
+    private static List<WeakReference<CloudPatternLibraryMachine>> loadedSnapshot = List.of();
     private CloudLibraryNetwork() {}
     public enum State { DISCONNECTED, CONFLICT, DENIED, CONNECTED }
     public record Binding(State state, UUID libraryId, CloudPatternLibraryMachine main) {
@@ -30,11 +31,11 @@ public final class CloudLibraryNetwork {
     }
     static void loaded(CloudPatternLibraryMachine machine) {
         if (!(machine.getLevel() instanceof net.minecraft.server.level.ServerLevel level) || !level.getServer().isSameThread()) return;
-        unloaded(machine); LOADED.add(new WeakReference<>(machine));
+        unloaded(machine); LOADED.add(new WeakReference<>(machine)); loadedSnapshot = List.copyOf(LOADED);
     }
     static void unloaded(CloudPatternLibraryMachine machine) {
         if (!(machine.getLevel() instanceof net.minecraft.server.level.ServerLevel level) || !level.getServer().isSameThread()) return;
-        LOADED.removeIf(ref -> ref.get() == null || ref.get() == machine);
+        if (LOADED.removeIf(ref -> ref.get() == null || ref.get() == machine)) loadedSnapshot = List.copyOf(LOADED);
     }
     /** Resolves association from the persisted physical AE machine anchor, never from the controller selector. */
     static IGrid serviceGrid(CloudPatternLibraryMachine main) {
@@ -95,12 +96,13 @@ public final class CloudLibraryNetwork {
     }
     public static Binding resolve(IGrid grid, UUID actor) {
         if (grid == null) return new Binding(State.DISCONNECTED, null, null);
-        LOADED.removeIf(reference -> reference.get() == null);
+        if (LOADED.removeIf(reference -> reference.get() == null)) loadedSnapshot = List.copyOf(LOADED);
         CloudPatternLibraryMachine selected = null;
         boolean authorized = false;
-        for (var reference : List.copyOf(LOADED)) {
+        for (var reference : loadedSnapshot) {
             var main = reference.get();
-            if (main == null || !main.networkAvailable(grid)) continue;
+            // The controller node must belong to this exact grid before resolving its durable anchor.
+            if (main == null || main.getMainNode().getGrid() != grid || !main.networkAvailable(grid)) continue;
             if (selected != null && !selected.libraryId().equals(main.libraryId()))
                 return new Binding(State.CONFLICT, null, null);
             boolean allowed = CloudLibraryService.runtimeAuthorized(actor, main.libraryId(), main.serverLevel(), main.getPos());

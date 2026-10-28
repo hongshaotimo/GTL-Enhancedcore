@@ -135,23 +135,85 @@ public final class CloudLibraryService {
     private static final class Catalog {
         long revision = Long.MIN_VALUE, locationRevision = Long.MIN_VALUE;
         boolean rebuild = true;
-        final LinkedHashMap<UUID, CatalogRow> rows = new LinkedHashMap<>();
+        LinkedHashMap<UUID, CatalogRow> rows = new LinkedHashMap<>();
         final Set<UUID> dirty = new LinkedHashSet<>();
-        final Set<String> types = new TreeSet<>();
+        Set<String> types = new TreeSet<>();
         List<UUID> visible = List.of();
         long[] searchItems = new long[0], searchFluids = new long[0];
         final Map<UUID, String> targets = new HashMap<>();
         final LinkedHashMap<Query, List<UUID>> searches = new LinkedHashMap<>(32, .75f, true);
         final LinkedHashMap<TerminalQuery,List<UUID>> terminalSearches = new LinkedHashMap<>(32,.75f,true);
+        CatalogBuild build;
+        long failureRevision = Long.MIN_VALUE;
+        String failure = "";
+        java.lang.ref.WeakReference<ServerLevel> level = new java.lang.ref.WeakReference<>(null);
     }
     // A menu never owns an index. World-library identity keeps results stable across opens.
     private static final Map<CloudPatternStore.Library, Catalog> CATALOGS = new WeakHashMap<>();
+    private static final Map<net.minecraft.server.MinecraftServer, Deque<CatalogBuild>> BUILDS = new WeakHashMap<>();
+
+    /** 山海：decode and aggregate one row per step; publish only an entire authority revision. */
+    private static final class CatalogBuild {
+        final CloudPatternStore.Library library;
+        final ServerLevel level;
+        final Catalog target;
+        final long revision;
+        final int total;
+        final boolean full;
+        final List<UUID> dirty;
+        final LinkedHashMap<UUID, CatalogRow> rows;
+        final List<UUID> visible = new ArrayList<>();
+        final Set<String> types = new TreeSet<>();
+        final BitSet items = new BitSet(), fluids = new BitSet();
+        List<UUID> page = List.of();
+        int cursor, pageOffset, summarized;
+        Iterator<CatalogRow> summary;
+        CatalogBuild(CloudPatternStore.Library library, ServerLevel level, Catalog target) {
+            this.library = library; this.level = level; this.target = target;
+            revision = library.catalogRevision(); full = target.rebuild || target.dirty.isEmpty();
+            dirty = full ? List.of() : List.copyOf(target.dirty);
+            total = full ? library.entryCount() : dirty.size();
+            rows = full ? new LinkedHashMap<>() : target.rows;
+        }
+        boolean step() {
+            if (revision != library.catalogRevision()) return false;
+            if (cursor < total) {
+                UUID id;
+                if (full) {
+                    if (page.isEmpty() || cursor >= pageOffset + page.size()) {
+                        pageOffset = cursor; page = library.entryIdPage(cursor, 64);
+                    }
+                    id = page.get(cursor - pageOffset);
+                } else id = dirty.get(cursor);
+                rows.put(id, catalogRow(library.entry(id), level)); cursor++; return true;
+            }
+            if (summary == null) summary = rows.values().iterator();
+            if (summary.hasNext()) {
+                CatalogRow row = summary.next(); summarized++;
+                if (!row.exported) {
+                    visible.add(row.id); types.addAll(row.types);
+                    for (int id : row.items) if (id >= 0) items.set(id);
+                    for (int id : row.fluids) if (id >= 0) fluids.set(id);
+                }
+                return true;
+            }
+            target.rows = rows; target.types = types;
+            target.visible = Collections.unmodifiableList(visible);
+            target.searchItems = items.toLongArray(); target.searchFluids = fluids.toLongArray();
+            target.searches.clear(); target.terminalSearches.clear(); target.targets.clear();
+            target.rebuild = false; target.dirty.clear(); target.revision = revision;
+            target.failureRevision = Long.MIN_VALUE; target.failure = "";
+            return false;
+        }
+    }
 
     /** Called by authority mutations, before allocation notification. No inventory or decode work here. */
     public static void catalogChanged(CloudPatternStore.Library library, UUID entryId) {
         Catalog catalog = CATALOGS.get(library);
         if (catalog == null) return;
         if (entryId == null) catalog.rebuild = true; else catalog.dirty.add(entryId);
+        ServerLevel level = catalog.level.get();
+        if (level != null) catalog(library, level);
     }
 
     private static CatalogRow catalogRow(CloudPatternStore.Entry original, ServerLevel level) {
@@ -187,6 +249,7 @@ public final class CloudLibraryService {
     public static List<UUID> terminalCatalogue(CloudPatternStore.Library library,ServerLevel level,String input,String output,
             BitSet inputItems,BitSet inputFluids,BitSet outputItems,BitSet outputFluids) {
         Catalog catalog=catalog(library,level);
+        if (catalog.revision != library.catalogRevision()) throw new IllegalStateException("Cloud catalogue is still indexing");
         var key=new TerminalQuery(input,output,inputItems,inputFluids,outputItems,outputFluids);
         var cached=catalog.terminalSearches.get(key);if(cached!=null)return cached;
         var matches=new ArrayList<UUID>();
@@ -198,37 +261,73 @@ public final class CloudLibraryService {
     }
     private static Catalog catalog(CloudPatternStore.Library library, ServerLevel level) {
         Catalog catalog = CATALOGS.computeIfAbsent(library, ignored -> new Catalog());
-        if (catalog.revision != library.catalogRevision()) {
-            if (catalog.rebuild || catalog.dirty.isEmpty()) {
-                catalog.rows.clear();
-                for (int offset = 0; offset < library.entryCount(); offset += 4096)
-                    for (UUID id : library.entryIdPage(offset, 4096)) catalog.rows.put(id, catalogRow(library.entry(id), level));
-            } else {
-                for (UUID id : catalog.dirty) catalog.rows.put(id, catalogRow(library.entry(id), level));
-            }
-            catalog.types.clear();
-            var visible = new ArrayList<UUID>();
-            var itemScope = new BitSet(); var fluidScope = new BitSet();
-            for (CatalogRow row : catalog.rows.values()) {
-                if (!row.exported) {
-                    visible.add(row.id); catalog.types.addAll(row.types);
-                    for (int id : row.items) if (id >= 0) itemScope.set(id);
-                    for (int id : row.fluids) if (id >= 0) fluidScope.set(id);
-                }
-            }
-            catalog.visible = List.copyOf(visible); catalog.searches.clear(); catalog.terminalSearches.clear();
-            catalog.targets.clear(); catalog.searchItems = itemScope.toLongArray(); catalog.searchFluids = fluidScope.toLongArray();
-            catalog.rebuild = false; catalog.dirty.clear(); catalog.revision = library.catalogRevision();
+        if (level != null && catalog.level.get() != level) catalog.level = new java.lang.ref.WeakReference<>(level);
+        if (catalog.revision != library.catalogRevision() && catalog.failureRevision != library.catalogRevision() && catalog.build == null) {
+            CatalogBuild build = new CatalogBuild(library, level, catalog); catalog.build = build;
+            if (level == null) {
+                // Dependency-light fixtures have no server queue; production callers always supply a level.
+                while (build.step()) { }
+                catalog.build = null;
+            } else BUILDS.computeIfAbsent(level.getServer(), ignored -> new ArrayDeque<>()).addLast(build);
         }
         return catalog;
     }
+    public static boolean catalogReady(CloudPatternStore.Library library, ServerLevel level) {
+        return catalog(library, level).revision == library.catalogRevision();
+    }
+    public static void warmCatalog(ServerLevel level, UUID libraryId) {
+        if (libraryId == null) return;
+        try { catalog(CloudPatternStore.get(level).library(libraryId), level); }
+        catch (RuntimeException unavailable) { /* An unhealthy authority is handled by the normal menu guards. */ }
+    }
+    @net.minecraftforge.eventbus.api.SubscribeEvent
+    public static void tickCatalogs(net.minecraftforge.event.TickEvent.ServerTickEvent event) {
+        if (event.phase != net.minecraftforge.event.TickEvent.Phase.END) return;
+        Deque<CatalogBuild> queue = BUILDS.get(event.getServer()); if (queue == null) return;
+        long deadline = System.nanoTime() + 2_000_000;
+        for (int steps = 0; steps < 256 && !queue.isEmpty() && System.nanoTime() < deadline; steps++) {
+            CatalogBuild build = queue.removeFirst();
+            if (build.target.build != build) continue;
+            try {
+                if (build.step()) queue.addLast(build);
+                else {
+                    build.target.build = null;
+                    if (build.target.revision != build.library.catalogRevision()) catalog(build.library, build.level);
+                }
+            } catch (RuntimeException failure) {
+                build.target.build = null; build.target.rebuild = true;
+                build.target.failureRevision = build.library.catalogRevision();
+                build.target.failure = "Cloud catalogue indexing failed: " + failure.getClass().getSimpleName();
+                org.slf4j.LoggerFactory.getLogger(CloudLibraryService.class).warn("Cloud catalogue indexing stopped", failure);
+            }
+        }
+    }
     public static CompoundTag page(ServerLevel level, UUID libraryId, String search, String type, int requestedPage, String selected) {
         return page(level, libraryId, search, type, requestedPage, selected, CloudPatternSearch.EMPTY);
+    }
+    private static CompoundTag pendingPage(CloudPatternStore.Library library, Catalog catalog, int requestedPage) {
+        if (catalog.failureRevision == library.catalogRevision()) throw new IllegalStateException(catalog.failure);
+        CompoundTag pending = new CompoundTag();
+        pending.putBoolean("indexing", true);
+        CatalogBuild build = catalog.build;
+        int indexed = build == null ? 0 : build.full ? (int)((build.cursor + (long)build.summarized) / 2) : build.summarized;
+        pending.putInt("indexed", indexed); pending.putInt("libraryTotal", library.entryCount());
+        int page = Math.max(0, Math.min(1_000_000, requestedPage));
+        pending.putInt("page", page); pending.putInt("pages", page + 1); pending.putInt("total", 0);
+        pending.put("entries", new ListTag());
+        ListTag types = new ListTag(); catalog.types.forEach(type -> types.add(StringTag.valueOf(type)));
+        pending.put("types", types);
+        pending.putLongArray("searchItems", catalog.searchItems); pending.putLongArray("searchFluids", catalog.searchFluids);
+        pending.putLong("revision", library.revision());
+        return pending;
     }
     /** Results are complete. Filtering never publishes a partial count or advances on menu polling. */
     public static CompoundTag page(ServerLevel level, UUID libraryId, String search, String type, int requestedPage, String selected, CloudPatternSearch localized) {
         var library = CloudPatternStore.get(level).library(libraryId);
         Catalog catalog = catalog(library, level);
+        if (catalog.revision != library.catalogRevision()) {
+            return pendingPage(library, catalog, requestedPage);
+        }
         String query = search.strip().toLowerCase(Locale.ROOT);
         List<UUID> matches;
         if (query.isEmpty() && type.isEmpty()) {
@@ -283,12 +382,12 @@ public final class CloudLibraryService {
     }
 
     @net.minecraftforge.eventbus.api.SubscribeEvent
-    public static void stopped(net.minecraftforge.event.server.ServerStoppedEvent event) { CATALOGS.clear(); }
+    public static void stopped(net.minecraftforge.event.server.ServerStoppedEvent event) { BUILDS.remove(event.getServer()); CATALOGS.clear(); }
     @net.minecraftforge.eventbus.api.SubscribeEvent
     public static void reloaded(net.minecraftforge.event.OnDatapackSyncEvent event) {
         if (event.getPlayer() != null) return;
         // Entry display metadata is a durable shard cache; only this derived in-memory index needs rebuilding.
-        CATALOGS.clear();
+        BUILDS.clear(); CATALOGS.clear();
     }
     public static void prepareDisplay(CloudPatternStore.Entry entry, ServerLevel level) { metadata(entry, level); }
     private static CompoundTag metadata(CloudPatternStore.Entry entry, ServerLevel level) {
