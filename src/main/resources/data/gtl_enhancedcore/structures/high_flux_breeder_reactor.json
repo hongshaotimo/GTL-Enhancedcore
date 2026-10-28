@@ -1,0 +1,1786 @@
+{
+  "sourceSize": [
+    47,
+    55,
+    48
+  ],
+  "size": [
+    47,
+    55,
+    48
+  ],
+  "sourceController": [
+    23,
+    9,
+    8
+  ],
+  "sourceNormal": [
+    0,
+    0,
+    -1
+  ],
+  "controllerPosition": [
+    23,
+    9,
+    39
+  ],
+  "bindings": {
+    " ": {
+      "mode": "any"
+    },
+    "C": {
+      "mode": "controller"
+    },
+    "X": {
+      "mode": "hatch"
+    },
+    "A": {
+      "mode": "literal",
+      "block": "gtlcore:fission_reactor_casing",
+      "properties": {}
+    },
+    "B": {
+      "mode": "literal",
+      "block": "gtlcore:supercritical_turbine_casing",
+      "properties": {}
+    },
+    "D": {
+      "mode": "literal",
+      "block": "gtlcore:iridium_casing",
+      "properties": {}
+    },
+    "E": {
+      "mode": "literal",
+      "block": "gtceu:laminated_glass",
+      "properties": {}
+    },
+    "F": {
+      "mode": "literal",
+      "block": "gtceu:cyan_lamp",
+      "properties": {
+        "bloom": "false",
+        "inverted": "true",
+        "lit": "true",
+        "powered": "false"
+      }
+    },
+    "G": {
+      "mode": "literal",
+      "block": "gtceu:white_lamp",
+      "properties": {
+        "bloom": "false",
+        "inverted": "true",
+        "lit": "true",
+        "powered": "false"
+      }
+    },
+    "I": {
+      "mode": "literal",
+      "block": "gtceu:orange_lamp",
+      "properties": {
+        "bloom": "false",
+        "inverted": "true",
+        "lit": "true",
+        "powered": "false"
+      }
+    },
+    "J": {
+      "mode": "literal",
+      "block": "gtceu:yellow_metal_sheet",
+      "properties": {}
+    },
+    "K": {
+      "mode": "literal",
+      "block": "gtlcore:fission_fuel_assembly",
+      "properties": {
+        "active": "false"
+      }
+    },
+    "L": {
+      "mode": "literal",
+      "block": "gtlcore:cooler",
+      "properties": {
+        "active": "false"
+      }
+    }
+  },
+  "counts": {
+    " ": 102331,
+    "X": 112,
+    "A": 10564,
+    "B": 8716,
+    "F": 204,
+    "G": 99,
+    "D": 873,
+    "J": 33,
+    "E": 470,
+    "L": 172,
+    "K": 476,
+    "I": 29,
+    "C": 1
+  },
+  "diamondOreMarkers": 112,
+  "sourceSha256": "9491dab677483480da69912419a19b1b1c452651568814a8cb8a5349f9e089fa",
+  "sha256": "dff2585b4152e28457bfd9629d948778d012434675883481fc0ae03633f5be46",
+  "sourceSchematic": "SchemTool/input/high_flux_breeder_reactor.schem",
+  "sourceRevision": "user-request-20261027",
+  "markerAccess": [
+    {
+      "sourcePosition": [
+        23,
+        9,
+        8
+      ],
+      "airDirections": [
+        [
+          0,
+          0,
+          -1
+        ],
+        [
+          0,
+          0,
+          1
+        ]
+      ]
+    },
+    {
+      "sourcePosition": [
+        3,
+        8,
+        0
+      ],
+      "airDirections": [
+        [
+          0,
+          0,
+          -1
+        ]
+      ]
+    },
+    {
+      "sourcePosition": [
+        4,
+        8,
+        0
+      ],
+      "airDirections": [
+        [
+          0,
+          0,
+          -1
+        ]
+      ]
+    },
+    {
+      "sourcePosition": [
+        5,
+        8,
+        0
+      ],
+      "airDirections": [
+        [
+          0,
+          0,
+          -1
+        ]
+      ]
+    },
+    {
+      "sourcePosition": [
+        6,
+        8,
+        0
+      ],
+      "airDirections": [
+        [
+          0,
+          0,
+          -1
+        ]
+      ]
+    },
+    {
+      "sourcePosition": [
+        7,
+        8,
+        0
+      ],
+      "airDirections": [
+        [
+          0,
+          0,
+          -1
+        ]
+      ]
+    },
+    {
+      "sourcePosition": [
+        8,
+        8,
+        0
+      ],
+      "airDirections": [
+        [
+          0,
+          0,
+          -1
+        ]
+      ]
+    },
+    {
+      "sourcePosition": [
+        38,
+        8,
+        0
+      ],
+      "airDirections": [
+        [
+          0,
+          0,
+          -1
+        ]
+      ]
+    },
+    {
+      "sourcePosition": [
+        39,
+        8,
+        0
+      ],
+      "airDirections": [
+        [
+          0,
+          0,
+          -1
+        ]
+      ]
+    },
+    {
+      "sourcePosition": [
+        40,
+        8,
+        0
+      ],
+      "airDirections": [
+        [
+          0,
+          0,
+          -1
+        ]
+      ]
+    },
+    {
+      "sourcePosition": [
+        41,
+        8,
+        0
+      ],
+      "airDirections": [
+        [
+          0,
+          0,
+          -1
+        ]
+      ]
+    },
+    {
+      "sourcePosition": [
+        42,
+        8,
+        0
+      ],
+      "airDirections": [
+        [
+          0,
+          0,
+          -1
+        ]
+      ]
+    },
+    {
+      "sourcePosition": [
+        43,
+        8,
+        0
+      ],
+      "airDirections": [
+        [
+          0,
+          0,
+          -1
+        ]
+      ]
+    },
+    {
+      "sourcePosition": [
+        3,
+        9,
+        0
+      ],
+      "airDirections": [
+        [
+          0,
+          0,
+          -1
+        ]
+      ]
+    },
+    {
+      "sourcePosition": [
+        4,
+        9,
+        0
+      ],
+      "airDirections": [
+        [
+          0,
+          0,
+          -1
+        ]
+      ]
+    },
+    {
+      "sourcePosition": [
+        5,
+        9,
+        0
+      ],
+      "airDirections": [
+        [
+          0,
+          0,
+          -1
+        ]
+      ]
+    },
+    {
+      "sourcePosition": [
+        6,
+        9,
+        0
+      ],
+      "airDirections": [
+        [
+          0,
+          0,
+          -1
+        ]
+      ]
+    },
+    {
+      "sourcePosition": [
+        7,
+        9,
+        0
+      ],
+      "airDirections": [
+        [
+          0,
+          0,
+          -1
+        ]
+      ]
+    },
+    {
+      "sourcePosition": [
+        8,
+        9,
+        0
+      ],
+      "airDirections": [
+        [
+          0,
+          0,
+          -1
+        ]
+      ]
+    },
+    {
+      "sourcePosition": [
+        38,
+        9,
+        0
+      ],
+      "airDirections": [
+        [
+          0,
+          0,
+          -1
+        ]
+      ]
+    },
+    {
+      "sourcePosition": [
+        39,
+        9,
+        0
+      ],
+      "airDirections": [
+        [
+          0,
+          0,
+          -1
+        ]
+      ]
+    },
+    {
+      "sourcePosition": [
+        40,
+        9,
+        0
+      ],
+      "airDirections": [
+        [
+          0,
+          0,
+          -1
+        ]
+      ]
+    },
+    {
+      "sourcePosition": [
+        41,
+        9,
+        0
+      ],
+      "airDirections": [
+        [
+          0,
+          0,
+          -1
+        ]
+      ]
+    },
+    {
+      "sourcePosition": [
+        42,
+        9,
+        0
+      ],
+      "airDirections": [
+        [
+          0,
+          0,
+          -1
+        ]
+      ]
+    },
+    {
+      "sourcePosition": [
+        43,
+        9,
+        0
+      ],
+      "airDirections": [
+        [
+          0,
+          0,
+          -1
+        ]
+      ]
+    },
+    {
+      "sourcePosition": [
+        13,
+        9,
+        47
+      ],
+      "airDirections": [
+        [
+          -1,
+          0,
+          0
+        ],
+        [
+          0,
+          -1,
+          0
+        ],
+        [
+          0,
+          0,
+          1
+        ]
+      ]
+    },
+    {
+      "sourcePosition": [
+        14,
+        9,
+        47
+      ],
+      "airDirections": [
+        [
+          0,
+          -1,
+          0
+        ],
+        [
+          0,
+          0,
+          1
+        ]
+      ]
+    },
+    {
+      "sourcePosition": [
+        15,
+        9,
+        47
+      ],
+      "airDirections": [
+        [
+          0,
+          -1,
+          0
+        ],
+        [
+          0,
+          0,
+          1
+        ]
+      ]
+    },
+    {
+      "sourcePosition": [
+        16,
+        9,
+        47
+      ],
+      "airDirections": [
+        [
+          0,
+          -1,
+          0
+        ],
+        [
+          0,
+          0,
+          1
+        ]
+      ]
+    },
+    {
+      "sourcePosition": [
+        17,
+        9,
+        47
+      ],
+      "airDirections": [
+        [
+          1,
+          0,
+          0
+        ],
+        [
+          0,
+          -1,
+          0
+        ],
+        [
+          0,
+          0,
+          1
+        ]
+      ]
+    },
+    {
+      "sourcePosition": [
+        29,
+        9,
+        47
+      ],
+      "airDirections": [
+        [
+          -1,
+          0,
+          0
+        ],
+        [
+          0,
+          -1,
+          0
+        ],
+        [
+          0,
+          0,
+          1
+        ]
+      ]
+    },
+    {
+      "sourcePosition": [
+        30,
+        9,
+        47
+      ],
+      "airDirections": [
+        [
+          0,
+          -1,
+          0
+        ],
+        [
+          0,
+          0,
+          1
+        ]
+      ]
+    },
+    {
+      "sourcePosition": [
+        31,
+        9,
+        47
+      ],
+      "airDirections": [
+        [
+          0,
+          -1,
+          0
+        ],
+        [
+          0,
+          0,
+          1
+        ]
+      ]
+    },
+    {
+      "sourcePosition": [
+        32,
+        9,
+        47
+      ],
+      "airDirections": [
+        [
+          0,
+          -1,
+          0
+        ],
+        [
+          0,
+          0,
+          1
+        ]
+      ]
+    },
+    {
+      "sourcePosition": [
+        33,
+        9,
+        47
+      ],
+      "airDirections": [
+        [
+          1,
+          0,
+          0
+        ],
+        [
+          0,
+          -1,
+          0
+        ],
+        [
+          0,
+          0,
+          1
+        ]
+      ]
+    },
+    {
+      "sourcePosition": [
+        3,
+        10,
+        0
+      ],
+      "airDirections": [
+        [
+          0,
+          0,
+          -1
+        ]
+      ]
+    },
+    {
+      "sourcePosition": [
+        4,
+        10,
+        0
+      ],
+      "airDirections": [
+        [
+          0,
+          0,
+          -1
+        ]
+      ]
+    },
+    {
+      "sourcePosition": [
+        5,
+        10,
+        0
+      ],
+      "airDirections": [
+        [
+          0,
+          0,
+          -1
+        ]
+      ]
+    },
+    {
+      "sourcePosition": [
+        6,
+        10,
+        0
+      ],
+      "airDirections": [
+        [
+          0,
+          0,
+          -1
+        ]
+      ]
+    },
+    {
+      "sourcePosition": [
+        7,
+        10,
+        0
+      ],
+      "airDirections": [
+        [
+          0,
+          0,
+          -1
+        ]
+      ]
+    },
+    {
+      "sourcePosition": [
+        8,
+        10,
+        0
+      ],
+      "airDirections": [
+        [
+          0,
+          0,
+          -1
+        ]
+      ]
+    },
+    {
+      "sourcePosition": [
+        38,
+        10,
+        0
+      ],
+      "airDirections": [
+        [
+          0,
+          0,
+          -1
+        ]
+      ]
+    },
+    {
+      "sourcePosition": [
+        39,
+        10,
+        0
+      ],
+      "airDirections": [
+        [
+          0,
+          0,
+          -1
+        ]
+      ]
+    },
+    {
+      "sourcePosition": [
+        40,
+        10,
+        0
+      ],
+      "airDirections": [
+        [
+          0,
+          0,
+          -1
+        ]
+      ]
+    },
+    {
+      "sourcePosition": [
+        41,
+        10,
+        0
+      ],
+      "airDirections": [
+        [
+          0,
+          0,
+          -1
+        ]
+      ]
+    },
+    {
+      "sourcePosition": [
+        42,
+        10,
+        0
+      ],
+      "airDirections": [
+        [
+          0,
+          0,
+          -1
+        ]
+      ]
+    },
+    {
+      "sourcePosition": [
+        43,
+        10,
+        0
+      ],
+      "airDirections": [
+        [
+          0,
+          0,
+          -1
+        ]
+      ]
+    },
+    {
+      "sourcePosition": [
+        13,
+        10,
+        47
+      ],
+      "airDirections": [
+        [
+          0,
+          0,
+          1
+        ]
+      ]
+    },
+    {
+      "sourcePosition": [
+        14,
+        10,
+        47
+      ],
+      "airDirections": [
+        [
+          0,
+          0,
+          1
+        ]
+      ]
+    },
+    {
+      "sourcePosition": [
+        15,
+        10,
+        47
+      ],
+      "airDirections": [
+        [
+          0,
+          0,
+          1
+        ]
+      ]
+    },
+    {
+      "sourcePosition": [
+        16,
+        10,
+        47
+      ],
+      "airDirections": [
+        [
+          0,
+          0,
+          1
+        ]
+      ]
+    },
+    {
+      "sourcePosition": [
+        17,
+        10,
+        47
+      ],
+      "airDirections": [
+        [
+          0,
+          0,
+          1
+        ]
+      ]
+    },
+    {
+      "sourcePosition": [
+        29,
+        10,
+        47
+      ],
+      "airDirections": [
+        [
+          0,
+          0,
+          1
+        ]
+      ]
+    },
+    {
+      "sourcePosition": [
+        30,
+        10,
+        47
+      ],
+      "airDirections": [
+        [
+          0,
+          0,
+          1
+        ]
+      ]
+    },
+    {
+      "sourcePosition": [
+        31,
+        10,
+        47
+      ],
+      "airDirections": [
+        [
+          0,
+          0,
+          1
+        ]
+      ]
+    },
+    {
+      "sourcePosition": [
+        32,
+        10,
+        47
+      ],
+      "airDirections": [
+        [
+          0,
+          0,
+          1
+        ]
+      ]
+    },
+    {
+      "sourcePosition": [
+        33,
+        10,
+        47
+      ],
+      "airDirections": [
+        [
+          0,
+          0,
+          1
+        ]
+      ]
+    },
+    {
+      "sourcePosition": [
+        3,
+        11,
+        0
+      ],
+      "airDirections": [
+        [
+          0,
+          0,
+          -1
+        ]
+      ]
+    },
+    {
+      "sourcePosition": [
+        4,
+        11,
+        0
+      ],
+      "airDirections": [
+        [
+          0,
+          0,
+          -1
+        ]
+      ]
+    },
+    {
+      "sourcePosition": [
+        5,
+        11,
+        0
+      ],
+      "airDirections": [
+        [
+          0,
+          0,
+          -1
+        ]
+      ]
+    },
+    {
+      "sourcePosition": [
+        6,
+        11,
+        0
+      ],
+      "airDirections": [
+        [
+          0,
+          0,
+          -1
+        ]
+      ]
+    },
+    {
+      "sourcePosition": [
+        7,
+        11,
+        0
+      ],
+      "airDirections": [
+        [
+          0,
+          0,
+          -1
+        ]
+      ]
+    },
+    {
+      "sourcePosition": [
+        8,
+        11,
+        0
+      ],
+      "airDirections": [
+        [
+          0,
+          0,
+          -1
+        ]
+      ]
+    },
+    {
+      "sourcePosition": [
+        38,
+        11,
+        0
+      ],
+      "airDirections": [
+        [
+          0,
+          0,
+          -1
+        ]
+      ]
+    },
+    {
+      "sourcePosition": [
+        39,
+        11,
+        0
+      ],
+      "airDirections": [
+        [
+          0,
+          0,
+          -1
+        ]
+      ]
+    },
+    {
+      "sourcePosition": [
+        40,
+        11,
+        0
+      ],
+      "airDirections": [
+        [
+          0,
+          0,
+          -1
+        ]
+      ]
+    },
+    {
+      "sourcePosition": [
+        41,
+        11,
+        0
+      ],
+      "airDirections": [
+        [
+          0,
+          0,
+          -1
+        ]
+      ]
+    },
+    {
+      "sourcePosition": [
+        42,
+        11,
+        0
+      ],
+      "airDirections": [
+        [
+          0,
+          0,
+          -1
+        ]
+      ]
+    },
+    {
+      "sourcePosition": [
+        43,
+        11,
+        0
+      ],
+      "airDirections": [
+        [
+          0,
+          0,
+          -1
+        ]
+      ]
+    },
+    {
+      "sourcePosition": [
+        13,
+        11,
+        47
+      ],
+      "airDirections": [
+        [
+          0,
+          0,
+          1
+        ]
+      ]
+    },
+    {
+      "sourcePosition": [
+        14,
+        11,
+        47
+      ],
+      "airDirections": [
+        [
+          0,
+          0,
+          1
+        ]
+      ]
+    },
+    {
+      "sourcePosition": [
+        15,
+        11,
+        47
+      ],
+      "airDirections": [
+        [
+          0,
+          0,
+          1
+        ]
+      ]
+    },
+    {
+      "sourcePosition": [
+        16,
+        11,
+        47
+      ],
+      "airDirections": [
+        [
+          0,
+          0,
+          1
+        ]
+      ]
+    },
+    {
+      "sourcePosition": [
+        17,
+        11,
+        47
+      ],
+      "airDirections": [
+        [
+          0,
+          0,
+          1
+        ]
+      ]
+    },
+    {
+      "sourcePosition": [
+        29,
+        11,
+        47
+      ],
+      "airDirections": [
+        [
+          0,
+          0,
+          1
+        ]
+      ]
+    },
+    {
+      "sourcePosition": [
+        30,
+        11,
+        47
+      ],
+      "airDirections": [
+        [
+          0,
+          0,
+          1
+        ]
+      ]
+    },
+    {
+      "sourcePosition": [
+        31,
+        11,
+        47
+      ],
+      "airDirections": [
+        [
+          0,
+          0,
+          1
+        ]
+      ]
+    },
+    {
+      "sourcePosition": [
+        32,
+        11,
+        47
+      ],
+      "airDirections": [
+        [
+          0,
+          0,
+          1
+        ]
+      ]
+    },
+    {
+      "sourcePosition": [
+        33,
+        11,
+        47
+      ],
+      "airDirections": [
+        [
+          0,
+          0,
+          1
+        ]
+      ]
+    },
+    {
+      "sourcePosition": [
+        3,
+        12,
+        0
+      ],
+      "airDirections": [
+        [
+          0,
+          0,
+          -1
+        ]
+      ]
+    },
+    {
+      "sourcePosition": [
+        4,
+        12,
+        0
+      ],
+      "airDirections": [
+        [
+          0,
+          0,
+          -1
+        ]
+      ]
+    },
+    {
+      "sourcePosition": [
+        5,
+        12,
+        0
+      ],
+      "airDirections": [
+        [
+          0,
+          0,
+          -1
+        ]
+      ]
+    },
+    {
+      "sourcePosition": [
+        6,
+        12,
+        0
+      ],
+      "airDirections": [
+        [
+          0,
+          0,
+          -1
+        ]
+      ]
+    },
+    {
+      "sourcePosition": [
+        7,
+        12,
+        0
+      ],
+      "airDirections": [
+        [
+          0,
+          0,
+          -1
+        ]
+      ]
+    },
+    {
+      "sourcePosition": [
+        8,
+        12,
+        0
+      ],
+      "airDirections": [
+        [
+          0,
+          0,
+          -1
+        ]
+      ]
+    },
+    {
+      "sourcePosition": [
+        38,
+        12,
+        0
+      ],
+      "airDirections": [
+        [
+          0,
+          0,
+          -1
+        ]
+      ]
+    },
+    {
+      "sourcePosition": [
+        39,
+        12,
+        0
+      ],
+      "airDirections": [
+        [
+          0,
+          0,
+          -1
+        ]
+      ]
+    },
+    {
+      "sourcePosition": [
+        40,
+        12,
+        0
+      ],
+      "airDirections": [
+        [
+          0,
+          0,
+          -1
+        ]
+      ]
+    },
+    {
+      "sourcePosition": [
+        41,
+        12,
+        0
+      ],
+      "airDirections": [
+        [
+          0,
+          0,
+          -1
+        ]
+      ]
+    },
+    {
+      "sourcePosition": [
+        42,
+        12,
+        0
+      ],
+      "airDirections": [
+        [
+          0,
+          0,
+          -1
+        ]
+      ]
+    },
+    {
+      "sourcePosition": [
+        43,
+        12,
+        0
+      ],
+      "airDirections": [
+        [
+          0,
+          0,
+          -1
+        ]
+      ]
+    },
+    {
+      "sourcePosition": [
+        13,
+        12,
+        47
+      ],
+      "airDirections": [
+        [
+          0,
+          0,
+          1
+        ]
+      ]
+    },
+    {
+      "sourcePosition": [
+        14,
+        12,
+        47
+      ],
+      "airDirections": [
+        [
+          0,
+          0,
+          1
+        ]
+      ]
+    },
+    {
+      "sourcePosition": [
+        15,
+        12,
+        47
+      ],
+      "airDirections": [
+        [
+          0,
+          0,
+          1
+        ]
+      ]
+    },
+    {
+      "sourcePosition": [
+        16,
+        12,
+        47
+      ],
+      "airDirections": [
+        [
+          0,
+          0,
+          1
+        ]
+      ]
+    },
+    {
+      "sourcePosition": [
+        17,
+        12,
+        47
+      ],
+      "airDirections": [
+        [
+          0,
+          0,
+          1
+        ]
+      ]
+    },
+    {
+      "sourcePosition": [
+        29,
+        12,
+        47
+      ],
+      "airDirections": [
+        [
+          0,
+          0,
+          1
+        ]
+      ]
+    },
+    {
+      "sourcePosition": [
+        30,
+        12,
+        47
+      ],
+      "airDirections": [
+        [
+          0,
+          0,
+          1
+        ]
+      ]
+    },
+    {
+      "sourcePosition": [
+        31,
+        12,
+        47
+      ],
+      "airDirections": [
+        [
+          0,
+          0,
+          1
+        ]
+      ]
+    },
+    {
+      "sourcePosition": [
+        32,
+        12,
+        47
+      ],
+      "airDirections": [
+        [
+          0,
+          0,
+          1
+        ]
+      ]
+    },
+    {
+      "sourcePosition": [
+        33,
+        12,
+        47
+      ],
+      "airDirections": [
+        [
+          0,
+          0,
+          1
+        ]
+      ]
+    },
+    {
+      "sourcePosition": [
+        3,
+        13,
+        0
+      ],
+      "airDirections": [
+        [
+          0,
+          0,
+          -1
+        ]
+      ]
+    },
+    {
+      "sourcePosition": [
+        4,
+        13,
+        0
+      ],
+      "airDirections": [
+        [
+          0,
+          0,
+          -1
+        ]
+      ]
+    },
+    {
+      "sourcePosition": [
+        5,
+        13,
+        0
+      ],
+      "airDirections": [
+        [
+          0,
+          0,
+          -1
+        ]
+      ]
+    },
+    {
+      "sourcePosition": [
+        6,
+        13,
+        0
+      ],
+      "airDirections": [
+        [
+          0,
+          0,
+          -1
+        ]
+      ]
+    },
+    {
+      "sourcePosition": [
+        7,
+        13,
+        0
+      ],
+      "airDirections": [
+        [
+          0,
+          0,
+          -1
+        ]
+      ]
+    },
+    {
+      "sourcePosition": [
+        8,
+        13,
+        0
+      ],
+      "airDirections": [
+        [
+          0,
+          0,
+          -1
+        ]
+      ]
+    },
+    {
+      "sourcePosition": [
+        38,
+        13,
+        0
+      ],
+      "airDirections": [
+        [
+          0,
+          0,
+          -1
+        ]
+      ]
+    },
+    {
+      "sourcePosition": [
+        39,
+        13,
+        0
+      ],
+      "airDirections": [
+        [
+          0,
+          0,
+          -1
+        ]
+      ]
+    },
+    {
+      "sourcePosition": [
+        40,
+        13,
+        0
+      ],
+      "airDirections": [
+        [
+          0,
+          0,
+          -1
+        ]
+      ]
+    },
+    {
+      "sourcePosition": [
+        41,
+        13,
+        0
+      ],
+      "airDirections": [
+        [
+          0,
+          0,
+          -1
+        ]
+      ]
+    },
+    {
+      "sourcePosition": [
+        42,
+        13,
+        0
+      ],
+      "airDirections": [
+        [
+          0,
+          0,
+          -1
+        ]
+      ]
+    },
+    {
+      "sourcePosition": [
+        43,
+        13,
+        0
+      ],
+      "airDirections": [
+        [
+          0,
+          0,
+          -1
+        ]
+      ]
+    }
+  ]
+}

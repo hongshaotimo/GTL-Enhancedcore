@@ -8,7 +8,8 @@ import java.util.stream.IntStream;
 public record PlotSettings(int plotChunks, String groundBlock, String roadBlock, String borderBlock,
                            String markerBlock, RoadStyle roadStyle, int roadWidth, MarkerMode markerMode,
                            int markerSize, int bedrockY, int surfaceY, String lineBlock,
-                           LineStyle lineStyle, int dashLength, int dashGap, int borderWidth) {
+                           LineStyle lineStyle, int dashLength, int dashGap, int borderWidth,
+                           String plotEdgeBlock, int plotEdgeWidth) {
     public static final int FORMAT_VERSION = 2;
     public static final List<String> CONCRETE_COLORS = List.of("white", "orange", "magenta", "light_blue",
             "yellow", "lime", "pink", "gray", "light_gray", "cyan", "purple", "blue", "brown", "green", "red", "black");
@@ -28,7 +29,9 @@ public record PlotSettings(int plotChunks, String groundBlock, String roadBlock,
             throw new IllegalArgumentException("Center marker must be concrete or a preset light");
         Objects.requireNonNull(roadStyle, "roadStyle"); Objects.requireNonNull(lineStyle, "lineStyle"); Objects.requireNonNull(markerMode, "markerMode");
         if (roadWidth < 1 || roadWidth > 32) throw new IllegalArgumentException("roadWidth must be 1..32");
-        if (dashLength < 1 || dashLength > 32 || dashGap < 1 || dashGap > 32 || borderWidth < 0 || borderWidth > 8)
+        validateConcrete(plotEdgeBlock);
+        if (dashLength < 1 || dashLength > 32 || dashGap < 1 || dashGap > 32
+                || borderWidth < 0 || borderWidth > 8 || plotEdgeWidth < 0 || plotEdgeWidth > 8)
             throw new IllegalArgumentException("Invalid road decoration dimensions");
         if (markerSize < 0 || markerSize > 5) throw new IllegalArgumentException("markerSize must be 0..5 (0 = parity-based automatic)");
         if (bedrockY < -64 || bedrockY > 318 || surfaceY <= bedrockY || surfaceY > 319)
@@ -37,6 +40,14 @@ public record PlotSettings(int plotChunks, String groundBlock, String roadBlock,
 
     private static void validateConcrete(String id) {
         if (!MATERIALS.contains(id)) throw new IllegalArgumentException("Plot materials must be one of the sixteen concrete colors");
+    }
+    public PlotSettings(int plotChunks, String groundBlock, String roadBlock, String borderBlock,
+                        String markerBlock, RoadStyle roadStyle, int roadWidth, MarkerMode markerMode,
+                        int markerSize, int bedrockY, int surfaceY, String lineBlock,
+                        LineStyle lineStyle, int dashLength, int dashGap, int borderWidth) {
+        this(plotChunks, groundBlock, roadBlock, borderBlock, markerBlock, roadStyle, roadWidth, markerMode,
+                markerSize, bedrockY, surfaceY, lineBlock, lineStyle, dashLength, dashGap, borderWidth,
+                "minecraft:white_concrete", 0);
     }
 
     public int plotBlocks() { return plotChunks * 16; }
@@ -49,7 +60,8 @@ public record PlotSettings(int plotChunks, String groundBlock, String roadBlock,
         if (size < 1 || size > 10) throw new IllegalArgumentException("preset size must be 1..10");
         return new PlotSettings(size, "minecraft:light_gray_concrete", "minecraft:black_concrete",
                 "minecraft:white_concrete", "minecraft:sea_lantern", RoadStyle.HIGHWAY, 3,
-                MarkerMode.PLOT, 0, -64, -53, "minecraft:white_concrete", LineStyle.DASHED, 3, 3, 1);
+                MarkerMode.PLOT, 0, -64, -53, "minecraft:white_concrete", LineStyle.DASHED, 3, 3, 1,
+                "minecraft:gray_concrete", 1);
     }
     /** Convenience constructor for callers that do not request lane markings. */
     public PlotSettings(int plotChunks, String groundBlock, String roadBlock, String borderBlock,
@@ -72,27 +84,32 @@ public record PlotSettings(int plotChunks, String groundBlock, String roadBlock,
                                     LineStyle marking, int length, int gap, int curb) {
         return new PlotSettings(plotChunks, groundBlock, "minecraft:" + road, "minecraft:" + border,
                 markerBlock, style, width, markerMode, markerSize, bedrockY, surfaceY,
-                "minecraft:" + line, marking, length, gap, curb);
+                "minecraft:" + line, marking, length, gap, curb, plotEdgeBlock, plotEdgeWidth);
     }
-    public PlotSettings withLevels(int bottom, int top) {
-        return new PlotSettings(plotChunks,groundBlock,roadBlock,borderBlock,markerBlock,roadStyle,roadWidth,
-                markerMode,markerSize,bottom,top,lineBlock,lineStyle,dashLength,dashGap,borderWidth);
+    private PlotSettings copy(int chunks, String ground, String road, String curb, String marker, RoadStyle layout,
+                              int width, MarkerMode markers, int markerSide, int bottom, int top, String line,
+                              LineStyle marking, int dash, int gap, int curbWidth, String edge, int edgeWidth) {
+        return new PlotSettings(chunks,ground,road,curb,marker,layout,width,markers,markerSide,bottom,top,
+                line,marking,dash,gap,curbWidth,edge,edgeWidth);
     }
+    public PlotSettings withLevels(int bottom, int top) { return copy(plotChunks,groundBlock,roadBlock,borderBlock,markerBlock,roadStyle,roadWidth,markerMode,markerSize,bottom,top,lineBlock,lineStyle,dashLength,dashGap,borderWidth,plotEdgeBlock,plotEdgeWidth); }
     public static List<PlotSettings> presets() { return IntStream.rangeClosed(1, 10).mapToObj(PlotSettings::preset).toList(); }
-    public PlotSettings withPlotChunks(int value) { return new PlotSettings(value,groundBlock,roadBlock,borderBlock,markerBlock,roadStyle,roadWidth,markerMode,markerSize,bedrockY,surfaceY,lineBlock,lineStyle,dashLength,dashGap,borderWidth); }
-    public PlotSettings withGroundBlock(String value) { return new PlotSettings(plotChunks,value,roadBlock,borderBlock,markerBlock,roadStyle,roadWidth,markerMode,markerSize,bedrockY,surfaceY,lineBlock,lineStyle,dashLength,dashGap,borderWidth); }
-    public PlotSettings withRoadBlock(String value) { return new PlotSettings(plotChunks,groundBlock,value,borderBlock,markerBlock,roadStyle,roadWidth,markerMode,markerSize,bedrockY,surfaceY,lineBlock,lineStyle,dashLength,dashGap,borderWidth); }
-    public PlotSettings withBorderBlock(String value) { return new PlotSettings(plotChunks,groundBlock,roadBlock,value,markerBlock,roadStyle,roadWidth,markerMode,markerSize,bedrockY,surfaceY,lineBlock,lineStyle,dashLength,dashGap,borderWidth); }
-    public PlotSettings withMarkerBlock(String value) { return new PlotSettings(plotChunks,groundBlock,roadBlock,borderBlock,value,roadStyle,roadWidth,markerMode,markerSize,bedrockY,surfaceY,lineBlock,lineStyle,dashLength,dashGap,borderWidth); }
-    public PlotSettings withRoadStyle(RoadStyle value) { return new PlotSettings(plotChunks,groundBlock,roadBlock,borderBlock,markerBlock,value,roadWidth,markerMode,markerSize,bedrockY,surfaceY,lineBlock,lineStyle,dashLength,dashGap,borderWidth); }
-    public PlotSettings withRoadWidth(int value) { return new PlotSettings(plotChunks,groundBlock,roadBlock,borderBlock,markerBlock,roadStyle,value,markerMode,markerSize,bedrockY,surfaceY,lineBlock,lineStyle,dashLength,dashGap,borderWidth); }
-    public PlotSettings withMarkerMode(MarkerMode value) { return new PlotSettings(plotChunks,groundBlock,roadBlock,borderBlock,markerBlock,roadStyle,roadWidth,value,markerSize,bedrockY,surfaceY,lineBlock,lineStyle,dashLength,dashGap,borderWidth); }
-    public PlotSettings withMarkerSize(int value) { return new PlotSettings(plotChunks,groundBlock,roadBlock,borderBlock,markerBlock,roadStyle,roadWidth,markerMode,value,bedrockY,surfaceY,lineBlock,lineStyle,dashLength,dashGap,borderWidth); }
-    public PlotSettings withBedrockY(int value) { return new PlotSettings(plotChunks,groundBlock,roadBlock,borderBlock,markerBlock,roadStyle,roadWidth,markerMode,markerSize,value,surfaceY,lineBlock,lineStyle,dashLength,dashGap,borderWidth); }
-    public PlotSettings withSurfaceY(int value) { return new PlotSettings(plotChunks,groundBlock,roadBlock,borderBlock,markerBlock,roadStyle,roadWidth,markerMode,markerSize,bedrockY,value,lineBlock,lineStyle,dashLength,dashGap,borderWidth); }
-    public PlotSettings withLineBlock(String value) { return new PlotSettings(plotChunks,groundBlock,roadBlock,borderBlock,markerBlock,roadStyle,roadWidth,markerMode,markerSize,bedrockY,surfaceY,value,lineStyle,dashLength,dashGap,borderWidth); }
-    public PlotSettings withLineStyle(LineStyle value) { return new PlotSettings(plotChunks,groundBlock,roadBlock,borderBlock,markerBlock,roadStyle,roadWidth,markerMode,markerSize,bedrockY,surfaceY,lineBlock,value,dashLength,dashGap,borderWidth); }
-    public PlotSettings withDashLength(int value) { return new PlotSettings(plotChunks,groundBlock,roadBlock,borderBlock,markerBlock,roadStyle,roadWidth,markerMode,markerSize,bedrockY,surfaceY,lineBlock,lineStyle,value,dashGap,borderWidth); }
-    public PlotSettings withDashGap(int value) { return new PlotSettings(plotChunks,groundBlock,roadBlock,borderBlock,markerBlock,roadStyle,roadWidth,markerMode,markerSize,bedrockY,surfaceY,lineBlock,lineStyle,dashLength,value,borderWidth); }
-    public PlotSettings withBorderWidth(int value) { return new PlotSettings(plotChunks,groundBlock,roadBlock,borderBlock,markerBlock,roadStyle,roadWidth,markerMode,markerSize,bedrockY,surfaceY,lineBlock,lineStyle,dashLength,dashGap,value); }
+    public PlotSettings withPlotChunks(int v) { return copy(v,groundBlock,roadBlock,borderBlock,markerBlock,roadStyle,roadWidth,markerMode,markerSize,bedrockY,surfaceY,lineBlock,lineStyle,dashLength,dashGap,borderWidth,plotEdgeBlock,plotEdgeWidth); }
+    public PlotSettings withGroundBlock(String v) { return copy(plotChunks,v,roadBlock,borderBlock,markerBlock,roadStyle,roadWidth,markerMode,markerSize,bedrockY,surfaceY,lineBlock,lineStyle,dashLength,dashGap,borderWidth,plotEdgeBlock,plotEdgeWidth); }
+    public PlotSettings withRoadBlock(String v) { return copy(plotChunks,groundBlock,v,borderBlock,markerBlock,roadStyle,roadWidth,markerMode,markerSize,bedrockY,surfaceY,lineBlock,lineStyle,dashLength,dashGap,borderWidth,plotEdgeBlock,plotEdgeWidth); }
+    public PlotSettings withBorderBlock(String v) { return copy(plotChunks,groundBlock,roadBlock,v,markerBlock,roadStyle,roadWidth,markerMode,markerSize,bedrockY,surfaceY,lineBlock,lineStyle,dashLength,dashGap,borderWidth,plotEdgeBlock,plotEdgeWidth); }
+    public PlotSettings withMarkerBlock(String v) { return copy(plotChunks,groundBlock,roadBlock,borderBlock,v,roadStyle,roadWidth,markerMode,markerSize,bedrockY,surfaceY,lineBlock,lineStyle,dashLength,dashGap,borderWidth,plotEdgeBlock,plotEdgeWidth); }
+    public PlotSettings withRoadStyle(RoadStyle v) { return copy(plotChunks,groundBlock,roadBlock,borderBlock,markerBlock,v,roadWidth,markerMode,markerSize,bedrockY,surfaceY,lineBlock,lineStyle,dashLength,dashGap,borderWidth,plotEdgeBlock,plotEdgeWidth); }
+    public PlotSettings withRoadWidth(int v) { return copy(plotChunks,groundBlock,roadBlock,borderBlock,markerBlock,roadStyle,v,markerMode,markerSize,bedrockY,surfaceY,lineBlock,lineStyle,dashLength,dashGap,borderWidth,plotEdgeBlock,plotEdgeWidth); }
+    public PlotSettings withMarkerMode(MarkerMode v) { return copy(plotChunks,groundBlock,roadBlock,borderBlock,markerBlock,roadStyle,roadWidth,v,markerSize,bedrockY,surfaceY,lineBlock,lineStyle,dashLength,dashGap,borderWidth,plotEdgeBlock,plotEdgeWidth); }
+    public PlotSettings withMarkerSize(int v) { return copy(plotChunks,groundBlock,roadBlock,borderBlock,markerBlock,roadStyle,roadWidth,markerMode,v,bedrockY,surfaceY,lineBlock,lineStyle,dashLength,dashGap,borderWidth,plotEdgeBlock,plotEdgeWidth); }
+    public PlotSettings withBedrockY(int v) { return copy(plotChunks,groundBlock,roadBlock,borderBlock,markerBlock,roadStyle,roadWidth,markerMode,markerSize,v,surfaceY,lineBlock,lineStyle,dashLength,dashGap,borderWidth,plotEdgeBlock,plotEdgeWidth); }
+    public PlotSettings withSurfaceY(int v) { return copy(plotChunks,groundBlock,roadBlock,borderBlock,markerBlock,roadStyle,roadWidth,markerMode,markerSize,bedrockY,v,lineBlock,lineStyle,dashLength,dashGap,borderWidth,plotEdgeBlock,plotEdgeWidth); }
+    public PlotSettings withLineBlock(String v) { return copy(plotChunks,groundBlock,roadBlock,borderBlock,markerBlock,roadStyle,roadWidth,markerMode,markerSize,bedrockY,surfaceY,v,lineStyle,dashLength,dashGap,borderWidth,plotEdgeBlock,plotEdgeWidth); }
+    public PlotSettings withLineStyle(LineStyle v) { return copy(plotChunks,groundBlock,roadBlock,borderBlock,markerBlock,roadStyle,roadWidth,markerMode,markerSize,bedrockY,surfaceY,lineBlock,v,dashLength,dashGap,borderWidth,plotEdgeBlock,plotEdgeWidth); }
+    public PlotSettings withDashLength(int v) { return copy(plotChunks,groundBlock,roadBlock,borderBlock,markerBlock,roadStyle,roadWidth,markerMode,markerSize,bedrockY,surfaceY,lineBlock,lineStyle,v,dashGap,borderWidth,plotEdgeBlock,plotEdgeWidth); }
+    public PlotSettings withDashGap(int v) { return copy(plotChunks,groundBlock,roadBlock,borderBlock,markerBlock,roadStyle,roadWidth,markerMode,markerSize,bedrockY,surfaceY,lineBlock,lineStyle,dashLength,v,borderWidth,plotEdgeBlock,plotEdgeWidth); }
+    public PlotSettings withBorderWidth(int v) { return copy(plotChunks,groundBlock,roadBlock,borderBlock,markerBlock,roadStyle,roadWidth,markerMode,markerSize,bedrockY,surfaceY,lineBlock,lineStyle,dashLength,dashGap,v,plotEdgeBlock,plotEdgeWidth); }
+    public PlotSettings withPlotEdgeBlock(String v) { return copy(plotChunks,groundBlock,roadBlock,borderBlock,markerBlock,roadStyle,roadWidth,markerMode,markerSize,bedrockY,surfaceY,lineBlock,lineStyle,dashLength,dashGap,borderWidth,v,plotEdgeWidth); }
+    public PlotSettings withPlotEdgeWidth(int v) { return copy(plotChunks,groundBlock,roadBlock,borderBlock,markerBlock,roadStyle,roadWidth,markerMode,markerSize,bedrockY,surfaceY,lineBlock,lineStyle,dashLength,dashGap,borderWidth,plotEdgeBlock,v); }
 }

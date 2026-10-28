@@ -1,0 +1,6 @@
+{
+  "parent": "gtceu:block/overlay/front",
+  "textures": {
+    "overlay": "gtl_enhancedcore:block/machine/part/galaxy_connection_source_hatch"
+  }
+}

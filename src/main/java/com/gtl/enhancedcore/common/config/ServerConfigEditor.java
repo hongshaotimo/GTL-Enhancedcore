@@ -38,6 +38,7 @@ public final class ServerConfigEditor {
             Path path = FMLPaths.CONFIGDIR.get().resolve("GTL-Enhancedcore").resolve(kind.file);
             if (kind == ConfigCatalog.SINGULARITY) InfinitySingularityRecipeLoader.ensureDefaultConfig();
             if (kind == ConfigCatalog.DISMANTLE) TerminalDismantleConfig.ensureDefaultConfig(path);
+            if (kind == ConfigCatalog.GALAXY) GalaxyConnectionConfig.ensureDefaultConfig(path);
             var file = new EditableConfigFile(path);
             String current = file.text();
             if (current.length() > 8_000) throw new IllegalArgumentException("Configuration too large");

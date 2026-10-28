@@ -2,7 +2,6 @@ package com.gtl.enhancedcore.common.recipe.iv;
 
 import appeng.api.networking.security.IActionSource;
 import appeng.api.stacks.*;
-import appeng.api.storage.StorageHelper;
 import com.gregtechceu.gtceu.api.capability.IEnergyContainer;
 import com.gregtechceu.gtceu.api.capability.IDataAccessHatch;
 import com.gregtechceu.gtceu.api.capability.recipe.*;
@@ -17,6 +16,7 @@ import com.gregtechceu.gtceu.common.recipe.condition.ResearchCondition;
 import com.gtl.enhancedcore.common.util.FairRecipeSelector;
 import com.gtl.enhancedcore.common.recipe.GridEnergyInputs;
 import com.gtl.enhancedcore.common.recipe.MachineDiagnostics;
+import com.gtl.enhancedcore.common.cloud.CloudPowerAccess;
 import com.gtladd.gtladditions.api.machine.IWirelessElectricMultiblockMachine;
 import com.gtladd.gtladditions.api.machine.trait.IWirelessNetworkEnergyHandler;
 import org.gtlcore.gtlcore.common.machine.multiblock.part.ae.MEPatternBufferPartMachine;
@@ -36,7 +36,8 @@ import org.gtlcore.gtlcore.api.machine.computation.ComputationRecipes;
 
 /**
  * Orders own all material state. The original machine/trait still owns coils, energy, research,
- * computation, maintenance and modules. Only explicitly opted-in registrations enter this engine.
+ * computation, maintenance and modules. Explicit IV registrations retain their enhanced limits;
+ * other machines opt in only while an actual cloud endpoint is attached, at their native limits.
  */
 public final class IvNativeEngine {
     private final WorkableElectricMultiblockMachine machine;
@@ -47,6 +48,7 @@ public final class IvNativeEngine {
     private final FairRecipeSelector<Ref> deliverySelector = new FairRecipeSelector<>();
     private record Ref(MEPatternBufferPartMachine buffer, IvJob job) {}
     private long currentEUt;
+    private BigInteger currentGridEUt = BigInteger.ZERO;
     private String message = "";
     private boolean advanced;
     private boolean fault;
@@ -56,7 +58,8 @@ public final class IvNativeEngine {
 
     public IvNativeEngine(WorkableElectricMultiblockMachine machine, RecipeLogic logic, IvNativeAccess access) {
         this.machine = machine; this.logic = logic; this.access = access;
-        if (!IvMachineScope.nativeTarget(machine)) throw new IllegalArgumentException("Not an isolated native machine");
+        if (!IvMachineScope.nativeTarget(machine) && !IvBuffers.genericCloudTarget(machine))
+            throw new IllegalArgumentException("Not an isolated native or cloud-adapted machine");
     }
     public void tick() {
         if (machine.isRemote()) return;
@@ -84,8 +87,14 @@ public final class IvNativeEngine {
         clearDiagnostics();
         ComputationNetwork.forget(machine);
     }
+    /** Keep energy, computation and output transactions on the normal order execution path. */
+    public boolean accelerateTick() {
+        advanced = false;
+        tick();
+        return advanced;
+    }
     private void clearDiagnostics() {
-        message = ""; advanced = false; currentEUt = 0;
+        message = ""; advanced = false; currentEUt = 0; currentGridEUt = BigInteger.ZERO;
         rejectionDetails.clear(); machineDetails.clear();
     }
     private static Component nativeDetail(String key, Object... arguments) {
@@ -151,16 +160,22 @@ public final class IvNativeEngine {
         summary.put("reasons", encoded);
     }
     private long inputPower() {
+        if (com.gtl.enhancedcore.common.machine.galaxy.GalaxyLinks.active(machine)) return Long.MAX_VALUE;
+        if (machine instanceof CloudPowerAccess power) return Math.max(0, power.cloudPowerLimit());
         if (GridEnergyInputs.find(machine) != null) return Long.MAX_VALUE;
-        var inputs = machine.getCapabilitiesProxy().get(IO.IN, EURecipeCapability.CAP);
-        if (inputs == null) return 0;
         var sources = new ArrayList<IvNativeRecoveryState.PowerInput>();
-        for (var input : inputs) if (input instanceof IEnergyContainer energy)
+        for (var energy : GridEnergyInputs.energyInputs(machine))
             sources.add(new IvNativeRecoveryState.PowerInput(Math.max(0, energy.getInputVoltage()),
                     Math.max(0, energy.getInputAmperage())));
         return IvNativeRecoveryState.inputPower(sources);
     }
     private boolean powerReady(Ref ref, BigInteger payment, IWirelessNetworkEnergyHandler wireless, long availablePower) {
+        if (machine instanceof CloudPowerAccess power) {
+            if ((wireless != null || payment.compareTo(BigInteger.valueOf(Math.max(0, availablePower))) <= 0)
+                    && power.cloudPowerReady(payment)) return true;
+            waiting(ref, "gtl_enhancedcore.diagnostic.power");
+            return false;
+        }
         if (wireless != null) {
             if (!wireless.isOnline()) {
                 waiting(ref, "gtl_enhancedcore.diagnostic.power", nativeDetail("wireless_offline"));
@@ -172,6 +187,12 @@ public final class IvNativeEngine {
                 return false;
             }
         } else {
+            var grid = GridEnergyInputs.find(machine);
+            if (grid != null && grid.gridEnergyUnboundedPower()) {
+                if (grid.gridEnergyAvailable().compareTo(payment) >= 0) return true;
+                waiting(ref, "gtl_enhancedcore.diagnostic.power", MachineDiagnostics.power(machine, payment.longValueExact()));
+                return false;
+            }
             long stored = GridEnergyInputs.stored(machine);
             if (!IvNativeRecoveryState.canPay(payment, availablePower, stored)) {
                 waiting(ref, "gtl_enhancedcore.diagnostic.power", GridEnergyInputs.find(machine) == null
@@ -206,7 +227,7 @@ public final class IvNativeEngine {
                 machineDetails.add(Component.translatable(reason));
                 continue;
             }
-            for (var job : IvBuffers.state(buffer).jobs) {
+            for (var job : IvBuffers.jobs(buffer, machine)) {
                 var ref = new Ref(buffer, job);
                 try { validateNativeJob(job); }
                 catch (RuntimeException failure) {
@@ -241,6 +262,8 @@ public final class IvNativeEngine {
         publish(all);
     }
     private IWirelessNetworkEnergyHandler wireless() {
+        var galaxy = com.gtl.enhancedcore.common.machine.galaxy.GalaxyWirelessEnergyHandler.forMachine(machine);
+        if (galaxy != null) return galaxy;
         return IvMachineScope.batching(machine) && machine instanceof IWirelessElectricMultiblockMachine wireless
                 ? wireless.getWirelessNetworkEnergyHandler() : null;
     }
@@ -254,6 +277,11 @@ public final class IvNativeEngine {
     }
     private boolean allowed(Ref ref) {
         var job = ref.job;
+        if (logic instanceof com.gtl.enhancedcore.mixin.gtlcore.IvNativeAddMultipleAccessor add
+                && add.iv$addBeforeWorking() != null && !add.iv$addBeforeWorking().test(machine)) {
+            waiting(ref, "gtl_enhancedcore.diagnostic.conditions", nativeDetail("startup", job.recipe.id.toString()));
+            return false;
+        }
         if (!lockAllows(ref)) return false;
         if (IGTRecipe.of(job.recipe).getEuTier() > machine.getTier()) {
             waiting(ref, "gtl_enhancedcore.diagnostic.voltage", nativeDetail("voltage", IGTRecipe.of(job.recipe).getEuTier(), machine.getTier()));
@@ -305,7 +333,6 @@ public final class IvNativeEngine {
         for (var ref : all) {
             var job = ref.job;
             if (!job.halted && !job.active() && job.pending.isEmpty() && job.remaining > 0 && allowed(ref)) {
-                job.error = "";
                 ready.add(ref);
             }
         }
@@ -361,19 +388,29 @@ public final class IvNativeEngine {
             GTRecipe timing;
             var wireless = wireless();
             BigInteger wirelessEUt = BigInteger.ZERO;
+            BigInteger wirelessTotal = null;
             long parallel;
             // Research duration is paid work, not a fixed-energy batch window.
             if (IvMachineScope.batching(machine) && !job.recipe.data.getBoolean("duration_is_total_cwu")) {
                 parallel = granted;
-                scaled = RecipeCalculationHelper.INSTANCE.multipleRecipe(job.recipe, parallel);
+                GTRecipe scaleSource = job.recipe;
+                if (wireless != null) {
+                    scaleSource = job.recipe.copy(); scaleSource.data = job.recipe.data.copy();
+                    scaleSource.tickInputs.remove(EURecipeCapability.CAP);
+                }
+                scaled = RecipeCalculationHelper.INSTANCE.multipleRecipe(scaleSource, parallel);
                 if (wireless != null) {
                     BigInteger cost = BigDecimal.valueOf(job.recipe.duration * multiplier())
                             .multiply(BigDecimal.valueOf(batchEUt(job.recipe)))
                             .multiply(BigDecimal.valueOf(parallel)).toBigInteger();
-                    if (!powerReady(ref, cost, wireless, 0)) return;
-                    // GTLAdd's native wireless helper pays floor(total / 20) on each of 20 ticks.
-                    wirelessEUt = cost.divide(BigInteger.valueOf(20));
-                    timing = scaled.copy(); timing.duration = 20; timing.tickInputs.remove(EURecipeCapability.CAP);
+                    if (wireless.getMaxAvailableEnergy().compareTo(cost) < 0) {
+                        waiting(ref, "gtl_enhancedcore.diagnostic.power"); return;
+                    }
+                    var powerLimit = wireless.getMaxAvailableEnergy();
+                    var plan = com.gtl.enhancedcore.common.recipe.GalaxyBatchAccounting.plan(cost, 20, powerLimit.max(BigInteger.ONE));
+                    if (plan == null) return;
+                    wirelessEUt = plan.eut(); wirelessTotal = cost;
+                    timing = scaled.copy(); timing.duration = plan.duration(); timing.tickInputs.remove(EURecipeCapability.CAP);
                 } else {
                     long power = machine.getOverclockVoltage();
                     if (power <= 0) {
@@ -389,7 +426,7 @@ public final class IvNativeEngine {
                 }
             } else {
                 var context = new IvNativeMatchContext(machine, job.inventory, virtual, job.remaining, granted);
-                scaled = context.simulate(() -> machine.doModifyRecipe(job.recipe.copy(), new OCParams(), new OCResult()));
+                scaled = context.prepare(job.recipe);
                 if (scaled == null) {
                     waiting(ref, "gtl_enhancedcore.diagnostic.conditions", modifierDetail(job.recipe));
                     return;
@@ -398,6 +435,32 @@ public final class IvNativeEngine {
                 capacity = context.reserved();
                 if (capacity > granted || parallel > job.remaining) throw new IllegalStateException("Native modifier exceeded reserved capacity");
                 timing = scaled;
+                if (wireless != null) wirelessEUt = BigInteger.valueOf(Math.max(0, RecipeHelper.getInputEUt(timing)));
+                if (wireless != null && com.gtl.enhancedcore.common.machine.galaxy.GalaxyLinks.active(machine)
+                        && !scaled.data.getBoolean("duration_is_total_cwu")) {
+                    // Keep the native modifier's voltage, duration and machine conditions, then
+                    // repeat whole admitted groups with EU outside the long recipe capability.
+                    long maximum = Math.min(granted / Math.max(1, capacity), job.remaining / parallel);
+                    if (wirelessEUt.signum() > 0) maximum = wireless.getMaxAvailableEnergy().divide(wirelessEUt)
+                            .min(BigInteger.valueOf(maximum)).longValueExact();
+                    final GTRecipe base = scaled;
+                    long repeats = com.gtl.enhancedcore.common.recipe.BoundedRecipeAdmission.maximum(maximum, n -> {
+                        try {
+                            GTRecipe candidate = repeatStellarRecipe(base, n);
+                            IvRecipeInputs.outputs(candidate.outputs); // Reject overflowing item/fluid output totals.
+                            return IvRecipeInputs.plan(candidate, job.inventory, virtual, 1) != null
+                                    && candidate.matchTickRecipe(machine).isSuccess();
+                        } catch (ArithmeticException overflow) { return false; }
+                    });
+                    if (repeats == 0) { waiting(ref, "gtl_enhancedcore.diagnostic.power"); return; }
+                    if (repeats > 1) {
+                        scaled = repeatStellarRecipe(base, repeats); timing = scaled;
+                        parallel = Math.multiplyExact(parallel, repeats);
+                        capacity = Math.multiplyExact(capacity, repeats);
+                        wirelessEUt = wirelessEUt.multiply(BigInteger.valueOf(repeats));
+                    }
+                    wirelessTotal = wirelessEUt.multiply(BigInteger.valueOf(timing.duration));
+                }
             }
             if (IvRecipeInputs.plan(scaled, job.inventory, virtual, 1) == null) {
                 waiting(ref, "gtl_enhancedcore.diagnostic.iv_catalyst"); return;
@@ -441,7 +504,8 @@ public final class IvNativeEngine {
             var consumed = IvRecipeInputs.plan(IParallelLogic.getRecipeOutputChance(machine, inputRoll).outputs, job.inventory, Map.of(), 1);
             if (consumed == null) throw new IllegalStateException("Native input commit changed");
             var produced = IvRecipeInputs.outputs(outputs.outputs);
-            BigInteger totalEnergy = research ? firstPayment : firstPayment.multiply(BigInteger.valueOf(timing.duration));
+            BigInteger totalEnergy = research ? firstPayment : wirelessTotal != null ? wirelessTotal
+                    : firstPayment.multiply(BigInteger.valueOf(timing.duration));
             IvRecipeInputs.subtract(job.inventory, consumed);
             job.completion.putAll(produced); job.remaining -= parallel; job.parallel = parallel;
             job.nativeRecipe = tick; job.nativeWireless = wireless != null; job.nativeWirelessEUt = wirelessEUt;
@@ -460,6 +524,15 @@ public final class IvNativeEngine {
             rejectionDetails.put(job.id, nativeDetail("fault", failure.getClass().getSimpleName()));
             IvTaskLog.error(ref.buffer, job, "NATIVE_PREPARE", failure);
         }
+    }
+    private static GTRecipe repeatStellarRecipe(GTRecipe recipe, long repeats) {
+        GTRecipe copy = recipe.copy(); copy.data = recipe.data.copy();
+        RecipeExtensionCopier.copy(recipe, copy);
+        copy.tickInputs.remove(EURecipeCapability.CAP);
+        GTRecipe repeated = RecipeCalculationHelper.INSTANCE.multipleRecipe(copy, repeats);
+        IGTRecipe.of(repeated).setRealParallels(Math.multiplyExact(
+                Math.max(1, IGTRecipe.of(recipe).getRealParallels()), repeats));
+        return repeated;
     }
     private void advance(List<Ref> all) {
         long parallelBudget = IvMachineScope.budget(machine);
@@ -512,7 +585,14 @@ public final class IvNativeEngine {
                     waiting(ref, "gtl_enhancedcore.diagnostic.conditions", resultDetail(tickResult, "gtl_enhancedcore.diagnostic.conditions"));
                     continue;
                 }
-                if (job.nativeWireless) {
+                if (machine instanceof CloudPowerAccess power) {
+                    var receipt = power.cloudPowerPay(payment);
+                    if (receipt == null) {
+                        waiting(ref, "gtl_enhancedcore.diagnostic.power");
+                        continue;
+                    }
+                    if (payment.signum() > 0) ComputationRecipes.undoOnFailure(receipt::refund);
+                } else if (job.nativeWireless) {
                     if (payment.signum() > 0 && !wireless.consumeEnergy(payment.negate())) {
                         waiting(ref, "gtl_enhancedcore.diagnostic.power", nativeDetail("wireless_energy", payment.toString(), wireless.getMaxAvailableEnergy().toString()));
                         continue;
@@ -548,7 +628,10 @@ public final class IvNativeEngine {
                 }
                 if (!job.nativeWireless) {
                     long paid = payment.longValueExact();
-                    powerBudget -= paid; currentEUt = Math.addExact(currentEUt, paid);
+                    var grid = GridEnergyInputs.find(machine);
+                    if (grid == null || !grid.gridEnergyUnboundedPower()) powerBudget -= paid;
+                    currentGridEUt = currentGridEUt.add(payment);
+                    currentEUt = com.gtl.enhancedcore.common.recipe.GridRecipePayment.availableAsLong(currentGridEUt);
                 }
             }
             job.energyLeft = nextTick.energyLeft(); job.elapsed = nextTick.elapsed(); job.error = "";
@@ -571,8 +654,10 @@ public final class IvNativeEngine {
         }
     }
     private void flush(Ref ref) {
+        if (!IvBuffers.mayUseNetwork(ref.buffer)) { waiting(ref, "gtl_enhancedcore.cloud.status.origin"); return; }
         var job = ref.job;
         boolean hadPending = !job.pending.isEmpty();
+        Component outputDetail = null;
         if (!job.pending.isEmpty()) {
             var grid = ref.buffer.getGrid();
             if (grid == null || !ref.buffer.getMainNode().isActive()) { waiting(ref, "gtl_enhancedcore.diagnostic.iv_ae"); return; }
@@ -580,9 +665,17 @@ public final class IvNativeEngine {
             var iterator = job.pending.entrySet().iterator();
             while (iterator.hasNext() && budget-- > 0) {
                 var entry = iterator.next(); long offered = entry.getValue();
-                long inserted = StorageHelper.poweredInsert(grid.getEnergyService(), grid.getStorageService().getInventory(),
+                var transfer = IvOutputTransfer.transfer(grid.getEnergyService(), grid.getStorageService().getInventory(),
                         entry.getKey(), offered, IActionSource.ofMachine(ref.buffer));
-                if (inserted < 0 || inserted > offered) throw new IllegalStateException("Invalid AE insertion");
+                long inserted = transfer.inserted();
+                if (transfer.remaining() > 0 && outputDetail == null) {
+                    outputDetail = transfer.detail(entry.getKey());
+                    if (inserted == 0 && (!job.error.equals("gtl_enhancedcore.diagnostic.output")
+                            || Math.floorMod(machine.getOffsetTimer(), 200) == 0 || IvTaskLog.TRACE_TICKS))
+                        IvTaskLog.event(ref.buffer, job, "OUTPUT", transfer.state().name(),
+                                "key", entry.getKey().toTagGeneric().toString(), "offered", offered,
+                                "storable", transfer.storable(), "availableAE", Double.toString(transfer.availableAE()));
+                }
                 if (inserted == 0) continue;
                 IvTaskLog.event(ref.buffer, job, "OUTPUT", "OK", "key", entry.getKey().toTagGeneric().toString(),
                         "offered", offered, "inserted", inserted, "left", offered - inserted);
@@ -592,7 +685,7 @@ public final class IvNativeEngine {
         }
         acknowledgeDelivery(ref);
         if (!job.pending.isEmpty()) {
-            waiting(ref, "gtl_enhancedcore.diagnostic.output", nativeDetail("output", job.pending.size()));
+            waiting(ref, "gtl_enhancedcore.diagnostic.output", outputDetail != null ? outputDetail : nativeDetail("output", job.pending.size()));
         } else if (hadPending) {
             job.error = ""; rejectionDetails.remove(job.id);
         }
@@ -653,8 +746,11 @@ public final class IvNativeEngine {
         summary.put("orders", rows); summary.putInt("count", all.size()); summary.putInt("active", active);
         summary.putInt("outputWaiting", outputWaiting); summary.putString("remaining", remaining.toString()); summary.putString("running", running.toString());
         summary.putLong("parallelHatch", IvMachineScope.parallel(machine)); summary.putInt("threads", IvMachineScope.threads(machine));
+        summary.putBoolean("unlimited", IvMachineScope.unlimited(machine));
         // 显示容量 = 并行 × 线程（与上方 threads 同行同源），避免未装总成时出现「线程 N 但总容量 1」。
         summary.putLong("budget", IvMachineScope.displayCapacity(machine)); summary.putLong("eut", currentEUt);
+        if (currentGridEUt.compareTo(BigInteger.valueOf(Long.MAX_VALUE)) > 0)
+            summary.putString("wideEut", currentGridEUt.toString());
         summary.putLong("inputPower", inputPower()); summary.putBoolean("available", true);
         summary.putBoolean("enabled", logic.isWorkingEnabled()); storeReasons(summary, reasons);
         summary.putBoolean("nativeSharedBudget", !IvMachineScope.batching(machine));

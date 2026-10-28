@@ -62,6 +62,8 @@ public final class BlockReplacementTransactionRegression {
                 "Break protection stays before placement protection");
         check(terminal.contains("ItemStack material = repl.copyWithCount(1);"), "Material identity is frozen for payment and refund");
         check(terminal.contains("boolean useAe = this.aeMode;"), "The inventory source cannot change during the transaction");
+        check(terminal.contains("if (available <= 0L) {") && !terminal.contains("available < this.totalCount"),
+                "Partial replacement material starts the queue and stops only when material is exhausted");
         check(terminal.contains("gtl_enhancedcore.claim_replacement.placement_warning"),
                 "Committed callback failures are also visible to the initiating player");
         return checks;

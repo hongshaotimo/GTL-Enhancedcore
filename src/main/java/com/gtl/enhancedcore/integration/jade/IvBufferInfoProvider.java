@@ -35,7 +35,8 @@ public final class IvBufferInfoProvider implements IBlockComponentProvider, ISer
         data.remove(KEY);
         data.remove(NAME_KEY);
         if (accessor.getBlockEntity() instanceof MetaMachineBlockEntity entity
-                && entity.getMetaMachine() instanceof MEPatternBufferPartMachine buffer && IvBuffers.compatible(buffer)) {
+                && entity.getMetaMachine() instanceof MEPatternBufferPartMachine buffer && IvBuffers.compatible(buffer)
+                && !(buffer instanceof com.gtl.enhancedcore.common.cloud.CloudPatternBufferMachine)) {
             var nameTag = new CompoundTag();
             SuperBufferJadeNames.current(buffer).write(nameTag);
             data.put(NAME_KEY, nameTag);

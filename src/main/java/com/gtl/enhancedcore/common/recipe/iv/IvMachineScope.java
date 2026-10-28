@@ -36,9 +36,7 @@ public final class IvMachineScope {
     public static final Map<String, Set<String>> FOREIGN_NATIVE_IDS = Map.of(
             "gtladditions", Set.of(
                     "inferno_cleft_smelting_vault",
-                    "fuxi_bagua_heaven_forging_furnace",
-                    "nexus_satellite_factory_mk1", "nexus_satellite_factory_mk2",
-                    "nexus_satellite_factory_mk3", "nexus_satellite_factory_mk4"));
+                    "fuxi_bagua_heaven_forging_furnace"));
 
     /**
      * 未装超级样板总成时**不**把跨配方线程压到 1 的白名单机器（用户 2026-10-14 指定）。
@@ -50,9 +48,7 @@ public final class IvMachineScope {
      */
     public static final Set<String> KEEP_NATIVE_THREADS_WITHOUT_BUFFER = Set.of(
             "inferno_cleft_smelting_vault",
-            "fuxi_bagua_heaven_forging_furnace",
-            "nexus_satellite_factory_mk1", "nexus_satellite_factory_mk2",
-            "nexus_satellite_factory_mk3", "nexus_satellite_factory_mk4");
+            "fuxi_bagua_heaven_forging_furnace");
 
     /** 未启用隔离时是否保留上游原生线程（而不是压到 1）。 */
     public static boolean keepsNativeThreads(WorkableElectricMultiblockMachine machine) {
@@ -105,18 +101,21 @@ public final class IvMachineScope {
     }
     public static boolean nativeTarget(Object machine) {
         return machine instanceof WorkableElectricMultiblockMachine electric
-                && com.gtl.enhancedcore.common.config.MachineOverrideConfig.current().enhanceOriginalMachines()
-                && nativeTarget(electric.getDefinition().getId());
+                && (com.gtl.enhancedcore.common.config.MachineOverrideConfig.current().enhanceOriginalMachines()
+                && nativeTarget(electric.getDefinition().getId()));
     }
     public static boolean crossRecipeEnabled(WorkableElectricMultiblockMachine machine) {
         return machine != null && IvBuffers.targetController(machine)
+                && !IvBuffers.genericCloudMixedInputs(machine)
                 && IvBuffers.collect(machine).stream().anyMatch(IvBuffers::isolated);
     }
     public static boolean crossRecipeEnabled(Object machine) {
         return machine instanceof WorkableElectricMultiblockMachine electric && crossRecipeEnabled(electric);
     }
     public static int parallel(WorkableElectricMultiblockMachine machine) {
+        if (unlimited(machine)) return Integer.MAX_VALUE;
         if (machine instanceof ParallelMachine parallel) return Math.max(1, parallel.getMaxParallel());
+        if (IvBuffers.genericCloudTarget(machine)) return Math.max(1, GTLRecipeModifiers.getHatchParallel(machine));
         if (machine instanceof CoilWorkableElectricMultiblockMachine coil)
             return Math.max(1, (int)Math.min(Integer.MAX_VALUE, Math.pow(2, coil.getCoilType().getCoilTemperature() / 900.0)));
         return Math.max(1, GTLRecipeModifiers.getHatchParallel(machine));
@@ -127,19 +126,34 @@ public final class IvMachineScope {
      */
     public static int threads(WorkableElectricMultiblockMachine machine) {
         if (machine == null) return 1;
-        if (machine instanceof TieredParallelMachine iv) return Math.max(1, iv.getThreadsForTier());
+        if (unlimited(machine)) return Integer.MAX_VALUE;
+        if (IvBuffers.genericCloudTarget(machine)) {
+            // A cloud endpoint is storage/routing, not a grant of the opt-in IV +128 threads.
+            var logic = machine.getRecipeLogic();
+            if (logic instanceof com.gtladd.gtladditions.api.machine.logic.MutableRecipesLogic<?> mutable && mutable.isMultipleRecipeMode())
+                return Math.max(1, mutable.getMultipleThreads());
+            if (logic instanceof com.gtladd.gtladditions.api.machine.logic.GTLAddMultipleRecipesLogic multiple)
+                return Math.max(1, multiple.getMultipleThreads());
+            if (logic instanceof org.gtlcore.gtlcore.common.machine.trait.MultipleRecipesLogic)
+                return upstreamBatchThreads(modifierThreads(machine));
+            return 1;
+        }
+        if (machine instanceof TieredParallelMachine iv) return grantGalaxyThreads(machine, Math.max(1, iv.getThreadsForTier()));
         int modifier = modifierThreads(machine);
         if (nativeTarget(machine)) {
             // 按机器 ID 判定原有 64 线程，避免 ADD mutable 模式/部件状态改变提示口径。
             var id = machine.getDefinition().getId();
             boolean batch = id != null && BATCH_IDS.contains(id.getPath());
-            return batch ? batchThreads(modifier) : nativeThreads(modifier);
+            return grantGalaxyThreads(machine, batch ? batchThreads(modifier) : nativeThreads(modifier));
         }
         if (machine.getRecipeLogic() instanceof com.gtladd.gtladditions.api.machine.logic.MutableRecipesLogic<?> mutable && mutable.isMultipleRecipeMode())
             return Math.max(1, mutable.getMultipleThreads());
         if (machine.getRecipeLogic() instanceof com.gtladd.gtladditions.api.machine.logic.GTLAddMultipleRecipesLogic gtlAdd)
             return Math.max(1, gtlAdd.getMultipleThreads());
-        return batching(machine) ? upstreamBatchThreads(modifier) : nativeThreads(modifier);
+        return grantGalaxyThreads(machine, batching(machine) ? upstreamBatchThreads(modifier) : nativeThreads(modifier));
+    }
+    private static int grantGalaxyThreads(WorkableElectricMultiblockMachine machine, int base) {
+        return com.gtl.enhancedcore.common.machine.galaxy.GalaxyLinks.threads(machine, base);
     }
 
     /**
@@ -205,6 +219,7 @@ public final class IvMachineScope {
         return total;
     }
     public static long budget(WorkableElectricMultiblockMachine machine) {
+        if (crossRecipeEnabled(machine) && unlimited(machine)) return Long.MAX_VALUE;
         return Math.multiplyExact((long)parallel(machine), crossRecipeEnabled(machine) ? threads(machine) : 1);
     }
 
@@ -213,7 +228,13 @@ public final class IvMachineScope {
      * 引擎实际分配仍用 {@link #budget}；普通模式应交给上游显示。
      */
     public static long displayCapacity(WorkableElectricMultiblockMachine machine) {
+        if (unlimited(machine)) return Long.MAX_VALUE;
         return (long)parallel(machine) * Math.max(1, threads(machine));
+    }
+
+    /** Effective capacity is granted only by a live, paid galaxy source. */
+    public static boolean unlimited(WorkableElectricMultiblockMachine machine) {
+        return com.gtl.enhancedcore.common.machine.galaxy.GalaxyLinks.unlimited(machine);
     }
     public static boolean batching(WorkableElectricMultiblockMachine machine) {
         return machine.getRecipeLogic() instanceof org.gtlcore.gtlcore.common.machine.trait.MultipleRecipesLogic

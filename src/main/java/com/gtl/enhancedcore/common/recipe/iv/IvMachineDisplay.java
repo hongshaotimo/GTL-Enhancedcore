@@ -7,6 +7,7 @@ import com.gtladd.gtladditions.api.machine.IThreadModifierMachine;
 import com.gtladd.gtladditions.api.machine.logic.MutableRecipesLogic;
 import java.util.List;
 import java.util.function.Consumer;
+import java.math.BigInteger;
 import net.minecraft.ChatFormatting;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
@@ -40,15 +41,53 @@ public final class IvMachineDisplay {
     }
 
     private static void update(WorkableElectricMultiblockMachine machine, List<Component> text) {
+        if (com.gtl.enhancedcore.common.machine.galaxy.GalaxyLinks.active(machine)) {
+            var handler = com.gtl.enhancedcore.common.machine.galaxy.GalaxyWirelessEnergyHandler.forMachine(machine);
+            var recipe = machine.getRecipeLogic().getLastRecipe();
+            var balance = handler == null ? BigInteger.ZERO : handler.getMaxAvailableEnergy();
+            stellarDisplay(text, balance, balance,
+                    recipe != null && recipe.data.contains(com.gtl.enhancedcore.common.machine.galaxy.GalaxyPower.EU_TAG)
+                            ? com.gtl.enhancedcore.common.machine.galaxy.GalaxyPower.eut(recipe) : null);
+        }
+        if (IvMachineScope.unlimited(machine)) {
+            canonicalLine(text, "gtceu.multiblock.parallel", unlimitedLine("gtceu.multiblock.parallel"));
+            canonicalLine(text, "gtladditions.multiblock.threads", unlimitedLine("gtladditions.multiblock.threads"));
+        }
         if (!IvMachineScope.nativeTarget(machine) || !machine.isFormed()) return;
         if (!IvMachineScope.crossRecipeEnabled(machine)) {
             int threads = plainThreads(machine);
-            canonicalLine(text, "gtladditions.multiblock.threads", threads > 1 ? threadLine(threads) : null);
+            if (!IvMachineScope.unlimited(machine))
+                canonicalLine(text, "gtladditions.multiblock.threads", threads > 1 ? threadLine(threads) : null);
             text.add(Component.translatable("gtl_enhancedcore.tooltip.iv_native.1").withStyle(ChatFormatting.YELLOW));
             return;
         }
         isolation(text, IvMachineScope.parallel(machine), IvMachineScope.threads(machine),
                 ((IvNativeAccess)machine.getRecipeLogic()).iv$summary());
+    }
+
+    /** The upstream capacity rows retain their position, gray labels and colored values. */
+    public static void stellarDisplay(List<Component> text, BigInteger powerCap, BigInteger balance, BigInteger batchEut) {
+        canonicalLine(text, "gtceu.multiblock.max_energy_per_tick", Component.translatable(
+                "gtceu.multiblock.max_energy_per_tick",
+                energyValue(powerCap, ChatFormatting.RED),
+                Component.translatable("gtl_enhancedcore.galaxy.grid_limited").withStyle(ChatFormatting.RED))
+                .withStyle(ChatFormatting.GRAY));
+        canonicalLine(text, "gtceu.multiblock.max_recipe_tier", Component.translatable(
+                "gtceu.multiblock.max_recipe_tier", Component.literal("MAX+16").withStyle(ChatFormatting.RED))
+                .withStyle(ChatFormatting.GRAY));
+        canonicalLine(text, "gtl_enhancedcore.galaxy.power_cap", null);
+        canonicalLine(text, "gtl_enhancedcore.galaxy.grid_balance", balance == null ? null : Component.translatable(
+                "gtl_enhancedcore.galaxy.grid_balance", energyValue(balance, ChatFormatting.AQUA)).withStyle(ChatFormatting.GRAY));
+        canonicalLine(text, "gtl_enhancedcore.galaxy.batch_power", batchEut == null ? null : Component.translatable(
+                "gtl_enhancedcore.galaxy.batch_power", energyValue(batchEut, ChatFormatting.RED)).withStyle(ChatFormatting.GRAY));
+    }
+
+    private static Component energyValue(BigInteger amount, ChatFormatting color) {
+        String label = amount.abs().compareTo(BigInteger.valueOf(1_000_000_000_000L)) >= 0
+                ? FormattingUtil.DECIMAL_FORMAT_SIC.format(amount) : FormattingUtil.formatNumbers(amount);
+        return Component.literal(label).withStyle(style -> style.withColor(color).withHoverEvent(
+                new net.minecraft.network.chat.HoverEvent(net.minecraft.network.chat.HoverEvent.Action.SHOW_TEXT,
+                        Component.literal(FormattingUtil.formatNumbers(amount)))));
     }
 
     /** GUI mode/capacity and order data all describe the same effective isolation engine. */
@@ -59,7 +98,16 @@ public final class IvMachineDisplay {
                         Component.literal(FormattingUtil.formatNumbers(parallel)).withStyle(ChatFormatting.DARK_PURPLE))
                         .withStyle(ChatFormatting.GRAY) : null);
         canonicalLine(text, "gtladditions.multiblock.threads", threads > 1 ? threadLine(threads) : null);
+        if (summary.getBoolean("unlimited")) {
+            canonicalLine(text, "gtceu.multiblock.parallel", unlimitedLine("gtceu.multiblock.parallel"));
+            canonicalLine(text, "gtladditions.multiblock.threads", unlimitedLine("gtladditions.multiblock.threads"));
+        }
         IvPresentation.append(text, summary, true);
+    }
+    private static Component unlimitedLine(String key) {
+        return Component.translatable(key, com.gtl.enhancedcore.common.util.PlayerTooltipStyles.rainbow(
+                "gtladditions.multiblock.forge_of_the_antichrist.parallel"))
+                .withStyle(ChatFormatting.GRAY);
     }
     private static String key(Component line) {
         return line.getContents() instanceof TranslatableContents translated ? translated.getKey() : "";

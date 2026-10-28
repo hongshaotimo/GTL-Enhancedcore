@@ -2,7 +2,6 @@ package com.gtl.enhancedcore.common.recipe.iv;
 
 import appeng.api.networking.security.IActionSource;
 import appeng.api.stacks.AEKey;
-import appeng.api.storage.StorageHelper;
 import com.gregtechceu.gtceu.api.recipe.*;
 import com.gregtechceu.gtceu.api.recipe.content.Content;
 import com.gregtechceu.gtceu.api.capability.recipe.EURecipeCapability;
@@ -10,6 +9,8 @@ import com.gtl.enhancedcore.common.machine.TieredParallelMachine;
 import com.gtl.enhancedcore.common.recipe.MachineDiagnostics;
 import com.gtl.enhancedcore.common.recipe.RecipePowerBudget;
 import com.gtl.enhancedcore.common.recipe.GridEnergyInputs;
+import com.gtl.enhancedcore.common.machine.galaxy.GalaxyLinks;
+import com.gtl.enhancedcore.common.machine.galaxy.GalaxyPower;
 import com.gtl.enhancedcore.common.util.FairRecipeSelector;
 import com.gtladd.gtladditions.api.machine.logic.GTLAddMultipleRecipesLogic;
 import org.gtlcore.gtlcore.common.machine.multiblock.part.ae.MEPatternBufferPartMachine;
@@ -44,6 +45,7 @@ public final class IvRecipeLogic extends GTLAddMultipleRecipesLogic {
     @DescSynced private int queuedTasks;
     @DescSynced private int runningTasks;
     @DescSynced private long currentEUt;
+    private BigInteger currentGridEUt = BigInteger.ZERO;
     @DescSynced private long inputPower;
     @DescSynced private long inputAmperage;
     @DescSynced private CompoundTag orderSummary = new CompoundTag();
@@ -58,7 +60,8 @@ public final class IvRecipeLogic extends GTLAddMultipleRecipesLogic {
     public IvRecipeLogic(TieredParallelMachine machine) { super(machine); }
     @Override public int getMultipleThreads() {
         TieredParallelMachine machine = (TieredParallelMachine)getMachine();
-        return IvMachineScope.crossRecipeEnabled(machine) ? machine.getThreadsForTier() : 1;
+        return IvMachineScope.unlimited(machine) ? Integer.MAX_VALUE
+                : IvMachineScope.crossRecipeEnabled(machine) ? machine.getThreadsForTier() : 1;
     }
     @Override protected double getEuMultiplier() {
         if (!((TieredParallelMachine)getMachine()).ivMaintenancePenalty()) return super.getEuMultiplier();
@@ -78,13 +81,11 @@ public final class IvRecipeLogic extends GTLAddMultipleRecipesLogic {
     public long getCurrentEUt() { return currentEUt; }
     public long getInputPower() { return inputPower; }
     public long getInputAmperage() { return inputAmperage; }
-    public void clearInputPower() { inputPower=0; inputAmperage=0; currentEUt=0; partsAvailable=false; }
+    public void clearInputPower() { inputPower=0; inputAmperage=0; currentEUt=0; currentGridEUt=BigInteger.ZERO; partsAvailable=false; }
     public void refreshInputPower() {
         var machine=(TieredParallelMachine)getMachine();
         long power=0,amps=0;
-        var seen = Collections.newSetFromMap(new IdentityHashMap<com.gregtechceu.gtceu.api.capability.IEnergyContainer, Boolean>());
-        var inputs=machine.getCapabilitiesProxy().get(com.gregtechceu.gtceu.api.capability.recipe.IO.IN,EURecipeCapability.CAP);
-        if(inputs!=null)for(var input:inputs)if(input instanceof com.gregtechceu.gtceu.api.capability.IEnergyContainer energy && seen.add(energy)){
+        for(var energy : GridEnergyInputs.energyInputs(machine)) {
             long amperage=Math.max(0,energy.getInputAmperage());
             power=RecipePowerBudget.add(power, GridEnergyInputs.power(energy));
             amps=RecipePowerBudget.add(amps, amperage);
@@ -132,17 +133,23 @@ public final class IvRecipeLogic extends GTLAddMultipleRecipesLogic {
         try { tickTasks(); }
         catch (RuntimeException failure) {
             fault = "gtl_enhancedcore.diagnostic.iv_failure";
-            currentEUt = 0;
+            currentEUt = 0; currentGridEUt = BigInteger.ZERO;
             ivWorkingEnabled = false; setStatus(Status.SUSPEND); getMachine().markDirty();
             IvTaskLog.error(null, null, "MACHINE_TICK", failure);
         }
+    }
+    /** One extra, fully settled work tick; never advance the display-only progress field. */
+    public boolean accelerateTick() {
+        advancedThisTick = false;
+        serverTick();
+        return advancedThisTick;
     }
     private void tickTasks() {
         TieredParallelMachine machine = (TieredParallelMachine)getMachine();
         if (machine.isRemote()) return;
         boolean enabled = isWorkingEnabled();
         advancedThisTick = false;
-        currentEUt = 0;
+        currentEUt = 0; currentGridEUt = BigInteger.ZERO;
         if (!machine.isRecipeLogicAvailable()) {
             partsAvailable = false;
             message = machine.isFormed() ? "gtl_enhancedcore.diagnostic.parts_unloaded" : "";
@@ -157,11 +164,23 @@ public final class IvRecipeLogic extends GTLAddMultipleRecipesLogic {
         diagnosticJson = "";
         for (var buffer : buffers) {
             if (!IvBuffers.bind(buffer, machine)) { message = IvBuffers.state(buffer).message; continue; }
-            for (IvJob job : IvBuffers.state(buffer).jobs) all.add(new Ref(buffer, job));
+            for (IvJob job : IvBuffers.jobs(buffer, machine)) all.add(new Ref(buffer, job));
         }
         waitingReasons.keySet().retainAll(all.stream().map(ref -> ref.job.id).collect(java.util.stream.Collectors.toSet()));
         for (Ref ref : all) ref.job.validateAccounting();
-        for (Ref ref : all) if(ref.job.active() && inputPower>0 && ref.job.supplyPower!=inputPower) retime(ref,machine);
+        BigInteger stellarPower = GalaxyPower.availablePower(machine);
+        if (stellarPower.signum() > 0) for (Ref ref : all) if (ref.job.active()) {
+            var job = ref.job;
+            var timing = com.gtl.enhancedcore.common.recipe.GalaxyBatchAccounting.plan(job.energyLeft,
+                    Math.max(1, machine.getLimitedDuration() - job.elapsed), stellarPower);
+            // A nearly depleted grid may imply more ticks than the persisted int counter holds.
+            // Keep the existing debt/plan until funding recovers; advance still caps real payment.
+            if (timing == null || timing.duration() > Integer.MAX_VALUE - job.elapsed) continue;
+            job.ivGalaxy = true; job.ivGalaxyEUt = timing.eut();
+            job.eut = timing.eut().min(BigInteger.valueOf(Long.MAX_VALUE)).longValueExact();
+            job.duration = Math.addExact(job.elapsed, timing.duration()); ref.buffer.markDirty();
+        }
+        for (Ref ref : all) if(ref.job.active() && !ref.job.ivGalaxy && inputPower>0 && ref.job.supplyPower!=inputPower) retime(ref,machine);
         if (legacy && lastRecipe != null && duration > 0 && !isIdle()) {
             // Never guess which old buffer paid for an already-started pre-upgrade batch.
             message = "gtl_enhancedcore.diagnostic.iv_legacy";
@@ -187,11 +206,11 @@ public final class IvRecipeLogic extends GTLAddMultipleRecipesLogic {
             }
         }
         all.removeIf(ref -> ref.job.done());
-        if (inputPower <= 0) for (Ref ref : all) {
+        if (inputPower <= 0 && !GalaxyLinks.active(machine)) for (Ref ref : all) {
             if (!ref.job.halted && ref.job.pending.isEmpty()) waiting(ref, "gtl_enhancedcore.diagnostic.power",
                     MachineDiagnostics.power(machine, ref.job.active() ? ref.job.eut : RecipeHelper.getInputEUt(ref.job.recipe)));
         }
-        if (enabled && inputPower > 0 && !buffers.isEmpty()) {
+        if (enabled && (inputPower > 0 || GalaxyLinks.active(machine)) && !buffers.isEmpty()) {
             start(all, machine);
             advance(all, machine);
         }
@@ -245,7 +264,7 @@ public final class IvRecipeLogic extends GTLAddMultipleRecipesLogic {
         }
     }
     private void start(List<Ref> all, TieredParallelMachine machine) {
-        long budget = Math.multiplyExact((long)machine.getMaxParallel(), getMultipleThreads());
+        long budget = IvMachineScope.budget(machine);
         int slots = getMultipleThreads();
         for (Ref ref : all) if (ref.job.active()) { budget = Math.max(0, budget - ref.job.parallel); slots--; }
         if (slots <= 0 || budget <= 0) {
@@ -298,15 +317,29 @@ public final class IvRecipeLogic extends GTLAddMultipleRecipesLogic {
     private void prepare(Ref ref, long parallel, TieredParallelMachine machine, String cycle) {
         IvJob job = ref.job;
         try {
-            GTRecipe scaled = RecipeCalculationHelper.INSTANCE.multipleRecipe(job.recipe, parallel);
+            boolean stellar = GalaxyLinks.active(machine);
+            GTRecipe scaleSource = job.recipe;
+            if (stellar) {
+                scaleSource = job.recipe.copy(); scaleSource.data = job.recipe.data.copy();
+                scaleSource.tickInputs.remove(EURecipeCapability.CAP);
+            }
+            GTRecipe scaled = RecipeCalculationHelper.INSTANCE.multipleRecipe(scaleSource, parallel);
             if (IvRecipeInputs.plan(scaled, job.inventory, availableVirtual(ref), 1) == null) throw new IllegalStateException("整批原料预留未通过");
-            double totalEu = getTotalEuOfRecipe(job.recipe) * parallel * getEuMultiplier();
-            if (!Double.isFinite(totalEu) || totalEu < 0 || totalEu / inputPower > Integer.MAX_VALUE)
+            BigInteger stellarTotal = stellar ? IvWideEnergy.total(Math.max(0, RecipeHelper.getInputEUt(job.recipe)),
+                    job.recipe.duration, parallel, getEuMultiplier()) : BigInteger.ZERO;
+            var stellarPower = stellar ? GalaxyPower.availablePower(machine) : BigInteger.ZERO;
+            if (stellar && stellarTotal.signum() > 0 && stellarPower.signum() == 0) {
+                waiting(ref, "gtl_enhancedcore.diagnostic.power"); return;
+            }
+            var stellarTiming = stellar ? IvWideEnergy.timing(stellarTotal, stellarPower.max(BigInteger.ONE), machine.getLimitedDuration()) : null;
+            double totalEu = stellar ? 0 : getTotalEuOfRecipe(job.recipe) * parallel * getEuMultiplier();
+            if (!stellar && (!Double.isFinite(totalEu) || totalEu < 0 || totalEu / inputPower > Integer.MAX_VALUE))
                 throw new ArithmeticException("任务能量或计时超出有效范围");
-            GTRecipe timing = RecipeCalculationHelper.INSTANCE.buildNormalRecipe(List.of(), List.of(), totalEu,
+            GTRecipe timing = stellar ? null : RecipeCalculationHelper.INSTANCE.buildNormalRecipe(List.of(), List.of(), totalEu,
                     inputPower, Math.max(1, machine.getLimitedDuration()));
-            long eut = RecipeHelper.getInputEUt(timing);
-            if (eut < 0 || timing.duration < 1) throw new IllegalStateException("任务计时无效");
+            long eut = stellar ? stellarTiming.eut().min(BigInteger.valueOf(Long.MAX_VALUE)).longValueExact() : RecipeHelper.getInputEUt(timing);
+            int ticks = stellar ? stellarTiming.duration() : timing.duration;
+            if (eut < 0 || ticks < 1) throw new IllegalStateException("任务计时无效");
             if (!machine.beforeWorking(scaled)) { waiting(ref, "gtl_enhancedcore.diagnostic.start_rejected"); return; }
             // Roll once, only after all deterministic input checks. Keep the result with the active task.
             GTRecipe outputs = IParallelLogic.getRecipeOutputChance(machine, scaled);
@@ -323,8 +356,9 @@ public final class IvRecipeLogic extends GTLAddMultipleRecipesLogic {
             job.completion.clear(); job.completion.putAll(produced);
             job.remaining -= parallel; job.parallel = parallel;
             job.cycle = cycle;
-            job.eut = eut; job.duration = timing.duration; job.elapsed = 0;
-            job.energyLeft = BigInteger.valueOf(eut).multiply(BigInteger.valueOf(timing.duration));
+            job.eut = eut; job.duration = ticks; job.elapsed = 0;
+            job.ivGalaxy = stellar; job.ivGalaxyEUt = stellar ? stellarTiming.eut() : BigInteger.ZERO;
+            job.energyLeft = stellar ? stellarTotal : BigInteger.valueOf(eut).multiply(BigInteger.valueOf(ticks));
             job.energyTotal=job.energyLeft;job.supplyPower=inputPower;
             job.error = ""; waitingReasons.remove(job.id); ref.buffer.markDirty();
             job.validateAccounting();
@@ -335,7 +369,7 @@ public final class IvRecipeLogic extends GTLAddMultipleRecipesLogic {
         } catch (RuntimeException failure) { job.halted = true; job.error = "gtl_enhancedcore.diagnostic.iv_failure"; ref.buffer.markDirty(); IvTaskLog.error(ref.buffer, job, "PREPARE", failure); }
     }
     private void advance(List<Ref> all, TieredParallelMachine machine) {
-        long reservationBudget = Math.multiplyExact((long)machine.getMaxParallel(), getMultipleThreads());
+        long reservationBudget = IvMachineScope.budget(machine);
         List<Ref> running = new ArrayList<>();
         for (Ref ref : runningSelector.select(all.stream().filter(ref -> ref.job.active() && !ref.job.halted).toList(), getMultipleThreads(), ref -> ref.job.id.toString())) {
             if (ref.job.parallel > reservationBudget) { waiting(ref, "gtl_enhancedcore.diagnostic.iv_parallel"); continue; }
@@ -353,33 +387,73 @@ public final class IvRecipeLogic extends GTLAddMultipleRecipesLogic {
             }
             var condition = job.recipe.checkConditions(this);
             if (!condition.isSuccess()) { conditionFailure(running.get(i), condition); continue; }
-            eligible[i] = true;
-            wants[i] = job.energyLeft.min(BigInteger.valueOf(job.eut)).longValueExact();
+            eligible[i] = !job.ivGalaxy;
+            wants[i] = job.ivGalaxy ? 0 : job.energyLeft.min(BigInteger.valueOf(job.eut)).longValueExact();
         }
-        var energy = machine.getEnergyContainer();
-        var grid = GridEnergyInputs.find(machine);
-        long available = Math.min(inputPower, GridEnergyInputs.stored(machine));
-        long[] grants = FairBudget.divide(Math.max(0, available), wants, powerRotation++);
-        long requested = 0; for (long grant : grants) requested = Math.addExact(requested, grant);
-        long removed = GridEnergyInputs.remove(energy, grid, requested);
-        if (removed < 0 || removed > requested) throw new IllegalStateException("能源容器返回了无效扣款量");
-        currentEUt = removed;
-        grants = FairBudget.divide(removed, grants, powerRotation);
+        long[] grants = new long[running.size()];
+        boolean physicalDemand = false;
+        for (long want : wants) physicalDemand |= want > 0;
+        if (physicalDemand) {
+            var energy = machine.getEnergyContainer();
+            var grid = GridEnergyInputs.find(machine);
+            if (grid != null && grid.gridEnergyUnboundedPower()) {
+                currentGridEUt = BigInteger.ZERO;
+                grants = FairBudget.divide(grid.gridEnergyAvailable(), wants, powerRotation++);
+                BigInteger requested = BigInteger.ZERO;
+                for (long grant : grants) requested = requested.add(BigInteger.valueOf(grant));
+                if (com.gtl.enhancedcore.common.recipe.GridRecipePayment.pay(requested, false,
+                        grid::gridEnergyAvailable, grid::gridEnergyTransfer)) currentGridEUt = requested;
+                else java.util.Arrays.fill(grants, 0);
+                currentEUt = com.gtl.enhancedcore.common.recipe.GridRecipePayment.availableAsLong(currentGridEUt);
+            } else {
+                long available = Math.min(inputPower, GridEnergyInputs.stored(machine));
+                grants = FairBudget.divide(Math.max(0, available), wants, powerRotation++);
+                long requested = 0; for (long grant : grants) requested = Math.addExact(requested, grant);
+                long removed = GridEnergyInputs.remove(energy, grid, requested);
+                if (removed < 0 || removed > requested) throw new IllegalStateException("能源容器返回了无效扣款量");
+                currentEUt = removed; currentGridEUt = BigInteger.valueOf(removed);
+                grants = FairBudget.divide(removed, grants, powerRotation);
+            }
+        }
+        BigInteger[] payments = new BigInteger[running.size()];
+        for (int i = 0; i < payments.length; i++) payments[i] = BigInteger.valueOf(grants[i]);
+        var stellarWants = new BigInteger[running.size()];
+        for (int i = 0; i < stellarWants.length; i++) {
+            var job = running.get(i).job;
+            // Conditions were evaluated above. Recheck here only for stellar orders, whose
+            // normal long-capability request intentionally stayed zero.
+            boolean ready = job.ivGalaxy && GalaxyLinks.active(machine)
+                    && IGTRecipe.of(job.recipe).getEuTier() <= machine.getTier() && job.recipe.checkConditions(this).isSuccess();
+            eligible[i] |= ready;
+            if (job.ivGalaxy && !ready) waiting(running.get(i), "gtl_enhancedcore.diagnostic.power");
+            stellarWants[i] = ready ? job.energyLeft.min(job.ivGalaxyEUt) : BigInteger.ZERO;
+        }
+        boolean stellarDemand = false;
+        for (var want : stellarWants) stellarDemand |= want.signum() > 0;
+        if (stellarDemand) {
+            BigInteger[] stellarGrants = IvWideEnergy.divide(GalaxyPower.availablePower(machine), stellarWants, powerRotation++);
+            BigInteger stellarPayment = BigInteger.ZERO; for (var grant : stellarGrants) stellarPayment = stellarPayment.add(grant);
+            if (stellarPayment.signum() > 0 && GalaxyPower.pay(machine, stellarPayment)) {
+                for (int i = 0; i < payments.length; i++) payments[i] = payments[i].add(stellarGrants[i]);
+                currentGridEUt = currentGridEUt.add(stellarPayment);
+                currentEUt = currentGridEUt.min(BigInteger.valueOf(Long.MAX_VALUE)).longValueExact();
+            }
+        }
         for (int i = 0; i < running.size(); i++) {
             Ref ref = running.get(i); IvJob job = ref.job;
             if (!eligible[i]) continue;
-            if (grants[i] == 0 && job.energyLeft.signum() > 0) {
+            if (payments[i].signum() == 0 && job.energyLeft.signum() > 0) {
                 waiting(ref, "gtl_enhancedcore.diagnostic.power", MachineDiagnostics.power(machine, job.eut));
                 continue;
             }
             advancedThisTick = true; job.error = ""; waitingReasons.remove(job.id);
             // The machine's input power is shared. Estimate with this order's actual allocation,
             // without turning paid-energy percentage into fictitious elapsed seconds.
-            if (grants[i] > 0) job.duration = IvRemainingTime.estimatedDuration(job.energyLeft, grants[i],
+            if (!job.ivGalaxy && grants[i] > 0) job.duration = IvRemainingTime.estimatedDuration(job.energyLeft, grants[i],
                     job.elapsed, Math.max(1, machine.getLimitedDuration()));
-            job.energyLeft = job.energyLeft.subtract(BigInteger.valueOf(grants[i]));
+            job.energyLeft = job.energyLeft.subtract(payments[i]);
             if (job.elapsed < job.duration) job.elapsed++;
-            if (IvTaskLog.TRACE_TICKS) IvTaskLog.event(ref.buffer, job, "ADVANCE", "OK", "requestedEU", wants[i], "paidEU", grants[i],
+            if (IvTaskLog.TRACE_TICKS) IvTaskLog.event(ref.buffer, job, "ADVANCE", "OK", "requestedEU", job.ivGalaxy ? stellarWants[i].toString() : wants[i], "paidEU", payments[i].toString(),
                     "energyLeft", job.energyLeft.toString(), "elapsed", job.elapsed, "minimumTicks", job.duration);
             if (job.energyLeft.signum() == 0 && job.elapsed >= job.duration) {
                 job.completeBatch();
@@ -394,6 +468,7 @@ public final class IvRecipeLogic extends GTLAddMultipleRecipesLogic {
         }
     }
     private void flush(Ref ref) {
+        if (!IvBuffers.mayUseNetwork(ref.buffer)) { waiting(ref, "gtl_enhancedcore.cloud.status.origin"); return; }
         if (ref.job.pending.isEmpty()) {
             acknowledgeDelivery(ref); return;
         }
@@ -402,16 +477,22 @@ public final class IvRecipeLogic extends GTLAddMultipleRecipesLogic {
             if (!ref.job.pending.isEmpty()) waiting(ref, "gtl_enhancedcore.diagnostic.iv_ae");
             return;
         }
-        waiting(ref, "gtl_enhancedcore.diagnostic.output");
+        Component outputDetail = null;
         int transfers = 0;
         var iterator = ref.job.pending.entrySet().iterator();
         while (iterator.hasNext() && transfers++ < IvWorkBudget.TRANSFERS_PER_JOB) {
             var entry = iterator.next();
-            long inserted = StorageHelper.poweredInsert(grid.getEnergyService(), grid.getStorageService().getInventory(),
+            var transfer = IvOutputTransfer.transfer(grid.getEnergyService(), grid.getStorageService().getInventory(),
                     entry.getKey(), entry.getValue(), IActionSource.ofMachine(ref.buffer));
-            if (inserted < 0 || inserted > entry.getValue()) throw new IllegalStateException("AE 返回了无效插入量");
+            long inserted = transfer.inserted();
+            if (transfer.remaining() > 0 && outputDetail == null) {
+                outputDetail = transfer.detail(entry.getKey());
+                if (inserted == 0 && (!outputDetail.equals(waitingReasons.get(ref.job.id)) || IvTaskLog.TRACE_TICKS))
+                    IvTaskLog.event(ref.buffer, ref.job, "OUTPUT", transfer.state().name(),
+                            "key", entry.getKey().toTagGeneric().toString(), "offered", entry.getValue(),
+                            "storable", transfer.storable(), "availableAE", Double.toString(transfer.availableAE()));
+            }
             if (inserted == 0) {
-                if (IvTaskLog.TRACE_TICKS) IvTaskLog.event(ref.buffer, ref.job, "OUTPUT", "BLOCKED", "key", entry.getKey().toTagGeneric().toString(), "pending", entry.getValue());
                 continue;
             }
             IvTaskLog.event(ref.buffer, ref.job, "OUTPUT", "OK", "key", entry.getKey().toTagGeneric().toString(), "offered", entry.getValue(), "inserted", inserted, "left", entry.getValue() - inserted);
@@ -419,6 +500,8 @@ public final class IvRecipeLogic extends GTLAddMultipleRecipesLogic {
             ref.buffer.markDirty();
         }
         if (ref.job.pending.isEmpty()) acknowledgeDelivery(ref);
+        else waiting(ref, "gtl_enhancedcore.diagnostic.output", outputDetail != null ? outputDetail
+                : Component.translatable("gtl_enhancedcore.diagnostic.output"));
     }
     private void acknowledgeDelivery(Ref ref) {
         if (ref.job.pendingOperations == 0) return;
@@ -449,8 +532,11 @@ public final class IvRecipeLogic extends GTLAddMultipleRecipesLogic {
         }
         summary.put("orders",rows); summary.putInt("count",all.size()); summary.putInt("active",runningTasks);
         summary.putInt("outputWaiting",outputWaiting); summary.putString("remaining",left.toString()); summary.putString("running",inProgress.toString());
-        summary.putLong("parallelHatch",machine.getMaxParallel()); summary.putInt("threads",getMultipleThreads());
-        summary.putLong("budget",(long)machine.getMaxParallel()*getMultipleThreads()); summary.putLong("eut",currentEUt);
+        summary.putBoolean("unlimited",IvMachineScope.unlimited(machine));
+        summary.putLong("parallelHatch",IvMachineScope.parallel(machine)); summary.putInt("threads",getMultipleThreads());
+        summary.putLong("budget",IvMachineScope.budget(machine)); summary.putLong("eut",currentEUt);
+        if (currentGridEUt.compareTo(BigInteger.valueOf(Long.MAX_VALUE)) > 0)
+            summary.putString("wideEut", currentGridEUt.toString());
         orderSummary = summary;
     }
     private static int batchPercent(IvJob job) {

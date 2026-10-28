@@ -16,4 +16,8 @@ public interface BlockPatternAccessor {
 
     @Accessor("centerOffset")
     int[] enhanced$getCenterOffset();
+
+    @org.spongepowered.asm.mixin.gen.Invoker("setActualRelativeOffset")
+    net.minecraft.core.BlockPos enhanced$chamberOffset(int x, int y, int z,
+            net.minecraft.core.Direction facing, net.minecraft.core.Direction upwards, boolean flipped);
 }

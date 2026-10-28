@@ -53,6 +53,30 @@ public final class IvIsolationRegression {
         }
         long[] maximal = FairBudget.divide(Long.MAX_VALUE, new long[]{Long.MAX_VALUE, Long.MAX_VALUE}, 1);
         check(Math.addExact(maximal[0], maximal[1]) == Long.MAX_VALUE, "aggregate requests may exceed long without overflow");
+        BigInteger longMax = BigInteger.valueOf(Long.MAX_VALUE);
+        maximal = FairBudget.divide(longMax.multiply(BigInteger.TWO), new long[]{Long.MAX_VALUE, Long.MAX_VALUE}, 1);
+        check(maximal[0] == Long.MAX_VALUE && maximal[1] == Long.MAX_VALUE,
+                "A funded direct terminal advances both orders beyond the aggregate signed-long limit");
+        for (int trial = 0; trial < 1200; trial++) {
+            long[] wants = new long[1 + random.nextInt(17)];
+            BigInteger total = BigInteger.ZERO;
+            for (int i = 0; i < wants.length; i++) {
+                wants[i] = random.nextLong() & Long.MAX_VALUE;
+                total = total.add(BigInteger.valueOf(wants[i]));
+            }
+            BigInteger cap = new BigInteger(68, random);
+            long[] grants = FairBudget.divide(cap, wants, random.nextInt());
+            BigInteger granted = BigInteger.ZERO;
+            for (int i = 0; i < wants.length; i++) {
+                check(grants[i] >= 0 && grants[i] <= wants[i], "Wide grid per-order payment never exceeds demand");
+                granted = granted.add(BigInteger.valueOf(grants[i]));
+            }
+            check(granted.equals(total.min(cap)), "Wide grid preserves exact total demand and balance without overflow");
+            long narrowCap = random.nextLong() & Long.MAX_VALUE;
+            int rotation = random.nextInt();
+            check(Arrays.equals(FairBudget.divide(BigInteger.valueOf(narrowCap), wants, rotation),
+                    FairBudget.divide(narrowCap, wants, rotation)), "Wide and physical allocators agree for narrow balances");
+        }
         nativeThreadBudget();
         addThreadOnly20261012();
         infernoVault20261014();
@@ -310,9 +334,9 @@ public final class IvIsolationRegression {
         for (int mk = 1; mk <= 4; mk++) {
             String path = "nexus_satellite_factory_mk" + mk;
             var id = new net.minecraft.resources.ResourceLocation("gtladditions", path);
-            check(com.gtl.enhancedcore.common.recipe.iv.IvMachineScope.nativeTarget(id),
-                    "the nexus satellite module joins the IV whitelist: " + path);
-            check(com.gtl.enhancedcore.common.recipe.iv.IvMachineScope.KEEP_NATIVE_THREADS_WITHOUT_BUFFER
+            check(!com.gtl.enhancedcore.common.recipe.iv.IvMachineScope.nativeTarget(id),
+                    "retired satellite leaves IV whitelist: " + path);
+            check(!com.gtl.enhancedcore.common.recipe.iv.IvMachineScope.KEEP_NATIVE_THREADS_WITHOUT_BUFFER
                             .contains(path),
                     "the module keeps its upstream threads before a buffer is fitted: " + path);
             check(!com.gtl.enhancedcore.common.recipe.iv.IvMachineScope.nativeTarget(
@@ -320,8 +344,8 @@ public final class IvIsolationRegression {
                     "the module is matched under gtladditions, not gtceu: " + path);
         }
         check(com.gtl.enhancedcore.common.recipe.iv.IvMachineScope.FOREIGN_NATIVE_IDS
-                        .get("gtladditions").size() == 6,
-                "the foreign whitelist holds the vault, Fuxi furnace and four satellite modules");
+                        .get("gtladditions").size() == 2,
+                "the foreign whitelist holds only the vault and Fuxi furnace");
         // 派生判定：无定制几何的原生机器都应被结构侧接管（四台 mk 均无 pattern.gz）。
         for (int mk = 1; mk <= 4; mk++) {
             var id = new net.minecraft.resources.ResourceLocation("gtladditions", "nexus_satellite_factory_mk" + mk);

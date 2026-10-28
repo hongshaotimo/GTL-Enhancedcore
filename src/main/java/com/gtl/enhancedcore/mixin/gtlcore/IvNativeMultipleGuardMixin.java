@@ -19,6 +19,8 @@ public abstract class IvNativeMultipleGuardMixin {
     @Inject(method = "getMultipleThreads", at = @At("HEAD"), cancellable = true, require = 0)
     private void iv$singleThreadWithoutBuffer(CallbackInfoReturnable<Integer> cir) {
         var machine = ((RecipeLogic)(Object)this).getMachine();
+        if (machine instanceof com.gregtechceu.gtceu.api.machine.multiblock.WorkableElectricMultiblockMachine electric
+                && IvMachineScope.unlimited(electric)) return;
         if (!IvMachineScope.nativeTarget(machine) || IvMachineScope.crossRecipeEnabled(machine)) return;
         // 同 IvNativeGtlAddThreadLimitMixin：个别机器无总成时保留其上游原生线程。
         if (machine instanceof com.gregtechceu.gtceu.api.machine.multiblock.WorkableElectricMultiblockMachine electric

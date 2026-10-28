@@ -15,7 +15,7 @@ public abstract class IvNativeParallelMixin {
     @Redirect(method = "doParallelRecipes", at = @At(value = "INVOKE",
             target = "Lorg/gtlcore/gtlcore/api/recipe/IParallelLogic;getRecipeOutputChance(Lcom/gregtechceu/gtceu/api/capability/recipe/IRecipeCapabilityHolder;Lcom/gregtechceu/gtceu/api/recipe/GTRecipe;)Lcom/gregtechceu/gtceu/api/recipe/GTRecipe;"))
     private static GTRecipe iv$deferChance(IRecipeCapabilityHolder holder, GTRecipe recipe) {
-        return IvNativeMatchContext.forMachine(holder) != null ? recipe
+        return IvNativeMatchContext.forMachine(holder) != null || com.gtl.enhancedcore.common.recipe.GalaxyRecipeBatch.modifying() ? recipe
                 : org.gtlcore.gtlcore.api.recipe.IParallelLogic.getRecipeOutputChance(holder, recipe);
     }
     @Inject(method = "getMaxRecipeMultiplier", at = @At("HEAD"), cancellable = true)

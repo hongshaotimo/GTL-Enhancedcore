@@ -29,7 +29,12 @@ public final class MachineTooltips {
     public static BiConsumer<ItemStack, List<Component>> create(String page, Map<String, Object[]> arguments,
                                                                 GTRecipeType... recipes) {
         var layout = components(page, arguments, recipes);
-        return (stack, lines) -> appendDistinct(lines, layout.select(expanded(), hint()));
+        // 自有机器：署名行永远最后一行，动态彩虹（2026-10-25 用户定稿格式）。
+        return (stack, lines) -> {
+            var selected = new ArrayList<>(layout.select(expanded(), hint()));
+            selected.add(Component.translatable(TooltipPolicy.CREDIT_KEY));
+            appendDistinct(lines, selected);
+        };
     }
 
     public static BiConsumer<ItemStack, List<Component>> modify(BiConsumer<ItemStack, List<Component>> original,
@@ -106,6 +111,38 @@ public final class MachineTooltips {
         return containsMatchingKey(component, key::equals);
     }
 
+    /** Preserve the selected builder's existing rows and place an animated policy row before attribution. */
+    public static void appendGalaxyCapability(BiConsumer<ItemStack, List<Component>> original,
+                                              ItemStack stack, List<Component> lines,
+                                              boolean allowed, boolean engineSupported) {
+        appendGalaxyCapability(original, stack, lines, allowed, engineSupported, PlayerTooltipStyles::rainbow);
+    }
+
+    public static void appendGalaxyCapability(BiConsumer<ItemStack, List<Component>> original,
+                                              ItemStack stack, List<Component> lines,
+                                              boolean allowed, boolean engineSupported,
+                                              java.util.function.Function<String, Component> animated) {
+        if (original != null) original.accept(stack, lines);
+        if (allowed) insertBeforeAttribution(lines, TooltipPolicy.GALAXY_ALLOWED_KEY, animated);
+        if (engineSupported && lines.stream().anyMatch(line -> containsKey(
+                line, "gtl_enhancedcore.tooltip.iv_native_threads")))
+            insertBeforeAttribution(lines, "tooltip.gtl_enhancedcore.thread_engine.supported", Component::translatable);
+    }
+
+    private static void insertBeforeAttribution(List<Component> lines, String key,
+                                               java.util.function.Function<String, Component> render) {
+        lines.removeIf(line -> containsKey(line, key));
+        int index = lines.size();
+        for (int i = 0; i < lines.size(); i++) {
+            if (containsKey(lines.get(i), TooltipPolicy.CREDIT_KEY)
+                    || containsKey(lines.get(i), TooltipPolicy.SOURCE_KEY)) {
+                index = i;
+                break;
+            }
+        }
+        lines.add(index, render.apply(key));
+    }
+
     private static TooltipPolicy.Layout<Component> components(String page, Map<String, Object[]> arguments,
                                                                GTRecipeType[] recipes) {
         var definition = TooltipPolicy.page(page);
@@ -114,6 +151,10 @@ public final class MachineTooltips {
         var summary = new ArrayList<>(definition.summary().stream().map(key -> line(key, copiedArguments)).toList());
         var details = definition.details().stream().map(key -> line(key, copiedArguments)).toList();
         var catalog = new ArrayList<Component>();
+        long distinctTypes = recipes == null ? 0 : java.util.Arrays.stream(recipes)
+                .filter(recipe -> recipe != null && recipe.registryName != null)
+                .map(recipe -> recipe.registryName).distinct().count();
+        if (distinctTypes <= 1) summary.removeIf(row -> containsKey(row, TooltipPolicy.CROSS_RECIPE_KEY));
         if (recipes != null && recipes.length > 0) {
             var names = new ArrayList<Component>();
             for (GTRecipeType recipe : recipes) {
@@ -122,7 +163,8 @@ public final class MachineTooltips {
                 names.add(Component.translatable(id.getNamespace() + "." + id.getPath()));
             }
             catalog.addAll(recipeRows(names));
-            if (page.equals("native_isolation") && names.stream().distinct().count() > 1) {
+            if (page.equals("native_isolation") && distinctTypes > 1
+                    && summary.stream().noneMatch(row -> containsKey(row, TooltipPolicy.CROSS_RECIPE_KEY))) {
                 summary.addFirst(Component.translatable(TooltipPolicy.CROSS_RECIPE_KEY));
             }
         }
@@ -140,44 +182,32 @@ public final class MachineTooltips {
      */
     private static Component line(String key, Map<String, Object[]> arguments) {
         if (key.equals(TooltipPolicy.CROSS_RECIPE_KEY) || key.equals(TooltipPolicy.STAR_CROSS_RECIPE_KEY)
-                || key.equals(TooltipPolicy.SOURCE_KEY)) {
+                || key.equals(TooltipPolicy.SOURCE_KEY) || key.equals(TooltipPolicy.CREDIT_KEY)) {
             return Component.translatable(key);
         }
         Object[] values = arguments.getOrDefault(key, key.endsWith(".shared")
                 ? new Object[]{Component.translatable("tooltip.gtl_enhancedcore.adaptive_maintenance_hatch.forbidden")
                 .withStyle(ChatFormatting.RED)} : new Object[0]);
         var component = Component.translatable(key, values);
-        if (key.endsWith(".brand")) return component.withStyle(ChatFormatting.DARK_PURPLE, ChatFormatting.ITALIC);
-        if (key.endsWith(".intro") && key.startsWith("tooltip.gtl_enhancedcore.adaptive_maintenance_hatch.")) {
-            return component.withStyle(ChatFormatting.WHITE);
-        }
-        if (key.endsWith(".cleanroom_title")) return component.withStyle(ChatFormatting.WHITE);
+        return component.withStyle(rowColor(key));
+    }
+
+    /**
+     * 整行底色（2026-10-25 用户定稿，见 docs/TIPS规范.md）：风味句浅紫、用途句深青、其余一律白色。
+     * 自适应维护仓的洁净/重力能力行沿用参考仓室的绿色。行内强调只用语言文件里的 §6/§b/§f…§r。
+     */
+    public static ChatFormatting rowColor(String key) {
+        if (key.endsWith(".flavor")) return ChatFormatting.LIGHT_PURPLE;
         if (key.endsWith(".cleanroom_absolute") || key.endsWith(".cleanroom_standard")
                 || key.endsWith(".cleanroom_sterile") || key.endsWith(".gravity")) {
-            return component.withStyle(ChatFormatting.GREEN);
+            return ChatFormatting.GREEN;
         }
-        if (key.endsWith(".credit")) return component.withStyle(ChatFormatting.AQUA);
-        // Opening line: aqua, matching "具体用途" rows in the reference mods.
+        if (key.startsWith("tooltip.gtl_enhancedcore.adaptive_maintenance_hatch.")) return ChatFormatting.WHITE;
+        if (key.equals(TooltipPolicy.JOINT_FACTORY_FLAVOR)) return ChatFormatting.LIGHT_PURPLE;
         if (key.endsWith(".intro") || key.endsWith(".summary") || key.endsWith(".tips") || key.endsWith(".efficient")) {
-            return component.withStyle(ChatFormatting.AQUA);
+            return ChatFormatting.DARK_AQUA;
         }
-        // Hard restrictions stay yellow so they cannot be mistaken for capabilities.
-        if (key.endsWith(".limit") || key.endsWith(".muffler") || key.endsWith(".no_nbt")
-                || key.endsWith(".iv_break") || key.endsWith(".iv_maintenance_penalty")
-                || key.endsWith(".iv_only_super_buffer") || key.endsWith(".iv_native.1")
-                || key.endsWith(".no_laser_input") || key.endsWith(".no_parallel_hatch")
-                || key.endsWith(".only_laser_hatch") || key.endsWith(".laser_requires_energy_hatch")
-                || key.endsWith(".no_maintenance_hatch")
-                || key.endsWith(".suprachronal_no_modules") || key.endsWith(".suprachronal_module_disabled")) {
-            return component.withStyle(ChatFormatting.YELLOW);
-        }
-        // Positive capability rows: green.
-        if (key.endsWith(".supports_laser_hatch") || key.endsWith(".parallel_hatch")) {
-            return component.withStyle(ChatFormatting.GREEN);
-        }
-        // Everything else is plain body text. GTCEu uses §7 grey for descriptive rows, so an
-        // unmarked sentence reads as ordinary prose instead of a coloured data-table row.
-        return component.withStyle(ChatFormatting.GRAY);
+        return ChatFormatting.WHITE;
     }
 
     private static boolean expanded() {
@@ -230,8 +260,8 @@ public final class MachineTooltips {
                 if (index > 0) names.append(Component.translatable(TooltipPolicy.RECIPE_SEPARATOR));
                 names.append(group.get(index).copy());
             }
-            rows.add(Component.translatable(TooltipPolicy.RECIPE_HEADER, names.withStyle(ChatFormatting.GRAY))
-                    .withStyle(ChatFormatting.AQUA));
+            rows.add(Component.translatable(TooltipPolicy.RECIPE_HEADER, names.withStyle(ChatFormatting.WHITE))
+                    .withStyle(ChatFormatting.WHITE));
         }
         return rows;
     }
@@ -258,8 +288,7 @@ public final class MachineTooltips {
     private static String animatedKey(Component line) {
         if (line.getContents() instanceof TranslatableContents contents) {
             String key = contents.getKey();
-            if (key.equals(TooltipPolicy.CROSS_RECIPE_KEY) || key.equals(TooltipPolicy.STAR_CROSS_RECIPE_KEY)
-                    || key.equals(TooltipPolicy.SOURCE_KEY)) return key;
+            if (TooltipPolicy.isAnimatedKey(key)) return key;
         }
         return null;
     }

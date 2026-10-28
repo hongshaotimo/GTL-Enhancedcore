@@ -37,6 +37,7 @@ public final class PlusFactoryMachine extends WorkableElectricMultiblockMachine 
 
     /** LV 为 16 并行，每升一级翻倍，IV 及以上固定为 256。 */
     public int getMaxParallel() {
+        if (com.gtl.enhancedcore.common.machine.galaxy.GalaxyLinks.unlimited(this)) return Integer.MAX_VALUE;
         int tier = Math.min(GTUtil.getFloorTierByVoltage(getMaxVoltage()), GTValues.IV);
         int base = BASE_PARALLEL;
         int cap = MAX_PARALLEL;

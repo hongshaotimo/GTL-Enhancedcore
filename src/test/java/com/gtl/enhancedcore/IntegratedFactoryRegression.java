@@ -71,8 +71,8 @@ final class IntegratedFactoryRegression {
         check(counts.get("J") == 4 && !counts.containsKey("L"), "all four lamps retained as lamps only");
         String source = source("common/structure/IntegratedFactoryStructure.java");
         for (String ability : Set.of("MAINTENANCE", "INPUT_ENERGY")) check(source.contains("PartAbility." + ability), "allowed hatch " + ability);
-        check(source.contains("IvBufferRegistry.materialPorts(30)"),
-                "ordinary material ports or up to 30 pattern buffers can form the structure");
+        check(source.contains("IvBufferRegistry.materialPorts(1)"),
+                "ordinary material ports or one pattern buffer can form the structure");
         for (String excluded : Set.of("PARALLEL_HATCH", "INPUT_LASER", "THREAD_MODIFIER", "IMPORT_ITEMS", "EXPORT_ITEMS",
                 "IMPORT_FLUIDS", "EXPORT_FLUIDS")) {
             check(!source.contains(excluded), "no hatch outside the isolated-order contract: " + excluded);

@@ -3,6 +3,7 @@ package com.gtl.enhancedcore.common.performance;
 import com.gtl.enhancedcore.common.config.ForeignMachineMixinPolicy;
 import com.gtl.enhancedcore.common.config.MachineOverrideConfig;
 import com.gtl.enhancedcore.common.integration.GtlTerminalExtras;
+import com.gtl.enhancedcore.common.integration.ExPatternTerminalExtras;
 import com.gtl.enhancedcore.common.integration.JerMobWorldLaziness;
 import com.gtl.enhancedcore.common.integration.MultiblockPreviewLaziness;
 import java.util.List;
@@ -24,7 +25,17 @@ public final class PerformanceMixinPlugin implements IMixinConfigPlugin {
     @Override public String getRefMapperConfig() { return null; }
 
     @Override public boolean shouldApplyMixin(String targetClassName, String mixinClassName) {
+        if (mixinClassName.startsWith("com.gtl.enhancedcore.mixin.extendedae.client."))
+            return hasClass(targetClassName);
+        if (mixinClassName.equals("com.gtl.enhancedcore.mixin.jade.WeatherAnchorRecipeLogicProviderMixin"))
+            return hasClass(targetClassName);
+        if (mixinClassName.startsWith("com.gtl.enhancedcore.mixin.ftblibrary.client."))
+            return hasClass(targetClassName) && hasClass("dev.ftb.mods.ftbquests.client.gui.quests.ViewQuestPanel") && jeiPresent();
+        if (mixinClassName.startsWith("com.gtl.enhancedcore.mixin.ftbquests.client."))
+            return hasClass(targetClassName);
         if (!ForeignMachineMixinPolicy.shouldApply(MachineOverrideConfig.current(), mixinClassName)) return false;
+        if (mixinClassName.endsWith(".MapRegionPackedImageMixin") || mixinClassName.endsWith(".BloomPendingPruneMixin"))
+            return PerformanceMixinPlugin.class.getClassLoader().getResource(targetClassName.replace('.', '/') + ".class") != null;
         if (mixinClassName.startsWith("com.gtl.enhancedcore.mixin.ae2ct.client.")
                 || mixinClassName.startsWith("com.gtl.enhancedcore.mixin.jer.client."))
             return PerformanceMixinPlugin.class.getClassLoader().getResource(targetClassName.replace('.', '/') + ".class") != null;
@@ -35,7 +46,13 @@ public final class PerformanceMixinPlugin implements IMixinConfigPlugin {
         if (mixinClassName.startsWith("com.gtl.enhancedcore.mixin.ae2.remote."))
             return PerformanceMixinPlugin.class.getClassLoader().getResource(
                     targetClassName.replace('.', '/') + ".class") != null;
+        if (mixinClassName.equals("com.gtl.enhancedcore.mixin.travelanchors.TravelAnchorRangeMixin"))
+            return hasClass(targetClassName);
         return true;
+    }
+
+    private static boolean hasClass(String className) {
+        return PerformanceMixinPlugin.class.getClassLoader().getResource(className.replace('.', '/') + ".class") != null;
     }
 
     private static boolean jeiPresent() {
@@ -62,6 +79,7 @@ public final class PerformanceMixinPlugin implements IMixinConfigPlugin {
     @Override
     public void postApply(String targetClassName, ClassNode targetClass, String mixinClassName, IMixinInfo mixinInfo) {
         GtlTerminalExtras.postApply(targetClassName, targetClass, mixinClassName);
+        ExPatternTerminalExtras.postApply(targetClassName, targetClass, mixinClassName);
         MultiblockPreviewLaziness.postApply(targetClassName, targetClass, mixinClassName);
         JerMobWorldLaziness.postApply(targetClassName, targetClass, mixinClassName);
     }

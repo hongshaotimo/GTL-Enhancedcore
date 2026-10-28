@@ -1,6 +1,7 @@
 package com.gtl.enhancedcore.common.structure;
 
 import com.google.gson.JsonParser;
+import com.gtl.enhancedcore.common.config.MachineOverrideConfig;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.UncheckedIOException;
@@ -16,6 +17,11 @@ public final class HollowStructureResources {
     private HollowStructureResources() {}
 
     public static String resolve(String source) {
+        return resolve(source, MachineOverrideConfig.current().replaceOriginalStructures());
+    }
+
+    public static String resolve(String source, boolean replaceOriginalStructures) {
+        if (!replaceOriginalStructures) return source;
         return RESOURCES.getOrDefault(source, source);
     }
 

@@ -20,6 +20,7 @@ public final class IntegratedUniversalFactoryMachine extends TieredParallelMachi
 
     @Override
     public int getMaxParallel() {
+        if (com.gtl.enhancedcore.common.machine.galaxy.GalaxyLinks.unlimited(this)) return Integer.MAX_VALUE;
         return PARALLEL;
     }
 

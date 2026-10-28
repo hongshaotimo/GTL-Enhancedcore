@@ -25,7 +25,7 @@ public final class HighFluxBreederReactorRegression {
         return assertions;
     }
 
-    /** 结构与用户提供的 .schem 一致：87 x 111 x 93，控制器唯一，24 个仓室位。 */
+    /** 结构与用户提供的 .schem 一致：47 x 55 x 48，控制器唯一，112 个仓室位。 */
     private static void geometry() throws Exception {
         var aisles = new ArrayList<String[]>();
         try (var input = Files.newInputStream(Path.of(
@@ -43,7 +43,9 @@ public final class HighFluxBreederReactorRegression {
             }
         }
         check(controllers == 1, "The structure has exactly one controller");
-        check(ports == 24, "The supplied blueprint marks exactly 24 port positions");
+        check(ports == 112, "The reviewed blueprint marks exactly 112 port positions");
+        check(aisles.size() == 48 && aisles.getFirst().length == 55 && aisles.getFirst()[0].length() == 47,
+                "Current reviewed schematic dimensions");
 
         // 每个出现在结构里的字符都必须有谓词绑定，否则 FactoryBlockPattern.build() 抛异常。
         var used = new java.util.TreeSet<Character>();
@@ -55,13 +57,17 @@ public final class HighFluxBreederReactorRegression {
         var declared = new java.util.TreeSet<Character>();
         var matcher = Pattern.compile("\\.where\\('(.)'").matcher(ports7);
         while (matcher.find()) declared.add(matcher.group(1).charAt(0));
+        var palette = com.google.gson.JsonParser.parseString(Files.readString(Path.of(
+                "src/main/resources/data/gtl_enhancedcore/structures/high_flux_breeder_reactor.json"))).getAsJsonObject();
+        for (String symbol : palette.getAsJsonObject("bindings").keySet()) declared.add(symbol.charAt(0));
         check(declared.containsAll(used), "Every symbol used by the geometry has a predicate: "
                 + new java.util.TreeSet<>(used) { }.stream().filter(c -> !declared.contains(c)).toList());
 
         // 用户指定的仓室替换方块与主体材质。
-        check(ports7.contains(".where('X', block(\"gtlcore:fission_reactor_casing\")"),
-                "Ports are replaced with gtlcore:fission_reactor_casing as requested");
-        check(ports7.contains(".where('A', block(\"gtlcore:fission_reactor_casing\"))"),
+        check(ports7.contains(".where('X', block(\"gtlcore:supercritical_turbine_casing\")"),
+                "Empty ports use the requested supercritical turbine casing");
+        check(palette.getAsJsonObject("bindings").getAsJsonObject("A").get("block").getAsString()
+                        .equals("gtlcore:fission_reactor_casing"),
                 "The structure body uses the requested fission reactor casing");
     }
 
@@ -131,12 +137,12 @@ public final class HighFluxBreederReactorRegression {
                 definition.replaceAll("//[^\\n]*", "").replaceAll("(?s)/\\*.*?\\*/", "")).results().count();
         check(modifiers == 1 && !definition.replaceAll("//[^\\n]*", "").contains("ELECTRIC_OVERCLOCK"),
                 "No extra overclock is stacked on top of the ADD engine's own settlement");
-        check(definition.contains("gtlcore:fission_reactor_casing"),
-                "The appearance block is the requested fission reactor casing");
+        check(definition.contains("gtlcore:iridium_casing"),
+                "The appearance block is the requested iridium casing");
         // 材质：主面用空间缩放仪，正面 overlay 用大型打包机。
-        check(definition.contains("block/casings/oxidation_resistant_hastelloy_n_mechanical_casing")
+        check(definition.contains("block/casings/iridium_casing")
                         && definition.contains("block/multiblock/gcym/large_packer"),
-                "The casing renderer mirrors gtladditions:space_scaling_instrument");
+                "The iridium renderer retains the existing front overlay");
         check(!source("common/recipe/iv/IvMachineScope.java").contains("high_flux_breeder_reactor"),
                 "The reactor stays outside the isolated native-order whitelist");
     }

@@ -65,11 +65,12 @@ final class PlotWorldRegression {
         PlotSettings copied = new PlotSettings(custom.plotChunks(), custom.groundBlock(), custom.roadBlock(),
                 custom.borderBlock(), custom.markerBlock(), custom.roadStyle(), custom.roadWidth(), custom.markerMode(),
                 custom.markerSize(), custom.bedrockY(), custom.surfaceY(), custom.lineBlock(), custom.lineStyle(),
-                custom.dashLength(), custom.dashGap(), custom.borderWidth());
+                custom.dashLength(), custom.dashGap(), custom.borderWidth(), custom.plotEdgeBlock(), custom.plotEdgeWidth());
         check(custom.equals(copied), "All custom settings survive DTO round-trip"); checks++;
         check(PlotLayout.surfaceAt(custom, -8, -8) == PlotLayout.Cell.MARKER
                 && PlotLayout.surfaceAt(custom, 8, 8) == PlotLayout.Cell.MARKER, "Chunk marker repeats in both coordinate signs"); checks++;
-        PlotSettings plain = custom.withRoadStyle(PlotSettings.RoadStyle.NONE).withMarkerMode(PlotSettings.MarkerMode.NONE);
+        PlotSettings plain = custom.withRoadStyle(PlotSettings.RoadStyle.NONE).withMarkerMode(PlotSettings.MarkerMode.NONE)
+                .withPlotEdgeWidth(0);
         check(PlotLayout.surfaceAt(plain, 0, 0) == PlotLayout.Cell.GROUND, "No-road/no-marker mode is entirely ground"); checks++;
         for (Runnable invalid : new Runnable[] {
                 () -> PlotSettings.preset(0), () -> PlotSettings.preset(11),
@@ -87,10 +88,25 @@ final class PlotWorldRegression {
         check(PlotLayout.blockIdAt(highest, 0, 318, 0).equals("minecraft:bedrock")
                 && PlotLayout.blockIdAt(highest, 0, 320, 0).equals("minecraft:air"), "Maximum legal layers are bounded"); checks++;
         PlotSettings highway = PlotSettings.defaults().withRoadPreset(PlotSettings.RoadPreset.HIGHWAY)
-                .withMarkerMode(PlotSettings.MarkerMode.NONE);
+                .withMarkerMode(PlotSettings.MarkerMode.NONE).withPlotEdgeWidth(0);
+        for (int size : new int[] {1, 3, 5, 7, 9, 11}) {
+            PlotSettings symmetric = PlotSettings.defaults().withPlotChunks(size).withMarkerMode(PlotSettings.MarkerMode.NONE)
+                    .withPlotEdgeWidth(3).withPlotEdgeBlock("minecraft:red_concrete");
+            int period = symmetric.plotBlocks();
+            for (int z = -period; z < period; z++) for (int x = 0; x < period; x++) {
+                check(PlotLayout.surfaceAt(symmetric, x, z) == PlotLayout.surfaceAt(symmetric, period - 1 - x, z),
+                        "Odd-sized plot surfaces mirror exactly across X"); checks++;
+                check(PlotLayout.surfaceAt(symmetric, x, z) == PlotLayout.surfaceAt(symmetric, x, period - 1 - z),
+                        "Odd-sized plot surfaces mirror exactly across Z"); checks++;
+            }
+            check(PlotLayout.surfaceAt(symmetric, 0, 10) == PlotLayout.Cell.PLOT_EDGE
+                    && PlotLayout.surfaceAt(symmetric, 2, 10) == PlotLayout.Cell.PLOT_EDGE
+                    && PlotLayout.surfaceAt(symmetric, 3, 10) != PlotLayout.Cell.PLOT_EDGE,
+                    "Custom plot edge width has an exact symmetric footprint"); checks++;
+        }
         check(highway.roadBlock().equals("minecraft:black_concrete")
                 && highway.lineBlock().equals("minecraft:white_concrete"), "Highway preset uses black road and white marking materials"); checks++;
-        check(PlotLayout.surfaceBlock(highway, 0, 6).equals("minecraft:white_concrete"), "Highway preview and generated road expose dashed lane markings"); checks++;
+        check(PlotLayout.surfaceBlock(highway, 0, 7).equals("minecraft:white_concrete"), "Highway preview and generated road expose centered dashed lane markings"); checks++;
         PlotSettings tall = highway.withLevels(-32, 128);
         check(tall.concreteLayers() == 160 && PlotLayout.blockIdAt(tall, 8, 100, 8).equals(tall.groundBlock()),
                 "Custom world height remains applied below the surface"); checks++;
@@ -104,8 +120,8 @@ final class PlotWorldRegression {
                 && PlotLayout.surfaceAt(doubleLine, 0, 8) == PlotLayout.Cell.ROAD,
                 "Double lines straddle the shared road center without filling the center gap"); checks++;
         PlotSettings city = highway.withRoadPreset(PlotSettings.RoadPreset.CITY);
-        check(PlotLayout.surfaceAt(city, 2, 5) == PlotLayout.Cell.LINE
-                && PlotLayout.surfaceAt(city, 1, 5) == PlotLayout.Cell.ROAD,
+        check(PlotLayout.surfaceAt(city, 1, 5) == PlotLayout.Cell.LINE
+                && PlotLayout.surfaceAt(city, 2, 5) == PlotLayout.Cell.ROAD,
                 "Zebra crossing alternates road and marking cubes outside the junction"); checks++;
         for (PlotSettings.RoadPreset theme : PlotSettings.RoadPreset.values()) {
             PlotSettings themed = tall.withGroundBlock("minecraft:blue_concrete").withRoadPreset(theme);
@@ -132,7 +148,7 @@ final class PlotWorldRegression {
         PlotSettings avenue = highway.withRoadStyle(PlotSettings.RoadStyle.AVENUE).withRoadWidth(5)
                 .withLineStyle(PlotSettings.LineStyle.DOUBLE);
         int center = avenue.plotBlocks() / 2;
-        check(PlotLayout.surfaceAt(avenue, center - 1, 12) == PlotLayout.Cell.LINE
+        check(PlotLayout.surfaceAt(avenue, center - 2, 12) == PlotLayout.Cell.LINE
                 && PlotLayout.surfaceAt(avenue, center + 1, 12) == PlotLayout.Cell.LINE
                 && PlotLayout.surfaceAt(avenue, center, 12) == PlotLayout.Cell.ROAD,
                 "Central avenue double markings use two separate lanes rather than a single line"); checks++;

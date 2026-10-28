@@ -2,11 +2,9 @@ package com.gtl.enhancedcore.client.ftbchunks;
 
 import dev.ftb.mods.ftblibrary.math.XZ;
 
-/**
- * 矩形框选的起始区块（拖拽起点）。
- */
+/** Start chunk for the existing draw-driven rectangle selector. */
 public final class RectangleSelectionState {
-    private static XZ firstChunk = null;
+    private static XZ firstChunk;
 
     private RectangleSelectionState() {
     }

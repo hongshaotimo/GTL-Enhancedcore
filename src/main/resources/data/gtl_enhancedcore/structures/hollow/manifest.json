@@ -5,27 +5,16 @@
     "/data/gtl_enhancedcore/structures/gtl/advanced_vacuum_drying_furnace.pattern.gz": {
       "resource": "/data/gtl_enhancedcore/structures/gtl/advanced_vacuum_drying_furnace.pattern.gz",
       "size": [
-        73,
-        78,
-        72
+        57,
+        49,
+        69
       ],
-      "sourceSha256": "624c1dd68d56ad32aadf2ead304c503e947c887d0cb326613d5d6066157a692b",
-      "removed": 22681,
-      "removedBySymbol": {
-        "B": 86,
-        "C": 341,
-        "F": 28,
-        "G": 128,
-        "I": 8516,
-        "J": 38,
-        "K": 325,
-        "L": 11133,
-        "M": 2086
-      },
-      "opaqueSymbols": "ABDFGIJKLM",
-      "remaining": 71850,
-      "optimizedResource": "/data/gtl_enhancedcore/structures/hollow/gtl/advanced_vacuum_drying_furnace.pattern.gz",
-      "optimizedSha256": "31a499132feff9b6041a3bd5763c402f57a2298be57924ba4f588c7fb54c55fe"
+      "sourceSha256": "07ae524fdf5e05bb86ef9e514b09860c473bda021ff2f644987774b47f303d6f",
+      "removed": 0,
+      "removedBySymbol": {},
+      "opaqueSymbols": "",
+      "remaining": 45807,
+      "review": "2026-10-27 source replacement; no hidden deletion applied"
     },
     "/data/gtl_enhancedcore/structures/gtl/cooling_tower.pattern.gz": {
       "resource": "/data/gtl_enhancedcore/structures/gtl/cooling_tower.pattern.gz",
@@ -179,22 +168,16 @@
     "/data/gtl_enhancedcore/structures/gtl/mega_extractor.pattern.gz": {
       "resource": "/data/gtl_enhancedcore/structures/gtl/mega_extractor.pattern.gz",
       "size": [
-        73,
-        99,
-        60
+        97,
+        97,
+        61
       ],
-      "sourceSha256": "b339da741cecefc2ac991b65b1a9504c2b460d389c07799fa1760b8b9f1a353d",
-      "removed": 5845,
-      "removedBySymbol": {
-        "B": 1219,
-        "C": 444,
-        "D": 3536,
-        "E": 646
-      },
-      "opaqueSymbols": "BCDE",
-      "remaining": 30212,
-      "optimizedResource": "/data/gtl_enhancedcore/structures/hollow/gtl/mega_extractor.pattern.gz",
-      "optimizedSha256": "b35a1f1460fe2291d92b210c83d830ad04e359d2c2081fe0b7f9f850f25474ee"
+      "sourceSha256": "00787d412125df6bdc170179bdbc6cb278927eb28fe0bd44128d150f2c6a7c8f",
+      "removed": 0,
+      "removedBySymbol": {},
+      "opaqueSymbols": "",
+      "remaining": 69245,
+      "review": "2026-10-27 source replacement; no hidden deletion applied"
     },
     "/data/gtl_enhancedcore/structures/gtl/mega_presser.pattern.gz": {
       "resource": "/data/gtl_enhancedcore/structures/gtl/mega_presser.pattern.gz",
@@ -465,27 +448,16 @@
     "/data/gtl_enhancedcore/structures/gtl/antientropy_condensation_center.pattern.gz": {
       "resource": "/data/gtl_enhancedcore/structures/gtl/antientropy_condensation_center.pattern.gz",
       "size": [
-        143,
-        113,
-        133
+        93,
+        75,
+        84
       ],
-      "sourceSha256": "fd39ef2d535b20bba9b7a4b9463333c4e255bcf8aaa009fc8d2aba84878c7e4b",
-      "removed": 35314,
-      "removedBySymbol": {
-        "A": 60,
-        "E": 1863,
-        "F": 652,
-        "G": 1055,
-        "H": 692,
-        "K": 11559,
-        "L": 16515,
-        "M": 564,
-        "O": 2354
-      },
-      "opaqueSymbols": "AEFGIKLMOQ",
-      "remaining": 205725,
-      "optimizedResource": "/data/gtl_enhancedcore/structures/hollow/gtl/antientropy_condensation_center.pattern.gz",
-      "optimizedSha256": "a8bdb4c4c49bc43c7081031691d38694f86398d64caa9de8e3e46eded68239e6"
+      "sourceSha256": "d4e0a66e49fa70831a3d19f4b3cfae76caff7881c93453c83c1e7b6604b06cd4",
+      "removed": 0,
+      "removedBySymbol": {},
+      "opaqueSymbols": "",
+      "remaining": 66857,
+      "review": "2026-10-27 source replacement; no hidden deletion applied"
     },
     "/data/gtl_enhancedcore/structures/gtl/advanced_integrated_ore_processor.pattern.gz": {
       "resource": "/data/gtl_enhancedcore/structures/gtl/advanced_integrated_ore_processor.pattern.gz",
@@ -718,31 +690,16 @@
     "/data/gtl_enhancedcore/structures/gtl/skeleton_shift_rift_engine.pattern.gz": {
       "resource": "/data/gtl_enhancedcore/structures/gtl/skeleton_shift_rift_engine.pattern.gz",
       "size": [
-        200,
-        160,
-        140
+        31,
+        31,
+        48
       ],
-      "sourceSha256": "3e5c9b847936dc4247fd7808e9b54a354205a819eddb2eeccdd216e45f00ed68",
-      "removed": 235104,
-      "removedBySymbol": {
-        "A": 52912,
-        "B": 308,
-        "D": 39673,
-        "E": 15181,
-        "G": 7786,
-        "I": 7392,
-        "J": 104106,
-        "L": 61,
-        "P": 1263,
-        "Q": 1,
-        "R": 6417,
-        "T": 1,
-        "U": 3
-      },
-      "opaqueSymbols": "ABDEGIJKLPR",
-      "remaining": 377953,
-      "optimizedResource": "/data/gtl_enhancedcore/structures/hollow/gtl/skeleton_shift_rift_engine.pattern.gz",
-      "optimizedSha256": "baebcce14736516cc642c3e3c93890fe7c99d51fbb70e7fc332acd742cf7bd21"
+      "sourceSha256": "2c88b55cf401b10c78ff3cb1bac67d41f5823e06f165016207176f3abb20cf8c",
+      "removed": 0,
+      "removedBySymbol": {},
+      "opaqueSymbols": "",
+      "remaining": 12742,
+      "review": "2026-10-27 replacement; no old deletion mask"
     },
     "/data/gtl_enhancedcore/structures/gtl/pcb_factory.pattern.gz": {
       "resource": "/data/gtl_enhancedcore/structures/gtl/pcb_factory.pattern.gz",
@@ -831,26 +788,16 @@
     "/data/gtl_enhancedcore/structures/dragonfieldproliferationcorestructure.pattern.gz": {
       "resource": "/data/gtl_enhancedcore/structures/dragonfieldproliferationcorestructure.pattern.gz",
       "size": [
-        75,
-        73,
-        78
+        252,
+        108,
+        120
       ],
-      "sourceSha256": "a3c073bebb45cbf1e177d80b876473f88a491b9ca03712f096d325b0142c2b55",
-      "removed": 11330,
-      "removedBySymbol": {
-        "A": 3712,
-        "B": 102,
-        "E": 2661,
-        "F": 26,
-        "I": 2,
-        "K": 17,
-        "N": 3220,
-        "O": 1590
-      },
-      "opaqueSymbols": "AEFNO",
-      "remaining": 69963,
-      "optimizedResource": "/data/gtl_enhancedcore/structures/hollow/dragonfieldproliferationcorestructure.pattern.gz",
-      "optimizedSha256": "3054d6715328edfa764835c9b9d0123a25f1f60646e060a7dd8862b7fa1baef2"
+      "sourceSha256": "3586c262b0d1a4b90f23c6fae8251e7c2f1b51dd77a0cc498bda547ad617007c",
+      "removed": 0,
+      "removedBySymbol": {},
+      "opaqueSymbols": "",
+      "remaining": 63815,
+      "review": "2026-10-27 replacement; no old deletion mask"
     },
     "/data/gtl_enhancedcore/structures/extreme_reactor.pattern.gz": {
       "resource": "/data/gtl_enhancedcore/structures/extreme_reactor.pattern.gz",
@@ -893,24 +840,16 @@
     "/data/gtl_enhancedcore/structures/high_flux_breeder_reactor.pattern.gz": {
       "resource": "/data/gtl_enhancedcore/structures/high_flux_breeder_reactor.pattern.gz",
       "size": [
-        87,
-        111,
-        93
+        47,
+        55,
+        48
       ],
-      "sourceSha256": "e38684732fcf24de91267745da881bce0d00ac7770ff120657939e23de44ab44",
-      "removed": 110734,
-      "removedBySymbol": {
-        "A": 91371,
-        "D": 5085,
-        "E": 12330,
-        "G": 922,
-        "I": 1024,
-        "K": 2
-      },
-      "opaqueSymbols": "ADEG",
-      "remaining": 150579,
-      "optimizedResource": "/data/gtl_enhancedcore/structures/hollow/high_flux_breeder_reactor.pattern.gz",
-      "optimizedSha256": "cba523fcc5d36cf78d4fe7900d686dff190d64b8768bfc09fd4732add77a4e8d"
+      "sourceSha256": "dff2585b4152e28457bfd9629d948778d012434675883481fc0ae03633f5be46",
+      "removed": 0,
+      "removedBySymbol": {},
+      "opaqueSymbols": "",
+      "remaining": 21749,
+      "review": "2026-10-27 replacement; no old deletion mask"
     },
     "/data/gtl_enhancedcore/structures/hydrothermal_leaching_complex.pattern.gz": {
       "resource": "/data/gtl_enhancedcore/structures/hydrothermal_leaching_complex.pattern.gz",

@@ -21,6 +21,8 @@ import net.minecraft.core.registries.BuiltInRegistries;
  */
 public final class GTLEnhancedcoreRecipeTypes {
 
+    public static final GTRecipeType BRILLIANT_STARS = register("brilliant_stars").setMaxIOSize(1, 0, 0, 0).setEUIO(IO.IN);
+
     public static final GTRecipeType ANCHOR_DAY = register("anchor_day");
     public static final GTRecipeType ANCHOR_NIGHT = register("anchor_night");
     public static final GTRecipeType ANCHOR_CLEAR = register("anchor_clear");

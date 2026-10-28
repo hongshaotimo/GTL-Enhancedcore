@@ -83,6 +83,34 @@ public final class IvDisplayRegression {
         check(count(lines, "gtceu.multiblock.parallel") == 1,
                 "a missing upstream row is supplied once when parallel becomes available");
 
+        var stellar = new ArrayList<Component>(List.of(tier, diagnostic,
+                Component.translatable("gtl_enhancedcore.galaxy.power_cap", "MAX+16", "old")));
+        var balance = java.math.BigInteger.TEN.pow(52);
+        var cap = balance;
+        IvMachineDisplay.stellarDisplay(stellar, cap, balance, java.math.BigInteger.TEN.pow(18));
+        IvMachineDisplay.stellarDisplay(stellar, cap, balance, java.math.BigInteger.TEN.pow(18));
+        check(count(stellar, "gtceu.multiblock.max_energy_per_tick") == 1
+                        && count(stellar, "gtceu.multiblock.max_recipe_tier") == 1
+                        && count(stellar, "gtl_enhancedcore.galaxy.grid_balance") == 1
+                        && count(stellar, "gtl_enhancedcore.galaxy.power_cap") == 0
+                        && stellar.contains(diagnostic),
+                "stellar UI uses one upstream power/tier row and preserves machine-specific content");
+        var powerLine = stellar.stream().filter(line -> line.getContents() instanceof TranslatableContents t
+                && t.getKey().equals("gtceu.multiblock.max_energy_per_tick")).findFirst().orElseThrow();
+        var powerArgs = ((TranslatableContents)powerLine.getContents()).getArgs();
+        check(((Component)powerArgs[0]).getStyle().getHoverEvent()
+                        .getValue(net.minecraft.network.chat.HoverEvent.Action.SHOW_TEXT).getString()
+                        .equals(com.gregtechceu.gtceu.utils.FormattingUtil.formatNumbers(balance)),
+                "stellar maximum power retains the entire grid balance beyond long and the former tier cap");
+        var balanceLine = stellar.stream().filter(line -> line.getContents() instanceof TranslatableContents t
+                && t.getKey().equals("gtl_enhancedcore.galaxy.grid_balance")).findFirst().orElseThrow();
+        var balanceValue = (Component)((TranslatableContents)balanceLine.getContents()).getArgs()[0];
+        check(balanceLine.getStyle().getColor().getValue() == net.minecraft.ChatFormatting.GRAY.getColor()
+                        && balanceValue.getString().length() < 14
+                        && balanceValue.getStyle().getHoverEvent().getValue(net.minecraft.network.chat.HoverEvent.Action.SHOW_TEXT)
+                                .getString().equals(com.gregtechceu.gtceu.utils.FormattingUtil.formatNumbers(balance)),
+                "stellar balance has native gray label, compact number and exact hover amount");
+
         var summary = new CompoundTag();
         summary.putLong("parallelHatch", 128);
         summary.putInt("threads", 192);

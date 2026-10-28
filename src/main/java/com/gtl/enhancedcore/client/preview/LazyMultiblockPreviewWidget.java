@@ -30,6 +30,7 @@ public final class LazyMultiblockPreviewWidget extends WidgetGroup {
 
     private final MultiblockMachineDefinition definition;
     private PatternPreviewWidget delegate;
+    private String footprintText;
     private final Map<ModularUI, Set<Runnable>> delegateCloseListeners = new IdentityHashMap<>();
 
     /** Implemented by a client Mixin without exposing the Mixin class at runtime. */
@@ -54,6 +55,7 @@ public final class LazyMultiblockPreviewWidget extends WidgetGroup {
     public synchronized void ensureLoaded() {
         if (delegate != null) return;
         delegate = PatternPreviewWidget.getPatternWidget(definition);
+        footprintText = estimateFootprint(definition);
         Set<Runnable> before = snapshotCloseListeners(getGui());
         addWidget(delegate);
         rememberCloseListeners(getGui(), before);
@@ -178,6 +180,7 @@ public final class LazyMultiblockPreviewWidget extends WidgetGroup {
             removeDelegateCloseListeners();
             for (Widget child : delegate.widgets) {
                 if (child instanceof SceneWidget scene && scene.getRenderer() != null) {
+                    ChamberPreviewOverlay.clear(scene);
                     scene.getRenderer().deleteCacheBuffer();
                     if (scene.getRenderer() instanceof org.gtlcore.gtlcore.client.preview.PreviewRendererAccess access) {
                         // A renderer's key strongly identifies the real client
@@ -208,6 +211,30 @@ public final class LazyMultiblockPreviewWidget extends WidgetGroup {
 
     public static int generation() {
         return generation;
+    }
+
+    public String footprintText() {
+        return footprintText;
+    }
+
+    private static String estimateFootprint(MultiblockMachineDefinition definition) {
+        int chunksX = 1;
+        int chunksZ = 1;
+        try {
+            for (MultiblockShapeInfo shape : definition.getMatchingShapes()) {
+                if (shape == null) continue;
+                BlockInfo[][][] blocks = shape.getBlocks();
+                if (blocks.length == 0 || blocks[0] == null || blocks[0].length == 0
+                        || blocks[0][0] == null) continue;
+                chunksX = Math.max(chunksX, (blocks[0][0].length + 15) / 16);
+                chunksZ = Math.max(chunksZ, (blocks.length + 15) / 16);
+            }
+        } catch (RuntimeException ignored) {
+            return net.minecraft.network.chat.Component.translatable(
+                    "gtl_enhancedcore.jei.footprint_unknown").getString();
+        }
+        return net.minecraft.network.chat.Component.translatable(
+                "gtl_enhancedcore.jei.footprint", chunksX, chunksZ).getString();
     }
 
     public static void clearShared() {

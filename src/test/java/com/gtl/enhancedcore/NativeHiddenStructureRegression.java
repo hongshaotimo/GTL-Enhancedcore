@@ -18,7 +18,7 @@ public final class NativeHiddenStructureRegression {
         var manifest = JsonParser.parseString(Files.readString(Path.of(
                 "src/main/resources/data/gtl_enhancedcore/structures/hollow/native.json"))).getAsJsonObject();
         var machines = manifest.getAsJsonObject("machines");
-        check(machines.size() == 7, "All seven native-isolation machines are reviewed");
+        check(machines.size() == 3, "Three active native-isolation fixtures remain after retiring four satellites");
         int removed = 0;
         for (var entry : machines.entrySet()) {
             var spec = entry.getValue().getAsJsonObject();
@@ -52,7 +52,7 @@ public final class NativeHiddenStructureRegression {
             check(cells.size() == (module ? 3 : 0), "Only four modules have certified removal coordinates");
             removed += cells.size();
         }
-        check(removed == 12, "Four modules each remove three hidden fixed cells");
+        check(removed == 0, "Retired module cell exemptions are no longer loaded");
         String helper = Files.readString(Path.of(
                 "src/main/java/com/gtl/enhancedcore/common/structure/NativeHiddenStructureCells.java"));
         for (String contract : Set.of("predicate.isController", "predicate.isAny()", "target predicate unexpectedly any",

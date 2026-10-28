@@ -18,11 +18,6 @@ public abstract class IvNativeBatchMixin {
         var context = IvNativeMatchContext.forMachine(machine);
         if (context != null) cir.setReturnValue((int)context.limit(recipe, limit));
     }
-    @Redirect(method = "apply(Lcom/gregtechceu/gtceu/api/machine/MetaMachine;Lcom/gregtechceu/gtceu/api/recipe/GTRecipe;Z)Lcom/gregtechceu/gtceu/api/recipe/GTRecipe;",
-            at = @At(value = "INVOKE", target = "Lorg/gtlcore/gtlcore/api/recipe/IParallelLogic;getRecipeOutputChance(Lcom/gregtechceu/gtceu/api/capability/recipe/IRecipeCapabilityHolder;Lcom/gregtechceu/gtceu/api/recipe/GTRecipe;)Lcom/gregtechceu/gtceu/api/recipe/GTRecipe;"))
-    private static GTRecipe iv$chance(IRecipeCapabilityHolder holder, GTRecipe recipe) {
-        return IvNativeMatchContext.forMachine(holder) != null ? recipe : IParallelLogic.getRecipeOutputChance(holder, recipe);
-    }
     @Redirect(method = "isCustomSubTickParallelized(Lcom/gregtechceu/gtceu/api/machine/MetaMachine;Lcom/gregtechceu/gtceu/api/recipe/GTRecipe;Lcom/gregtechceu/gtceu/api/recipe/GTRecipe;)Z",
             at = @At(value = "INVOKE", target = "Lorg/gtlcore/gtlcore/api/recipe/IParallelLogic;getMaxParallel(Lcom/gregtechceu/gtceu/api/capability/recipe/IRecipeCapabilityHolder;Lcom/gregtechceu/gtceu/api/recipe/GTRecipe;J)J"))
     private static long iv$subtickStock(IRecipeCapabilityHolder holder, GTRecipe recipe, long limit) {

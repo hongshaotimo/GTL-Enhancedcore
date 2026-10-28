@@ -62,6 +62,8 @@ public final class ThreadLimitedRecipeLogic extends GTLAddMultipleRecipesLogic {
 
     @Override
     public int getMultipleThreads() {
+        if (com.gtl.enhancedcore.common.machine.galaxy.GalaxyLinks.active(getMachine()))
+            return com.gtl.enhancedcore.common.machine.galaxy.GalaxyLinks.threads(getMachine(), threads.getAsInt());
         return Math.max(1, threads.getAsInt());
     }
 

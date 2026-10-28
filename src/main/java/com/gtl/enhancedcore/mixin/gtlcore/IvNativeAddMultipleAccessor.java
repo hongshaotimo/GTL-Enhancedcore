@@ -11,4 +11,5 @@ import org.spongepowered.asm.mixin.gen.Invoker;
 @Mixin(value = GTLAddMultipleRecipesLogic.class, remap = false)
 public interface IvNativeAddMultipleAccessor {
     @Invoker("getRecipeCheck") BiPredicate<GTRecipe, IRecipeLogicMachine> iv$addRecipeCheck();
+    @Invoker("getBeforeWorking") java.util.function.Predicate<IRecipeLogicMachine> iv$addBeforeWorking();
 }

@@ -33,7 +33,53 @@ public final class TooltipPolicyRegression {
         recipeGrouping();
         rejectionBehavior();
         translationContracts();
+        userFormatContract();
+        galaxyTooltipComposition();
         return assertions;
+    }
+
+    private static void galaxyTooltipComposition() {
+        var original = (java.util.function.BiConsumer<net.minecraft.world.item.ItemStack, List<net.minecraft.network.chat.Component>>)
+                (stack, lines) -> lines.addAll(List.of(
+                        net.minecraft.network.chat.Component.translatable("thirdparty.machine.rule"),
+                        net.minecraft.network.chat.Component.translatable("tooltip.gtl_enhancedcore.galaxy.allowed"),
+                        net.minecraft.network.chat.Component.translatable(TooltipPolicy.CREDIT_KEY)));
+        var lines = new ArrayList<net.minecraft.network.chat.Component>();
+        com.gtl.enhancedcore.common.util.MachineTooltips.appendGalaxyCapability(original,
+                null, lines, true, false, key -> net.minecraft.network.chat.Component.translatable(key)
+                        .withStyle(net.minecraft.ChatFormatting.LIGHT_PURPLE));
+        require(lines.stream().anyMatch(line -> com.gtl.enhancedcore.common.util.MachineTooltips.containsKey(
+                        line, "thirdparty.machine.rule")),
+                "Galaxy tooltip decoration preserves unrelated third-party builder rows");
+        require(lines.stream().filter(line -> com.gtl.enhancedcore.common.util.MachineTooltips.containsKey(
+                        line, "tooltip.gtl_enhancedcore.galaxy.allowed")).count() == 1,
+                "Galaxy capability row replaces duplicate upstream copies");
+        int capability = indexOf(lines, "tooltip.gtl_enhancedcore.galaxy.allowed");
+        int credit = indexOf(lines, TooltipPolicy.CREDIT_KEY);
+        require(capability >= 0 && credit > capability,
+                "Animated Galaxy capability appears before module attribution");
+        require(TooltipPolicy.isAnimatedKey(TooltipPolicy.GALAXY_ALLOWED_KEY)
+                        && lines.get(capability).getContents() instanceof net.minecraft.network.chat.contents.TranslatableContents,
+                "Galaxy capability uses the client rainbow-rendered translation key");
+        var withoutPermission = new ArrayList<net.minecraft.network.chat.Component>();
+        var ordinary = (java.util.function.BiConsumer<net.minecraft.world.item.ItemStack, List<net.minecraft.network.chat.Component>>)
+                (stack, target) -> target.add(net.minecraft.network.chat.Component.translatable("thirdparty.machine.rule"));
+        com.gtl.enhancedcore.common.util.MachineTooltips.appendGalaxyCapability(ordinary,
+                null, withoutPermission, false, false, net.minecraft.network.chat.Component::translatable);
+        require(withoutPermission.stream().noneMatch(line -> com.gtl.enhancedcore.common.util.MachineTooltips.containsKey(
+                        line, "tooltip.gtl_enhancedcore.galaxy.allowed")),
+                "Disallowed machine gets no Galaxy connection capability claim");
+        for (String page : List.of("steam_platform", "processing_plus", "assembling_plus", "separating_plus",
+                "mixing_plus", "stellar_confinement_fusion_reactor", "add_threads", "wood_distillation")) {
+            require(!TooltipPolicy.page(page).summary().contains(TooltipPolicy.CROSS_RECIPE_KEY),
+                    page + ": unrelated or same-recipe parallel modes do not claim cross-recipe-type parallelism");
+        }
+    }
+
+    private static int indexOf(List<net.minecraft.network.chat.Component> lines, String key) {
+        for (int i = 0; i < lines.size(); i++)
+            if (com.gtl.enhancedcore.common.util.MachineTooltips.containsKey(lines.get(i), key)) return i;
+        return -1;
     }
 
     /** qft 走 ADD 可变多配方路线（用户 2026-10-06 指定）：提示与线程常量必须一致，且不套用 IV 隔离页。 */
@@ -399,6 +445,35 @@ public final class TooltipPolicyRegression {
                 "colour codes do not consume the visible-width budget");
         require(!TooltipPolicy.translationIssues("test", "§f" + "a".repeat(113) + "§r", "en_us", true).isEmpty(),
                 "the visible text still has to fit the budget once codes are stripped");
+    }
+
+    /** 2026-10-25 用户定稿的 tips 格式：写死配色、署名与风味句写法，新增物品必须遵守。 */
+    private static void userFormatContract() throws Exception {
+        var color = (java.util.function.Function<String, net.minecraft.ChatFormatting>)
+                com.gtl.enhancedcore.common.util.MachineTooltips::rowColor;
+        require(color.apply("tooltip.gtl_enhancedcore.any.flavor") == net.minecraft.ChatFormatting.LIGHT_PURPLE, "flavor rows are light purple");
+        for (String suffix : List.of(".intro", ".summary", ".tips", ".efficient"))
+            require(color.apply("tooltip.gtl_enhancedcore.any" + suffix) == net.minecraft.ChatFormatting.DARK_AQUA, "usage rows are dark aqua: " + suffix);
+        for (String key : List.of("tooltip.gtl_enhancedcore.iv_break", "tooltip.gtl_enhancedcore.supports_laser_hatch",
+                "tooltip.gtl_enhancedcore.any.parallel", "tooltip.gtl_enhancedcore.no_laser_input"))
+            require(color.apply(key) == net.minecraft.ChatFormatting.WHITE, "body, capability and restriction rows are white: " + key);
+        var chinese = readLocale("zh_cn");
+        var english = readLocale("en_us");
+        require("由GTL-Enhancedcore添加".equals(chinese.get(TooltipPolicy.CREDIT_KEY))
+                && "Added by GTL-Enhancedcore".equals(english.get(TooltipPolicy.CREDIT_KEY)), "unified own-item credit wording");
+        for (var entry : TooltipPolicy.pages().entrySet())
+            for (String key : entry.getValue().select(true, null))
+                require(!key.endsWith(".credit") && !key.endsWith(".brand") && !key.equals(TooltipPolicy.CREDIT_KEY),
+                        entry.getKey() + ": credit rows are appended automatically, never declared");
+        for (var locale : List.of(chinese, english)) for (var entry : locale.entrySet()) {
+            if (!TooltipPolicy.isTooltipKey(entry.getKey())) continue;
+            String value = entry.getValue();
+            if (entry.getKey().endsWith(".flavor"))
+                require(!value.startsWith("\u00a7"), entry.getKey() + ": flavor colour comes from code, not the translation");
+            if (value.startsWith("\u00a7")) require(value.contains("\u00a7r"), entry.getKey() + ": no whole-row colouring");
+        }
+        String source = Files.readString(Path.of("src/main/java/com/gtl/enhancedcore/common/util/MachineTooltips.java"), StandardCharsets.UTF_8);
+        require(source.contains("selected.add(Component.translatable(TooltipPolicy.CREDIT_KEY))"), "create() always ends with the credit row");
     }
 
     private static void translationContracts() throws Exception {

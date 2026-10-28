@@ -659,17 +659,44 @@
       "method": "assembly_line",
       "duration": 12000,
       "ingredients": [
-        { "item": "gtceu:max_machine_hull", "count": 1 },
-        { "item": "gtceu:auto_maintenance_hatch", "count": 4 },
-        { "item": "gtceu:uhv_robot_arm", "count": 8 },
-        { "item": "gtceu:uhv_sensor", "count": 8 },
-        { "item": "gtl_enhancedcore:max_crystal_resonator", "count": 2 },
-        { "item": "kubejs:cosmic_mainframe", "count": 4 },
-        { "tag": "gtceu:circuits/max", "count": 8 }
+        {
+          "item": "gtceu:max_machine_hull",
+          "count": 1
+        },
+        {
+          "item": "gtceu:auto_maintenance_hatch",
+          "count": 4
+        },
+        {
+          "item": "gtceu:uhv_robot_arm",
+          "count": 8
+        },
+        {
+          "item": "gtceu:uhv_sensor",
+          "count": 8
+        },
+        {
+          "item": "gtl_enhancedcore:max_crystal_resonator",
+          "count": 2
+        },
+        {
+          "item": "kubejs:cosmic_mainframe",
+          "count": 4
+        },
+        {
+          "tag": "gtceu:circuits/max",
+          "count": 8
+        }
       ],
       "fluids": [
-        { "fluid": "gtceu:soldering_alloy", "amount": 9216 },
-        { "fluid": "gtceu:polyetheretherketone", "amount": 4608 }
+        {
+          "fluid": "gtceu:soldering_alloy",
+          "amount": 9216
+        },
+        {
+          "fluid": "gtceu:polyetheretherketone",
+          "amount": 4608
+        }
       ]
     },
     {
@@ -2210,6 +2237,188 @@
         {
           "fluid": "gtceu:polytetrafluoroethylene",
           "amount": 9216
+        }
+      ]
+    },
+    {
+      "output": "stellar_vortex_space_station",
+      "tier": "opv",
+      "method": "assembly_line",
+      "duration": 24000,
+      "ingredients": [
+        {
+          "item": "kubejs:hypercube",
+          "count": 4
+        },
+        {
+          "item": "gtceu:opv_machine_hull",
+          "count": 16
+        },
+        {
+          "item": "gtceu:opv_field_generator",
+          "count": 32
+        },
+        {
+          "item": "gtceu:opv_emitter",
+          "count": 64
+        },
+        {
+          "item": "gtceu:opv_sensor",
+          "count": 64
+        },
+        {
+          "item": "kubejs:stabilized_wormhole_generator",
+          "count": 32
+        },
+        {
+          "item": "gtlcore:dimensionally_transcendent_casing",
+          "count": 64
+        },
+        {
+          "tag": "gtceu:circuits/max",
+          "count": 32
+        },
+        {
+          "tag": "gtceu:circuits/opv",
+          "count": 64
+        }
+      ],
+      "fluids": [
+        {
+          "fluid": "gtceu:super_mutated_living_solder",
+          "amount": 288000
+        },
+        {
+          "fluid": "gtceu:infinity",
+          "amount": 64000
+        }
+      ]
+    },
+    {
+      "output": "galaxy_connection_source_hatch",
+      "tier": "opv",
+      "method": "assembler",
+      "duration": 2400,
+      "ingredients": [
+        {
+          "item": "gtceu:opv_machine_hull",
+          "count": 1
+        },
+        {
+          "item": "gtceu:opv_emitter",
+          "count": 4
+        },
+        {
+          "item": "kubejs:stabilized_wormhole_generator",
+          "count": 2
+        },
+        {
+          "tag": "gtceu:circuits/opv",
+          "count": 4
+        }
+      ],
+      "fluids": [
+        {
+          "fluid": "gtceu:super_mutated_living_solder",
+          "amount": 9216
+        }
+      ]
+    },
+    {
+      "output": "galaxy_connection_target_hatch",
+      "tier": "opv",
+      "method": "assembler",
+      "duration": 2400,
+      "ingredients": [
+        {
+          "item": "gtceu:opv_machine_hull",
+          "count": 1
+        },
+        {
+          "item": "gtceu:opv_sensor",
+          "count": 4
+        },
+        {
+          "item": "kubejs:stabilized_wormhole_generator",
+          "count": 2
+        },
+        {
+          "tag": "gtceu:circuits/opv",
+          "count": 4
+        }
+      ],
+      "fluids": [
+        {
+          "fluid": "gtceu:super_mutated_living_solder",
+          "amount": 9216
+        }
+      ]
+    },
+    {
+      "output": "cloud_pattern_library",
+      "tier": "uv",
+      "method": "assembler",
+      "duration": 1200,
+      "ingredients": [
+        {
+          "item": "gtceu:uv_machine_hull",
+          "count": 1
+        },
+        {
+          "item": "ae2:pattern_provider",
+          "count": 4
+        },
+        {
+          "item": "ae2:blank_pattern",
+          "count": 16
+        },
+        {
+          "tag": "gtceu:circuits/uv",
+          "count": 4
+        },
+        {
+          "item": "gtceu:uv_sensor",
+          "count": 2
+        }
+      ],
+      "fluids": [
+        {
+          "fluid": "gtceu:soldering_alloy",
+          "amount": 2304
+        }
+      ]
+    },
+    {
+      "output": "cloud_pattern_buffer",
+      "tier": "uv",
+      "method": "assembler",
+      "duration": 800,
+      "ingredients": [
+        {
+          "item": "gtceu:uv_machine_hull",
+          "count": 1
+        },
+        {
+          "item": "ae2:pattern_provider",
+          "count": 1
+        },
+        {
+          "item": "ae2:interface",
+          "count": 1
+        },
+        {
+          "tag": "gtceu:circuits/uv",
+          "count": 2
+        },
+        {
+          "item": "gtceu:uv_emitter",
+          "count": 2
+        }
+      ],
+      "fluids": [
+        {
+          "fluid": "gtceu:soldering_alloy",
+          "amount": 1152
         }
       ]
     }

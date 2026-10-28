@@ -14,13 +14,13 @@ import java.util.Set;
 /** Bounded, strict text interchange. It never accesses a world, registry, path or network. */
 public final class PlotPresetShare {
     public static final int MAX_TEXT_LENGTH = 8192;
-    public static final int SHARE_VERSION = 1;
+    public static final int SHARE_VERSION = 2;
     private static final String FORMAT = "gtl_enhancedcore:plot_preset";
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().disableHtmlEscaping().create();
     private static final Set<String> NUMBERS = Set.of("plot_chunks", "road_width", "marker_size", "bedrock_y",
-            "surface_y", "dash_length", "dash_gap", "border_width");
+            "surface_y", "dash_length", "dash_gap", "border_width", "plot_edge_width");
     private static final Set<String> STRINGS = Set.of("ground_block", "road_block", "border_block", "marker_block",
-            "road_style", "marker_mode", "line_block", "line_style");
+            "road_style", "marker_mode", "line_block", "line_style", "plot_edge_block");
     private PlotPresetShare() {}
 
     public static String encode(PlotSettings settings) {
@@ -44,6 +44,8 @@ public final class PlotPresetShare {
         values.addProperty("dash_length", settings.dashLength());
         values.addProperty("dash_gap", settings.dashGap());
         values.addProperty("border_width", settings.borderWidth());
+        values.addProperty("plot_edge_block", settings.plotEdgeBlock());
+        values.addProperty("plot_edge_width", settings.plotEdgeWidth());
         root.add("settings", values);
         return GSON.toJson(root);
     }
@@ -72,7 +74,7 @@ public final class PlotPresetShare {
             if (reader.peek() != JsonToken.END_DOCUMENT) throw failure("malformed");
             if (seen.size() != 3 || !FORMAT.equals(format) || values == null) throw failure("schema");
             if (version != SHARE_VERSION) throw failure("version");
-            validateMaterials(values.get("ground_block"), values.get("road_block"), values.get("border_block"),
+            validateMaterials(values.get("ground_block"), values.get("plot_edge_block"), values.get("road_block"), values.get("border_block"),
                     values.get("line_block"), values.get("marker_block"));
             PlotSettings result = new PlotSettings(number(values, "plot_chunks"), values.get("ground_block"),
                     values.get("road_block"), values.get("border_block"), values.get("marker_block"),
@@ -80,7 +82,8 @@ public final class PlotPresetShare {
                     enumValue(PlotSettings.MarkerMode.class, values.get("marker_mode")), number(values, "marker_size"),
                     number(values, "bedrock_y"), number(values, "surface_y"), values.get("line_block"),
                     enumValue(PlotSettings.LineStyle.class, values.get("line_style")), number(values, "dash_length"),
-                    number(values, "dash_gap"), number(values, "border_width"));
+                    number(values, "dash_gap"), number(values, "border_width"),
+                    values.get("plot_edge_block"), number(values, "plot_edge_width"));
             validateMaterials(result);
             return result;
         } catch (ShareException invalid) {
@@ -123,16 +126,13 @@ public final class PlotPresetShare {
         catch (IllegalArgumentException invalid) { throw failure("enum"); }
     }
     private static void validateMaterials(PlotSettings settings) {
-        validateMaterials(settings.groundBlock(), settings.roadBlock(), settings.borderBlock(), settings.lineBlock(), settings.markerBlock());
+        validateMaterials(settings.groundBlock(), settings.plotEdgeBlock(), settings.roadBlock(), settings.borderBlock(), settings.lineBlock(), settings.markerBlock());
     }
-    private static void validateMaterials(String ground, String road, String border, String line, String marker) {
-        for (String id : new String[] {ground, road, border, line})
-            if (!concrete(id)) throw failure("material");
-        if (!concrete(marker) && !PlotSettings.MARKER_LIGHTS.contains(marker))
+    private static void validateMaterials(String ground, String plotEdge, String road, String border, String line, String marker) {
+        for (String id : new String[] {ground, plotEdge, road, border, line})
+            if (!PlotSettings.MATERIALS.contains(id)) throw failure("material");
+        if (!PlotSettings.MATERIALS.contains(marker) && !PlotSettings.MARKER_LIGHTS.contains(marker))
             throw failure("material");
-    }
-    private static boolean concrete(String id) {
-        return PlotSettings.MATERIALS.contains(id);
     }
     private static ShareException failure(String key) { return new ShareException(key); }
     public static final class ShareException extends IllegalArgumentException {

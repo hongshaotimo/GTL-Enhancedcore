@@ -95,6 +95,17 @@ public class GTLEnhancedcore {
             if (patternGenerator != null) event.accept(patternGenerator.getDefaultInstance());
             event.accept(GTLEnhancedcoreItems.PLOT_WORLD_CONTROLLER.get().getDefaultInstance());
         });
+        // Filter every tab (including search) after upstream machine contributors.
+        bus.addListener(net.minecraftforge.eventbus.api.EventPriority.LOWEST,
+                (BuildCreativeModeTabContentsEvent event) -> {
+                    var removed = new java.util.ArrayList<ItemStack>();
+                    for (var entry : event.getEntries()) {
+                        var id = net.minecraftforge.registries.ForgeRegistries.ITEMS.getKey(entry.getKey().getItem());
+                        if (id != null && com.gtl.enhancedcore.common.registration.RetiredMachines.contains(id.toString()))
+                            removed.add(entry.getKey());
+                    }
+                    removed.forEach(event.getEntries()::remove);
+                });
 
         LOGGER.info("GTL-Enhancedcore loaded");
     }

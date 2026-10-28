@@ -2,7 +2,9 @@ package com.gtl.enhancedcore;
 
 import com.gtl.enhancedcore.common.world.personalplot.PersonalPlotPolicy;
 import com.gtl.enhancedcore.common.world.personalplot.PersonalPlotStore;
+import com.gtl.enhancedcore.common.world.plot.PlotSettingsCodec;
 import com.gtl.enhancedcore.common.world.plot.PlotSettings;
+import com.mojang.serialization.JsonOps;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -52,6 +54,23 @@ final class PersonalPlotWorldRegression {
                 var json = com.google.gson.JsonParser.parseString(new String(heldOpen.getInputStream(heldOpen.getEntry(definition)).readAllBytes(), StandardCharsets.UTF_8)).getAsJsonObject();
                 check(json.get("type").getAsString().equals("minecraft:overworld"), "Generated definition uses true overworld dimension type");
                 check(json.getAsJsonObject("generator").get("type").getAsString().equals("gtl_enhancedcore:plot"), "Standard startup uses plot generator");
+                var settings = json.getAsJsonObject("generator").getAsJsonObject("settings");
+                var geometry = settings.getAsJsonObject("geometry_extras");
+                check(geometry.get("border_width").getAsInt() == template.borderWidth()
+                                && geometry.get("plot_edge_block").getAsString().equals(template.plotEdgeBlock())
+                                && geometry.get("plot_edge_width").getAsInt() == template.plotEdgeWidth()
+                                && !settings.has("border_width") && !settings.has("plot_edge_width"),
+                        "Dimension codec receives grouped geometry settings without flattened duplicates");
+                var oldSettings = com.google.gson.JsonParser.parseString("""
+                        {"plot_chunks":5,"ground_block":"minecraft:light_gray_concrete","road_block":"minecraft:black_concrete",
+                         "border_block":"minecraft:light_gray_concrete","marker_block":"minecraft:sea_lantern","road_style":"BOULEVARD",
+                         "road_width":4,"marker_mode":"PLOT","marker_size":0,"bedrock_y":-64,"surface_y":-53,
+                         "line_block":"minecraft:white_concrete","line_style":"CROSSWALK","dash_length":3,"dash_gap":3,"border_width":2}
+                        """).getAsJsonObject();
+                var oldDecoded = PlotSettingsCodec.CODEC.parse(JsonOps.INSTANCE, oldSettings).result().orElseThrow();
+                check(oldDecoded.borderWidth() == 2 && oldDecoded.plotEdgeBlock().equals("minecraft:white_concrete")
+                                && oldDecoded.plotEdgeWidth() == 0,
+                        "Legacy personal plot dimension settings decode with their old border width");
                 check(heldOpen.getEntry("data/minecraft/dimension/overworld.json") == null, "No original overworld override is emitted");
             }
             check(!PersonalPlotStore.dimensionPath(alice).equals(PersonalPlotStore.dimensionPath(bob)), "UUID dimension identities are distinct");

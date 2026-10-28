@@ -55,7 +55,13 @@ final class MachineOverrideConfigRegression {
     private static void selection(Settings settings) throws Exception {
         Set<String> structures = Set.of("gtceu.GtlMegastructurePatternMixin", "gtceu.LucidEtchdreamerPreviewMixin",
                 "gtlcore.client.LucidSparsePreviewShapeMixin");
-        Set<String> shared = Set.of("mc.PersonalPlotServerAccessor", "gtceu.PersonalPlotDimensionConditionMixin",
+        Set<String> shared = Set.of("gtceu.IvNativeParallelMixin", "gtceu.GalaxyRecipeLogicMixin", "gtceu.GalaxyMachineDisplayMixin", "gtceu.GalaxyConnectionHatchUiMixin", "gtladditions.GalaxyMutableModeMixin", "gtceu.RetiredLightHunterDefinitionMixin",
+                "gtladditions.GalaxyThreadCapacityMixin", "gtladditions.GalaxyMachineCapacityMixin", "gtladditions.GalaxySpecialBudgetMixin", "gtladditions.GalaxyAddParallelMixin",
+                "gtladditions.GalaxyWirelessEnergyHandlerMixin",
+                "gtlcore.GalaxyParallelCapacityMixin", "gtlcore.GalaxyChanceSimulationMixin", "mc.PersonalPlotServerAccessor", "gtceu.PersonalPlotDimensionConditionMixin",
+                "gtlcore.client.BloomPendingPruneMixin",
+                "gtlcore.client.PreviewFootprintInfoMixin",
+                "travelanchors.TravelAnchorRangeMixin",
                 "gtceu.BlockPatternAccessor", "gtceu.MultiblockMachineDefinitionAccessor",
                 "gtceu.RecipeModifierListAccessor", "gtceu.IMultiControllerLockFixMixin",
                 "gtceu.MultiblockControllerLockFixMixin", "gtceu.MultiblockControllerMachinePartsFixMixin",
@@ -66,16 +72,26 @@ final class MachineOverrideConfigRegression {
                 "gtceu.MultiblockAutoRenameSuperBufferMixin", "gtceu.MachineDiagnosticDisplayMixin",
                 "gtlcore.GTLItemsDebugPatternToolMixin", "gtlcore.TerminalLampCandidatesMixin",
                 "gtlcore.StructureDetectNormalModeMixin",
+                "gtlcore.WirelessTargetNetworksRequestMixin",
                 "gtlcore.UltimateTerminalDismantleMixin",
                 "gtlcore.TerminalDismantlePatternAccessor",
                 "gtlcore.AdaptiveMaintenanceGravityConditionMixin",
-                "gtmadvancedhatch.GridEnergyRecipeInputMixin");
+                "gtladditions.BiosphereModulePowerMixin",
+                "gtladditions.BiosphereHostEnergyInvoker",
+                "gtladditions.GridNetworkTerminalBigIntegerMixin",
+                "gtmadvancedhatch.GridEnergyRecipeInputMixin", "gtceu.EnergyContainerListAccessor");
         var config = JsonParser.parseString(Files.readString(Path.of(
                 "src/main/resources/gtl_enhancedcore.mixins.json"))).getAsJsonObject();
         for (String section : new String[]{"mixins", "client"}) {
             for (var entry : config.getAsJsonArray(section)) {
                 String name = entry.getAsString();
                 boolean retained = shared.contains(name) || name.startsWith("ae2.") || name.startsWith("ae2ct.")
+                        || name.startsWith("gtceu.RetiredMachine") || name.equals("mc.RetiredMachineRecipesMixin")
+                        || name.startsWith("gtceu.Galaxy") || name.equals("gtladditions.GalaxyWirelessPowerBudgetMixin")
+                        || name.equals("gtlcore.client.ChamberPreviewWidgetMixin")
+                        || name.equals("gtceu.CloudMachineIdentityMixin") || name.startsWith("gtlcore.Cloud")
+                        || name.startsWith("extendedae.client.") || name.startsWith("ftblibrary.client.")
+                        || name.startsWith("ftbquests.client.")
                         || name.startsWith("jei.") || name.startsWith("jer.") || name.startsWith("jade.")
                         || name.startsWith("ldlib.") || name.startsWith("performance.") || name.startsWith("ftbchunks.")
                         || name.startsWith("mc.client.") || name.equals("mc.ChunkBlockEntityRemovalMixin") || name.equals("mc.SingularityConfigRecipesMixin")

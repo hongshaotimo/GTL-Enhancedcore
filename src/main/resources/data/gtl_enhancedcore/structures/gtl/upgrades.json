@@ -1657,19 +1657,19 @@
       27
     ],
     "sourceSize": [
-      143,
-      113,
-      133
+      93,
+      75,
+      84
     ],
     "size": [
-      143,
-      113,
-      133
+      93,
+      75,
+      84
     ],
     "sourceController": [
-      40,
-      56,
-      28
+      46,
+      15,
+      20
     ],
     "sourceNormal": [
       0,
@@ -1677,9 +1677,9 @@
       -1
     ],
     "controllerPosition": [
-      102,
-      56,
-      104
+      46,
+      15,
+      63
     ],
     "bindings": {
       " ": {
@@ -1704,88 +1704,20 @@
         "fallback": "gtlcore:antifreeze_heatproof_machine_casing"
       },
       "A": {
-        "mode": "literal",
-        "block": "gtceu:computer_heat_vent",
-        "properties": {}
+        "mode": "casing",
+        "sample": [
+          26,
+          14,
+          11
+        ],
+        "block": "gtlcore:antifreeze_heatproof_machine_casing"
       },
       "B": {
         "mode": "literal",
-        "block": "gtceu:cyan_lamp",
-        "properties": {
-          "bloom": "false",
-          "inverted": "true",
-          "lit": "true",
-          "powered": "false"
-        }
-      },
-      "C": {
-        "mode": "literal",
-        "block": "gtceu:fusion_coil",
-        "properties": {
-          "active": "false"
-        }
+        "block": "gtlcore:sps_casing",
+        "properties": {}
       },
       "D": {
-        "mode": "literal",
-        "block": "gtceu:fusion_glass",
-        "properties": {}
-      },
-      "E": {
-        "mode": "literal",
-        "block": "gtceu:high_power_casing",
-        "properties": {}
-      },
-      "F": {
-        "mode": "casing",
-        "sample": [
-          26,
-          14,
-          11
-        ],
-        "block": "gtlcore:antifreeze_heatproof_machine_casing"
-      },
-      "G": {
-        "mode": "literal",
-        "block": "gtceu:ptfe_pipe_casing",
-        "properties": {}
-      },
-      "H": {
-        "mode": "literal",
-        "block": "gtceu:superconducting_coil",
-        "properties": {
-          "active": "false"
-        }
-      },
-      "I": {
-        "mode": "literal",
-        "block": "gtceu:tungstensteel_gearbox",
-        "properties": {}
-      },
-      "J": {
-        "mode": "literal",
-        "block": "gtceu:white_lamp",
-        "properties": {
-          "bloom": "false",
-          "inverted": "true",
-          "lit": "true",
-          "powered": "false"
-        }
-      },
-      "K": {
-        "mode": "casing",
-        "sample": [
-          26,
-          14,
-          11
-        ],
-        "block": "gtlcore:antifreeze_heatproof_machine_casing"
-      },
-      "L": {
-        "mode": "literal",
-        "block": "gtlcore:iridium_casing",
-        "properties": {}
-      },
-      "M": {
         "mode": "original",
         "sample": [
           0,
@@ -1794,63 +1726,61 @@
         ],
         "block": "gtlcore:molecular_casing"
       },
-      "N": {
+      "E": {
         "mode": "literal",
-        "block": "gtlcore:rhenium_reinforced_energy_glass",
+        "block": "gtlcore:law_filter_casing",
         "properties": {}
       },
-      "O": {
+      "F": {
         "mode": "literal",
-        "block": "gtlcore:sps_casing",
+        "block": "gtceu:superconducting_coil",
+        "properties": {
+          "active": "false"
+        }
+      },
+      "G": {
+        "mode": "literal",
+        "block": "gtceu:high_power_casing",
         "properties": {}
       },
-      "P": {
+      "I": {
         "mode": "literal",
-        "block": "gtlcore:uev_hermetic_casing",
+        "block": "gtceu:fusion_glass",
         "properties": {}
       },
-      "Q": {
-        "mode": "original",
-        "sample": [
-          14,
-          15,
-          13
-        ],
-        "block": "kubejs:containment_field_generator"
+      "J": {
+        "mode": "literal",
+        "block": "gtceu:cyan_lamp",
+        "properties": {
+          "bloom": "false",
+          "inverted": "true",
+          "lit": "true",
+          "powered": "false"
+        }
       }
     },
     "counts": {
-      " ": 1908108,
-      "#": 24,
-      "@": 1,
-      "A": 4198,
-      "B": 78,
-      "C": 17876,
-      "D": 1949,
-      "E": 9190,
-      "F": 1158,
-      "G": 5743,
-      "H": 10651,
-      "I": 38,
-      "J": 64,
-      "K": 53082,
-      "L": 83548,
-      "M": 6218,
-      "N": 23491,
-      "O": 7654,
-      "P": 15867,
-      "Q": 209
+      " ": 519043,
+      "B": 23892,
+      "A": 24301,
+      "F": 3790,
+      "D": 10401,
+      "E": 3806,
+      "J": 138,
+      "I": 224,
+      "G": 108,
+      "#": 196,
+      "@": 1
     },
     "hatches": [
       "#"
     ],
     "controller": "@",
-    "diamondOreMarkers": 24,
+    "diamondOreMarkers": 196,
     "hatchFallback": "gtlcore:antifreeze_heatproof_machine_casing",
-    "sourceSha256": "d23ee3e501150da37fdcf88c599e8e66a50d8bb6812dd655ceac79882305cc19",
-    "sha256": "fd39ef2d535b20bba9b7a4b9463333c4e255bcf8aaa009fc8d2aba84878c7e4b",
-    "casingReplacements": {
-      "gtceu:inert_machine_casing": "gtlcore:antifreeze_heatproof_machine_casing"
-    }
+    "sourceSha256": "169836b04d07e4ce5b261f7c5b69e75cba3d89989613609605910f5cabb2fa75",
+    "sha256": "d4e0a66e49fa70831a3d19f4b3cfae76caff7881c93453c83c1e7b6604b06cd4",
+    "sourceRevision": "user-request-20261027",
+    "sourceSchematic": "SchemTool/input/antientropy_condensation_center.schem"
   }
 }

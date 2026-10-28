@@ -45,7 +45,12 @@ public final class PlotPreviewRenderer {
             g.fill(left + offset, top, left + offset + 1, top + pixels, 0x304a6373);
             g.fill(left, top + offset, left + pixels, top + offset + 1, 0x304a6373);
         }
-        g.renderOutline(left - 1, top - 1, pixels + 2, pixels + 2, 0xff55616a);
+        for (int i = 1; i < plots; i++) {
+            int offset = i * pixels / plots;
+            g.fill(left + offset - 1, top, left + offset + 1, top + pixels, 0xfff2e6bd);
+            g.fill(left, top + offset - 1, left + pixels, top + offset + 1, 0xfff2e6bd);
+        }
+        g.renderOutline(left - 1, top - 1, pixels + 2, pixels + 2, 0xfff2e6bd);
     }
 
     /** Screen-owned texture; no global settings, world references, or unbounded texture cache. */
@@ -91,7 +96,7 @@ public final class PlotPreviewRenderer {
     }
 
     private static int[] palette(PlotSettings settings) {
-        return new int[] {color(settings.groundBlock()), color(settings.roadBlock()),
+        return new int[] {color(settings.groundBlock()), color(settings.plotEdgeBlock()), color(settings.roadBlock()),
                 color(settings.borderBlock()), color(settings.markerBlock()), color(settings.lineBlock())};
     }
 

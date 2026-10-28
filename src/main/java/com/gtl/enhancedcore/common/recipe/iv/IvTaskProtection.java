@@ -20,6 +20,8 @@ public final class IvTaskProtection {
     @SubscribeEvent(priority=EventPriority.LOWEST) public static void breaking(BlockEvent.BreakEvent event) {
         if(event.isCanceled())return;
         var machine=MetaMachine.getMachine(event.getLevel(), event.getPos());
+        // Cloud removal freezes its world partition in onMachineRemoved, after the break was accepted.
+        if (machine instanceof com.gtl.enhancedcore.common.cloud.CloudPatternBufferMachine) return;
         if(!(machine instanceof MEPatternBufferPartMachine buffer) || !IvBuffers.isolated(buffer))return;
         if(!event.getPlayer().isShiftKeyDown()) {
             event.setCanceled(true);

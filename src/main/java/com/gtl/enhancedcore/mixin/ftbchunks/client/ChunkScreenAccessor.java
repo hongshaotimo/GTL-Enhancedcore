@@ -1,6 +1,7 @@
 package com.gtl.enhancedcore.mixin.ftbchunks.client;
 
 import dev.ftb.mods.ftbchunks.client.gui.ChunkScreen;
+import dev.ftb.mods.ftbchunks.client.map.MapDimension;
 import dev.ftb.mods.ftblibrary.math.XZ;
 import java.util.Set;
 import org.spongepowered.asm.mixin.Mixin;
@@ -10,4 +11,7 @@ import org.spongepowered.asm.mixin.gen.Accessor;
 public interface ChunkScreenAccessor {
     @Accessor("selectedChunks")
     Set<XZ> getSelectedChunks();
+
+    @Accessor("dimension")
+    MapDimension getDimension();
 }

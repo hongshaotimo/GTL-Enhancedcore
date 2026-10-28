@@ -13,6 +13,7 @@ public final class IvNativeHatches {
     private final TraceabilityPredicate materialPorts = IvBufferRegistry.materialPorts(-1);
 
     public static boolean materials(Block block) {
+        if (com.gtl.enhancedcore.common.machine.galaxy.GalaxyConnectionHatch.isConnectionPortBlock(block)) return false;
         return PartAbility.IMPORT_ITEMS.isApplicable(block) || PartAbility.EXPORT_ITEMS.isApplicable(block)
                 || PartAbility.IMPORT_FLUIDS.isApplicable(block) || PartAbility.EXPORT_FLUIDS.isApplicable(block);
     }

@@ -1,0 +1,106 @@
+{
+  "sourceSize": [
+    49,
+    33,
+    45
+  ],
+  "size": [
+    49,
+    33,
+    45
+  ],
+  "sourceController": [
+    24,
+    16,
+    0
+  ],
+  "sourceNormal": [
+    0,
+    0,
+    -1
+  ],
+  "controllerPosition": [
+    24,
+    16,
+    44
+  ],
+  "bindings": {
+    " ": {
+      "mode": "any"
+    },
+    "C": {
+      "mode": "controller"
+    },
+    "A": {
+      "mode": "literal",
+      "block": "gtceu:light_blue_lamp",
+      "properties": {
+        "bloom": "false",
+        "inverted": "true",
+        "lit": "true",
+        "powered": "false"
+      }
+    },
+    "B": {
+      "mode": "literal",
+      "block": "gtceu:sterilizing_filter_casing",
+      "properties": {}
+    },
+    "D": {
+      "mode": "literal",
+      "block": "gtceu:white_lamp",
+      "properties": {
+        "bloom": "false",
+        "inverted": "true",
+        "lit": "true",
+        "powered": "false"
+      }
+    },
+    "E": {
+      "mode": "literal",
+      "block": "gtlcore:iridium_casing",
+      "properties": {}
+    },
+    "F": {
+      "mode": "literal",
+      "block": "gtlcore:molecular_casing",
+      "properties": {}
+    },
+    "G": {
+      "mode": "literal",
+      "block": "gtlcore:naquadah_alloy_casing",
+      "properties": {}
+    }
+  },
+  "counts": {
+    " ": 62332,
+    "F": 6209,
+    "A": 1282,
+    "G": 816,
+    "B": 1998,
+    "D": 47,
+    "E": 80,
+    "C": 1
+  },
+  "diamondOreMarkers": 0,
+  "sourceSha256": "d40a3f5f839c1d6b8624c3bc3a85af5a7fd5d9d00d00c264366bff32d4d02de2",
+  "sha256": "1373cb475821945c53a702c2cadc2757111d2431358871ab6966f2dccd3f0358",
+  "sourceSchematic": "SchemTool/input/cloud_pattern_library.schem",
+  "sourceRevision": "user-request-20261027",
+  "markerAccess": [
+    {
+      "sourcePosition": [
+        24,
+        16,
+        0
+      ],
+      "airDirections": [
+        [
+          0,
+          0,
+          -1
+        ]
+      ]
+    }
+  ]
+}

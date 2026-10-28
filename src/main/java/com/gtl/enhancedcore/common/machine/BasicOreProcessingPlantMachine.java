@@ -14,7 +14,7 @@ import com.gtladd.gtladditions.api.machine.multiblock.GTLAddWorkableElectricMult
  * （GTLAddWorkableElectricMultipleRecipesMachine + GTLAddMultipleRecipesLogic，字节码实证）：
  * - 常驻跨配方并行，无模式开关，remain = getMaxParallel() × getMultipleThreads() 贪婪合并多个配方。
  * - 并行 = 64 + 100 × (能源仓电压等级 - MV)：MV 64 / HV 164 / EV 264 / IV 364，低于 MV 钳为 64（用户指定，勿改）。
- * - 跨配方线程 = max(1, 1 + 2 × (能源仓电压等级 - MV))：MV 1 / HV 3 / EV 5 / IV 7（用户指定，勿改）。
+ * - 跨配方线程 = max(1, 1 + 4 × (能源仓电压等级 - MV))：MV 1 / HV 5 / EV 9 / IV 13（用户指定，勿改）。
  * - 固定处理时长 40t（2s）：setLimitedDuration(FIXED_DURATION) 走 gtladd 官方 limitedDuration 机制，
  *   EUt = totalEu / 40；EUt 超能源仓供压时按官方行为满压并把时长拉长到能跑完。
  * - 覆写 createConfigurators() 返回 null，锁死固定时长（禁止 GUI 时长配置器修改 40t）。
@@ -40,7 +40,7 @@ public class BasicOreProcessingPlantMachine extends GTLAddWorkableElectricMultip
     public static final int BASE_THREADS = 1;
 
     /** 电压每高于 MV 一级增加的跨配方线程（默认值）。 */
-    public static final int THREADS_PER_TIER = 2;
+    public static final int THREADS_PER_TIER = 4;
 
     /** 天球分歧引擎部件（GTLAdd 基类默认 setThreadPartMachine 为空实现，必须自行存储）。 */
     private IThreadModifierPart threadPartMachine;
@@ -68,7 +68,7 @@ public class BasicOreProcessingPlantMachine extends GTLAddWorkableElectricMultip
         return parallelForVoltage(this.getMaxVoltage());
     }
 
-    /** 当前跨配方线程：MV 基础 1，电压每高于 MV 一级 +2。 */
+    /** 当前跨配方线程：MV 基础 1，电压每高于 MV 一级 +4。 */
     public int getThreadsForTier() {
         int tier = this.getTier();
         int base = BASE_THREADS;
@@ -79,6 +79,7 @@ public class BasicOreProcessingPlantMachine extends GTLAddWorkableElectricMultip
     /** 总并行 = 电压并行（不支持并行控制仓，无仓倍率）。 */
     @Override
     public int getMaxParallel() {
+        if (com.gtl.enhancedcore.common.machine.galaxy.GalaxyLinks.unlimited(this)) return Integer.MAX_VALUE;
         return this.getParallelForTier();
     }
 

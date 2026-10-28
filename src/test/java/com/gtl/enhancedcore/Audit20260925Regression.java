@@ -50,7 +50,8 @@ final class Audit20260925Regression {
             for (var count : counts.entrySet()) {
                 check(spec.getAsJsonObject("counts").get(count.getKey()).getAsInt() == count.getValue(), entry.getKey() + " symbol counts");
                 var binding = spec.getAsJsonObject("bindings").getAsJsonObject(count.getKey());
-                if (binding.get("mode").getAsString().equals("any")) continue;
+                if (binding.get("mode").getAsString().equals("any")
+                        || binding.get("mode").getAsString().equals("literal")) continue;
                 var sample = binding.getAsJsonArray("sample");
                 char oldSymbol = oldAisles.get(sample.get(0).getAsInt())[sample.get(1).getAsInt()]
                         .charAt(sample.get(2).getAsInt());
@@ -61,12 +62,16 @@ final class Audit20260925Regression {
                 }
             }
             check(counts.get(spec.get("controller").getAsString()) == 1, entry.getKey() + " unique controller");
-            check(counts.get("#") == 24 && spec.get("diamondOreMarkers").getAsInt() == 24, entry.getKey() + " only marked hatch positions");
+            int expectedPorts = entry.getKey().equals("mega_extractor") ? 174
+                    : entry.getKey().equals("advanced_vacuum_drying_furnace") ? 58 : 24;
+            check(counts.get("#") == expectedPorts && spec.get("diamondOreMarkers").getAsInt() == expectedPorts,
+                    entry.getKey() + " only source-marked hatch positions");
             var center = spec.getAsJsonArray("controllerPosition");
             check(aisles.get(center.get(2).getAsInt())[center.get(1).getAsInt()].charAt(center.get(0).getAsInt()) == '@',
                     entry.getKey() + " oriented controller anchor");
             check(HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256")
-                    .digest(Files.readAllBytes(fixtures.resolve(entry.getKey() + ".schem"))))
+                    .digest(Files.readAllBytes(spec.has("sourceSchematic") ? Path.of(spec.get("sourceSchematic").getAsString())
+                            : fixtures.resolve(entry.getKey() + ".schem"))))
                     .equals(spec.get("sourceSha256").getAsString()), entry.getKey() + " exact WorldEdit source");
             check(!spec.get("sourceSize").equals(spec.get("originalSize")), entry.getKey() + " new geometry replaces old export");
         }

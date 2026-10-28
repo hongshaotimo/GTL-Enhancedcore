@@ -21,7 +21,7 @@ import net.minecraft.resources.ResourceLocation;
 public final class CreateWorldPlotScreen extends Screen {
     private static final String KEY = "gtl_enhancedcore.create_world_plot.";
     private static final String[] PAGES = {"page_layout", "page_roads", "page_materials", "page_height"};
-    private static final String[] MATERIAL_KEYS = {"ground", "road_block", "border_block", "line_block", "marker_block"};
+    private static final String[] MATERIAL_KEYS = {"ground", "plot_edge_block", "road_block", "border_block", "line_block", "marker_block"};
     private static final int[] COLORS = {0xffd4d5ce,0xffe06101,0xffa9309f,0xff2489c7,
             0xfff0af15,0xff5ea819,0xffd5658f,0xff36393d,0xff7d7d73,0xff157788,
             0xff64209c,0xff2c2e8f,0xff603b20,0xff495b24,0xff8e2020,0xff101114};
@@ -62,6 +62,7 @@ public final class CreateWorldPlotScreen extends Screen {
     private static net.minecraft.network.chat.MutableComponent tr(String key, Object... args) { return Component.translatable(KEY + key, args); }
     private void resetInputs() {
         inputs.put("ground", draft.groundBlock()); inputs.put("road_block", draft.roadBlock());
+        inputs.put("plot_edge_block", draft.plotEdgeBlock()); inputs.put("plot_edge_width", "" + draft.plotEdgeWidth());
         inputs.put("border_block", draft.borderBlock()); inputs.put("marker_block", draft.markerBlock());
         inputs.put("line_block", draft.lineBlock()); inputs.put("size", "" + draft.plotChunks());
         inputs.put("road_width", "" + draft.roadWidth()); inputs.put("border_width", "" + draft.borderWidth());
@@ -102,6 +103,12 @@ public final class CreateWorldPlotScreen extends Screen {
         }
         y += 51; number("size", editorX, y, editorWidth, 1, 11, true); y += 42;
         y = heading("center_markers", y);
+        int half = (editorWidth - 6) / 2;
+        number("plot_edge_width", editorX, y, half, 0, 8, true);
+        FlatButton edgeColor = edit(() -> tr("edit_plot_edge_color"), editorX + half + 6, y + 13, half, 20,
+                () -> { pageScroll[page] = scroll; materialTarget = 1; page = 2; rebuildWidgets(); }, () -> false);
+        edgeColor.indicator = () -> colorOf(inputs.get("plot_edge_block"));
+        y += 42;
         options("marker_mode", List.of(PlotSettings.MarkerMode.values()), () -> draft.markerMode(),
                 value -> draft = draft.withMarkerMode(value), y, 3, true); y += 28;
         number("marker_size", editorX, y, editorWidth, 0, 5, draft.markerMode() != PlotSettings.MarkerMode.NONE); y += 42;
@@ -259,7 +266,8 @@ public final class CreateWorldPlotScreen extends Screen {
     private PlotSettings candidate() {
         return new PlotSettings(number("size"),inputs.get("ground"),inputs.get("road_block"),inputs.get("border_block"),
                 inputs.get("marker_block"),draft.roadStyle(),number("road_width"),draft.markerMode(),number("marker_size"),
-                number("bedrock_y"),number("surface_y"),inputs.get("line_block"),draft.lineStyle(),number("dash_length"),number("dash_gap"),number("border_width"));
+                number("bedrock_y"),number("surface_y"),inputs.get("line_block"),draft.lineStyle(),number("dash_length"),number("dash_gap"),number("border_width"),
+                inputs.get("plot_edge_block"),number("plot_edge_width"));
     }
     private void validate() {
         if(building) return; error=CommonComponents.EMPTY;
@@ -389,22 +397,26 @@ public final class CreateWorldPlotScreen extends Screen {
     private void drawPreviews(GuiGraphics g) {
         int y=editorY+3, available=editorBottom-y;
         boolean beside=previewWidth>=250;
-        int pixels=beside ? Math.min((previewWidth-14)/2,available-75) : Math.min(previewWidth-8,(available-34)/2);
+        int pixels=beside ? Math.min((previewWidth-14)/2,available-120) : Math.min(previewWidth-8,(available-145)/2);
         pixels=Math.max(12,pixels);
         int x=previewX+(previewWidth-(beside?pixels*2+10:pixels))/2;
         preview(g,single,x,y,pixels,1);
         preview(g,four,beside?x+pixels+10:x,beside?y:y+pixels+17,pixels,2);
-        if(beside) {
-            int sy=y+pixels+24;
-            g.drawString(font,tr("preview_dimensions",validatedPreview.plotChunks(),validatedPreview.plotChunks(),validatedPreview.plotBlocks()),previewX+3,sy,INK,false);
-            g.drawString(font,tr("layers",validatedPreview.concreteLayers()),previewX+3,sy+15,MUTED,false);
-            g.drawString(font,tr("effective_width",PlotLayout.effectiveRoadWidth(validatedPreview)),previewX+3,sy+30,MUTED,false);
-            String[] legend={"ground","road_block","line_block"};
-            for(int i=0;i<legend.length;i++) {
-                int lx=previewX+3+i*(previewWidth/3);
-                g.fill(lx,sy+48,lx+7,sy+55,colorOf(switch(i){case 0 -> validatedPreview.groundBlock(); case 1 -> validatedPreview.roadBlock(); default -> validatedPreview.lineBlock();}));
-                g.drawString(font,font.plainSubstrByWidth(tr(legend[i]).getString(),previewWidth/3-12),lx+11,sy+47,MUTED,false);
-            }
+        int sy=beside ? y+pixels+24 : y+pixels*2+41;
+        g.drawString(font,tr("preview_dimensions",validatedPreview.plotChunks(),validatedPreview.plotChunks(),validatedPreview.plotBlocks()),previewX+3,sy,INK,false);
+        g.drawString(font,tr("layers",validatedPreview.concreteLayers()),previewX+3,sy+14,MUTED,false);
+        g.drawString(font,tr("effective_width",PlotLayout.effectiveRoadWidth(validatedPreview)),previewX+3,sy+28,MUTED,false);
+        g.drawString(font,tr("effective_curb",PlotLayout.effectiveBorderWidth(validatedPreview)),previewX+3,sy+42,MUTED,false);
+        String[] legend={"ground","plot_edge_block","road_block","border_block","line_block","marker_block"};
+        String[] materials={validatedPreview.groundBlock(),validatedPreview.plotEdgeBlock(),validatedPreview.roadBlock(),
+                validatedPreview.borderBlock(),validatedPreview.lineBlock(),validatedPreview.markerBlock()};
+        int gap=8, columnWidth=(previewWidth-gap-6)/2;
+        for(int i=0;i<legend.length;i++) {
+            int column=i%2, row=i/2, lx=previewX+3+column*(columnWidth+gap), ly=sy+58+row*14;
+            g.fill(lx,ly+1,lx+10,ly+11,colorOf(materials[i]));
+            g.renderOutline(lx,ly+1,10,10,0xffd4d9dc);
+            String text=tr(legend[i]).getString()+" · "+blockName(materials[i]).getString();
+            g.drawString(font,font.plainSubstrByWidth(text,Math.max(12,columnWidth-15)),lx+14,ly+2,INK,false);
         }
     }
     private void preview(GuiGraphics g,PlotPreviewRenderer.Cached cache,int x,int y,int size,int plots) {

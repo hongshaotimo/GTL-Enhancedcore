@@ -17,7 +17,8 @@ public enum ConfigCatalog {
     PINS("ae_pins.json", "instant", false),
     SEEN("changelog_seen.txt", "announcement", false),
     PREVIEW("preview.properties", "instant", false),
-    DISMANTLE("terminal_dismantle.properties", "hot_reload", true);
+    DISMANTLE("terminal_dismantle.properties", "hot_reload", true),
+    GALAXY("galaxy_connections.txt", "restart", true);
 
     public final String file;
     public final String effect;
@@ -40,6 +41,7 @@ public enum ConfigCatalog {
             case STARTUP -> StartupConfig.parse(text);
             case PREVIEW -> PreviewLayerSettings.parse(text);
             case DISMANTLE -> TerminalDismantleConfig.parse(text);
+            case GALAXY -> GalaxyConnectionConfig.parse(text);
             case COMMON -> claimSettings(text);
             case TIPS -> TooltipOverrides.parse(text);
             case COPY_KEYS -> {

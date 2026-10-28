@@ -44,7 +44,9 @@ final class HollowStructureRegression {
             byte[] source = payload(resources.resolve(resource.substring(1)));
             check(sha(source).equals(spec.get("sourceSha256").getAsString()), resource + " source hash");
             List<String[]> old = rows(resources.resolve(resource.substring(1)));
-            String resolved = HollowStructureResources.resolve(resource);
+            String resolved = HollowStructureResources.resolve(resource, true);
+            check(HollowStructureResources.resolve(resource, false).equals(resource),
+                    resource + " replacement switch restores original geometry");
             if (!spec.has("optimizedResource")) {
                 check(resolved.equals(resource) && spec.get("removed").getAsInt() == 0, resource + " reviewed without deletion");
                 continue;
@@ -96,7 +98,7 @@ final class HollowStructureRegression {
             total += count;
         }
         check(total > 0, "interior blocks actually removed from runtime geometry");
-        check(HollowStructureResources.resolve(ROOT + "legacy/compact_high_power.pattern.gz")
+        check(HollowStructureResources.resolve(ROOT + "legacy/compact_high_power.pattern.gz", true)
                 .equals(ROOT + "legacy/compact_high_power.pattern.gz"), "inactive legacy geometry retained");
         String loader = Files.readString(Path.of("src/main/java/com/gtl/enhancedcore/common/structure/StructurePatterns.java"));
         check(loader.contains("HollowStructureResources.resolve(path)") && loader.contains("builder.where(' '"),

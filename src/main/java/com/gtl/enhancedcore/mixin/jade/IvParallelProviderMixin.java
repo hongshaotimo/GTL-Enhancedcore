@@ -20,11 +20,17 @@ public abstract class IvParallelProviderMixin {
     private void gtle$effectiveThreads(CompoundTag data, BlockAccessor accessor, CallbackInfo ci) {
         if (!(accessor.getBlockEntity() instanceof MetaMachineBlockEntity entity)
                 || !(entity.getMetaMachine() instanceof WorkableElectricMultiblockMachine machine)
-                || !machine.isFormed()
-                || !IvMachineScope.crossRecipeEnabled(machine)
-                || !(IvMachineScope.nativeTarget(machine) || machine instanceof TieredParallelMachine)) return;
+                || !machine.isFormed()) return;
 
         // ADD owns the tooltip wording and GOLD number style; it reads this shared key.
+        if (IvMachineScope.unlimited(machine)) {
+            data.putLong("parallel", -114514L);
+            data.putLong("threads", -114514L);
+            return;
+        }
+        if (!IvMachineScope.crossRecipeEnabled(machine)
+                || !(IvMachineScope.nativeTarget(machine) || machine instanceof TieredParallelMachine)) return;
+        data.putLong("parallel", IvMachineScope.parallel(machine));
         data.putLong("threads", IvMachineScope.threads(machine));
     }
 }

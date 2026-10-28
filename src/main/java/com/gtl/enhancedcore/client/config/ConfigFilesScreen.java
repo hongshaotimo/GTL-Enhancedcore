@@ -50,6 +50,7 @@ final class ConfigFilesScreen extends ConfigPage {
                 case STARTUP -> StartupConfig.serialize(StartupConfig.defaults());
                 case PREVIEW -> PreviewLayerConfig.serialize(true);
                 case DISMANTLE -> TerminalDismantleConfig.defaultText();
+                case GALAXY -> GalaxyConnectionConfig.defaultText();
                 case COMMON -> "[claim_replacement_terminal]\nenabled=true\nreplace_interval_ticks=5\n";
                 case PINS -> "[]\n";
                 case SEEN -> "";

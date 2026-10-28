@@ -145,7 +145,13 @@ public final class PersonalPlotStore {
     public static JsonObject dimensionJson(PlotSettings settings) {
         JsonObject root = new JsonObject(), generator = new JsonObject(); root.addProperty("type", "minecraft:overworld");
         generator.addProperty("type", "gtl_enhancedcore:plot"); generator.addProperty("biome", "minecraft:plains");
-        generator.add("settings", JsonParser.parseString(PlotPresetShare.encode(settings)).getAsJsonObject().get("settings"));
+        JsonObject encoded = JsonParser.parseString(PlotPresetShare.encode(settings)).getAsJsonObject().getAsJsonObject("settings");
+        JsonObject geometry = new JsonObject();
+        geometry.add("border_width", encoded.remove("border_width"));
+        geometry.add("plot_edge_block", encoded.remove("plot_edge_block"));
+        geometry.add("plot_edge_width", encoded.remove("plot_edge_width"));
+        encoded.add("geometry_extras", geometry);
+        generator.add("settings", encoded);
         root.add("generator", generator); return root;
     }
 }

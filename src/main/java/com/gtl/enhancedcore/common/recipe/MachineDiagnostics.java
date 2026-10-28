@@ -49,7 +49,10 @@ public final class MachineDiagnostics {
             return List.of(iv.getDiagnosticReason());
         if (!logic.isWorkingEnabled()) return List.of(text("paused"));
         if (machine instanceof WirelessChargerMachine charger) return singleton(charger.getDiagnostic());
-        if (machine instanceof WeatherAnchorMachine weather) return weather.isAnchoring() ? List.of() : List.of(text("power"));
+        if (machine instanceof WeatherAnchorMachine weather) {
+            if (weather.isAnchoring()) return List.of();
+            return weather.getSelectedModes() == 0 ? List.of(text("weather_anchor.no_target")) : List.of(text("power"));
+        }
         if (machine instanceof CausalityTerminalMachine terminal) return singleton(terminal.getDiagnostic());
         var details = new ArrayList<Component>();
         if (logic instanceof IvRecipeLogic iv) {
@@ -120,19 +123,14 @@ public final class MachineDiagnostics {
         long capacity = 0;
         boolean gridInput = false, gridConnected = false;
         BigInteger gridAvailable = BigInteger.ZERO;
-        var seen = Collections.newSetFromMap(new IdentityHashMap<IEnergyContainer, Boolean>());
-        for (var direction : List.of(IO.IN, IO.BOTH)) {
-            var inputs = machine.getCapabilitiesProxy().get(direction, EURecipeCapability.CAP);
-            if (inputs == null) continue;
-            for (var input : inputs) if (input instanceof IEnergyContainer energy && seen.add(energy)) {
-                if (input instanceof GridEnergyRecipeInput grid) {
-                    gridInput = true;
-                    gridConnected |= grid.gridEnergyConnected();
-                    // Each grid handler must pay the whole remaining request; duplicate hatches share a balance.
-                    gridAvailable = gridAvailable.max(grid.gridEnergyAvailable());
-                }
-                capacity = RecipePowerBudget.add(capacity, RecipePowerBudget.power(energy.getInputVoltage(), energy.getInputAmperage()));
+        for (var energy : machine instanceof WorkableElectricMultiblockMachine electric
+                ? GridEnergyInputs.energyInputs(electric) : List.<IEnergyContainer>of()) {
+            if (energy instanceof GridEnergyRecipeInput grid) {
+                gridInput = true;
+                gridConnected |= grid.gridEnergyConnected();
+                gridAvailable = gridAvailable.max(grid.gridEnergyAvailable());
             }
+            capacity = RecipePowerBudget.add(capacity, RecipePowerBudget.power(energy.getInputVoltage(), energy.getInputAmperage()));
         }
         if (gridInput) return gridConnected
                 ? Component.translatable("gtl_enhancedcore.diagnostic.grid_power_detail", Math.max(0, required), gridAvailable.toString())

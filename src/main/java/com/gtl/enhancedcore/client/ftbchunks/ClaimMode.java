@@ -1,8 +1,6 @@
 package com.gtl.enhancedcore.client.ftbchunks;
 
-/**
- * FTB Chunks 区块选择模式（移植自 GTLsupb，作者确认可直接照搬）。
- */
+/** FTB Chunks claim selection mode. */
 public enum ClaimMode {
     FREEHAND("freehand"),
     RECTANGLE("rectangle");

@@ -15,6 +15,7 @@ public abstract class IvNativeRecipeThreadLimitMixin {
             index = 2, require = 1)
     private long iv$singleParallelBudget(long original) {
         var machine = (WorkableElectricMultiblockMachine)((RecipeLogic)(Object)this).getMachine();
+        if (IvMachineScope.unlimited(machine)) return original;
         if (!IvMachineScope.nativeTarget(machine) || IvMachineScope.crossRecipeEnabled(machine)) return original;
         // 保留原生线程的机器同样保留其原生并行预算，避免接入 IV 后削弱原有能力。
         if (IvMachineScope.keepsNativeThreads(machine)) return original;

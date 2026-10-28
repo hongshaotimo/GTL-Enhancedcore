@@ -8,6 +8,7 @@ import com.gregtechceu.gtceu.api.machine.multiblock.WorkableElectricMultiblockMa
 import com.gregtechceu.gtceu.api.recipe.GTRecipeType;
 import com.gtl.enhancedcore.common.data.GTLEnhancedcoreRecipeTypes;
 import com.gtl.enhancedcore.common.recipe.WeatherAnchorPower;
+import com.gtl.enhancedcore.common.machine.WeatherAnchorModes;
 
 import com.lowdragmc.lowdraglib.syncdata.field.ManagedFieldHolder;
 import com.lowdragmc.lowdraglib.syncdata.annotation.DescSynced;
@@ -59,6 +60,9 @@ public class WeatherAnchorMachine extends WorkableElectricMultiblockMachine {
     private TickableSubscription anchorSubs;
     @DescSynced
     private boolean anchoring;
+    @com.lowdragmc.lowdraglib.syncdata.annotation.Persisted
+    @DescSynced
+    private int selectedModes;
 
     public WeatherAnchorMachine(IMachineBlockEntity holder, Object... args) {
         super(holder, args);
@@ -75,6 +79,10 @@ public class WeatherAnchorMachine extends WorkableElectricMultiblockMachine {
     public void setActiveRecipeType(int activeRecipeType) {
         int previous = this.getActiveRecipeType();
         super.setActiveRecipeType(activeRecipeType);
+        if (activeRecipeType >= 0 && activeRecipeType < GTLEnhancedcoreRecipeTypes.ANCHOR_MODES.length) {
+            selectedModes = WeatherAnchorModes.toggle(selectedModes, activeRecipeType);
+            markDirty();
+        }
         // 与 onRotated 同款重成型序列：invalidate + removeMapping + addAsyncLogic。
         // 漏掉 addAsyncLogic 会导致异步重检永不调度（上轮"切换后成型不了"的根因）。
         if (previous != activeRecipeType && this.isFormed()
@@ -92,6 +100,10 @@ public class WeatherAnchorMachine extends WorkableElectricMultiblockMachine {
     public void onLoad() {
         super.onLoad();
         if (!this.isRemote()) {
+            if (!WeatherAnchorModes.isValid(selectedModes)) {
+                selectedModes = 0;
+                markDirty();
+            }
             this.anchorSubs = this.subscribeServerTick(this.anchorSubs, this::anchorTick);
         }
     }
@@ -107,19 +119,23 @@ public class WeatherAnchorMachine extends WorkableElectricMultiblockMachine {
 
     private void anchorTick() {
         this.anchoring = false;
-        if (!this.isFormed() || !this.recipeLogic.isWorkingEnabled()) {
+        if (!this.isFormed() || !this.recipeLogic.isWorkingEnabled() || selectedModes == 0) {
             return;
         }
         if (!(this.getLevel() instanceof ServerLevel serverLevel)) {
             return;
         }
         if (!WeatherAnchorPower.tryConsume(this.energyContainer, GTValues.V[ANCHOR_TIER], anchorEut())) return;
-        applyAnchor(serverLevel.getServer().overworld(), this.getRecipeType());
+        applyAnchor(serverLevel.getServer().overworld(), selectedModes);
         this.anchoring = true;
     }
 
     public boolean isAnchoring() {
         return this.anchoring && this.isFormed() && this.recipeLogic.isWorkingEnabled();
+    }
+
+    public int getSelectedModes() {
+        return selectedModes;
     }
 
     @Override
@@ -130,23 +146,25 @@ public class WeatherAnchorMachine extends WorkableElectricMultiblockMachine {
                 .addMachineModeLine(this.getRecipeType())
                 .addWorkingStatusLine();
         textList.add(Component.translatable("tooltip.gtl_enhancedcore.weather_anchor.supply"));
+        textList.add(Component.translatable("tooltip.gtl_enhancedcore.weather_anchor.selected",
+                selectedModes == 0 ? Component.translatable("gtl_enhancedcore.weather_anchor.none")
+                        : WeatherAnchorModes.describe(selectedModes)));
         this.getDefinition().getAdditionalDisplay().accept(this, textList);
         this.getParts().forEach(part -> part.addMultiText(textList));
     }
 
     /** 按当前模式把主世界时间/天气写回目标值。 */
-    private static void applyAnchor(ServerLevel overworld, GTRecipeType mode) {
-        if (mode == GTLEnhancedcoreRecipeTypes.ANCHOR_DAY) {
-            long dayTime = DAY_TIME;
-            overworld.setDayTime(Math.floorDiv(overworld.getDayTime(), 24000L) * 24000L + dayTime);
-        } else if (mode == GTLEnhancedcoreRecipeTypes.ANCHOR_NIGHT) {
-            long nightTime = NIGHT_TIME;
-            overworld.setDayTime(Math.floorDiv(overworld.getDayTime(), 24000L) * 24000L + nightTime);
-        } else if (mode == GTLEnhancedcoreRecipeTypes.ANCHOR_CLEAR) {
+    private static void applyAnchor(ServerLevel overworld, int selected) {
+        if ((selected & WeatherAnchorModes.DAY) != 0) {
+            overworld.setDayTime(Math.floorDiv(overworld.getDayTime(), 24000L) * 24000L + DAY_TIME);
+        } else if ((selected & WeatherAnchorModes.NIGHT) != 0) {
+            overworld.setDayTime(Math.floorDiv(overworld.getDayTime(), 24000L) * 24000L + NIGHT_TIME);
+        }
+        if ((selected & WeatherAnchorModes.CLEAR) != 0) {
             overworld.setWeatherParameters(6000, 0, false, false);
-        } else if (mode == GTLEnhancedcoreRecipeTypes.ANCHOR_RAIN) {
+        } else if ((selected & WeatherAnchorModes.RAIN) != 0) {
             overworld.setWeatherParameters(0, 6000, true, false);
-        } else if (mode == GTLEnhancedcoreRecipeTypes.ANCHOR_THUNDER) {
+        } else if ((selected & WeatherAnchorModes.THUNDER) != 0) {
             overworld.setWeatherParameters(0, 6000, true, true);
         }
     }

@@ -40,7 +40,7 @@ public final class IvCancellation {
         var state=IvBuffers.state(buffer);
         if(buffer.isRemote() || state==null || !state.dedicated() || !state.healthy())return;
         var grid=buffer.getGrid();
-        boolean online=grid!=null && buffer.getMainNode().isActive();
+        boolean online=grid!=null && buffer.getMainNode().isActive() && IvBuffers.mayUseNetwork(buffer);
         var returns=new ArrayList<Return>();
         if(online)for(var job:state.jobs){
             job.refunds.keySet().forEach(key->returns.add(new Return(job,job.refunds,key)));

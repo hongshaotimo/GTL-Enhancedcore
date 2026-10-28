@@ -129,20 +129,20 @@ public final class SpecialMachineRegistration {
      * {@code GTLAddWorkableElectricParallelHatchMultipleRecipesMachine}），<b>不是</b>本模组 IV 隔离订单。
      * 跨配方线程固定 512；并行由并行控制仓提供（{@code GTRecipeModifiers.PARALLEL_HATCH} 结算）。
      *
-     * <p>材质（用户指定）：主方块 = {@code gtlcore:fission_reactor_casing}；
-     * 主面外观复用「空间缩放仪」{@code gtladditions:space_scaling_instrument} 的
-     * {@code gtlcore:block/casings/oxidation_resistant_hastelloy_n_mechanical_casing}
+     * <p>材质（用户指定）：主方块 = {@code gtlcore:iridium_casing}；
+     * 主面外观使用铱外壳
+     * {@code gtlcore:block/casings/iridium_casing}
      * 与正面 overlay {@code gtceu:block/multiblock/gcym/large_packer}。
      *
      * <p>结构：{@code high_flux_breeder_reactor.schem}（87 x 111 x 93），24 个仓室位，
-     * 支持维护仓、输入/输出仓、并行控制仓、激光靶仓、能源仓；仓室替换方块 {@code gtlcore:fission_reactor_casing}。
+     * 支持维护仓、输入/输出仓、并行控制仓、激光靶仓、能源仓；仓室替换方块 {@code gtlcore:supercritical_turbine_casing}。
      */
     public static MultiblockMachineDefinition registerHighFluxBreederReactor() {
         return GTLEnhancedcore.REGISTRATE
                 .multiblock("high_flux_breeder_reactor", HighFluxBreederReactorMachine::new)
                 .langValue("临界增殖反应堆")
                 .rotationState(RotationState.NON_Y_AXIS)
-                .appearanceBlock(() -> requiredBlockBlock("gtlcore:fission_reactor_casing"))
+                .appearanceBlock(() -> requiredBlockBlock("gtlcore:iridium_casing"))
                 .recipeTypes(GTLRecipeTypes.FISSION_REACTOR_RECIPES)
                 // 与上游 ADD 的并行仓类机器保持一致：只挂 PARALLEL_HATCH。
                 // GTLAddMultipleRecipesLogic 内部已自带并行与超频结算，再叠加电压超频修饰器
@@ -154,7 +154,7 @@ public final class SpecialMachineRegistration {
                         new Object[]{HighFluxBreederReactorMachine.CROSS_RECIPE_THREADS}),
                         GTLRecipeTypes.FISSION_REACTOR_RECIPES))
                 .workableCasingRenderer(
-                        new ResourceLocation("gtlcore", "block/casings/oxidation_resistant_hastelloy_n_mechanical_casing"),
+                        new ResourceLocation("gtlcore", "block/casings/iridium_casing"),
                         new ResourceLocation("gtceu", "block/multiblock/gcym/large_packer"))
                 .register();
     }
@@ -265,8 +265,8 @@ public final class SpecialMachineRegistration {
      * 由 {@code ExoticProliferationRecipeLoader} 输出唯一配方
      * （512 黑曜石 + 52mB 龙息 + 1 转换模拟卡[不消耗] → 512 龙尘）。
      * <p>
-     * 材质（用户指定）：主方块与外壳 = {@code gtceu:uhv_machine_casing}
-     * （材质路径 {@code block/casings/voltage/uhv/side}）；
+     * 材质（用户指定）：主方块与仓室空位 = {@code gtlcore:dragon_strength_tritanium_casing}
+     * （材质路径 {@code gtlcore:block/casings/extreme_strength_tritanium_casing}）；
      * 正面复用本模组气象锚点同款 overlay {@code block/multiblock/weather_anchor}。
      * <p>
      * 控制器位于主方块周围的整面 UHV 仓室面板正中（用户指定该面全部改为仓室位）。
@@ -281,7 +281,7 @@ public final class SpecialMachineRegistration {
                 .multiblock("dragon_field_proliferation_core", holder -> new WorkableElectricMultiblockMachine(holder))
                 .langValue("龙式场约束增殖核心")
                 .rotationState(RotationState.NON_Y_AXIS)
-                .appearanceBlock(() -> requiredBlockBlock("gtceu:uhv_machine_casing"))
+                .appearanceBlock(() -> requiredBlockBlock("gtlcore:dragon_strength_tritanium_casing"))
                 .recipeTypes(GTLEnhancedcoreRecipeTypes.EXOTIC_PROLIFERATION)
                 .recipeModifiers(new RecipeModifier[]{
                         GTLRecipeModifiers.GCYM_REDUCTION,
@@ -291,7 +291,7 @@ public final class SpecialMachineRegistration {
                 .pattern(definition -> GTLStructures.dragonFieldProliferationCore(definition))
                 .tooltipBuilder(MachineTooltips.create("dragon_field_proliferation_core", GTLEnhancedcoreRecipeTypes.EXOTIC_PROLIFERATION))
                 .workableCasingRenderer(
-                        GTCEu.id("block/casings/voltage/uhv/side"),
+                        new ResourceLocation("gtlcore", "block/casings/extreme_strength_tritanium_casing"),
                         GTLEnhancedcore.id("block/multiblock/weather_anchor"))
                 .register();
     }

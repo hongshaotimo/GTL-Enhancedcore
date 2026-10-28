@@ -19,6 +19,9 @@ public final class IvPresentation {
         return Component.literal(value instanceof Number n ? number(n.longValue()) : number(String.valueOf(value))).withStyle(color);
     }
     public static void append(List<Component> text, CompoundTag data, boolean detail) {
+        if (!data.getString("wideEut").isEmpty())
+            text.add(Component.translatable("gtl_enhancedcore.gui.iv_grid_eut",
+                    value(data.getString("wideEut"), ChatFormatting.RED)).withStyle(ChatFormatting.GRAY));
         // Parallel and thread capacity use the upstream GUI/Jade rows; this section only describes orders.
         text.add(Component.translatable("gtl_enhancedcore.gui.iv_queue",value(data.getInt("active"),ChatFormatting.GREEN),
                 value(data.getInt("count"),ChatFormatting.WHITE),value(data.getInt("outputWaiting"),ChatFormatting.YELLOW)).withStyle(ChatFormatting.GRAY));

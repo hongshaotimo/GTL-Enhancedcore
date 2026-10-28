@@ -78,6 +78,8 @@ public abstract class IvTransfiniteCraftingMixin {
     @Redirect(method="executeCrafting",at=@At(value="INVOKE",target="Lorg/gtlcore/gtlcore/integration/ae2/crafting/CraftingPatternAutoExpand;getOperations(ZLappeng/api/networking/crafting/ICraftingProvider;Lappeng/api/crafting/IPatternDetails;J)J"))
     private long iv$remember(boolean processing,ICraftingProvider provider,IPatternDetails pattern,long requested){
         IvDispatchContext.clear();long operations=CraftingPatternAutoExpand.getOperations(processing,provider,pattern,requested);
+        if(provider instanceof com.gtl.enhancedcore.common.cloud.CloudPatternBufferMachine cloud)
+            operations=cloud.cloudDispatchCapacity(pattern,operations);
         if(provider instanceof MEPatternBufferPartMachine buffer && IvBuffers.isolated(buffer)){
             iv$requiresProducedOutput=true;IvDispatchContext.set(provider,pattern,operations);
         }

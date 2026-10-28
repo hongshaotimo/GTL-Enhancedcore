@@ -1,0 +1,204 @@
+{
+  "size": [
+    199,
+    216,
+    199
+  ],
+  "controller": [
+    98,
+    58,
+    60
+  ],
+  "ports": [
+    [
+      87,
+      56,
+      60
+    ],
+    [
+      88,
+      56,
+      60
+    ],
+    [
+      89,
+      56,
+      60
+    ],
+    [
+      108,
+      56,
+      60
+    ],
+    [
+      109,
+      56,
+      60
+    ],
+    [
+      110,
+      56,
+      60
+    ],
+    [
+      87,
+      57,
+      60
+    ],
+    [
+      88,
+      57,
+      60
+    ],
+    [
+      89,
+      57,
+      60
+    ],
+    [
+      108,
+      57,
+      60
+    ],
+    [
+      109,
+      57,
+      60
+    ],
+    [
+      110,
+      57,
+      60
+    ],
+    [
+      87,
+      58,
+      60
+    ],
+    [
+      88,
+      58,
+      60
+    ],
+    [
+      89,
+      58,
+      60
+    ],
+    [
+      108,
+      58,
+      60
+    ],
+    [
+      109,
+      58,
+      60
+    ],
+    [
+      110,
+      58,
+      60
+    ],
+    [
+      87,
+      59,
+      60
+    ],
+    [
+      88,
+      59,
+      60
+    ],
+    [
+      89,
+      59,
+      60
+    ],
+    [
+      108,
+      59,
+      60
+    ],
+    [
+      109,
+      59,
+      60
+    ],
+    [
+      110,
+      59,
+      60
+    ]
+  ],
+  "bindings": {
+    "A": {
+      "mode": "literal",
+      "block": "kubejs:dimensional_stability_casing",
+      "properties": {}
+    },
+    "B": {
+      "mode": "literal",
+      "block": "gtladditions:extreme_density_casing",
+      "properties": {}
+    },
+    "D": {
+      "mode": "literal",
+      "block": "gtlcore:dimensionally_transcendent_casing",
+      "properties": {}
+    },
+    "E": {
+      "mode": "literal",
+      "block": "gtlcore:iridium_casing",
+      "properties": {}
+    },
+    "F": {
+      "mode": "literal",
+      "block": "kubejs:uruium_coil_block",
+      "properties": {
+        "active": "false"
+      }
+    },
+    "G": {
+      "mode": "literal",
+      "block": "kubejs:spacetime_compression_field_generator",
+      "properties": {}
+    },
+    "I": {
+      "mode": "literal",
+      "block": "kubejs:neutronium_pipe_casing",
+      "properties": {}
+    },
+    "J": {
+      "mode": "literal",
+      "block": "gtlcore:rhenium_reinforced_energy_glass",
+      "properties": {}
+    },
+    "K": {
+      "mode": "literal",
+      "block": "gtceu:light_blue_lamp",
+      "properties": {
+        "bloom": "false",
+        "inverted": "true",
+        "lit": "true",
+        "powered": "false"
+      }
+    },
+    "L": {
+      "mode": "literal",
+      "block": "gtlcore:pikyonium_machine_casing",
+      "properties": {}
+    },
+    "N": {
+      "mode": "literal",
+      "block": "gtlcore:molecular_casing",
+      "properties": {}
+    },
+    "O": {
+      "mode": "literal",
+      "block": "gtladditions:gravity_stabilization_casing",
+      "properties": {}
+    }
+  },
+  "sourceSha256": "5648edc68b24674c2ce030cede6bdb5f378e764391415aa3bff7b050176da1e8"
+}
