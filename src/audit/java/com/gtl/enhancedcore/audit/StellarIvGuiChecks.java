@@ -40,15 +40,31 @@ public final class StellarIvGuiChecks {
         for (String id : List.of("gtceu:component_assembly_line", "gtceu:mage_assembler",
                 "gtceu:suprachronal_assembly_line", "gtl_enhancedcore:platinum_refining_matrix")) {
             for (boolean receiver : List.of(false, true)) {
-              for (boolean full64 : List.of(false, true)) {
-                String label = id + " receiver=" + receiver + " full64=" + full64;
+              for (int arrays : List.of(-1, 0, 63, 64)) {
+                boolean full64 = arrays == 64;
+                String label = id + " receiver=" + receiver + " arrays=" + arrays;
                 try {
-                var server = fixture(id, false, receiver, full64);
-                var client = fixture(id, true, receiver, full64);
+                var server = fixture(id, false, receiver, arrays);
+                var client = fixture(id, true, receiver, arrays);
                 checks.add(label + " registered supplier=" + server.machine.getClass().getName()
                         + ", logic=" + server.machine.getRecipeLogic().getClass().getName());
-                require(!full64 || GalaxyLinks.unlimited(server.machine) && !GalaxyLinks.unlimited(client.machine),
-                        label + " source-side resolver is server-only and reads 64 real station arrays", checks);
+                require(GalaxyLinks.unlimited(server.machine) == full64 && !GalaxyLinks.unlimited(client.machine),
+                        label + " source-side resolver requires 64 real station arrays", checks);
+                int baseThreads = IvMachineScope.threads(client.machine);
+                // A live link temporarily enables ADD multiple mode. Compare with its
+                // native getter, not the disconnected single-mode GUI fallback.
+                if (!IvMachineScope.nativeTarget(server.machine)
+                        && server.machine.getRecipeLogic() instanceof com.gtladd.gtladditions.api.machine.logic.MutableRecipesLogic<?> mutable
+                        && mutable.isMultipleRecipeMode())
+                    baseThreads = ((com.gtladd.gtladditions.api.machine.logic.MutableRecipesLogic<?>)client.machine.getRecipeLogic()).getMultipleThreads();
+                int expectedThreads = full64 ? Integer.MAX_VALUE
+                        : arrays >= 0 ? baseThreads + GalaxyLinks.EXTRA_THREADS : baseThreads;
+                require(IvMachineScope.threads(server.machine) == expectedThreads,
+                        label + " actual thread getter and GUI/Jade scope apply the bonus once: actual="
+                                + IvMachineScope.threads(server.machine) + " expected=" + expectedThreads, checks);
+                require(IvMachineScope.parallel(server.machine) == (full64 ? Integer.MAX_VALUE
+                                : IvMachineScope.parallel(client.machine)),
+                        label + " finite array count preserves native parallel limit", checks);
                 boolean expectedIv = IvMachineScope.nativeTarget(server.machine);
                 require(IvMachineScope.crossRecipeEnabled(server.machine) == expectedIv
                                 && IvMachineScope.crossRecipeEnabled(client.machine) == expectedIv,
@@ -143,8 +159,12 @@ public final class StellarIvGuiChecks {
                 var lines = new ArrayList<Component>();
                 com.gtl.enhancedcore.common.recipe.iv.IvMachineDisplay.wrap(machine, ignored -> {}).accept(lines);
                 var powerLine = lines.stream().filter(c -> c.getContents() instanceof net.minecraft.network.chat.contents.TranslatableContents t
-                        && t.getKey().equals("gtceu.multiblock.max_energy_per_tick")).findFirst().orElseThrow();
+                        && t.getKey().equals("gtl_enhancedcore.galaxy.max_power")).findFirst().orElseThrow();
                 var shown = (Component)((net.minecraft.network.chat.contents.TranslatableContents)powerLine.getContents()).getArgs()[0];
+                require(machine.getTier() == com.gregtechceu.gtceu.api.GTValues.MAX
+                                && machine.getOverclockVoltage() == com.gregtechceu.gtceu.api.GTValues.V[com.gregtechceu.gtceu.api.GTValues.MAX]
+                                && ((net.minecraft.network.chat.contents.TranslatableContents)powerLine.getContents()).getArgs().length == 1,
+                        id + " actual recipe tier is MAX and maximum power has no suffix", checks);
                 require(shown.getStyle().getHoverEvent().getValue(net.minecraft.network.chat.HoverEvent.Action.SHOW_TEXT).getString()
                                 .equals(com.gregtechceu.gtceu.utils.FormattingUtil.formatNumbers(huge)),
                         id + " real GUI callback refreshes exact 1E72+43 maximum power", checks);
@@ -176,12 +196,12 @@ public final class StellarIvGuiChecks {
     private static void isolatedPower(Fixture f, UUID owner, List<String> checks) throws Exception {
         var machine = f.machine(); var logic = machine.getRecipeLogic();
         var buffer = (org.gtlcore.gtlcore.common.machine.multiblock.part.ae.MEPatternBufferPartMachine)f.holders().get(1).getMetaMachine();
-        long count = 8192;
+        long count = 1L << 34;
         var inputKey = appeng.api.stacks.AEItemKey.of(net.minecraft.world.item.Items.APPLE);
         var recipe = com.gregtechceu.gtceu.data.recipe.builder.GTRecipeBuilder.of(
                 new ResourceLocation("gtl_enhancedcore", "stellar_isolated_power"), machine.getRecipeType())
                 .inputItems(net.minecraft.world.item.Items.APPLE).outputItems(net.minecraft.world.item.Items.GOLD_NUGGET)
-                .EUt(Long.MAX_VALUE / 1024).duration(20).buildRawRecipe();
+                .EUt(com.gregtechceu.gtceu.api.GTValues.V[com.gregtechceu.gtceu.api.GTValues.MAX]).duration(20000000).buildRawRecipe();
         var job = new com.gtl.enhancedcore.common.recipe.iv.IvJob(0, recipe, new net.minecraft.nbt.CompoundTag(),
                 java.util.Map.of(inputKey, count), java.util.Map.of(), count);
         Object engine = logic instanceof com.gtl.enhancedcore.common.recipe.iv.IvRecipeLogic ? logic
@@ -203,7 +223,7 @@ public final class StellarIvGuiChecks {
         require(job.active() && !job.halted && eut.compareTo(java.math.BigInteger.valueOf(Long.MAX_VALUE)) > 0,
                 machine.getDefinition().getId() + " real prepare creates a single batch above long: " + eut + " error=" + job.error, checks);
         require(job.parallel == count && job.inventory.isEmpty() && job.remaining == 0,
-                machine.getDefinition().getId() + " native admission commits exactly 8192 input operations", checks);
+                machine.getDefinition().getId() + " native admission commits exactly " + count + " input operations", checks);
         var before = com.hepdd.gtmthings.api.misc.WirelessEnergyManager.getUserEU(owner);
         var energyBefore = job.energyLeft;
         var advance = custom ? engineClass.getDeclaredMethod("advance", List.class, com.gtl.enhancedcore.common.machine.TieredParallelMachine.class)
@@ -215,6 +235,9 @@ public final class StellarIvGuiChecks {
     }
 
     static Fixture fixture(String id, boolean client, boolean receiver, boolean full64) throws Exception {
+        return fixture(id, client, receiver, full64 ? 64 : -1);
+    }
+    static Fixture fixture(String id, boolean client, boolean receiver, int arrays) throws Exception {
         var unsafeField = sun.misc.Unsafe.class.getDeclaredField("theUnsafe"); unsafeField.setAccessible(true);
         var unsafe = (sun.misc.Unsafe) unsafeField.get(null);
         var world = (AuditWorld) unsafe.allocateInstance(AuditWorld.class);
@@ -235,10 +258,10 @@ public final class StellarIvGuiChecks {
         ((IvBufferAccess) buffer).iv$syncDedicated(true);
         parts.add((IMultiPart) place("gtl_enhancedcore:galaxy_connection_target_hatch", new BlockPos(2, 80, 0), world, holders).getMetaMachine());
         if (receiver) parts.add((IMultiPart) place("gtceu:wireless_data_receiver_hatch", new BlockPos(3, 80, 0), world, holders).getMetaMachine());
-        if (full64) {
+        if (arrays >= 0) {
             var station = (StellarVortexSpaceStationMachine) place("gtl_enhancedcore:stellar_vortex_space_station",
                     new BlockPos(40, 80, 0), world, holders).getMetaMachine();
-            set(station, "astralArrayCount", 64);
+            set(station, "astralArrayCount", arrays);
             var link = (LinkProbe) unsafe.allocateInstance(LinkProbe.class);
             link.active = !client; link.station = station;
             parts.add(link);

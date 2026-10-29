@@ -63,6 +63,10 @@ public class CloudPatternBufferMachine extends MEPatternBufferPartMachine implem
     private record Query(String text, CloudPatternSearch localized) {}
     private final LinkedHashMap<Query, List<UUID>> searches = new LinkedHashMap<>(8, .75f, true);
     private boolean searchScopeDirty = true;
+    private Map<Integer, UUID> uiSlotSnapshot;
+    private Set<UUID> uiInvalidSnapshot = Set.of();
+    private List<UUID> uiEntrySnapshot = List.of();
+    private Map<UUID, LeaseDisplay> uiDisplaySnapshot = Map.of();
     private long[] searchItems = new long[0], searchFluids = new long[0];
     private final Set<UUID> invalidLeases = new HashSet<>();
     private final Set<UUID> validatedLeases = new HashSet<>();
@@ -155,12 +159,11 @@ public class CloudPatternBufferMachine extends MEPatternBufferPartMachine implem
         var types = org.gtlcore.gtlcore.integration.ae2.pattern.PatternQuickUploadMetadata.readRecipeTypeIds(entry.original());
         long maximum = 0;
         for (var machine : IvBuffers.cloudControllers(this)) {
-            if (IvBuffers.genericCloudMixedInputs(machine)) continue;
             for (var type : machine.getDefinition().getRecipeTypes()) {
                 if (!cloudAcceptsMode(type.registryName)
                         || !IvPatternAdmission.allowsType(types, type.registryName)) continue;
-                for (var recipe : CloudPatternMatching.recipes(getLevel(), type)) {
-                    if (!CloudPatternMatching.matches(recipe, machine, probe)) continue;
+                for (var recipe : CloudPatternMatching.candidates(getLevel(), type, probe.outputs())) {
+                    if (!CloudPatternMatching.supported(recipe, machine)) continue;
                     maximum = Math.max(maximum, IvRecipeInputs.patternOperations(
                             recipe, probe.inputs(), probe.virtual(), probe.outputs()));
                 }
@@ -192,7 +195,14 @@ public class CloudPatternBufferMachine extends MEPatternBufferPartMachine implem
     }
     @Override public void onLoad() {
         super.onLoad(); removed = false;
-        if (!isRemote()) cloudTick = subscribeServerTick(this::cloudMaintenance);
+        if (!isRemote()) {
+            // Saved leases are readable independently of AE/structure discovery. Execution still revalidates them.
+            if (nodeId != null) {
+                try { attach(); }
+                catch (RuntimeException failure) { cloudClassificationFailed(); IvTaskLog.error(this, null, "CLOUD_LOAD", failure); }
+            }
+            cloudTick = subscribeServerTick(this::cloudMaintenance);
+        }
     }
     @Override public void onUnload() {
         meNetworkActive = false;
@@ -292,6 +302,7 @@ public class CloudPatternBufferMachine extends MEPatternBufferPartMachine implem
         if (!node.sourceRoute().isEmpty()) origin.load(node.sourceRoute());
         boundDefinition = node.sourceRoute().getString("machineDefinition");
         attached = true;
+        modeLabel = node.mode() == null ? "" : node.mode().toString();
         publishedTaskIdentity = null;
         lastLibraryRevision = -1; invalidLeases.clear(); validatedLeases.clear();
         CloudPatternAllocator.register(this);
@@ -300,16 +311,18 @@ public class CloudPatternBufferMachine extends MEPatternBufferPartMachine implem
         refreshPublished(); markDirty();
     }
     private void cloudMaintenance() {
+        CloudMeConnection.restore(this);
+        boolean networkChanged = meNetworkActive != getMainNode().isActive();
         meNetworkActive = getMainNode().isActive();
-        if (getOffsetTimer() % 5 != 0) return;
+        if (!networkChanged && attached && getOffsetTimer() % 5 != 0) return;
         try {
             if (!synchronizeLibrary()) { connected = false; return; }
             attach(); if (!attached) return;
             var library = cloudStore().library(libraryId);
+            if (!library.healthy() || !node.healthy()) { cloudClassificationFailed(); return; }
             if (!CloudLibraryService.runtimeAuthorized(owner, libraryId, (ServerLevel)getLevel(), getPos())) { status("denied"); connected = false; return; }
             var machine = IvBuffers.controller(this);
             if (machine == null) { status("unbound"); connected = false; return; }
-            if (IvBuffers.genericCloudMixedInputs(machine)) { status("mixed_inputs"); connected = false; return; }
             UUID instance = ((CloudMachineIdentity)machine).cloud$machineInstance(true);
             if (node.machineInstance() != null && !instance.equals(node.machineInstance())
                     && tasks.jobs.isEmpty() && IvBuffers.cloudControllers(this).stream().noneMatch(controller ->
@@ -339,10 +352,7 @@ public class CloudPatternBufferMachine extends MEPatternBufferPartMachine implem
                 if (e.lease() == null || !e.lease().nodeId().equals(nodeId)) { invalidLeases.remove(id); continue; }
                 if (!tasks.occupied(e.lease().stableSlot())) { cloudStore().releaseLease(nodeId, id, UUID.randomUUID()); invalidLeases.remove(id); }
             }
-            if (publicationDirty) {
-                publishedSnapshot = List.copyOf(published.values()); publicationDirty = false;
-                needPatternSync = true; ICraftingProvider.requestUpdate(getMainNode());
-            }
+            cloudPublishChanges();
         } catch (RuntimeException failure) {
             connected = false; faulted = true; status("quarantined");
             if (!tasks.message.equals("gtl_enhancedcore.cloud.status.quarantined")) IvTaskLog.error(this, null, "CLOUD_ATTACH", failure);
@@ -372,11 +382,12 @@ public class CloudPatternBufferMachine extends MEPatternBufferPartMachine implem
     }
     private CompoundTag originSnapshot() { var tag = origin.save(); tag.putString("machineDefinition", boundDefinition); return tag; }
     public boolean cloudReady(boolean checkController) {
-        if (isRemote() || !attached || removed || faulted || node == null || !tasks.healthy() || node.mode() == null || !getMainNode().isActive()) return false;
-        if (!cloudStore().active(nodeId, this) || !CloudLibraryService.runtimeAuthorized(owner, libraryId, (ServerLevel)getLevel(), getPos())) return false;
+        if (isRemote() || !attached || removed || faulted || node == null || !tasks.healthy() || !getMainNode().isActive()) return false;
+        if (!cloudStore().active(nodeId, this) || node.mode() == null
+                || !CloudLibraryService.runtimeAuthorized(owner, libraryId, (ServerLevel)getLevel(), getPos())) return false;
         if (checkController) {
             var machine = IvBuffers.controller(this);
-            if (machine == null || IvBuffers.genericCloudMixedInputs(machine)) return false;
+            if (machine == null) return false;
         }
         return cloudMayUseNetwork();
     }
@@ -485,6 +496,15 @@ public class CloudPatternBufferMachine extends MEPatternBufferPartMachine implem
         return CloudPatternMatching.probe(processed, virtual);
     }
     public void cloudScanFinished(long revision) { lastLibraryRevision = revision; }
+    public long cloudScannedRevision() { return lastLibraryRevision; }
+    /** Called once after this tick's allocation batch instead of waiting for maintenance polling. */
+    public void cloudPublishChanges() {
+        if (!publicationDirty) return;
+        publishedSnapshot = List.copyOf(published.values()); publicationDirty = false;
+        needPatternSync = true; ICraftingProvider.requestUpdate(getMainNode());
+    }
+    /** Catalogue changes retain the last complete scan so only changed originals need matching. */
+    public void cloudLibraryChanged() { allocationEpoch++; CloudPatternAllocator.enqueue(this); }
     public void cloudAllocationChanged() {
         lastLibraryRevision = -1; allocationEpoch++;
         // Readiness/membership changes are events, not a periodic catalogue refresh.
@@ -547,14 +567,18 @@ public class CloudPatternBufferMachine extends MEPatternBufferPartMachine implem
         var store = cloudStore();
         var savedNode = node != null ? node : store.node(nodeId);
         if (!savedNode.libraryId().equals(libraryId)) return List.of();
+        var slots = savedNode.slots();
+        if (uiSlotSnapshot == slots && uiInvalidSnapshot.equals(invalidLeases)) return uiEntrySnapshot;
         var entries = new ArrayList<UUID>();
-        for (var slot : new TreeMap<>(savedNode.slots()).entrySet()) {
+        for (var slot : new TreeMap<>(slots).entrySet()) {
             var entry = store.library(libraryId).entry(slot.getValue());
             var lease = entry.lease();
             if (lease != null && lease.nodeId().equals(nodeId) && lease.stableSlot() == slot.getKey()
                     && !invalidLeases.contains(entry.id())) entries.add(entry.id());
         }
-        return List.copyOf(entries);
+        uiSlotSnapshot = slots; uiInvalidSnapshot = Set.copyOf(invalidLeases);
+        uiEntrySnapshot = List.copyOf(entries); invalidateSearches();
+        return uiEntrySnapshot;
     }
     private LeaseDisplay cachedLeaseDisplay(CloudPatternStore.Entry entry) {
         CompoundTag metadata = entry.displayMetadata();
@@ -575,7 +599,7 @@ public class CloudPatternBufferMachine extends MEPatternBufferPartMachine implem
         return new LeaseDisplay(name, name.toLowerCase(Locale.ROOT), metadata.getString("nameJson"), List.copyOf(outputs));
     }
     private void appendSearchScope(CompoundTag tag, Map<UUID, LeaseDisplay> displays) {
-        {
+        if (searchScopeDirty) {
             var items = new BitSet(); var fluids = new BitSet();
             for (var display : displays.values()) for (var output : display.outputs()) {
                 if (output instanceof AEItemKey item) {
@@ -593,6 +617,7 @@ public class CloudPatternBufferMachine extends MEPatternBufferPartMachine implem
 
     @Override public ModularUI createUI(Player player) { return CloudPatternUi.create(this, this, player, false); }
     @Override public Widget createUIWidget() { return new CloudPatternBufferWidget(this); }
+    @Override public long cloudUiChangeToken() { return 31 * uiRevision + (cloudNetworkConnected() ? 1 : 0); }
     @Override public CompoundTag cloudUiInitialSnapshot(ServerPlayer player) {
         try {
             if (authorized(player, true) && IvBuffers.controller(this) != null && !attached
@@ -625,12 +650,31 @@ public class CloudPatternBufferMachine extends MEPatternBufferPartMachine implem
         tag.putString("networkStatus", statusLabel.startsWith("gtl_enhancedcore.cloud.network.")
                 ? statusLabel : CloudLibraryNetwork.resolve(getGrid(), player).translationKey());
         tag.putBoolean("manualBinding", manualBinding);
-        var uiEntries = uiLeaseEntries();
-        var uiDisplays = new LinkedHashMap<UUID, LeaseDisplay>();
-        if (libraryId != null) for (UUID id : uiEntries) {
-            var entry = cloudStore().library(libraryId).entry(id);
-            uiDisplays.put(id, leaseDisplays.getOrDefault(id, cachedLeaseDisplay(entry)));
+        tag.putBoolean("accepting", tasks.accepting); tag.putBoolean("tasksHealthy", tasks.healthy());
+        tag.putBoolean("hasOrigin", origin.origin() != null);
+        boolean returnReady = attached && !removed && !faulted && tag.getBoolean("networkConnected")
+                && origin.peekCanUse(this, !tasks.jobs.isEmpty())
+                && CloudLibraryService.runtimeAuthorized(owner, libraryId, (ServerLevel)getLevel(), getPos());
+        tag.putBoolean("returnNetworkReady", returnReady);
+        tag.putBoolean("resumeAllowed", returnReady && tasks.healthy() && node != null && node.mode() != null
+                && cloudStore().active(nodeId, this) && IvBuffers.controller(this) != null);
+        var refundKeys = new HashSet<appeng.api.stacks.AEKey>();
+        var completedKeys = new HashSet<appeng.api.stacks.AEKey>();
+        for (var job : tasks.jobs) {
+            refundKeys.addAll(job.refunds.keySet());
+            if (job.cancelled) completedKeys.addAll(job.pending.keySet());
         }
+        tag.putInt("refundTypes", refundKeys.size()); tag.putInt("completedOutputTypes", completedKeys.size());
+        var uiEntries = uiLeaseEntries();
+        if (searchScopeDirty) {
+            var displays = new LinkedHashMap<UUID, LeaseDisplay>();
+            if (libraryId != null) for (UUID id : uiEntries) {
+                var display = leaseDisplays.computeIfAbsent(id, ignored -> cachedLeaseDisplay(cloudStore().library(libraryId).entry(id)));
+                displays.put(id, display);
+            }
+            uiDisplaySnapshot = Map.copyOf(displays);
+        }
+        var uiDisplays = uiDisplaySnapshot;
         appendSearchScope(tag, uiDisplays);
         if (libraryId == null) { tag.putInt("pages", 1); tag.put("entries", new ListTag()); return tag; }
         ListTag modes = new ListTag(); var machine = IvBuffers.controller(this);
@@ -710,7 +754,10 @@ public class CloudPatternBufferMachine extends MEPatternBufferPartMachine implem
         try { switch (action) {
             case "pause", "drain" -> IvCancellation.setAccepting(this, false);
             case "resume" -> { if (cloudReady(true)) { IvCancellation.resume(this); lastLibraryRevision = -1; } }
-            case "cancel" -> IvCancellation.cancel(this, -1);
+            case "cancel" -> {
+                if (!payload.getBoolean("confirm")) return;
+                IvCancellation.cancel(this, -1);
+            }
             case "reconnect" -> {
                 if (CloudOriginAuthorization.authorize(player, origin.origin(), getGrid())
                         && origin.authorizeReconnect(getGrid(), origin.origin(), true)) markDirty();

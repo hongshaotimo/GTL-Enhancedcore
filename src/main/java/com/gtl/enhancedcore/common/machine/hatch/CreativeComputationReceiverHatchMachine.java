@@ -18,12 +18,9 @@ import java.util.List;
 
 /**
  * A computation reception hatch that supplies computation without an optical pipe.
- * GTLCore's long computation scheduler owns spending, refunds and research progress.
+ * Unlimited supply; GTLCore still owns recipe progress and transactional commit/refund.
  */
 public class CreativeComputationReceiverHatchMachine extends OpticalComputationHatchMachine {
-
-    /** 固定值。 */
-    public static final int MAX_CWU_PER_TICK = CreativeComputationPolicy.MAX_CWU_PER_TICK;
 
     public CreativeComputationReceiverHatchMachine(IMachineBlockEntity holder) {
         super(holder, false);
@@ -43,7 +40,7 @@ public class CreativeComputationReceiverHatchMachine extends OpticalComputationH
         private CreativeComputationContainer(CreativeComputationReceiverHatchMachine machine) {
             super(machine, IO.IN, false);
             source = new CreativeComputationSource(() -> ComputationNetwork.tick(machine.getLevel()),
-                    CreativeComputationPolicy::maxCwuPerTick, this::gtlcore$computationOnline);
+                    this::gtlcore$computationOnline);
         }
 
         @Override
@@ -72,6 +69,7 @@ public class CreativeComputationReceiverHatchMachine extends OpticalComputationH
         @Override
         public int getMaxCWUt(@NotNull Collection<IOpticalComputationProvider> seen) {
             seen.add(this);
+            // Only this legacy int capability is projected; the creative source has no quota.
             return ComputationMath.toInt(source.gtlcore$computationCapacity());
         }
 

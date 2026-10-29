@@ -1,6 +1,7 @@
 package com.gtl.enhancedcore.common.recipe.iv;
 
 import appeng.api.stacks.AEKey;
+import appeng.api.stacks.AEFluidKey;
 import com.gregtechceu.gtceu.api.machine.multiblock.WorkableElectricMultiblockMachine;
 import com.gregtechceu.gtceu.api.recipe.GTRecipe;
 import java.util.Map;
@@ -14,6 +15,7 @@ public final class IvNativeMatchContext {
     private final Map<AEKey, Long> input, virtual;
     private final long operations, capacity;
     private long reserved = 1;
+    private net.minecraft.network.chat.Component rejection;
     public IvNativeMatchContext(WorkableElectricMultiblockMachine machine, Map<AEKey, Long> input,
                                 Map<AEKey, Long> virtual, long operations, long capacity) {
         if (operations < 1 || capacity < 1) throw new IllegalArgumentException("Invalid native simulation limits");
@@ -22,6 +24,17 @@ public final class IvNativeMatchContext {
     }
     public int capacity(int requested) { return (int)Math.min(Math.max(0, requested), capacity); }
     public long reserved() { return reserved; }
+    /** Physical stock owned by this order, excluding other orders and virtual catalysts.
+     * The native dissolving modifier groups by fluid identity, including tagged variants. */
+    public long fluidAmount(net.minecraft.world.level.material.Fluid fluid) {
+        long amount = 0;
+        for (var entry : input.entrySet())
+            if (entry.getKey() instanceof AEFluidKey key && key.getFluid() == fluid)
+                amount = Math.addExact(amount, entry.getValue());
+        return amount;
+    }
+    public void reject(net.minecraft.network.chat.Component reason) { rejection = Objects.requireNonNull(reason); }
+    public net.minecraft.network.chat.Component rejection() { return rejection; }
     public void reserved(long value) {
         if (value < 0 || value > capacity) throw new IllegalStateException("Native modifier exceeded simulation capacity");
         reserved = Math.max(1, value);
@@ -40,6 +53,7 @@ public final class IvNativeMatchContext {
     /** Native RecipeLogic applies batching at input payment, after doModifyRecipe. Isolated
      * orders own payment and must run that preparation explicitly against this order's stock. */
     public GTRecipe prepare(GTRecipe origin) {
+        rejection = null;
         return simulate(() -> {
             GTRecipe copy = origin.copy(); copy.data = origin.data.copy();
             GTRecipe modified = machine.doModifyRecipe(copy,

@@ -15,7 +15,7 @@ public final class ForeignMachineMixinPolicy {
             "gtceu.IvNativeMutableAccessor",
             "gtlcore.IvNativeMultipleAccessor", "gtlcore.IvComputationRecipesMixin", "gtlcore.IvComputationScopeMixin",
             "gtlcore.IvNativeAddMultipleAccessor",
-            "gtlcore.IvNativeBatchMixin", "gtlcore.IvNativeMultipleGuardMixin",
+            "gtlcore.IvNativeBatchMixin", "gtlcore.IvNativeMultipleGuardMixin", "gtlcore.IvDissolvingTankMixin",
             "gtlcore.IvNativeRecipeThreadLimitMixin", "gtlcore.IvNativeGtlAddThreadLimitMixin",
             "gtceu.IvNativeMachineUiMixin", "gtceu.IvNativeTooltipMixin",
             "gtladditions.SuprachronalModuleHostRemovalMixin",

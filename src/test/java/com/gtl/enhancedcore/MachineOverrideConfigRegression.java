@@ -56,6 +56,7 @@ final class MachineOverrideConfigRegression {
         Set<String> structures = Set.of("gtceu.GtlMegastructurePatternMixin", "gtceu.LucidEtchdreamerPreviewMixin",
                 "gtlcore.client.LucidSparsePreviewShapeMixin");
         Set<String> shared = Set.of("gtceu.IvNativeParallelMixin", "gtceu.GalaxyRecipeLogicMixin", "gtceu.GalaxyMachineDisplayMixin", "gtceu.GalaxyConnectionHatchUiMixin", "gtladditions.GalaxyMutableModeMixin", "gtceu.RetiredLightHunterDefinitionMixin",
+                "gtlcore.CreativeComputationSchedulerMixin", "gtlcore.CreativeComputationTransactionAccessor",
                 "gtladditions.GalaxyThreadCapacityMixin", "gtladditions.GalaxyMachineCapacityMixin", "gtladditions.GalaxySpecialBudgetMixin", "gtladditions.GalaxyAddParallelMixin",
                 "gtladditions.GalaxyWirelessEnergyHandlerMixin",
                 "gtlcore.GalaxyParallelCapacityMixin", "gtlcore.GalaxyChanceSimulationMixin", "mc.PersonalPlotServerAccessor", "gtceu.PersonalPlotDimensionConditionMixin",

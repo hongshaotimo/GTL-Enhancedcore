@@ -51,15 +51,22 @@ public final class IvBuffers {
         return controller instanceof WorkableElectricMultiblockMachine machine && !legacyTargetController(controller)
                 && machine.getParts().stream().anyMatch(CloudPatternBufferMachine.class::isInstance);
     }
-    /** Ordinary/native inputs keep their own execution path; never silently take their stock over. */
-    public static boolean genericCloudMixedInputs(WorkableElectricMultiblockMachine machine) {
-        return genericCloudTarget(machine) && machine.getParts().stream().anyMatch(part -> {
-            if (part instanceof CloudPatternBufferMachine) return false;
-            var block = part.self().getBlockState().getBlock();
-            if (com.gtl.enhancedcore.common.machine.galaxy.GalaxyConnectionHatch.isConnectionPortBlock(block)) return false;
-            return com.gregtechceu.gtceu.api.machine.multiblock.PartAbility.IMPORT_ITEMS.isApplicable(block)
-                    || com.gregtechceu.gtceu.api.machine.multiblock.PartAbility.IMPORT_FLUIDS.isApplicable(block);
-        });
+    /**
+     * A normal pattern buffer is the passive input-assembly lane.  It must remain
+     * available beside a cloud buffer, but it must not be enrolled as an IV order
+     * buffer or share the cloud lease.
+     */
+    public static boolean genericCloudPassivePatternBuffer(WorkableElectricMultiblockMachine machine) {
+        if (!genericCloudTarget(machine)) return false;
+        return machine.getParts().stream().anyMatch(part ->
+                part instanceof MEPatternBufferPartMachine
+                        && !(part instanceof CloudPatternBufferMachine)
+                        && !isolated((MEPatternBufferPartMachine) part));
+    }
+
+    /** Even ticks are reserved for the passive input-assembly recipe logic. */
+    public static boolean runPassivePatternLane(WorkableElectricMultiblockMachine machine, long tick) {
+        return genericCloudPassivePatternBuffer(machine) && (tick & 1L) == 0L;
     }
     public static boolean targetController(Object controller) {
         return legacyTargetController(controller) || genericCloudTarget(controller);
@@ -110,9 +117,19 @@ public final class IvBuffers {
     }
     public static WorkableElectricMultiblockMachine controller(MEPatternBufferPartMachineBase buffer) {
         if (buffer instanceof CloudPatternBufferMachine cloud) {
-            return cloudControllers(cloud).stream().filter(machine -> !genericCloudMixedInputs(machine))
-                    .min(Comparator.comparingInt((WorkableElectricMultiblockMachine machine) -> jobs(cloud, machine).size())
-                            .thenComparing(IvBuffers::ownerKey)).orElse(null);
+            WorkableElectricMultiblockMachine selected = null;
+            int leastJobs = Integer.MAX_VALUE;
+            var state = cloud.iv$getState(); var node = cloud.cloudNode();
+            for (var machine : cloudControllers(cloud)) {
+                UUID instance = ((com.gtl.enhancedcore.common.cloud.store.CloudMachineIdentity)machine).cloud$machineInstance(false);
+                boolean legacyOwner = state.owner.equals(ownerKey(machine));
+                int count = 0;
+                for (var job : state.jobs) if (com.gtl.enhancedcore.common.cloud.CloudEndpointPolicy.ownsJob(
+                        job.cloudMachine, instance, node == null ? null : node.machineInstance(), legacyOwner)) count++;
+                // cloudControllers is already in owner-key order, so the first equal count wins.
+                if (selected == null || count < leastJobs) { selected = machine; leastJobs = count; }
+            }
+            return selected;
         }
         if (!controllersLoaded(buffer)) return null;
         var controllers = loadedControllers(buffer);
@@ -130,7 +147,7 @@ public final class IvBuffers {
             return rejectBind(buffer, "gtl_enhancedcore.cloud.status.origin");
         if (((IvBufferAccess)buffer).iv$isFoaEnabled()) return rejectBind(buffer, "gtl_enhancedcore.diagnostic.iv_foa");
         if (buffer instanceof CloudPatternBufferMachine cloud) {
-            if (!cloudControllers(cloud).contains(machine) || genericCloudMixedInputs(machine))
+            if (!cloudControllers(cloud).contains(machine))
                 return rejectBind(buffer, "gtl_enhancedcore.diagnostic.iv_exclusive");
             ((IvBufferAccess)buffer).iv$syncDedicated(true);
             refresh(buffer); return true;
@@ -319,7 +336,10 @@ public final class IvBuffers {
             for (var type : machine.getDefinition().getRecipeTypes()) {
                 if (buffer instanceof CloudPatternBufferMachine cloud && !cloud.cloudAcceptsMode(type.registryName)) continue;
                 if (!IvPatternAdmission.allowsType(types, type.registryName)) continue;
-                for (GTRecipe recipe : com.gtl.enhancedcore.common.cloud.CloudPatternMatching.recipes(machine.getLevel(), type)) {
+                var candidates = buffer instanceof CloudPatternBufferMachine
+                        ? com.gtl.enhancedcore.common.cloud.CloudPatternMatching.candidates(machine.getLevel(), type, expected)
+                        : com.gtl.enhancedcore.common.cloud.CloudPatternMatching.recipes(machine.getLevel(), type);
+                for (GTRecipe recipe : candidates) {
                     if (!supported(recipe, machine)) continue;
                     long scale = IvRecipeInputs.patternOperations(recipe, unit, virtual, expected);
                     if (scale > 0) { matches.add(recipe); scales.put(recipe, scale); }
@@ -340,7 +360,7 @@ public final class IvBuffers {
                     "declaredOutputs", IvTaskLog.stock(expected));
             var acceptedJobs = new ArrayList<IvJob>();
             if (buffer instanceof CloudPatternBufferMachine cloud) {
-                var eligible = cloudControllers(cloud).stream().filter(peer -> !genericCloudMixedInputs(peer))
+                var eligible = cloudControllers(cloud).stream()
                         .filter(peer -> Arrays.stream(peer.getDefinition().getRecipeTypes())
                                 .anyMatch(type -> type.registryName.equals(recipe.recipeType.registryName)))
                         .filter(peer -> supported(recipe, peer)).toList();
@@ -389,14 +409,6 @@ public final class IvBuffers {
         return !(buffer instanceof CloudPatternBufferMachine cloud) || cloud.cloudMayUseNetwork();
     }
     private static boolean supported(GTRecipe recipe, WorkableElectricMultiblockMachine machine) {
-        // Unknown capabilities/actions must fail before accepting, rather than silently losing semantics.
-        return recipe.ingredientActions.isEmpty() && recipe.tickOutputs.isEmpty()
-                && recipe.inputs.keySet().stream().allMatch(cap -> cap == com.gregtechceu.gtceu.api.capability.recipe.ItemRecipeCapability.CAP
-                    || cap == com.gregtechceu.gtceu.api.capability.recipe.FluidRecipeCapability.CAP)
-                && recipe.outputs.keySet().stream().allMatch(cap -> cap == com.gregtechceu.gtceu.api.capability.recipe.ItemRecipeCapability.CAP
-                    || cap == com.gregtechceu.gtceu.api.capability.recipe.FluidRecipeCapability.CAP)
-                && recipe.tickInputs.keySet().stream().allMatch(cap -> cap == EURecipeCapability.CAP
-                    || (IvMachineScope.nativeTarget(machine) || genericCloudTarget(machine))
-                    && cap == com.gregtechceu.gtceu.api.capability.recipe.CWURecipeCapability.CAP);
+        return com.gtl.enhancedcore.common.cloud.CloudPatternMatching.supported(recipe, machine);
     }
 }

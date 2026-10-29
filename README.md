@@ -4,7 +4,7 @@ GregTech Leisure Enhanced 整合包专用核心模组，扩展工业机器、仓
 
 - 模组 ID：`gtl_enhancedcore`
 - 环境：Minecraft 1.20.1 / Forge 47.x / Java 21
-- 当前版本：4.1.7（以 `gradle.properties` 为准）
+- 当前版本：4.3.4（以 `gradle.properties` 为准）
 - 许可：[LGPL-3.0](LICENSE)
 
 ## 主要功能

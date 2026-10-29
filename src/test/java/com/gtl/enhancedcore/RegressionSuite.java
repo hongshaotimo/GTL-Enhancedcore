@@ -26,6 +26,7 @@ public final class RegressionSuite {
     public static void main(String[] args) throws Exception {
         configParsing();
         assertions += CloudLedgerRegression.run();
+        assertions += com.gtl.enhancedcore.common.cloud.CloudPerformanceRegression.run();
         assertions += CloudStoreNbtRegression.run();
         assertions += com.gtl.enhancedcore.common.cloud.transfer.CloudTransferRegression.run();
         assertions += IvTimeAccelerationRegression.run();
@@ -77,6 +78,7 @@ public final class RegressionSuite {
         assertions += BlackHoleFrameRegression.run();
         assertions += StellarForgeRegression.run();
         assertions += IvIsolationRegression.run();
+        assertions += CloudPassivePatternLaneRegression.run();
         assertions += FuxiIsolationUpstreamRegression.run();
         assertions += WoodDistillationAllocationRegression.run();
         assertions += BiosphereModulePowerRegression.run();

@@ -13,7 +13,7 @@ final class ConfigRulesScreen extends ConfigPage {
     private final String original;
     private final TextConfigScreen.Saver saver;
     private boolean structures, enhancements, automatic, enabled, previewLayers = true;
-    private String background = "0", builder = "0", mapRaster = "0", interval = "5";
+    private String background = "0", builder = "0", mapRaster = "0", interval = "1";
     private EditBox first, second, third;
     ConfigRulesScreen(Screen parent, ConfigCatalog kind, String text, TextConfigScreen.Saver saver) {
         super(parent, kind.key()); this.kind = kind; this.original = text; this.saver = saver;

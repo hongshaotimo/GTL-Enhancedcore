@@ -46,7 +46,7 @@ public abstract class AssemblyLinePatternBufferMixin {
         }
         Supplier<BlockPattern> original = supplier;
         ((MultiblockMachineDefinitionAccessor) (Object) self).gtlEnhancedcore$setPatternFactory(com.google.common.base.Suppliers.memoize(() -> {
-            BlockPattern pattern = original.get();
+            BlockPattern pattern = com.gtl.enhancedcore.common.structure.AssemblyLineCloudPorts.copy(original.get());
             if (isAssemblyLine) {
                 patchAssemblyLinePattern(pattern);
             } else {

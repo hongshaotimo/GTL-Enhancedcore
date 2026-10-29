@@ -46,7 +46,11 @@ public abstract class GtlMegastructurePatternMixin {
         boolean replace = MachineOverrideConfig.current().replaceOriginalStructures();
         boolean enhance = MachineOverrideConfig.current().enhanceOriginalMachines();
         if (RetiredLightHunter.contains(definition.getId())
-                || !(replace || enhance && SpaceElevatorMaintenance.matches(definition.getId()))) return original;
+                || !(replace && GtlMegastructurePatterns.targets(definition.getId())
+                        || enhance && SpaceElevatorMaintenance.matches(definition.getId()))) return original;
+        // Ability patches and hidden-cell optimization retain native geometry. Their
+        // supplied tier/length variants (or the native repetition DFS) must survive.
+        // Only a replaced blueprint needs a newly generated matching shape.
         return Suppliers.memoize(() -> {
             var pattern = definition.getPatternFactory().get();
             int[] repetitions = NativeStructureHollowing.minimumRepetitions(pattern.aisleRepetitions);

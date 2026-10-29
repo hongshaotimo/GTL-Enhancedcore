@@ -35,10 +35,19 @@ public final class UpstreamPreviewContractRegression {
     static int run() throws Exception {
         assertions = 0;
         localOwnership();
+        nativePreviewVariants();
         upstreamPackaging();
         lazyPostApply();
         previewStateCleanup();
         return assertions;
+    }
+
+    private static void nativePreviewVariants() throws Exception {
+        String source = Files.readString(MAIN.resolve("mixin/gtceu/GtlMegastructurePatternMixin.java"));
+        String preview = source.substring(source.indexOf("private Supplier<List<MultiblockShapeInfo>>"));
+        check(preview.contains("replace && GtlMegastructurePatterns.targets(definition.getId())"),
+                "Only blueprint replacements regenerate previews, preserving native tier/length variants");
+        check(preview.contains("return original;"), "Unchanged geometry retains its native shape supplier");
     }
 
     private static void previewStateCleanup() throws Exception {

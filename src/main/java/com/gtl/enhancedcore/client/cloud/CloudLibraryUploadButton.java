@@ -48,7 +48,8 @@ public final class CloudLibraryUploadButton extends IconButton {
         lines.add(Component.translatable("gtl_enhancedcore.cloud.terminal.upload"));
         lines.add(Component.translatable("gtl_enhancedcore.cloud.terminal.upload_hint"));
         if (!diagnostic.isEmpty()) {
-            lines.add(Component.translatable("gtl_enhancedcore.cloud.status.review"));
+            lines.add(Component.translatable(diagnostic.contains("Cloud snapshot write failed")
+                    ? "gtl_enhancedcore.cloud.terminal.retry_commit" : "gtl_enhancedcore.cloud.status.review"));
         }
         return lines;
     }

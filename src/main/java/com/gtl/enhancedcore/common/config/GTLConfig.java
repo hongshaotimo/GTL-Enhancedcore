@@ -21,8 +21,8 @@ public final class GTLConfig {
                 .define("enabled", true);
 
         CLAIM_REPLACEMENT_INTERVAL_TICKS = builder
-                .comment("每次替换之间的 tick 间隔（默认 5 = 每 5 tick 替换 1 个方块）。")
-                .defineInRange("replace_interval_ticks", 5, 1, 200);
+                .comment("每次替换之间的 tick 间隔（默认 1 = 每 tick 替换 1 个方块）。")
+                .defineInRange("replace_interval_ticks", 1, 1, 200);
 
         builder.pop();
         COMMON_SPEC = builder.build();

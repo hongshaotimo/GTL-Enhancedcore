@@ -8,7 +8,7 @@ import com.gregtechceu.gtceu.api.recipe.RecipeHelper;
 
 /** A linked target can spend its owner's full current grid balance per tick. */
 public final class GalaxyPower {
-    public static final int MAX_TIER = GTValues.MAX + 16;
+    public static final int MAX_TIER = GTValues.MAX;
     public static final String EU_TAG = "gtle_galaxy_eut";
     public static final String LEFT_TAG = "gtle_galaxy_energy_left";
     private GalaxyPower() {}

@@ -52,6 +52,12 @@ public final class CloudAeOriginGuard {
         return canUse(grid(buffer), hasJobs);
     }
 
+    /** UI projection only; never grants continuity or changes the guard's state. */
+    public boolean peekCanUse(MEPatternBufferPartMachine buffer, boolean hasJobs) {
+        Object grid = grid(buffer);
+        return grid != null && (!hasJobs || grid == acceptedGrid && !changedGrid && origin != null);
+    }
+
     /** Caller must authenticate an explicit reconnect; a matching owner alone is insufficient. */
     public boolean authorizeReconnect(Object grid, Origin endpoint, boolean authorized) {
         if (!authorized || grid == null || origin == null || !origin.equals(endpoint)) return false;

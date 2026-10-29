@@ -89,6 +89,11 @@ public final class GtlMegastructurePatterns {
         return () -> FACTORY_DEPTH.get() == 0 ? replaced.get() : raw.get();
     }
 
+    /** Final ability wrappers must not cache or modify a nested addon's original geometry. */
+    public static boolean resolvingOriginalFactory() {
+        return FACTORY_DEPTH.get() > 0;
+    }
+
     public static BlockPattern replace(ResourceLocation id, BlockPattern original) {
         if (id.equals(REPLACEMENTS.get(original))) return original;
         var spec = MANIFEST.getAsJsonObject(id.getPath());

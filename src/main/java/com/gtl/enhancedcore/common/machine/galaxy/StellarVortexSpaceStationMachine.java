@@ -99,8 +99,8 @@ public class StellarVortexSpaceStationMachine extends NoEnergyMultiblockMachine 
     public long getFieldStart() { return fieldStart; }
     @Override public int getAstralArrayCount() { return astralArrayCount; }
     @Override public int increaseAstralArrayCount(int amount) {
-        if (amount <= 0 || astralArrayCount >= 64) return 0;
-        int accepted = Math.min(amount, 64 - astralArrayCount);
+        if (amount <= 0 || astralArrayCount >= GalaxyLinks.REQUIRED_ARRAYS) return 0;
+        int accepted = Math.min(amount, GalaxyLinks.REQUIRED_ARRAYS - astralArrayCount);
         astralArrayCount += accepted;
         markDirty();
         return accepted;
@@ -111,7 +111,9 @@ public class StellarVortexSpaceStationMachine extends NoEnergyMultiblockMachine 
         text.add(Component.translatable("gtl_enhancedcore.galaxy.circuit_status",
                 circuitReady ? Component.translatable("gtl_enhancedcore.galaxy.circuit_ready")
                         : Component.translatable("gtl_enhancedcore.galaxy.circuit_missing")));
-        text.add(Component.translatable("gtl_enhancedcore.galaxy.array_status", astralArrayCount, 64));
+        text.add(Component.translatable("gtl_enhancedcore.galaxy.array_status", astralArrayCount, GalaxyLinks.REQUIRED_ARRAYS));
+        text.add(Component.translatable(astralArrayCount >= GalaxyLinks.REQUIRED_ARRAYS
+                ? "gtl_enhancedcore.galaxy.capacity_unlimited" : "gtl_enhancedcore.galaxy.capacity_finite"));
         text.add(Component.translatable("gtl_enhancedcore.galaxy.power_status"));
         text.add(Component.translatable(userId == null ? "gtl_enhancedcore.galaxy.owner_missing" : isFieldActive() ? "gtl_enhancedcore.galaxy.online" : "gtl_enhancedcore.galaxy.offline"));
         if (isFormed() && recipeLogic.isWorkingEnabled() && fieldFailure != 0) text.add(failureText());

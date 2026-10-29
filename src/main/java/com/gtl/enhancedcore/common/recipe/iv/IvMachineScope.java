@@ -2,6 +2,7 @@ package com.gtl.enhancedcore.common.recipe.iv;
 
 import com.gregtechceu.gtceu.api.machine.multiblock.CoilWorkableElectricMultiblockMachine;
 import com.gregtechceu.gtceu.api.machine.multiblock.WorkableElectricMultiblockMachine;
+import com.gregtechceu.gtceu.api.recipe.GTRecipe;
 import com.gtl.enhancedcore.common.machine.TieredParallelMachine;
 import com.gtladd.gtladditions.api.machine.IThreadModifierMachine;
 import java.util.Map;
@@ -106,7 +107,6 @@ public final class IvMachineScope {
     }
     public static boolean crossRecipeEnabled(WorkableElectricMultiblockMachine machine) {
         return machine != null && IvBuffers.targetController(machine)
-                && !IvBuffers.genericCloudMixedInputs(machine)
                 && IvBuffers.collect(machine).stream().anyMatch(IvBuffers::isolated);
     }
     public static boolean crossRecipeEnabled(Object machine) {
@@ -119,6 +119,18 @@ public final class IvMachineScope {
         if (machine instanceof CoilWorkableElectricMultiblockMachine coil)
             return Math.max(1, (int)Math.min(Integer.MAX_VALUE, Math.pow(2, coil.getCoilType().getCoilTemperature() / 900.0)));
         return Math.max(1, GTLRecipeModifiers.getHatchParallel(machine));
+    }
+
+    /**
+     * Per recipe parallel admission.  The engraving laser plant exposes ordinary and
+     * precision recipe maps on one controller; precision recipes are deliberately single
+     * operation while ordinary laser recipes retain the installed hatch capacity.
+     */
+    public static long parallel(WorkableElectricMultiblockMachine machine, GTRecipe recipe) {
+        long capacity = parallel(machine);
+        if (recipe != null && recipe.recipeType == org.gtlcore.gtlcore.common.data.GTLRecipeTypes.PRECISION_LASER_ENGRAVER_RECIPES)
+            return 1;
+        return capacity;
     }
     /**
      * 超级样板总成隔离模式的跨配方线程上限（引擎/GUI/Jade/物品 tips 的共同来源）。

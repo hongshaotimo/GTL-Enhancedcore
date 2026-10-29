@@ -350,7 +350,8 @@ public final class IvNativeEngine {
                 freeParallel[i] = IvRecipeInputs.maxParallel(ref.job.recipe, ref.job.inventory, virtual, ref.job.remaining);
             } else {
                 wants[i] = IvRecipeInputs.maxParallel(ref.job.recipe, ref.job.inventory,
-                        virtual, Math.min(budget, ref.job.remaining));
+                        virtual, Math.min(Math.min(budget,
+                                IvMachineScope.parallel(machine, ref.job.recipe)), ref.job.remaining));
             }
             if (wants[i] == 0 && freeParallel[i] == 0)
                 waiting(ref, budget == 0 ? "gtl_enhancedcore.diagnostic.iv_parallel" : "gtl_enhancedcore.diagnostic.iv_catalyst");
@@ -428,7 +429,8 @@ public final class IvNativeEngine {
                 var context = new IvNativeMatchContext(machine, job.inventory, virtual, job.remaining, granted);
                 scaled = context.prepare(job.recipe);
                 if (scaled == null) {
-                    waiting(ref, "gtl_enhancedcore.diagnostic.conditions", modifierDetail(job.recipe));
+                    waiting(ref, "gtl_enhancedcore.diagnostic.conditions",
+                            context.rejection() == null ? modifierDetail(job.recipe) : context.rejection());
                     return;
                 }
                 parallel = Math.max(1, IGTRecipe.of(scaled).getRealParallels());
@@ -572,7 +574,7 @@ public final class IvNativeEngine {
                 }
                 if (!powerReady(ref, payment, job.nativeWireless ? wireless : null, powerBudget)) continue;
                 if (!callbacks) {
-                    if (!machine.onWorking() || !logic.isWorkingEnabled()) {
+                    if (!access.iv$onWorking() || !logic.isWorkingEnabled()) {
                         for (var waiting : running)
                             waiting(waiting, "gtl_enhancedcore.diagnostic.conditions", nativeDetail("working", waiting.job.recipe.id.toString()));
                         return;

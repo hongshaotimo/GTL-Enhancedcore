@@ -50,9 +50,17 @@ public final class CloudPatternLibraryMachine extends MultiblockControllerMachin
     private int importCursor;
     private java.util.concurrent.CompletableFuture<Void> inboxUpload;
     private long uploadUiChange;
+    private long preparedCatalogRevision = Long.MIN_VALUE;
     private boolean uploadSourceRemoved;
     private boolean uploadSourceLoaded;
-    @Override public long cloudUiChangeToken() { return uploadUiChange; }
+    @Override public long cloudUiChangeToken() {
+        if (!(getLevel() instanceof ServerLevel) || libraryId == null) return uploadUiChange;
+        var store = CloudPatternStore.get(serverLevel());
+        if (!store.healthy()) return uploadUiChange;
+        var library = store.library(libraryId);
+        return 31 * (31 * (31 * (31 * uploadUiChange + library.catalogRevision()) + library.locationRevision())
+                + CloudLibraryService.catalogUiRevision(library)) + (meNetworkConnected() ? 1 : 0);
+    }
 
     public CloudPatternLibraryMachine(IMachineBlockEntity holder) { super(holder); nodeHolder = new GridNodeHolder(this); }
     @Override public IManagedGridNode getMainNode() { return nodeHolder.getMainNode(); }
@@ -98,8 +106,10 @@ public final class CloudPatternLibraryMachine extends MultiblockControllerMachin
             CloudLibraryNetwork.loaded(this);
             CloudImportJournal.reconcile(this);
             subscribeServerTick(this::importTick);
-            online = serviceGrid() != null;
-            connected = serviceGrid() != null && !cloud$importQuarantined();
+            prepareDisplay();
+            var grid = serviceGrid();
+            online = grid != null;
+            connected = grid != null && !cloud$importQuarantined();
         }
     }
     @Override public void onStructureFormed() {
@@ -398,9 +408,12 @@ public final class CloudPatternLibraryMachine extends MultiblockControllerMachin
         }, CloudImportJournal.sink(serverLevel(), libraryId, player.getUUID()), simulate ? 0 : importCursor, 64, simulate);
     }
     private void importTick() {
-        online = serviceGrid() != null;
-        connected = serviceGrid() != null && !cloud$importQuarantined();
+        CloudMeConnection.restore(this);
+        var grid = serviceGrid();
+        online = grid != null;
+        connected = grid != null && !cloud$importQuarantined();
         CloudNetworkPatternImport.tick(this);
+        prepareDisplay();
         if (inboxActor != null && !cloud$importQuarantined() && isFormed()) {
             ServerPlayer actor = serverLevel().getServer().getPlayerList().getPlayer(inboxActor);
             if (actor != null && openingAuthorized(actor)) {
@@ -417,6 +430,16 @@ public final class CloudPatternLibraryMachine extends MultiblockControllerMachin
             recordImportResult(result, false, true);
             if (result.rejection() != CloudBufferImport.Rejection.NONE || result.unresolved() != null || importCursor >= source.getPatternInventory().getSlots()) importingPlayer = null;
         } catch (RuntimeException failure) { importingPlayer = null; recordFailure(failure); }
+    }
+    private void prepareDisplay() {
+        if (libraryId == null) return;
+        var store = CloudPatternStore.get(serverLevel());
+        if (!store.healthy()) return;
+        var library = store.library(libraryId);
+        if (!library.healthy() || preparedCatalogRevision == library.catalogRevision()) return;
+        preparedCatalogRevision = library.catalogRevision();
+        try { CloudLibraryService.prepareOpeningCatalog(serverLevel(), libraryId); }
+        catch (RuntimeException failure) { recordFailure(failure); }
     }
     @Override public IItemTransfer cloudPatternItemCatalysts(Player player, String entryId) {
         return CloudPatternInventories.items(this, player, libraryId, entryId,

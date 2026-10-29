@@ -37,12 +37,12 @@ public abstract class CloudPatternPanel extends WidgetGroup {
     private WidgetGroup searchGroup;
     private ButtonWidget catalystMode, catalystPrevious, catalystNext;
     private SlotWidget catalystCircuit;
+    private final ImageWidget network;
 
     CloudPatternPanel(CloudPatternUiHost host, String title, String icon) {
         super(0, 0, WIDTH, HEIGHT);
         this.host = host;
-        var network = new ImageWidget(8, 7, 8, 8, () -> new ResourceTexture(
-                "gtlcore:textures/gui/wireless/status_" + (snapshot.getBoolean("networkConnected") ? "online" : "offline") + ".png"));
+        network = new ImageWidget(8, 7, 8, 8, new ResourceTexture("gtlcore:textures/gui/wireless/status_offline.png"));
         network.setClientSideWidget(); network.setId("cloud.me.status"); addWidget(network);
         text(this, 20, 7, title.equals("library") ? 108 : 148, 10,
                 () -> tr(snapshot.getBoolean("networkConnected") ? "me_connected" : "me_disconnected"), INK);
@@ -295,6 +295,7 @@ public abstract class CloudPatternPanel extends WidgetGroup {
             CompoundTag initial = host.cloudUiInitialSnapshot(player);
             snapshot = initial == null ? new CompoundTag() : initial.copy();
             lastPoll = player.serverLevel().getGameTime();
+            lastHostChange = host.cloudUiChangeToken();
         }
         super.writeInitialData(buffer);
         buffer.writeNbt(snapshot);
@@ -303,7 +304,7 @@ public abstract class CloudPatternPanel extends WidgetGroup {
         super.readInitialData(buffer);
         CompoundTag initial = buffer.readNbt();
         snapshot = initial == null ? new CompoundTag() : initial;
-        updated();
+        snapshotUpdated();
     }
     @Override public void detectAndSendChanges() {
         super.detectAndSendChanges();
@@ -348,6 +349,12 @@ public abstract class CloudPatternPanel extends WidgetGroup {
                 || !java.util.Arrays.equals(aliasFluids, snapshot.getLongArray("searchFluids"))
                 || !aliasModes.equals(snapshot.getList("types", net.minecraft.nbt.Tag.TAG_STRING).toString() + snapshot.getString("mode"))))
             searchDue = System.nanoTime() + SEARCH_DELAY_NANOS;
+        snapshotUpdated();
+    }
+    private void snapshotUpdated() {
+        // ImageWidget suppliers refresh on client ticks, after the first frame. Apply the server flag now.
+        network.setImage(new ResourceTexture("gtlcore:textures/gui/wireless/status_"
+                + (snapshot.getBoolean("networkConnected") ? "online" : "offline") + ".png"));
         updated();
     }
     void updated() {}

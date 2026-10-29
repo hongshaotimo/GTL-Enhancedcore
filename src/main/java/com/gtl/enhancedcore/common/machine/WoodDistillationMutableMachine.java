@@ -66,7 +66,9 @@ public final class WoodDistillationMutableMachine extends AddThreadMutableMachin
             var processed = new ArrayList<GTRecipe>();
             var parallels = new LongArrayList();
             long budget = (long) com.gtl.enhancedcore.common.recipe.iv.IvMachineScope.parallel(owner) * getMultipleThreads();
-            WoodDistillationAllocation.allocate(candidates, budget, (recipe, limit) -> {
+            WoodDistillationAllocation.allocate(candidates, budget,
+                    (recipe, limit) -> calculateParallel(machine, recipe, limit).firstLong(),
+                    (recipe, limit) -> {
                 long parallel = calculateParallel(machine, recipe, limit).firstLong();
                 if (parallel <= 0) return 0;
                 GTRecipe admitted = IParallelLogic.getRecipeOutputChance(owner,
@@ -76,7 +78,7 @@ public final class WoodDistillationMutableMachine extends AddThreadMutableMachin
                 processed.add(admitted);
                 parallels.add(parallel);
                 return parallel;
-            });
+                    });
             // As in ADD's greedy helper, false means the input and chances are already settled.
             // Normal/wireless recipe construction, energy payment and output delivery stay in ADD.
             return origins.isEmpty() ? null : new ParallelData(origins, parallels.toLongArray(), false, processed);

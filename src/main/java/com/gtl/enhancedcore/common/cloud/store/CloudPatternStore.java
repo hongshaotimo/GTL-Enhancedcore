@@ -23,8 +23,12 @@ import java.io.File;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import net.minecraft.world.level.storage.LevelResource;
+import net.minecraftforge.event.server.ServerStoppingEvent;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.common.Mod;
 
 /** World-scoped authority. SavedData snapshots do not form a transaction with AE or player saves. */
+@Mod.EventBusSubscriber(modid = "gtl_enhancedcore", bus = Mod.EventBusSubscriber.Bus.FORGE)
 public final class CloudPatternStore {
     public static final int ENTRIES_PER_SHARD = 256;
     private static final String INDEX = "gtl_cloud_patterns_index";
@@ -33,7 +37,28 @@ public final class CloudPatternStore {
     private final MinecraftServer server;
     private final Map<UUID, Library> libraries = new LinkedHashMap<>();
     private final Map<UUID, Node> nodes = new LinkedHashMap<>();
+    /** Mechanical disks get one coalesced background flush at most per ten seconds. */
+    private static final long SAVE_INTERVAL_NANOS = 10_000_000_000L;
+    private long nextScheduledSave;
+    private volatile boolean scheduledSavePending;
+    private boolean stopping;
 
+    /** Vanilla may request SavedData saves frequently. Coalesce only these requests;
+     * explicit transaction checkpoints retain their immediate durability boundary. */
+    private void saveScheduled() {
+        if (stopping) { checkpoint(); return; }
+        long now = System.nanoTime();
+        if (scheduledSavePending || now < nextScheduledSave) return;
+        scheduledSavePending = true; nextScheduledSave = now + SAVE_INTERVAL_NANOS;
+        checkpointAsync().whenComplete((ignored, failure) -> {
+            scheduledSavePending = false;
+            if (failure != null) com.mojang.logging.LogUtils.getLogger().error("Cloud background save failed; dirty partitions retained", failure);
+        });
+    }
+    @SubscribeEvent public static void stopping(ServerStoppingEvent event) {
+        var store = get(event.getServer().overworld()); store.stopping = true;
+        CloudImportIo.drain(); store.checkpoint();
+    }
     private CloudPatternStore(Index index, DimensionDataStorage storage, MinecraftServer server) {
         this.index = index; this.storage = storage; this.server = server;
     }
@@ -77,6 +102,25 @@ public final class CloudPatternStore {
     }
     public void checkpointLibrary(UUID libraryId) {
         var snapshots = captureCheckpoint(Objects.requireNonNull(libraryId));
+        try { persistSnapshots(snapshots); snapshots.forEach(s -> s.data.finishSnapshot(s.write, null)); }
+        catch (RuntimeException failure) { snapshots.forEach(s -> s.data.finishSnapshot(s.write, failure)); throw failure; }
+    }
+    /** Retry retained dirty snapshots after an I/O failure; corrupt/unknown data is never unquarantined. */
+    public void retryFailedWrites() {
+        if (!server.isSameThread()) throw new IllegalStateException("Cloud retry outside server thread");
+        var partitions = new ArrayList<CheckedData>();
+        libraries.values().forEach(library -> partitions.addAll(library.shards.values()));
+        partitions.addAll(nodes.values()); partitions.addAll(libraries.values()); partitions.add(index);
+        if (partitions.stream().noneMatch(data -> data.ioFailed)) return;
+        if (partitions.stream().anyMatch(data -> data.quarantined != null))
+            throw new IllegalStateException("Corrupt cloud partition requires review");
+        var directory = server.getWorldPath(LevelResource.ROOT).resolve("data");
+        var snapshots = new ArrayList<PartitionSnapshot>();
+        for (var library : libraries.values()) for (var shard : library.shards.entrySet())
+            capturePartition(snapshots, shard.getValue(), directory.resolve(shardName(library.id, shard.getKey()) + ".dat"));
+        for (var node : nodes.values()) capturePartition(snapshots, node, directory.resolve(nodeName(node.id) + ".dat"));
+        for (var library : libraries.values()) capturePartition(snapshots, library, directory.resolve(libraryName(library.id) + ".dat"));
+        capturePartition(snapshots, index, directory.resolve(INDEX + ".dat"));
         try { persistSnapshots(snapshots); snapshots.forEach(s -> s.data.finishSnapshot(s.write, null)); }
         catch (RuntimeException failure) { snapshots.forEach(s -> s.data.finishSnapshot(s.write, failure)); throw failure; }
     }
@@ -308,8 +352,26 @@ public final class CloudPatternStore {
             throw new IllegalStateException("Mode claim index mismatch; needs review");
         return library(node.libraryId).ledger.activate(nodeId, endpointToken);
     }
-    public boolean active(UUID nodeId, Object endpointToken) { Node node = node(nodeId); return library(node.libraryId).ledger.active(nodeId, endpointToken); }
+    public boolean active(UUID nodeId, Object endpointToken) {
+        if (!healthy()) return false;
+        UUID libraryId = index.nodeLibraries.get(nodeId);
+        if (libraryId == null) return false;
+        Library library = library(libraryId);
+        return library.healthy() && node(nodeId).healthy() && library.ledger.active(nodeId, endpointToken);
+    }
     public void deactivate(UUID nodeId, Object endpointToken) {
+        // Unload only drops the live token. Failed I/O must still detach the
+        // suppliers while retaining their last exact payload for a later save.
+        Node loaded = nodes.get(nodeId);
+        Library authority = loaded == null ? null : libraries.get(loaded.libraryId);
+        if (loaded != null && authority != null && (!healthy() || !authority.healthy() || !loaded.healthy())) {
+            if (authority.ledger.active(nodeId, endpointToken)) {
+                loaded.capture();
+                loaded.stateSupplier = null; loaded.inventorySupplier = null; loaded.originSupplier = null;
+                loaded.setDirty(); authority.ledger.deactivate(nodeId, endpointToken);
+            }
+            return;
+        }
         Node node = node(nodeId);
         if (library(node.libraryId).ledger.active(nodeId, endpointToken)) {
             unbindNodeSnapshot(node); library(node.libraryId).ledger.deactivate(nodeId, endpointToken);
@@ -325,7 +387,6 @@ public final class CloudPatternStore {
     public void markNodeDirty(Node node) {
         check(); node.requireHealthy();
         if (node.detached()) throw new IllegalStateException("Detached executor cannot dirty ledger");
-        if (!node.isDirty()) node.snapshotRevision = Math.addExact(node.snapshotRevision, 1);
         node.setDirty(); Library library = library(node.libraryId);
         if (library.snapshotRevisions.getOrDefault(node.id, -1L) != node.snapshotRevision) {
             library.snapshotRevisions.put(node.id, node.snapshotRevision); library.changed();
@@ -410,10 +471,13 @@ public final class CloudPatternStore {
     private static CompoundTag originalKey(ItemStack stack) { return stack.copyWithCount(1).save(new CompoundTag()); }
 
     public final class Library extends CheckedData {
+        @Override protected CloudPatternStore ownerStore() { return CloudPatternStore.this; }
         private final UUID id;
         private UUID owner;
         private CompoundTag meAnchor = new CompoundTag();
+        private CompoundTag openingCatalog = new CompoundTag();
         private long revision, catalogRevision, allocationRevision, locationRevision;
+        private final CloudAllocationChanges allocationChanges = new CloudAllocationChanges();
         private int nextOrdinal;
         private final Set<UUID> delegates = new LinkedHashSet<>();
         private final Map<UUID, Integer> entryPages = new LinkedHashMap<>();
@@ -450,6 +514,17 @@ public final class CloudPatternStore {
         }
         public UUID id() { return id; }
         public UUID owner() { return owner; }
+        /** Derived first-page directory only, never inventory, permission or a live connection. */
+        public CompoundTag openingCatalog() {
+            requireHealthy();
+            return hasOpeningCatalog() ? openingCatalog.copy() : new CompoundTag();
+        }
+        public boolean hasOpeningCatalog() { return openingCatalog.getInt("schema") == 1 && openingCatalog.getLong("catalogRevision") == catalogRevision; }
+        public void cacheOpeningCatalog(CompoundTag value) {
+            check(); requireHealthy();
+            openingCatalog = value.copy(); openingCatalog.putInt("schema", 1);
+            openingCatalog.putLong("catalogRevision", catalogRevision); setDirty();
+        }
         /** Physical AE node address used only to recover this library's live network association. */
         public CompoundTag meAnchor() { requireHealthy(); return meAnchor.copy(); }
         public boolean bindMeAnchor(CompoundTag anchor) {
@@ -461,6 +536,8 @@ public final class CloudPatternStore {
         public long revision() { return revision; }
         public long catalogRevision() { return catalogRevision; }
         public long allocationRevision() { return allocationRevision; }
+        public List<UUID> allocationChangesSince(long revision) { return allocationChanges.since(revision); }
+        public List<UUID> recentAllocationChanges() { return allocationChanges.recent(); }
         public long locationRevision() { return locationRevision; }
         private long countRevision = Long.MIN_VALUE;
         private int storedCount;
@@ -556,8 +633,10 @@ public final class CloudPatternStore {
             requireActor(actor); ledger.archive(entryId, expectedRevision, archived); catalogChanged(entryId);
         }
         private void changed() { requireHealthy(); revision = Math.addExact(revision, 1); setDirty(); }
-        private void allocationChanged() {
+        private void allocationChanged() { allocationChanged(null); }
+        private void allocationChanged(UUID entryId) {
             allocationRevision = Math.addExact(allocationRevision, 1); changed();
+            allocationChanges.record(allocationRevision, entryId);
             if (importBatchDepth != 0) importBatchChanged = true;
             else com.gtl.enhancedcore.common.cloud.CloudPatternAllocator.libraryChanged(server.overworld(), id);
         }
@@ -567,7 +646,7 @@ public final class CloudPatternStore {
         private void catalogChanged(UUID entryId) {
             catalogRevision = Math.addExact(catalogRevision, 1);
             com.gtl.enhancedcore.common.cloud.CloudLibraryService.catalogChanged(this, entryId);
-            allocationChanged();
+            allocationChanged(entryId);
         }
         private EntryShard shard(int page, boolean create) {
             return shards.computeIfAbsent(page, ignored -> {
@@ -583,6 +662,7 @@ public final class CloudPatternStore {
             tag.putLong("revision", revision); tag.putLong("catalogRevision", catalogRevision); tag.putLong("allocationRevision", allocationRevision);
             tag.putLong("locationRevision", locationRevision);
             if (!meAnchor.isEmpty()) tag.put("meAnchor", meAnchor.copy());
+            if (!openingCatalog.isEmpty()) tag.put("openingCatalog", openingCatalog.copy());
             tag.putInt("nextOrdinal", nextOrdinal); tag.put("catalysts", catalysts.copy());
             tag.put("importedCatalystGroups", importedCatalystGroups.copy());
             tag.put("delegates", uuidList(delegates)); ListTag directory = new ListTag();
@@ -604,8 +684,10 @@ public final class CloudPatternStore {
         @Override protected void readData(CompoundTag tag) {
             if (!id.equals(tag.getUUID("id")) || !owner.equals(tag.getUUID("owner"))) throw new IllegalArgumentException("Library identity mismatch");
             revision = tag.getLong("revision"); catalogRevision = tag.getLong("catalogRevision"); allocationRevision = tag.getLong("allocationRevision");
+            allocationChanges.reset(allocationRevision);
             locationRevision = tag.getLong("locationRevision");
             meAnchor = tag.getCompound("meAnchor").copy();
+            openingCatalog = tag.getCompound("openingCatalog").copy();
             if (!meAnchor.isEmpty() && (!meAnchor.contains("dimension", Tag.TAG_STRING)
                     || !meAnchor.contains("position", Tag.TAG_LONG) || !meAnchor.contains("blockEntity", Tag.TAG_STRING)
                     || !meAnchor.contains("side", Tag.TAG_INT))) throw new IllegalArgumentException("Invalid ME network anchor");
@@ -709,6 +791,7 @@ public final class CloudPatternStore {
         }
     }
     public final class Node extends CheckedData {
+        @Override protected CloudPatternStore ownerStore() { return CloudPatternStore.this; }
         private final UUID id, libraryId;
         private ResourceLocation dimension;
         private long position, snapshotRevision;
@@ -737,7 +820,15 @@ public final class CloudPatternStore {
                 CompoundTag nextState = Objects.requireNonNull(stateSupplier.get()).copy();
                 CompoundTag nextInventory = Objects.requireNonNull(inventorySupplier.get()).copy();
                 CompoundTag nextOrigin = Objects.requireNonNull(originSupplier.get()).copy();
-                ivState = nextState; inventory = nextInventory; sourceRoute = nextOrigin;
+                if (!ivState.equals(nextState) || !inventory.equals(nextInventory) || !sourceRoute.equals(nextOrigin)) {
+                    ivState = nextState; inventory = nextInventory; sourceRoute = nextOrigin;
+                    snapshotRevision = Math.addExact(snapshotRevision, 1); setDirty();
+                    // Capture is also used while unloading an I/O-failed partition. Preserve
+                    // its newest exact payload without re-entering health-gated lookup APIs.
+                    var library = Objects.requireNonNull(libraries.get(libraryId));
+                    library.snapshotRevisions.put(id, snapshotRevision);
+                    library.revision = Math.addExact(library.revision, 1); library.setDirty();
+                }
             }
         }
         @Override protected CompoundTag writeData() {
@@ -754,6 +845,7 @@ public final class CloudPatternStore {
         }
     }
     private final class EntryShard extends CheckedData {
+        @Override protected CloudPatternStore ownerStore() { return CloudPatternStore.this; }
         private final Library library;
         private final Map<UUID, Entry> entries = new LinkedHashMap<>();
         private EntryShard(Library library) { this.library = library; }
@@ -786,6 +878,7 @@ public final class CloudPatternStore {
         }
     }
     private static final class Index extends CheckedData {
+        @Override protected CloudPatternStore ownerStore() { return runtime; }
         private final Map<UUID, UUID> owners = new LinkedHashMap<>(), defaults = new LinkedHashMap<>(), nodeLibraries = new LinkedHashMap<>();
         private final Map<UUID, Map<String, UUID>> machineClaims = new LinkedHashMap<>();
         private final Map<UUID, String> nodeAddresses = new LinkedHashMap<>();
@@ -829,11 +922,13 @@ public final class CloudPatternStore {
         private record FileSnapshot(Path target, CompoundTag outer, WriteState state, long sequence, long dirtyEpoch) {}
         private final WriteState writes = new WriteState();
         private long dirtyEpoch, completedSequence;
+        private String persistedChecksum;
         private CompoundTag quarantined;
         private String diagnostic = "";
         private boolean ioFailed;
         protected abstract CompoundTag writeData();
         protected abstract void readData(CompoundTag tag);
+        protected CloudPatternStore ownerStore() { return null; }
         @Override public final void setDirty(boolean dirty) {
             if (dirty) dirtyEpoch = Math.addExact(dirtyEpoch, 1);
             super.setDirty(dirty);
@@ -848,7 +943,7 @@ public final class CloudPatternStore {
                 if (raw.getInt("formatVersion") != 1 || !raw.contains("data", Tag.TAG_COMPOUND)) throw new IllegalArgumentException("Unknown or missing cloud format");
                 CompoundTag data = raw.getCompound("data");
                 if (!checksum(data).equals(raw.getString("sha256"))) throw new IllegalArgumentException("Cloud shard checksum mismatch");
-                readData(data);
+                readData(data); persistedChecksum = raw.getString("sha256");
             } catch (RuntimeException failure) { quarantined = raw.copy(); diagnostic = failure.getMessage() == null ? failure.getClass().getSimpleName() : failure.getMessage(); }
         }
         @Override public final CompoundTag save(CompoundTag tag) {
@@ -857,18 +952,27 @@ public final class CloudPatternStore {
         }
         /** Vanilla clears dirty after IOException; cloud partitions retain dirty and fail closed instead. */
         @Override public final void save(File file) {
-            FileSnapshot snapshot = captureSnapshot(file.toPath());
-            if (snapshot == null) return;
+            FileSnapshot snapshot = null;
             try {
+                var owner = ownerStore();
+                if (owner != null) { owner.saveScheduled(); return; }
+                snapshot = captureSnapshot(file.toPath());
+                if (snapshot == null) return;
                 persistAll(List.of(snapshot)); finishSnapshot(snapshot, null);
             } catch (RuntimeException failure) {
-                finishSnapshot(snapshot, failure); throw failure;
+                if (snapshot != null) finishSnapshot(snapshot, failure);
+                else setDirty(true);
+                com.mojang.logging.LogUtils.getLogger().error("Cloud partition save failed; retained dirty data and previous snapshot: {}", file, failure);
             }
         }
         /** Server-thread capture; NBT is detached before the worker can see it. */
         private FileSnapshot captureSnapshot(Path target) {
             if (!isDirty() || quarantined != null) return null;
             CompoundTag outer = new CompoundTag(); outer.put("data", save(new CompoundTag()).copy()); NbtUtils.addCurrentDataVersion(outer);
+            // A generic markDirty is not evidence of an order/inventory mutation.
+            // Never elide a snapshot while an older in-flight write can still replace it.
+            if (writes.nextSequence == completedSequence && writes.persistedSequence == completedSequence
+                    && outer.getCompound("data").getString("sha256").equals(persistedChecksum)) { super.setDirty(false); return null; }
             long sequence = Math.addExact(writes.nextSequence, 1); writes.nextSequence = sequence;
             return new FileSnapshot(target, outer, writes, sequence, dirtyEpoch);
         }
@@ -877,10 +981,15 @@ public final class CloudPatternStore {
             if (snapshot.sequence < completedSequence) return;
             completedSequence = snapshot.sequence;
             if (writes.persistedSequence >= snapshot.sequence) {
+                persistedChecksum = snapshot.outer.getCompound("data").getString("sha256");
                 ioFailed = false; diagnostic = "";
                 if (dirtyEpoch == snapshot.dirtyEpoch) super.setDirty(false);
             } else if (failure != null) {
-                ioFailed = true; diagnostic = "Cloud snapshot write failed: " + failure.getClass().getSimpleName(); setDirty(true);
+                Throwable cause = failure;
+                while (cause.getCause() != null && cause.getCause() != cause) cause = cause.getCause();
+                ioFailed = true; diagnostic = "Cloud snapshot write failed: " + snapshot.target + " / "
+                        + cause.getClass().getSimpleName() + ": " + cause.getMessage(); setDirty(true);
+                com.mojang.logging.LogUtils.getLogger().error(diagnostic, failure);
             }
         }
         private static void persistAll(List<FileSnapshot> snapshots) {

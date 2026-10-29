@@ -15,6 +15,7 @@ public interface IvNativeAccess {
     String iv$message();
     boolean iv$managed();
     void iv$managed(boolean value);
+    boolean iv$onWorking();
     void iv$publish(CompoundTag summary, String message, GTRecipe display, int progress, int duration, RecipeLogic.Status status);
     default List<Component> iv$details() {
         var reasons = iv$summary().getList("reasons", Tag.TAG_STRING);

@@ -30,6 +30,29 @@ public abstract class IvNativeRecipeLogicMixin implements IvNativeAccess {
     @Unique @Persisted private boolean iv$managed;
     @Unique @Persisted private boolean iv$workingEnabled = true;
     @Unique @Persisted private boolean iv$workingStateStored;
+    @Unique private boolean iv$workingCallback, iv$callbackReset, iv$coolantWaiting;
+    @Unique private boolean iv$passivePatternLane;
+
+    @Override public boolean iv$onWorking() {
+        var machine = (WorkableElectricMultiblockMachine)((RecipeLogic)(Object)this).getMachine();
+        var id = machine.getDefinition().getId();
+        boolean periodicCoolant = id.getNamespace().equals("gtceu")
+                && (id.getPath().equals("cold_ice_freezer") || id.getPath().equals("blaze_blast_furnace"));
+        if (periodicCoolant && iv$coolantWaiting && machine.getOffsetTimer() % 20 != 0) return false;
+        iv$workingCallback = true; iv$callbackReset = false;
+        try {
+            boolean working = machine.onWorking();
+            if (periodicCoolant) iv$coolantWaiting = iv$callbackReset;
+            return working && !iv$callbackReset;
+        }
+        finally { iv$workingCallback = false; }
+    }
+    @Inject(method = "setProgress", at = @At("HEAD"))
+    private void iv$observeWorkingReset(int value, CallbackInfo ci) {
+        // GTLCore's cold freezer and blaze furnace report missing coolant by
+        // resetting the native display progress while returning true.
+        if (iv$workingCallback && value == 0) iv$callbackReset = true;
+    }
 
     @Override public IvNativeEngine iv$engine() {
         if (iv$engine == null) {
@@ -51,7 +74,8 @@ public abstract class IvNativeRecipeLogicMixin implements IvNativeAccess {
         waitingReason = status == RecipeLogic.Status.WAITING && !details.isEmpty() ? details.getFirst() : null;
     }
     @Unique private boolean iv$isCrossRecipeEnabled() {
-        return IvMachineScope.crossRecipeEnabled(((RecipeLogic)(Object)this).getMachine());
+        return !iv$passivePatternLane
+                && IvMachineScope.crossRecipeEnabled(((RecipeLogic)(Object)this).getMachine());
     }
     @Unique private void iv$restoreWorkingState() {
         if (!iv$workingStateStored) {
@@ -86,9 +110,21 @@ public abstract class IvNativeRecipeLogicMixin implements IvNativeAccess {
     }
     @Inject(method = "serverTick", at = @At("HEAD"), cancellable = true)
     private void iv$tick(CallbackInfo ci) {
-        if (!iv$isCrossRecipeEnabled()) return;
+        if (!(((RecipeLogic)(Object)this).getMachine() instanceof WorkableElectricMultiblockMachine machine)
+                || !IvMachineScope.crossRecipeEnabled(machine)) return;
+        if (IvBuffers.runPassivePatternLane(machine, machine.getOffsetTimer())) {
+            // Let the original RecipeLogic tick consume the ordinary input-assembly
+            // pattern.  The guards below see the lane flag and stay out of its way.
+            iv$passivePatternLane = true;
+            return;
+        }
+        iv$passivePatternLane = false;
         iv$engine().tick();
         ci.cancel();
+    }
+    @Inject(method = "serverTick", at = @At("TAIL"))
+    private void iv$clearPassiveLane(CallbackInfo ci) {
+        iv$passivePatternLane = false;
     }
     @Inject(method = "updateTickSubscription", at = @At("HEAD"), cancellable = true)
     private void iv$subscription(CallbackInfo ci) {

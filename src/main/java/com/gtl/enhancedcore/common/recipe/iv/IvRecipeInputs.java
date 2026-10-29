@@ -91,10 +91,33 @@ public final class IvRecipeInputs {
     /** Pattern output counts are AE promises, not recipe multipliers or guaranteed chance yields. */
     public static long patternOperations(GTRecipe recipe, Map<AEKey, Long> input, Map<AEKey, Long> virtual,
                                          Map<AEKey, Long> expected) {
+        return patternOperations(recipe.inputs, recipe.outputs, input, virtual, expected);
+    }
+
+    /**
+     * Classification-only sizing for cloud publication. Reusable recipe inputs (GT
+     * catalysts/tools, represented by chance 0) are deliberately omitted here; the
+     * real dispatch path still calls {@link #patternOperations(GTRecipe, Map, Map, Map)}
+     * and therefore requires the physical catalyst.
+     */
+    public static long patternOperationsIgnoringReusableInputs(GTRecipe recipe, Map<AEKey, Long> input,
+                                                                Map<AEKey, Long> virtual, Map<AEKey, Long> expected) {
+        Map<RecipeCapability<?>, List<Content>> consumable = new LinkedHashMap<>();
+        recipe.inputs.forEach((cap, contents) -> {
+            var kept = contents.stream().filter(content -> content.chance > 0).toList();
+            if (!kept.isEmpty()) consumable.put(cap, kept);
+        });
+        return patternOperations(consumable, recipe.outputs, input, virtual, expected);
+    }
+
+    private static long patternOperations(Map<RecipeCapability<?>, List<Content>> inputs,
+                                          Map<RecipeCapability<?>, List<Content>> outputs,
+                                          Map<AEKey, Long> input, Map<AEKey, Long> virtual,
+                                          Map<AEKey, Long> expected) {
         if (expected.isEmpty() || expected.values().stream().anyMatch(amount -> amount <= 0)) return 0;
-        Map<AEKey, Long> possibleOutputs = outputs(recipe.outputs);
+        Map<AEKey, Long> possibleOutputs = outputs(outputs);
         if (!possibleOutputs.keySet().containsAll(expected.keySet())) return 0;
-        if (hasConsumedInputs(recipe)) {
+        if (inputs.values().stream().flatMap(List::stream).anyMatch(content -> content.chance > 0)) {
             // The pattern's input stack defines how many base recipe operations one pattern run represents.
             // This remains valid when the output stack was manually edited or contains chance alternatives.
             long limit = 0;
@@ -102,8 +125,8 @@ public final class IvRecipeInputs {
                 if (amount < 0) throw new IllegalArgumentException("样板输入数量无效");
                 limit = limit > Long.MAX_VALUE - amount ? Long.MAX_VALUE : limit + amount;
             }
-            long operations = maxParallel(recipe, input, virtual, limit);
-            return operations > 0 && plan(recipe, input, virtual, operations) != null ? operations : 0;
+            long operations = maxParallel(inputs, input, virtual, limit);
+            return operations > 0 && plan(inputs, input, virtual, operations) != null ? operations : 0;
         }
         // Preserve finite sizing for genuinely input-free recipes; never interpret a reusable tool
         // or virtual catalyst as an unlimited processing budget.
@@ -115,7 +138,20 @@ public final class IvRecipeInputs {
             if (scale >= 0 && scale != ratio) return 0;
             scale = ratio;
         }
-        return scale > 0 && plan(recipe, input, virtual, scale) != null ? scale : 0;
+        return scale > 0 && plan(inputs, input, virtual, scale) != null ? scale : 0;
+    }
+
+    private static long maxParallel(Map<RecipeCapability<?>, List<Content>> inputs,
+                                    Map<AEKey, Long> input, Map<AEKey, Long> virtual, long limit) {
+        long low = 0, high = limit;
+        while (low < high) {
+            long mid = low + (high - low) / 2 + 1;
+            boolean fits;
+            try { fits = plan(inputs, input, virtual, mid) != null; }
+            catch (ArithmeticException overflow) { fits = false; }
+            if (fits) low = mid; else high = mid - 1;
+        }
+        return low;
     }
     public static void subtract(Map<AEKey, Long> inventory, Map<AEKey, Long> consumed) {
         // Validate the entire commit before touching any entry.

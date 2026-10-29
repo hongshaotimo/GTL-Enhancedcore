@@ -72,14 +72,18 @@ public final class CloudPatternFlowRuntimeChecks {
     private static boolean nativeFlow;
     private static boolean genericFlow, mainGridLinked, networkImportFlow;
     private static String phase;
+    private static com.gregtechceu.gtceu.common.machine.multiblock.part.FluidHatchPartMachine repairFluid;
+    private static com.gregtechceu.gtceu.common.machine.multiblock.part.ItemBusPartMachine repairBus;
+    private static int repairAt, repairElapsed;
     private static final AEItemKey INPUT = AEItemKey.of(Items.APPLE);
     private static final AEItemKey OUTPUT = AEItemKey.of(Items.GOLD_INGOT);
     public static void begin(ServerLevel world) throws Exception {
         level = world; started = System.nanoTime(); stage = "build";
         phase = System.getProperty("gtl.cloudStoreAuditPhase", "flow"); nativeFlow = phase.equals("native");
         networkImportFlow = phase.equals("network_import") || Boolean.getBoolean("gtl.cloudNetworkImportAudit");
-        genericFlow = phase.equals("generic") || phase.equals("long_dispatch") || phase.equals("authority_flow") || Boolean.getBoolean("gtl.cloudPassiveRefreshAudit") || networkImportFlow;
+        genericFlow = phase.equals("generic") || phase.equals("repair") || phase.equals("long_dispatch") || phase.equals("authority_flow") || Boolean.getBoolean("gtl.cloudPassiveRefreshAudit") || Boolean.getBoolean("gtl.cloudUploadLatencyAudit") || Boolean.getBoolean("gtl.cloudRefundDissolutionAudit") || networkImportFlow;
         player = FakePlayerFactory.get(level, new GameProfile(UUID.fromString("4c982882-ceda-462d-ad4c-ef7c8612c580"), "CloudFlowAudit"));
+        if (Boolean.getBoolean("gtl.cloudInstantAudit")) CloudInstantRuntimeChecks.prepareWireless(level, player);
         player.setGameMode(GameType.CREATIVE); player.setPos(256, 100, 250);
         for (int x = 13; x <= 19; x++) for (int z = 13; z <= 19; z++) level.setChunkForced(x, z, true);
         for (int x = 19; x <= (networkImportFlow ? 22 : 21); x++) for (int z = 15; z <= 17; z++) level.setChunkForced(x, z, true);
@@ -130,6 +134,26 @@ public final class CloudPatternFlowRuntimeChecks {
             if (genericMaintenance == null) throw new AssertionError("LCR auto-builder did not expose its actual maintenance ability candidate");
             genericMaintenance.setMaintenanceProblems((byte)0);
         }
+        if (phase.equals("repair")) {
+            genericMaintenance.fixAllMaintenanceProblems();
+            for (String id : List.of("gtceu:ev_input_bus","gtceu:ev_input_hatch")) {
+                boolean placed=false;
+                for(var pos:BlockPos.betweenClosed(CORE.offset(-2,-2,-2),CORE.offset(2,2,2))) {
+                    if(!level.getBlockState(pos).is(casing.getBlock()))continue;
+                    var candidate=GTRegistries.MACHINES.get(new ResourceLocation(id));
+                    level.setBlock(pos,candidate.defaultBlockState(),3);
+                    if(controller.getPattern().checkPatternAt(controller.getMultiblockState(),false)) {
+                        var part=MetaMachine.getMachine(level,pos);
+                        if(part instanceof com.gregtechceu.gtceu.common.machine.multiblock.part.ItemBusPartMachine bus)repairBus=bus;
+                        else repairFluid=(com.gregtechceu.gtceu.common.machine.multiblock.part.FluidHatchPartMachine)part;
+                        placed=true;break;
+                    }
+                    level.setBlock(pos,casing,3);
+                }
+                require(placed,"Real LCR geometry accepts cloud and auxiliary "+id);
+            }
+            repairBus.getInventory().setStackInSlot(0,new ItemStack(Items.APPLE,7));
+        }
         require(materials > 0 && energies > 0, "Production auto-builder placed real material and energy candidates");
         child = (CloudPatternBufferMachine)MetaMachine.getMachine(level, childPos);
         child.setFrontFacing(Direction.NORTH); child.onMachinePlaced(player, ItemStack.EMPTY);
@@ -143,6 +167,7 @@ public final class CloudPatternFlowRuntimeChecks {
         if (nativeFlow) {
             builder.notConsumable(Items.DIAMOND);
         }
+        if(phase.equals("repair")) builder.perTick(true).inputFluids(com.gregtechceu.gtceu.common.data.GTMaterials.Water.getFluid(1)).perTick(false);
         var recipe = builder.buildRawRecipe(); auditRecipe = recipe;
         var recipes = new ArrayList<net.minecraft.world.item.crafting.Recipe<?>>(level.getRecipeManager().getRecipes()); recipes.add(recipe);
         level.getRecipeManager().replaceRecipes(recipes);
@@ -214,10 +239,18 @@ public final class CloudPatternFlowRuntimeChecks {
                         mainGridLinked = true;
                     }
                     if (!child.cloudReady(true)) return;
-                    if (phase.equals("long_dispatch")) { uploadPattern(); return; }
+                    if (phase.equals("long_dispatch") || phase.equals("repair")) { uploadPattern(); return; }
                     require(main.getMainNode().isActive() && main.getMainNode().getGrid() == child.getGrid(),
                             "Main controller physically connects to its adjacent AE energy-cell node; only the persistent remote energy-cell bridge uses GridHelper");
                     require(main.libraryId().equals(child.cloudLibraryId()), "Actual production 3x3x3 library forms and resolves the child's world library");
+                    if (Boolean.getBoolean("gtl.cloudUploadLatencyAudit")) {
+                        CloudUploadLatencyRuntimeChecks.begin(level, main, child, player, CHECKS);
+                        stage = "upload_latency"; break;
+                    }
+                    if (Boolean.getBoolean("gtl.cloudRefundDissolutionAudit")) {
+                        CloudRefundDissolutionRuntimeChecks.begin(level, main, child, player, CHECKS);
+                        stage = "refund_dissolution"; break;
+                    }
                     if (networkImportFlow) {
                         CloudNetworkImportRuntimeChecks.begin(level, main, player, CHECKS);
                         stage = "network_import"; break;
@@ -235,6 +268,12 @@ public final class CloudPatternFlowRuntimeChecks {
                 }
                 case "passive_refresh" -> {
                     if (CloudPatternPassiveRefreshRuntimeChecks.step()) finish(null);
+                }
+                case "upload_latency" -> {
+                    if (CloudUploadLatencyRuntimeChecks.step()) finish(null);
+                }
+                case "refund_dissolution" -> {
+                    if (CloudRefundDissolutionRuntimeChecks.step()) finish(null);
                 }
                 case "network_import" -> {
                     if (CloudNetworkImportRuntimeChecks.step()) finish(null);
@@ -334,7 +373,36 @@ public final class CloudPatternFlowRuntimeChecks {
                         if (!visible) return;
                         CloudLongDispatchRuntimeChecks.run(level, child, INPUT, OUTPUT, CHECKS); finish(null); return;
                     }
-                    dispatch(); stage = "output";
+                    dispatch(); stage = phase.equals("repair") ? "repair_dry" : "output"; repairAt=ticks;
+                }
+                case "repair_dry" -> {
+                    if(ticks-repairAt<25)return;
+                    var job=child.iv$getState().jobs.getFirst();
+                    require(job.parallel==0 && job.inventory.getOrDefault(INPUT,0L)==1,"Cloud accepts with ordinary bus/hatch; absent tick fluid prevents starting without taking order materials");
+                    require(repairBus.getInventory().getStackInSlot(0).getCount()==7,"Cloud order never consumes the ordinary input bus stock");
+                    repairFluid.tank.setFluidInTank(0,com.gregtechceu.gtceu.common.data.GTMaterials.Water.getFluid(100000));
+                    stage="repair_work";
+                }
+                case "repair_work" -> {
+                    var job=child.iv$getState().jobs.getFirst();if(job.elapsed<4)return;
+                    require(repairFluid.tank.getFluidInTank(0).getAmount()<100000,"Actual cloud engine consumes continuous fluid from ordinary hatch");
+                    repairFluid.tank.setFluidInTank(0,com.lowdragmc.lowdraglib.side.fluid.FluidStack.empty());
+                    repairElapsed=job.elapsed;repairAt=ticks;stage="repair_pause";
+                }
+                case "repair_pause" -> {
+                    if(ticks-repairAt<25)return;
+                    require(child.iv$getState().jobs.getFirst().elapsed==repairElapsed,"Drained auxiliary fluid pauses the actual order for 25 server ticks");
+                    repairFluid.tank.setFluidInTank(0,com.gregtechceu.gtceu.common.data.GTMaterials.Water.getFluid(100000));
+                    stage="repair_finish";
+                }
+                case "repair_finish" -> {
+                    if(!child.iv$getState().jobs.isEmpty())return;
+                    require(child.getGrid().getStorageService().getInventory().extract(OUTPUT,2,Actionable.MODULATE,IActionSource.ofPlayer(player))==1,"Resupplied cloud order completes and delivers exactly one output to ME");
+                    require(repairBus.getInventory().getStackInSlot(0).getCount()==7,"Ordinary bus still holds all seven items after order completion");
+                    CloudRepairRuntimeChecks.structures(level,CHECKS);
+                    CloudRepairRuntimeChecks.storageFailure(level,child,CHECKS);
+                    if (Boolean.getBoolean("gtl.cloudInstantAudit")) CloudInstantRuntimeChecks.run(level,main,child,player,CHECKS);
+                    finish(null);return;
                 }
                 case "output" -> {
                     if (genericFlow && ticks - dispatchedAt >= 40 && !child.iv$getState().jobs.isEmpty()
@@ -471,6 +539,7 @@ public final class CloudPatternFlowRuntimeChecks {
         var bits = new BitSet(); bits.set(net.minecraft.core.registries.BuiltInRegistries.ITEM.getId(Items.GOLD_INGOT));
         var localized = new com.gtl.enhancedcore.common.cloud.ui.CloudPatternSearch(bits, new BitSet(), Set.of());
         var empty = com.gtl.enhancedcore.common.cloud.ui.CloudPatternSearch.EMPTY;
+        CloudInstantRuntimeChecks.awaitCatalog(level, child.cloudLibraryId());
         var page = CloudLibraryService.page(level, child.cloudLibraryId(), "金锭", "", 0, "", localized);
         require(page.getInt("total") >= 1 && page.getList("entries", 10).getCompound(0).getString("nameJson").contains("item.minecraft.gold_ingot"),
                 "Real dedicated-server directory accepts client registry aliases for Chinese search and preserves translated output component JSON");
@@ -533,6 +602,8 @@ public final class CloudPatternFlowRuntimeChecks {
     }
     private static void require(boolean value, String message) { if (!value) throw new AssertionError(message); CHECKS.add(message); }
     private static void finish(Throwable failure) {
+        if (Boolean.getBoolean("gtl.cloudUploadLatencyAudit")) CloudUploadLatencyRuntimeChecks.close();
+        if (Boolean.getBoolean("gtl.cloudRefundDissolutionAudit")) CloudRefundDissolutionRuntimeChecks.close();
         if (networkImportFlow) CloudNetworkImportRuntimeChecks.close();
         stage = "done"; var report = new LinkedHashMap<String,Object>(); report.put("status", failure == null ? "PASS" : "FAIL");
         report.put("phase", phase); report.put("machine", controller.getDefinition().getId().toString()); report.put("checks", CHECKS); report.put("gridTrace", GRID_TRACE); report.put("ticks", ticks); report.put("seconds", (System.nanoTime() - started) / 1_000_000_000.0);

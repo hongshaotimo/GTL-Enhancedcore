@@ -170,7 +170,8 @@ public final class CloudTerminalUpload {
         ((CloudTerminalSource)logic).cloud$markReconciled();
         CompoundTag state = state(logic);
         if (!state.hasUUID("identity")) return;
-        if (quarantined(logic) && !recoverUncommittedSourceMismatch(level, logic, state)) {
+        if (quarantined(logic) && !recoverUncommittedSourceMismatch(level, logic, state)
+                && !recoverInterruptedCommit(level, logic, state)) {
             REVIEWS.put(state.getUUID("identity"), new java.lang.ref.WeakReference<>(logic)); return;
         }
         if (quarantined(logic)) return;
@@ -188,6 +189,35 @@ public final class CloudTerminalUpload {
             state.putUUID("library", intent.getUUID("library")); state.putUUID("lastOperation", intent.getUUID("operation"));
             complete(level, logic, logic.getEncodedPatternInv(), intent);
         } catch (IOException | RuntimeException failure) { quarantine(logic, failure); }
+    }
+    /** A durable debit marker owns exactly one intent. Retry its commit, never debit the current slot again. */
+    private static boolean recoverInterruptedCommit(ServerLevel level, PatternEncodingLogic logic, CompoundTag state) {
+        String failure = state.getString("failure");
+        if (!failure.equals("Cloud snapshot write failed") && !failure.startsWith("Cloud snapshot write failed:")
+                && !failure.equals("Cloud snapshot durability requires review")) return false;
+        try {
+            CompoundTag intent = NbtIo.readCompressed(directory(level, state.getUUID("identity")).resolve("head.dat").toFile());
+            if (intent.getInt("schema") != 2 || !intent.getUUID("source").equals(state.getUUID("identity"))
+                    || intent.getLong("generation") < 1 || intent.getLong("generation") != state.getLong("processedGeneration")
+                    || !state.hasUUID("lastOperation") || !intent.getUUID("operation").equals(state.getUUID("lastOperation"))
+                    || !state.hasUUID("library") || !intent.getUUID("library").equals(state.getUUID("library"))) return false;
+            var inventory = logic.getEncodedPatternInv();
+            ItemStack escrow = state.contains("escrow", Tag.TAG_COMPOUND) ? ItemStack.of(state.getCompound("escrow")) : ItemStack.EMPTY;
+            if (state.contains("escrow") && (escrow.isEmpty() || !inventory.getStackInSlot(0).isEmpty())) return false;
+            // complete validates an existing receipt's kind, payload and configuration;
+            // a missing receipt is committed from the already-debited durable intent.
+            CloudPatternStore.get(level).retryFailedWrites();
+            complete(level, logic, inventory, intent);
+            if (!escrow.isEmpty()) inventory.setItemDirect(0, escrow);
+            state.remove("quarantined"); state.remove("failure"); state.remove("escrow");
+            logic.saveChanges(); REVIEWS.remove(state.getUUID("identity"));
+            LOG.info("Recovered interrupted cloud terminal commit: source={}, generation={}",
+                    state.getUUID("identity"), state.getLong("processedGeneration"));
+            return true;
+        } catch (IOException | RuntimeException unavailable) {
+            LOG.warn("Cloud terminal commit is still unavailable: {}", diagnostic(logic), unavailable);
+            return false;
+        }
     }
     // A source mismatch is retryable only when the debit marker and receipts prove it never committed.
     private static boolean recoverUncommittedSourceMismatch(ServerLevel level, PatternEncodingLogic logic, CompoundTag state) {

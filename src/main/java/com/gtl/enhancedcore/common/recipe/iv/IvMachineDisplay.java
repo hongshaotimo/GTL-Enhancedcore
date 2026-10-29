@@ -67,13 +67,15 @@ public final class IvMachineDisplay {
 
     /** The upstream capacity rows retain their position, gray labels and colored values. */
     public static void stellarDisplay(List<Component> text, BigInteger powerCap, BigInteger balance, BigInteger batchEut) {
-        canonicalLine(text, "gtceu.multiblock.max_energy_per_tick", Component.translatable(
-                "gtceu.multiblock.max_energy_per_tick",
-                energyValue(powerCap, ChatFormatting.RED),
-                Component.translatable("gtl_enhancedcore.galaxy.grid_limited").withStyle(ChatFormatting.RED))
+        for (int i = 0; i < text.size(); i++) {
+            if ("gtceu.multiblock.max_energy_per_tick".equals(key(text.get(i))))
+                text.set(i, Component.translatable("gtl_enhancedcore.galaxy.max_power"));
+        }
+        canonicalLine(text, "gtl_enhancedcore.galaxy.max_power", Component.translatable(
+                "gtl_enhancedcore.galaxy.max_power", energyValue(powerCap, ChatFormatting.RED))
                 .withStyle(ChatFormatting.GRAY));
         canonicalLine(text, "gtceu.multiblock.max_recipe_tier", Component.translatable(
-                "gtceu.multiblock.max_recipe_tier", Component.literal("MAX+16").withStyle(ChatFormatting.RED))
+                "gtceu.multiblock.max_recipe_tier", Component.literal("MAX").withStyle(ChatFormatting.RED))
                 .withStyle(ChatFormatting.GRAY));
         canonicalLine(text, "gtl_enhancedcore.galaxy.power_cap", null);
         canonicalLine(text, "gtl_enhancedcore.galaxy.grid_balance", balance == null ? null : Component.translatable(

@@ -27,7 +27,9 @@ public final class StellarIvClientChecks {
         List<String> checks = new ArrayList<>();
         Map<String, Object> result = new LinkedHashMap<>();
         try {
-            if (!directory.startsWith(Path.of("C:/IDEA/GTL-Enhancedcore/_audit/stellar-unbounded-gui-20261028"))
+            if (!(directory.startsWith(Path.of("C:/IDEA/GTL-Enhancedcore/_audit/stellar-unbounded-gui-20261028"))
+                    || directory.startsWith(Path.of("C:/IDEA/GTL-Enhancedcore/_audit/cloud-crash-inputs-20261028"))
+                    || directory.startsWith(Path.of("C:/IDEA/GTL-Enhancedcore/_audit/stellar-array-fix-20261028")))
                     || !Files.isRegularFile(directory.resolve("galaxy.marker")))
                 throw new AssertionError("Not the marked task-owned fixture");
             if (mc.level != null || mc.getSingleplayerServer() != null)

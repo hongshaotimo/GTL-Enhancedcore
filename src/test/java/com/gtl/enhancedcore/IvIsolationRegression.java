@@ -10,6 +10,7 @@ import com.gtl.enhancedcore.common.recipe.iv.IvRemainingTime;
 public final class IvIsolationRegression {
     private static int assertions;
     public static int run() {
+        laserPlantRecipeScopedParallelRegression();
         check(LongAllocation.plan(List.of(supply("iron", 10)), List.of(need(Set.of("iron"), 6), need(Set.of("iron", "copper"), 6))) == null,
                 "overlapping material cannot spend the same ten ingots twice");
         var split = LongAllocation.plan(List.of(supply("iron", 6), supply("copper", 6)),
@@ -104,6 +105,21 @@ public final class IvIsolationRegression {
         check(IvRemainingTime.estimatedDuration(BigInteger.valueOf(Long.MAX_VALUE), 1, 20, 1) == Integer.MAX_VALUE,
                 "huge remaining time saturates display without cancelling the energy debt");
         return assertions;
+    }
+
+    private static void laserPlantRecipeScopedParallelRegression() {
+        try {
+            String scope = java.nio.file.Files.readString(java.nio.file.Path.of(
+                    "src/main/java/com/gtl/enhancedcore/common/recipe/iv/IvMachineScope.java"));
+            String engine = java.nio.file.Files.readString(java.nio.file.Path.of(
+                    "src/main/java/com/gtl/enhancedcore/common/recipe/iv/IvNativeEngine.java"));
+            check(scope.contains("PRECISION_LASER_ENGRAVER_RECIPES") && scope.contains("return 1;"),
+                    "precision laser recipes have an explicit per-recipe parallel cap of one");
+            check(engine.contains("IvMachineScope.parallel(machine, ref.job.recipe)"),
+                    "native scheduling derives capacity from each job recipe, avoiding mode cache leakage");
+        } catch (java.io.IOException failure) {
+            throw new AssertionError(failure);
+        }
     }
     /**
      * 原生机器超级总成模式线程预算：新增 128，GTLCore 已有的 64 另行相加，再叠加 Ω。

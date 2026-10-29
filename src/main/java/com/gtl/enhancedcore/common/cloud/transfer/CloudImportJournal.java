@@ -47,11 +47,12 @@ public final class CloudImportJournal {
             return CloudImportIo.run(() -> writeFile(journal, committed));
         }, () -> {
             store.acknowledge(library, actor, transaction);
-            // Preserve the former ACK-before-return boundary. This final authority-only flush
-            // does not wait for unrelated libraries or unchanged payloads.
-            store.checkpointLibrary(library);
             tag.putString("status", "COMMITTED");
             REVIEWS.computeIfAbsent(root(level), unused -> new ReviewCatalog()).remember(tag);
+            // COMMITTED WAL already proves this upload. ACK may now publish; a later
+            // checkpoint failure retains dirty data and fails closed at the partition.
+            // Never roll back a confirmed upload that may already own a live lease/job.
+            return store.checkpointLibraryAsync(library);
         }).whenComplete((ignored, failure) -> level.getServer().execute(() -> activeUploads(level).remove(transaction)));
     }
     public static CloudBufferImport.ImportSink sink(ServerLevel level, UUID library, UUID actor) {

@@ -44,7 +44,10 @@ public abstract class CloudTerminalMenuMixin extends MEStorageMenu implements Cl
     @Override public boolean cloud$libraryBound() { return cloud$bound; }
     @Override public String cloud$diagnostic() { return cloud$review; }
     @Override public boolean cloud$hasOriginal() {
-        if (!cloud$review.isEmpty() || CloudTerminalUpload.quarantined(encodingLogic)) return false;
+        if (cloud$review.contains("Cloud snapshot write failed")) return true;
+        // Wireless hosts can retain an old item-NBT copy for this client menu's lifetime.
+        // GuiSync is authoritative after server-side recovery; that local copy must not relock the button.
+        if (!cloud$review.isEmpty() || !isClientSide() && CloudTerminalUpload.quarantined(encodingLogic)) return false;
         var stack = encodingLogic.getEncodedPatternInv().getStackInSlot(0);
         return CloudTerminalUpload.processingOriginal(stack, getPlayer().level());
     }
@@ -53,8 +56,14 @@ public abstract class CloudTerminalMenuMixin extends MEStorageMenu implements Cl
         if (!(getPlayer() instanceof ServerPlayer player)) return;
         var binding = cloud$binding();
         if (!binding.available()) { cloud$bound = false; return; }
-        if (CloudTerminalUpload.quarantined(encodingLogic)) return;
         try {
+            if (CloudTerminalUpload.quarantined(encodingLogic)) {
+                CloudTerminalUpload.reconcile(player.serverLevel(), encodingLogic);
+                cloud$review = CloudTerminalUpload.diagnostic(encodingLogic);
+                if (!cloud$review.isEmpty()) throw new IllegalStateException("Terminal source requires review");
+                player.displayClientMessage(Component.translatable("gtl_enhancedcore.cloud.terminal.recovered"), true);
+                return;
+            }
             CloudTerminalUpload.upload(player, binding.libraryId(), encodingLogic);
             player.displayClientMessage(Component.translatable("gtl_enhancedcore.cloud.terminal.uploaded"), true);
         } catch (RuntimeException failure) {
@@ -63,5 +72,6 @@ public abstract class CloudTerminalMenuMixin extends MEStorageMenu implements Cl
                     ? "gtl_enhancedcore.cloud.terminal.source_changed" : "gtl_enhancedcore.cloud.terminal.failed"), true);
         }
         cloud$bound = cloud$binding().available();
+        cloud$review = CloudTerminalUpload.diagnostic(encodingLogic);
     }
 }

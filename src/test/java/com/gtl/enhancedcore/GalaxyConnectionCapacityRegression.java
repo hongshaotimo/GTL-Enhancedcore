@@ -7,10 +7,26 @@ import java.util.Set;
 
 final class GalaxyConnectionCapacityRegression {
     static int run() throws Exception {
-        check(!GalaxyLinks.connectionProvidesUnlimitedCapacity(false, false), "inactive link provides no capacity");
-        check(GalaxyLinks.connectionProvidesUnlimitedCapacity(true, false), "active target link unlocks unlimited capacity");
-        check(!GalaxyLinks.connectionProvidesUnlimitedCapacity(true, true), "ADD thread modifier takes precedence");
-        check(!GalaxyLinks.connectionProvidesUnlimitedCapacity(false, true), "thread modifier does not activate target link");
+        int capacityChecks = 0;
+        for (int arrays = 0; arrays <= 64; arrays++) {
+            for (boolean active : new boolean[]{false, true}) {
+                for (boolean modifier : new boolean[]{false, true}) {
+                    boolean unlimited = active && !modifier && arrays == 64;
+                    check(GalaxyLinks.connectionProvidesUnlimitedCapacity(active, modifier, arrays) == unlimited,
+                            "only a full active station without a thread modifier grants unlimited capacity");
+                    for (int base : new int[]{1, 64, 128, 192, Integer.MAX_VALUE - 5}) {
+                        int expected = !active || modifier ? base : unlimited ? Integer.MAX_VALUE
+                                : (int)Math.min(Integer.MAX_VALUE, (long)base + 10_000);
+                        check(GalaxyLinks.connectionThreads(active, modifier, arrays, base) == expected,
+                                "finite bonus preserves native threads, disconnect, precedence and saturation");
+                        capacityChecks++;
+                    }
+                    capacityChecks++;
+                }
+            }
+        }
+        check(GalaxyLinks.ordinaryBatchBudget(17) == 170017, "ordinary finite budget adds exactly 10,000 lanes");
+        check(GalaxyLinks.ordinaryBatchBudget(Long.MAX_VALUE) == Long.MAX_VALUE, "large budget cannot overflow");
         var ids = GalaxyConnectionConfig.parse("# allowlist\ngtceu:mage_assembler\ngtl_enhancedcore:large_furnace\n");
         check(ids.size() == 2 && ids.contains("gtceu:mage_assembler"), "allowlist keeps complete IDs");
         check(GalaxyConnectionConfig.parse("# deny all\n").isEmpty(), "empty allowlist denies every target");
@@ -47,7 +63,7 @@ final class GalaxyConnectionCapacityRegression {
                 check(Files.readString(file).equals(custom), "existing custom text is never replaced or unioned");
             }
         } finally { Files.deleteIfExists(file); Files.delete(file.getParent()); }
-        return 20;
+        return 18 + capacityChecks;
     }
 
     private static void check(boolean valid, String message) {

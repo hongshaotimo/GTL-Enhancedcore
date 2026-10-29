@@ -173,6 +173,10 @@ public final class GalaxyClientChecks {
         var field=sun.misc.Unsafe.class.getDeclaredField("theUnsafe");field.setAccessible(true);
         var unsafe=(sun.misc.Unsafe)field.get(null);
         var hatch=(ProbeHatch)unsafe.allocateInstance(ProbeHatch.class);
+        hatch.station=(com.gtl.enhancedcore.common.machine.galaxy.StellarVortexSpaceStationMachine)unsafe.allocateInstance(
+                com.gtl.enhancedcore.common.machine.galaxy.StellarVortexSpaceStationMachine.class);
+        var arrays=com.gtl.enhancedcore.common.machine.galaxy.StellarVortexSpaceStationMachine.class.getDeclaredField("astralArrayCount");
+        arrays.setAccessible(true); arrays.setInt(hatch.station,64);
         var machine=(ProbeMachine)unsafe.allocateInstance(ProbeMachine.class);
         machine.hatch=hatch;hatch.linked=true;
         check(com.gtl.enhancedcore.common.machine.galaxy.GalaxyLinks.active(machine),"Loaded-port resolver accepts an active source without an IV whitelist entry");
@@ -199,11 +203,19 @@ public final class GalaxyClientChecks {
                 hatch.linked=true;
                 check((Integer)getter.invoke(logic)==Integer.MAX_VALUE && original < Integer.MAX_VALUE,
                         "Reconnecting target restores unlimited thread capacity: "+type.getSimpleName());
+                for(int count:List.of(0,63)) {
+                    arrays.setInt(hatch.station,count);
+                    check((Integer)getter.invoke(logic)==original+10_000,
+                            "Incomplete array count adds exactly 10,000 threads: "+type.getSimpleName()+" arrays="+count);
+                }
+                arrays.setInt(hatch.station,64);
                 for(String handler:List.of("galaxy$capacity","galaxy$wirelessCapacity","galaxy$budget")) {
                     var method=Arrays.stream(type.getDeclaredMethods()).filter(m->m.getName().contains(handler) && Arrays.equals(m.getParameterTypes(),new Class<?>[]{long.class})).findFirst();
                     if(method.isEmpty())continue;
                     method.get().setAccessible(true);
+                    arrays.setInt(hatch.station,0);
                     check((Long)method.get().invoke(logic,17L)==17L,"ADD computed ordinary budget is not enhanced twice: "+type.getSimpleName()+" / "+handler);
+                    arrays.setInt(hatch.station,64);
                 }
                 if(name.endsWith("GTLAddMultipleRecipesLogic")) {
                     var logicField=com.gregtechceu.gtceu.api.machine.multiblock.WorkableMultiblockMachine.class.getDeclaredField("recipeLogic");
@@ -257,8 +269,10 @@ public final class GalaxyClientChecks {
     }
     private static final class ProbeHatch extends GalaxyConnectionHatch {
         boolean linked;
+        com.gtl.enhancedcore.common.machine.galaxy.StellarVortexSpaceStationMachine station;
         private ProbeHatch(com.gregtechceu.gtceu.api.machine.IMachineBlockEntity holder){super(holder,false);}
         @Override public boolean linkActive(){return linked;}
+        @Override public com.gtl.enhancedcore.common.machine.galaxy.StellarVortexSpaceStationMachine sourceStation(){return linked?station:null;}
     }
     private void shader(Path directory) throws Exception {
         var field=StellarVortexRenderer.class.getDeclaredField("shader");field.setAccessible(true);
