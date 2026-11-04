@@ -1,0 +1,3978 @@
+{
+  "gtceu:charcoal_pile_igniter": {
+    "zh_cn": [
+      "木炭堆点火器",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Charcoal",
+      "Pile Igniter",
+      "",
+      "Controller: North"
+    ]
+  },
+  "gtceu:cleanroom": {
+    "zh_cn": [
+      "超净间",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Cleanroom",
+      "",
+      "",
+      "Controller: North"
+    ]
+  },
+  "gtceu:coke_oven": {
+    "zh_cn": [
+      "焦炉",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Coke Oven",
+      "",
+      "",
+      "Controller: North"
+    ]
+  },
+  "gtceu:cracker": {
+    "zh_cn": [
+      "裂化机",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Cracker",
+      "",
+      "",
+      "Controller: North"
+    ]
+  },
+  "gtceu:distillation_tower": {
+    "zh_cn": [
+      "蒸馏塔",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Distillation Tower",
+      "",
+      "",
+      "Controller: North"
+    ]
+  },
+  "gtceu:electric_blast_furnace": {
+    "zh_cn": [
+      "电力高炉",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Electric Blast",
+      "Furnace",
+      "",
+      "Controller: North"
+    ]
+  },
+  "gtceu:implosion_compressor": {
+    "zh_cn": [
+      "聚爆压缩机",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Implosion",
+      "Compressor",
+      "",
+      "Controller: North"
+    ]
+  },
+  "gtceu:large_chemical_reactor": {
+    "zh_cn": [
+      "大型化学反应釜",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Large Chemical",
+      "Reactor",
+      "",
+      "Controller: North"
+    ]
+  },
+  "gtceu:large_pyrolyse_oven": {
+    "zh_cn": [
+      "大型热解炉",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Large",
+      "Pyrolyse Oven",
+      "",
+      "Controller: North"
+    ]
+  },
+  "gtceu:large_steam_bath": {
+    "zh_cn": [
+      "大型蒸汽浸洗机",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Large Steam Bath",
+      "",
+      "",
+      "Controller: North"
+    ]
+  },
+  "gtceu:large_steam_centrifuge": {
+    "zh_cn": [
+      "大型蒸汽离心机",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Large Steam",
+      "Centrifuge",
+      "",
+      "Controller: North"
+    ]
+  },
+  "gtceu:large_steam_circuit_assembler": {
+    "zh_cn": [
+      "大型蒸汽电路组装机",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Large Steam",
+      "Circuit Assembler",
+      "",
+      "Controller: North"
+    ]
+  },
+  "gtceu:large_steam_macerator": {
+    "zh_cn": [
+      "大型蒸汽研磨机",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Large Steam",
+      "Macerator",
+      "",
+      "Controller: North"
+    ]
+  },
+  "gtceu:large_steam_mixer": {
+    "zh_cn": [
+      "大型蒸汽搅拌机",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Large",
+      "Steam Mixer",
+      "",
+      "Controller: North"
+    ]
+  },
+  "gtceu:large_steam_ore_washer": {
+    "zh_cn": [
+      "大型蒸汽洗矿机",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Large Steam",
+      "Ore Washer",
+      "",
+      "Controller: North"
+    ]
+  },
+  "gtceu:large_steam_thermal_centrifuge": {
+    "zh_cn": [
+      "大型蒸汽热力离心机",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Large Steam",
+      "Thermal",
+      "Centrifuge",
+      "Controller: North"
+    ]
+  },
+  "gtceu:multi_smelter": {
+    "zh_cn": [
+      "工业熔炉",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Multi Smelter",
+      "",
+      "",
+      "Controller: North"
+    ]
+  },
+  "gtceu:primitive_blast_furnace": {
+    "zh_cn": [
+      "土高炉",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Primitive Blast",
+      "Furnace",
+      "",
+      "Controller: North"
+    ]
+  },
+  "gtceu:primitive_pump": {
+    "zh_cn": [
+      "原始水泵",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Primitive Pump",
+      "",
+      "",
+      "Controller: North"
+    ]
+  },
+  "gtceu:primitive_void_ore": {
+    "zh_cn": [
+      "原始虚空采矿机",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Primitive Void",
+      "Ore Miner",
+      "",
+      "Controller: North"
+    ]
+  },
+  "gtceu:pyrolyse_oven": {
+    "zh_cn": [
+      "热解炉",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Pyrolyse Oven",
+      "",
+      "",
+      "Controller: North"
+    ]
+  },
+  "gtceu:steam_bath": {
+    "zh_cn": [
+      "蒸汽浸洗机",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Steam Bath",
+      "",
+      "",
+      "Controller: North"
+    ]
+  },
+  "gtceu:steam_foundry": {
+    "zh_cn": [
+      "蒸汽铸造炉",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Steam Foundry",
+      "",
+      "",
+      "Controller: North"
+    ]
+  },
+  "gtceu:steam_grinder": {
+    "zh_cn": [
+      "蒸汽碾磨机",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Steam Grinder",
+      "",
+      "",
+      "Controller: North"
+    ]
+  },
+  "gtceu:steam_large_turbine": {
+    "zh_cn": [
+      "大型蒸汽涡轮",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Large Steam",
+      "Turbine",
+      "",
+      "Controller: North"
+    ]
+  },
+  "gtceu:steam_mega_turbine": {
+    "zh_cn": [
+      "特大蒸汽涡轮",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Steam Mega",
+      "Turbine",
+      "",
+      "Controller: North"
+    ]
+  },
+  "gtceu:steam_mixer": {
+    "zh_cn": [
+      "蒸汽搅拌机",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Steam Mixer",
+      "",
+      "",
+      "Controller: North"
+    ]
+  },
+  "gtceu:steam_ore_washer": {
+    "zh_cn": [
+      "蒸汽洗矿机",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Steam Ore Washer",
+      "",
+      "",
+      "Controller: North"
+    ]
+  },
+  "gtceu:steam_oven": {
+    "zh_cn": [
+      "蒸汽熔炼炉",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Steam Oven",
+      "",
+      "",
+      "Controller: North"
+    ]
+  },
+  "gtceu:steam_piston_hammer": {
+    "zh_cn": [
+      "蒸汽活塞锤",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Steam Piston",
+      "Hammer",
+      "",
+      "Controller: North"
+    ]
+  },
+  "gtceu:steam_pressor": {
+    "zh_cn": [
+      "蒸汽挤压机",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Steam",
+      "Compressor",
+      "",
+      "Controller: North"
+    ]
+  },
+  "gtceu:supercritical_mega_steam_turbine": {
+    "zh_cn": [
+      "特大超临界蒸汽涡轮",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Supercritical",
+      "Mega Steam",
+      "Turbine",
+      "Controller: North"
+    ]
+  },
+  "gtceu:supercritical_steam_turbine": {
+    "zh_cn": [
+      "超临界蒸汽涡轮",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Supercritical",
+      "Steam Turbine",
+      "",
+      "Controller: North"
+    ]
+  },
+  "gtceu:vacuum_freezer": {
+    "zh_cn": [
+      "真空冷冻机",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Vacuum Freezer",
+      "",
+      "",
+      "Controller: North"
+    ]
+  },
+  "gtl_enhancedcore:assembling_plus": {
+    "zh_cn": [
+      "通用组装厂-plus",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Assembling",
+      "Factory Plus",
+      "",
+      "Controller: North"
+    ]
+  },
+  "gtl_enhancedcore:basic_ore_processing_plant": {
+    "zh_cn": [
+      "基础矿石处理厂",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Basic Ore",
+      "Processing Plant",
+      "",
+      "Controller: North"
+    ]
+  },
+  "gtl_enhancedcore:industrial_steam_platform": {
+    "zh_cn": [
+      "工业泛用蒸汽机",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Industrial",
+      "Universal",
+      "Steam Machine",
+      "Controller: North"
+    ]
+  },
+  "gtl_enhancedcore:large_furnace": {
+    "zh_cn": [
+      "大型熔炉",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Large Furnace",
+      "",
+      "",
+      "Controller: North"
+    ]
+  },
+  "gtl_enhancedcore:mixing_plus": {
+    "zh_cn": [
+      "通用混合厂-plus",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Mixing",
+      "Factory Plus",
+      "",
+      "Controller: North"
+    ]
+  },
+  "gtl_enhancedcore:platinum_refining_matrix": {
+    "zh_cn": [
+      "铂系精炼矩阵",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Platinum",
+      "Refining Matrix",
+      "",
+      "Controller: North"
+    ]
+  },
+  "gtl_enhancedcore:processing_plus": {
+    "zh_cn": [
+      "通用加工厂-plus",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Processing",
+      "Factory Plus",
+      "",
+      "Controller: North"
+    ]
+  },
+  "gtl_enhancedcore:separating_plus": {
+    "zh_cn": [
+      "通用分离厂-plus",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Separating",
+      "Factory Plus",
+      "",
+      "Controller: North"
+    ]
+  },
+  "gtceu:a_mass_fabricator": {
+    "zh_cn": [
+      "进阶质量发生器",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Advanced Mass",
+      "Fabricator",
+      "",
+      "Controller: North"
+    ]
+  },
+  "gtceu:active_transformer": {
+    "zh_cn": [
+      "有源变压器",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Active",
+      "Transformer",
+      "",
+      "Controller: North"
+    ]
+  },
+  "gtceu:advanced_assembly_line": {
+    "zh_cn": [
+      "进阶装配线",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Advanced",
+      "Assembly Line",
+      "",
+      "Controller: North"
+    ]
+  },
+  "gtceu:advanced_hyper_reactor": {
+    "zh_cn": [
+      "进阶超能反应堆",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Advanced",
+      "Hyper Reactor",
+      "",
+      "Controller: North"
+    ]
+  },
+  "gtceu:advanced_infinite_driller": {
+    "zh_cn": [
+      "进阶无尽钻机",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Advanced",
+      "Infinite Driller",
+      "",
+      "Controller: North"
+    ]
+  },
+  "gtceu:advanced_integrated_ore_processor": {
+    "zh_cn": [
+      "进阶集成矿石处理厂",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Advanced",
+      "Integrated",
+      "Ore Processor",
+      "Controller: North"
+    ]
+  },
+  "gtceu:advanced_multi_smelter": {
+    "zh_cn": [
+      "进阶熔炉",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Advanced",
+      "Multi Smelter",
+      "",
+      "Controller: North"
+    ]
+  },
+  "gtceu:advanced_rare_earth_centrifugal": {
+    "zh_cn": [
+      "进阶稀土离心机",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Advanced Rare",
+      "Earth Centrifuge",
+      "",
+      "Controller: North"
+    ]
+  },
+  "gtceu:advanced_vacuum_drying_furnace": {
+    "zh_cn": [
+      "进阶真空干燥炉",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Advanced Vacuum",
+      "Drying Furnace",
+      "",
+      "Controller: North"
+    ]
+  },
+  "gtceu:aggregation_device": {
+    "zh_cn": [
+      "聚合装置",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Aggregation",
+      "Device",
+      "",
+      "Controller: North"
+    ]
+  },
+  "gtceu:alloy_blast_smelter": {
+    "zh_cn": [
+      "合金冶炼炉",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Alloy Blast",
+      "Smelter",
+      "",
+      "Controller: North"
+    ]
+  },
+  "gtceu:annihilate_generator": {
+    "zh_cn": [
+      "人造恒星",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Artificial Star",
+      "",
+      "",
+      "Controller: North"
+    ]
+  },
+  "gtceu:assemble_plant": {
+    "zh_cn": [
+      "通用组装厂",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Universal",
+      "Assembly Plant",
+      "",
+      "Controller: North"
+    ]
+  },
+  "gtceu:assembler_module": {
+    "zh_cn": [
+      "太空电梯组装模块",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Space Elevator",
+      "Assembly Module",
+      "",
+      "Controller: North"
+    ]
+  },
+  "gtceu:assembly_line": {
+    "zh_cn": [
+      "装配线",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Assembly Line",
+      "",
+      "",
+      "Controller: North"
+    ]
+  },
+  "gtceu:bedrock_drilling_rig": {
+    "zh_cn": [
+      "基岩钻机",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Bedrock",
+      "Drilling Rig",
+      "",
+      "Controller: North"
+    ]
+  },
+  "gtceu:blaze_blast_furnace": {
+    "zh_cn": [
+      "烈焰高炉",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Blaze Blast",
+      "Furnace",
+      "",
+      "Controller: North"
+    ]
+  },
+  "gtceu:block_conversion_room": {
+    "zh_cn": [
+      "方块转换室",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Block",
+      "Conversion Room",
+      "",
+      "Controller: North"
+    ]
+  },
+  "gtceu:bronze_large_boiler": {
+    "zh_cn": [
+      "大型青铜锅炉",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Large",
+      "Bronze Boiler",
+      "",
+      "Controller: North"
+    ]
+  },
+  "gtceu:chemical_distort": {
+    "zh_cn": [
+      "深度化学扭曲仪",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Deep Chemical",
+      "Distorter",
+      "",
+      "Controller: North"
+    ]
+  },
+  "gtceu:chemical_energy_devourer": {
+    "zh_cn": [
+      "化学能吞噬者",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Chemical Energy",
+      "Devourer",
+      "",
+      "Controller: North"
+    ]
+  },
+  "gtceu:chemical_plant": {
+    "zh_cn": [
+      "化工厂",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Chemical Plant",
+      "",
+      "",
+      "Controller: North"
+    ]
+  },
+  "gtceu:circuit_assembly_line": {
+    "zh_cn": [
+      "电路装配线",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Circuit",
+      "Assembly Line",
+      "",
+      "Controller: North"
+    ]
+  },
+  "gtceu:cold_ice_freezer": {
+    "zh_cn": [
+      "寒冰冷冻机",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Cold Ice Freezer",
+      "",
+      "",
+      "Controller: North"
+    ]
+  },
+  "gtceu:component_assembly_line": {
+    "zh_cn": [
+      "部件装配线",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Component",
+      "Assembly Line",
+      "",
+      "Controller: North"
+    ]
+  },
+  "gtceu:cooling_tower": {
+    "zh_cn": [
+      "冷却塔",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Cooling Tower",
+      "",
+      "",
+      "Controller: North"
+    ]
+  },
+  "gtceu:create_aggregation": {
+    "zh_cn": [
+      "创造聚合仪",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Creative",
+      "Aggregator",
+      "",
+      "Controller: North"
+    ]
+  },
+  "gtceu:data_bank": {
+    "zh_cn": [
+      "数据库",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Data Bank",
+      "",
+      "",
+      "Controller: North"
+    ]
+  },
+  "gtceu:decay_hastener": {
+    "zh_cn": [
+      "衰变加速器",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Decay Hastener",
+      "",
+      "",
+      "Controller: North"
+    ]
+  },
+  "gtceu:desulfurizer": {
+    "zh_cn": [
+      "脱硫机",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Desulfurizer",
+      "",
+      "",
+      "Controller: North"
+    ]
+  },
+  "gtceu:digestion_tank": {
+    "zh_cn": [
+      "煮解池",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Digestion Tank",
+      "",
+      "",
+      "Controller: North"
+    ]
+  },
+  "gtceu:disassembly": {
+    "zh_cn": [
+      "拆解机",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Disassembler",
+      "",
+      "",
+      "Controller: North"
+    ]
+  },
+  "gtceu:dissolving_tank": {
+    "zh_cn": [
+      "溶解罐",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Dissolving Tank",
+      "",
+      "",
+      "Controller: North"
+    ]
+  },
+  "gtceu:door_of_create": {
+    "zh_cn": [
+      "创造之门",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Door of Creation",
+      "",
+      "",
+      "Controller: North"
+    ]
+  },
+  "gtceu:dragon_egg_copier": {
+    "zh_cn": [
+      "龙蛋复制机",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Dragon",
+      "Egg Copier",
+      "",
+      "Controller: North"
+    ]
+  },
+  "gtceu:electric_implosion_compressor": {
+    "zh_cn": [
+      "电力聚爆压缩机",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Electric Implosion",
+      "Compressor",
+      "",
+      "Controller: North"
+    ]
+  },
+  "gtceu:element_copying": {
+    "zh_cn": [
+      "元素复制机",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Element Copier",
+      "",
+      "",
+      "Controller: North"
+    ]
+  },
+  "gtceu:engraving_laser_plant": {
+    "zh_cn": [
+      "激光蚀刻工厂",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Engraving",
+      "Laser Plant",
+      "",
+      "Controller: North"
+    ]
+  },
+  "gtceu:ev_fluid_drilling_rig": {
+    "zh_cn": [
+      "进阶流体钻机 III",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Advanced Fluid",
+      "Drilling Rig III",
+      "",
+      "Controller: North"
+    ]
+  },
+  "gtceu:ev_large_miner": {
+    "zh_cn": [
+      "进阶大型采矿机 III",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Advanced",
+      "Large Miner III",
+      "",
+      "Controller: North"
+    ]
+  },
+  "gtceu:evaporation_plant": {
+    "zh_cn": [
+      "蒸发塔",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Evaporation",
+      "Tower",
+      "",
+      "Controller: North"
+    ]
+  },
+  "gtceu:extreme_combustion_engine": {
+    "zh_cn": [
+      "极限内燃引擎",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Extreme",
+      "Combustion Engine",
+      "",
+      "Controller: North"
+    ]
+  },
+  "gtceu:field_extruder_factory": {
+    "zh_cn": [
+      "力场压模工厂",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Field Extruder",
+      "Factory",
+      "",
+      "Controller: North"
+    ]
+  },
+  "gtceu:fishing_ground": {
+    "zh_cn": [
+      "渔场",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Fishing Ground",
+      "",
+      "",
+      "Controller: North"
+    ]
+  },
+  "gtceu:fission_reactor": {
+    "zh_cn": [
+      "裂变反应堆",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Fission Reactor",
+      "",
+      "",
+      "Controller: North"
+    ]
+  },
+  "gtceu:flotation_cell_regulator": {
+    "zh_cn": [
+      "工业浮选机",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Industrial",
+      "Flotation Cell",
+      "",
+      "Controller: North"
+    ]
+  },
+  "gtceu:gas_large_turbine": {
+    "zh_cn": [
+      "大型燃气涡轮",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Large Gas",
+      "Turbine",
+      "",
+      "Controller: North"
+    ]
+  },
+  "gtceu:gas_mega_turbine": {
+    "zh_cn": [
+      "特大燃气涡轮",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Gas Mega Turbine",
+      "",
+      "",
+      "Controller: North"
+    ]
+  },
+  "gtceu:generator_array": {
+    "zh_cn": [
+      "发电阵列",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Generator Array",
+      "",
+      "",
+      "Controller: North"
+    ]
+  },
+  "gtceu:gravitation_shockburst": {
+    "zh_cn": [
+      "引力震爆器",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Gravitation",
+      "Shockburst",
+      "",
+      "Controller: North"
+    ]
+  },
+  "gtceu:greenhouse": {
+    "zh_cn": [
+      "温室",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Greenhouse",
+      "",
+      "",
+      "Controller: North"
+    ]
+  },
+  "gtceu:heat_exchanger": {
+    "zh_cn": [
+      "热交换机",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Heat Exchanger",
+      "",
+      "",
+      "Controller: North"
+    ]
+  },
+  "gtceu:holy_separator": {
+    "zh_cn": [
+      "神圣分离者",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Holy Separator",
+      "",
+      "",
+      "Controller: North"
+    ]
+  },
+  "gtceu:huge_incubator": {
+    "zh_cn": [
+      "微生物支配者",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Microbial",
+      "Dominator",
+      "",
+      "Controller: North"
+    ]
+  },
+  "gtceu:hv_fluid_drilling_rig": {
+    "zh_cn": [
+      "进阶流体钻机 II",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Advanced Fluid",
+      "Drilling Rig II",
+      "",
+      "Controller: North"
+    ]
+  },
+  "gtceu:hyper_reactor": {
+    "zh_cn": [
+      "超能反应堆",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Hyper Reactor",
+      "",
+      "",
+      "Controller: North"
+    ]
+  },
+  "gtceu:incubator": {
+    "zh_cn": [
+      "培养缸",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Incubator",
+      "",
+      "",
+      "Controller: North"
+    ]
+  },
+  "gtceu:integrated_ore_processor": {
+    "zh_cn": [
+      "集成矿石处理厂",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Integrated",
+      "Ore Processor",
+      "",
+      "Controller: North"
+    ]
+  },
+  "gtceu:isa_mill": {
+    "zh_cn": [
+      "艾萨研磨机",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "ISA Mill",
+      "",
+      "",
+      "Controller: North"
+    ]
+  },
+  "gtceu:iv_large_miner": {
+    "zh_cn": [
+      "精英大型采矿机",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Elite Large Miner",
+      "",
+      "",
+      "Controller: North"
+    ]
+  },
+  "gtceu:large_arc_smelter": {
+    "zh_cn": [
+      "大型电弧炉",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Large Arc",
+      "Smelter",
+      "",
+      "Controller: North"
+    ]
+  },
+  "gtceu:large_assembler": {
+    "zh_cn": [
+      "大型组装厂",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Large Assembling",
+      "Factory",
+      "",
+      "Controller: North"
+    ]
+  },
+  "gtceu:large_autoclave": {
+    "zh_cn": [
+      "大型高压结晶室",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Large",
+      "Crystallization",
+      "Chamber",
+      "Controller: North"
+    ]
+  },
+  "gtceu:large_block_conversion_room": {
+    "zh_cn": [
+      "大型方块转换室",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Large Block",
+      "Conversion Room",
+      "",
+      "Controller: North"
+    ]
+  },
+  "gtceu:large_brewer": {
+    "zh_cn": [
+      "大型酿造厂",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Large",
+      "Brewing Vat",
+      "",
+      "Controller: North"
+    ]
+  },
+  "gtceu:large_centrifuge": {
+    "zh_cn": [
+      "大型离心机组",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Large",
+      "Centrifugal Unit",
+      "",
+      "Controller: North"
+    ]
+  },
+  "gtceu:large_chemical_bath": {
+    "zh_cn": [
+      "大型化学浸洗机",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Large",
+      "Chemical Bath",
+      "",
+      "Controller: North"
+    ]
+  },
+  "gtceu:large_chemical_plant": {
+    "zh_cn": [
+      "大型化工厂",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Large",
+      "Chemical Plant",
+      "",
+      "Controller: North"
+    ]
+  },
+  "gtceu:large_circuit_assembler": {
+    "zh_cn": [
+      "大型电路组装设施",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Large Circuit",
+      "Assembling",
+      "Facility",
+      "Controller: North"
+    ]
+  },
+  "gtceu:large_combustion_engine": {
+    "zh_cn": [
+      "大型内燃引擎",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Large Combustion",
+      "Engine",
+      "",
+      "Controller: North"
+    ]
+  },
+  "gtceu:large_cracker": {
+    "zh_cn": [
+      "大型裂化机",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Large Cracker",
+      "",
+      "",
+      "Controller: North"
+    ]
+  },
+  "gtceu:large_cutter": {
+    "zh_cn": [
+      "大型切割机",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Large Cutting Saw",
+      "",
+      "",
+      "Controller: North"
+    ]
+  },
+  "gtceu:large_distillery": {
+    "zh_cn": [
+      "大型分馏蒸馏厂",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Large",
+      "Fractionating",
+      "Distillery",
+      "Controller: North"
+    ]
+  },
+  "gtceu:large_electrolyzer": {
+    "zh_cn": [
+      "大型电解槽",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Large",
+      "Electrolysis",
+      "Chamber",
+      "Controller: North"
+    ]
+  },
+  "gtceu:large_electromagnet": {
+    "zh_cn": [
+      "大型电磁工厂",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Large",
+      "Electromagnet",
+      "",
+      "Controller: North"
+    ]
+  },
+  "gtceu:large_engraving_laser": {
+    "zh_cn": [
+      "大型激光蚀刻机",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Large",
+      "Engraving Laser",
+      "",
+      "Controller: North"
+    ]
+  },
+  "gtceu:large_extractor": {
+    "zh_cn": [
+      "大型提取机",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Large Extraction",
+      "Machine",
+      "",
+      "Controller: North"
+    ]
+  },
+  "gtceu:large_extruder": {
+    "zh_cn": [
+      "大型压模机",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Large Extrusion",
+      "Machine",
+      "",
+      "Controller: North"
+    ]
+  },
+  "gtceu:large_fragment_world_collection_machine": {
+    "zh_cn": [
+      "大型碎片世界采集器",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Large Fragment",
+      "World Collection",
+      "Machine",
+      "Controller: North"
+    ]
+  },
+  "gtceu:large_gas_collector": {
+    "zh_cn": [
+      "大型集气室",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Large Gas",
+      "Collector",
+      "",
+      "Controller: North"
+    ]
+  },
+  "gtceu:large_greenhouse": {
+    "zh_cn": [
+      "大型温室",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Large",
+      "Greenhouse",
+      "",
+      "Controller: North"
+    ]
+  },
+  "gtceu:large_incubator": {
+    "zh_cn": [
+      "大型培养缸",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Large Incubator",
+      "",
+      "",
+      "Controller: North"
+    ]
+  },
+  "gtceu:large_maceration_tower": {
+    "zh_cn": [
+      "大型研磨塔",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Large",
+      "Maceration Tower",
+      "",
+      "Controller: North"
+    ]
+  },
+  "gtceu:large_material_press": {
+    "zh_cn": [
+      "大型挤压机",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Large",
+      "Material Press",
+      "",
+      "Controller: North"
+    ]
+  },
+  "gtceu:large_mixer": {
+    "zh_cn": [
+      "大型搅拌罐",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Large Mixing",
+      "Vessel",
+      "",
+      "Controller: North"
+    ]
+  },
+  "gtceu:large_naquadah_reactor": {
+    "zh_cn": [
+      "大型硅岩反应堆",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Large Naquadah",
+      "Reactor",
+      "",
+      "Controller: North"
+    ]
+  },
+  "gtceu:large_packer": {
+    "zh_cn": [
+      "大型打包机",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Large Packaging",
+      "Machine",
+      "",
+      "Controller: North"
+    ]
+  },
+  "gtceu:large_recycler": {
+    "zh_cn": [
+      "回收机",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Recycler",
+      "",
+      "",
+      "Controller: North"
+    ]
+  },
+  "gtceu:large_rock_crusher": {
+    "zh_cn": [
+      "大型碎岩机",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Large Rock",
+      "Crusher",
+      "",
+      "Controller: North"
+    ]
+  },
+  "gtceu:large_semi_fluid_generator": {
+    "zh_cn": [
+      "大型半流质发电机",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Large Semi-",
+      "Fluid Generator",
+      "",
+      "Controller: North"
+    ]
+  },
+  "gtceu:large_sifting_funnel": {
+    "zh_cn": [
+      "大型筛选漏斗",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Large Sifting",
+      "Funnel",
+      "",
+      "Controller: North"
+    ]
+  },
+  "gtceu:large_solidifier": {
+    "zh_cn": [
+      "大型固化阵列",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Large",
+      "Solidification",
+      "Array",
+      "Controller: North"
+    ]
+  },
+  "gtceu:large_void_miner": {
+    "zh_cn": [
+      "大型虚空采矿厂",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Large Void Miner",
+      "",
+      "",
+      "Controller: North"
+    ]
+  },
+  "gtceu:large_wiremill": {
+    "zh_cn": [
+      "大型线材工厂",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Large Wire",
+      "Factory",
+      "",
+      "Controller: North"
+    ]
+  },
+  "gtceu:lava_furnace": {
+    "zh_cn": [
+      "熔岩炉",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Lava Furnace",
+      "",
+      "",
+      "Controller: North"
+    ]
+  },
+  "gtceu:luv_large_miner": {
+    "zh_cn": [
+      "精英大型采矿机 II",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Elite Large",
+      "Miner II",
+      "",
+      "Controller: North"
+    ]
+  },
+  "gtceu:magic_manufacturer": {
+    "zh_cn": [
+      "魔法制造机",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Magic",
+      "Manufacturer",
+      "",
+      "Controller: North"
+    ]
+  },
+  "gtceu:mass_fabricator": {
+    "zh_cn": [
+      "质量发生器",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Mass Fabricator",
+      "",
+      "",
+      "Controller: North"
+    ]
+  },
+  "gtceu:matter_fabricator": {
+    "zh_cn": [
+      "物质生成机",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Matter Fabricator",
+      "",
+      "",
+      "Controller: North"
+    ]
+  },
+  "gtceu:mega_alloy_blast_smelter": {
+    "zh_cn": [
+      "巨型合金冶炼炉",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Mega Alloy",
+      "Blast Smelter",
+      "",
+      "Controller: North"
+    ]
+  },
+  "gtceu:mega_blast_furnace": {
+    "zh_cn": [
+      "转底炉",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Rotary Hearth",
+      "Furnace",
+      "",
+      "Controller: North"
+    ]
+  },
+  "gtceu:mega_canner": {
+    "zh_cn": [
+      "特大装罐机",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Mega Canner",
+      "",
+      "",
+      "Controller: North"
+    ]
+  },
+  "gtceu:mega_distillery": {
+    "zh_cn": [
+      "超级蒸馏塔",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Mega Distillery",
+      "",
+      "",
+      "Controller: North"
+    ]
+  },
+  "gtceu:mega_extractor": {
+    "zh_cn": [
+      "特大相变仪",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Mega Extractor",
+      "",
+      "",
+      "Controller: North"
+    ]
+  },
+  "gtceu:mega_fluid_heater": {
+    "zh_cn": [
+      "超级流体加热器",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Mega Fluid Heater",
+      "",
+      "",
+      "Controller: North"
+    ]
+  },
+  "gtceu:mega_presser": {
+    "zh_cn": [
+      "特大机床",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Mega Presser",
+      "",
+      "",
+      "Controller: North"
+    ]
+  },
+  "gtceu:mega_vacuum_freezer": {
+    "zh_cn": [
+      "巨型真空冷冻机",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Bulk Blast Chiller",
+      "",
+      "",
+      "Controller: North"
+    ]
+  },
+  "gtceu:mega_wiremill": {
+    "zh_cn": [
+      "特大线材轧机",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Mega Wiremill",
+      "",
+      "",
+      "Controller: North"
+    ]
+  },
+  "gtceu:mixed_plant": {
+    "zh_cn": [
+      "通用混合厂",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Universal",
+      "Mixing Plant",
+      "",
+      "Controller: North"
+    ]
+  },
+  "gtceu:molecular_assembler_matrix": {
+    "zh_cn": [
+      "分子操纵者",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Molecular",
+      "Assembler Matrix",
+      "",
+      "Controller: North"
+    ]
+  },
+  "gtceu:mv_fluid_drilling_rig": {
+    "zh_cn": [
+      "进阶流体钻机",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Advanced Fluid",
+      "Drilling Rig",
+      "",
+      "Controller: North"
+    ]
+  },
+  "gtceu:nano_forge_1": {
+    "zh_cn": [
+      "1阶纳米锻炉",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Nano Forge",
+      "Tier 1",
+      "",
+      "Controller: North"
+    ]
+  },
+  "gtceu:nano_forge_2": {
+    "zh_cn": [
+      "2阶纳米锻炉",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Nano Forge",
+      "Tier 2",
+      "",
+      "Controller: North"
+    ]
+  },
+  "gtceu:nano_forge_3": {
+    "zh_cn": [
+      "3阶纳米锻炉",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Nano Forge",
+      "Tier 3",
+      "",
+      "Controller: North"
+    ]
+  },
+  "gtceu:network_switch": {
+    "zh_cn": [
+      "网络交换机",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Network Switch",
+      "",
+      "",
+      "Controller: North"
+    ]
+  },
+  "gtceu:pcb_factory": {
+    "zh_cn": [
+      "PCB工厂",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "PCB Factory",
+      "",
+      "",
+      "Controller: North"
+    ]
+  },
+  "gtceu:petrochemical_plant": {
+    "zh_cn": [
+      "石化工厂",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Petrochemical",
+      "Plant",
+      "",
+      "Controller: North"
+    ]
+  },
+  "gtceu:plasma_condenser": {
+    "zh_cn": [
+      "等离子冷凝器",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Plasma",
+      "Condenser",
+      "",
+      "Controller: North"
+    ]
+  },
+  "gtceu:plasma_large_turbine": {
+    "zh_cn": [
+      "大型等离子涡轮",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Large Plasma",
+      "Turbine",
+      "",
+      "Controller: North"
+    ]
+  },
+  "gtceu:plasma_mega_turbine": {
+    "zh_cn": [
+      "特大等离子涡轮",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Plasma Mega",
+      "Turbine",
+      "",
+      "Controller: North"
+    ]
+  },
+  "gtceu:power_substation": {
+    "zh_cn": [
+      "蓄能变电站",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Power Substation",
+      "",
+      "",
+      "Controller: North"
+    ]
+  },
+  "gtceu:precision_assembler": {
+    "zh_cn": [
+      "精密组装机",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Precision",
+      "Assembler",
+      "",
+      "Controller: North"
+    ]
+  },
+  "gtceu:processing_plant": {
+    "zh_cn": [
+      "通用加工厂",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Universal",
+      "Processing Plant",
+      "",
+      "Controller: North"
+    ]
+  },
+  "gtceu:rare_earth_centrifugal": {
+    "zh_cn": [
+      "稀土离心机",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Rare Earth",
+      "Centrifuge",
+      "",
+      "Controller: North"
+    ]
+  },
+  "gtceu:resource_collection": {
+    "zh_cn": [
+      "太空电梯资源采集模块",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Space Elevator",
+      "Resource",
+      "Collection Module",
+      "Controller: North"
+    ]
+  },
+  "gtceu:rocket_large_turbine": {
+    "zh_cn": [
+      "大型火箭引擎涡轮",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Rocket Large",
+      "Turbine",
+      "",
+      "Controller: North"
+    ]
+  },
+  "gtceu:rocket_mega_turbine": {
+    "zh_cn": [
+      "特大火箭引擎涡轮",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Rocket Mega",
+      "Turbine",
+      "",
+      "Controller: North"
+    ]
+  },
+  "gtceu:separated_plant": {
+    "zh_cn": [
+      "通用分离厂",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Universal",
+      "Separation Plant",
+      "",
+      "Controller: North"
+    ]
+  },
+  "gtceu:simulation_machine": {
+    "zh_cn": [
+      "多方块模拟机",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Multiblock",
+      "Simulation Machine",
+      "",
+      "Controller: North"
+    ]
+  },
+  "gtceu:slaughterhouse": {
+    "zh_cn": [
+      "工业屠宰场",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Industrial",
+      "Slaughterhouse",
+      "",
+      "Controller: North"
+    ]
+  },
+  "gtceu:sps_crafting": {
+    "zh_cn": [
+      "超临界合成机",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Supercritical",
+      "Crafting Unit",
+      "",
+      "Controller: North"
+    ]
+  },
+  "gtceu:steel_large_boiler": {
+    "zh_cn": [
+      "大型钢锅炉",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Large",
+      "Steel Boiler",
+      "",
+      "Controller: North"
+    ]
+  },
+  "gtceu:steel_multiblock_tank": {
+    "zh_cn": [
+      "钢制多方块储罐",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Steel",
+      "Multiblock Tank",
+      "",
+      "Controller: North"
+    ]
+  },
+  "gtceu:super_blast_smelter": {
+    "zh_cn": [
+      "超级冶炼炉",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Super Blast",
+      "Smelter",
+      "",
+      "Controller: North"
+    ]
+  },
+  "gtceu:suprachronal_assembly_line_module": {
+    "zh_cn": [
+      "超时空装配线拓展模块",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Suprachronal",
+      "Assembly",
+      "Line Module",
+      "Controller: North"
+    ]
+  },
+  "gtceu:titanium_large_boiler": {
+    "zh_cn": [
+      "大型钛锅炉",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Large",
+      "Titanium Boiler",
+      "",
+      "Controller: North"
+    ]
+  },
+  "gtceu:tungstensteel_large_boiler": {
+    "zh_cn": [
+      "大型钨钢锅炉",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Large",
+      "Tungstensteel",
+      "Boiler",
+      "Controller: North"
+    ]
+  },
+  "gtceu:vacuum_drying_furnace": {
+    "zh_cn": [
+      "真空干燥炉",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Vacuum Drying",
+      "Furnace",
+      "",
+      "Controller: North"
+    ]
+  },
+  "gtceu:void_fluid_drilling_rig": {
+    "zh_cn": [
+      "虚空流体钻机",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Void Fluid",
+      "Drilling Rig",
+      "",
+      "Controller: North"
+    ]
+  },
+  "gtceu:void_miner": {
+    "zh_cn": [
+      "虚空采矿机",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Void Miner",
+      "",
+      "",
+      "Controller: North"
+    ]
+  },
+  "gtceu:weather_control": {
+    "zh_cn": [
+      "天气控制器",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Weather",
+      "Controller",
+      "",
+      "Controller: North"
+    ]
+  },
+  "gtceu:wood_distillation": {
+    "zh_cn": [
+      "木化工厂",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Wood Distillation",
+      "Plant",
+      "",
+      "Controller: North"
+    ]
+  },
+  "gtceu:wooden_multiblock_tank": {
+    "zh_cn": [
+      "木制多方块储罐",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Wooden",
+      "Multiblock Tank",
+      "",
+      "Controller: North"
+    ]
+  },
+  "gtceu:zpm_fluid_drilling_rig": {
+    "zh_cn": [
+      "无尽流体钻机",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Infinite Fluid",
+      "Drilling Rig",
+      "",
+      "Controller: North"
+    ]
+  },
+  "gtl_enhancedcore:cloud_pattern_library": {
+    "zh_cn": [
+      "中央样板库核心",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Central Pattern",
+      "Library Core",
+      "",
+      "Controller: North"
+    ]
+  },
+  "gtl_enhancedcore:hadron_catalytic_refinery": {
+    "zh_cn": [
+      "强子流态催化精炼塔",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Hadron Flow",
+      "Catalytic",
+      "Refinery Tower",
+      "Controller: North"
+    ]
+  },
+  "gtl_enhancedcore:hydrothermal_leaching_complex": {
+    "zh_cn": [
+      "热压浸解联合体",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Hydrothermal",
+      "Leaching Complex",
+      "",
+      "Controller: North"
+    ]
+  },
+  "gtl_enhancedcore:lanthanide_refining_hub": {
+    "zh_cn": [
+      "镧系联萃精炼中枢",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Lanthanide Co",
+      "-Extraction",
+      "Refining Hub",
+      "Controller: North"
+    ]
+  },
+  "gtl_enhancedcore:neutron_control_factory": {
+    "zh_cn": [
+      "中子控制工厂",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Neutron",
+      "Control Factory",
+      "",
+      "Controller: North"
+    ]
+  },
+  "gtl_enhancedcore:plasma_machine_tool": {
+    "zh_cn": [
+      "磁流体约束等离子机床",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Magnetic",
+      "Confinement",
+      "Plasma",
+      "Machine Tool"
+    ]
+  },
+  "gtl_enhancedcore:quantum_mass_spectrum_array": {
+    "zh_cn": [
+      "量子场质谱解离阵列",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Quantum",
+      "Field Mass",
+      "Spectrometry Di",
+      "ssociation Array"
+    ]
+  },
+  "gtl_enhancedcore:superconducting_fusion_assembler": {
+    "zh_cn": [
+      "超导磁约束熔合组装器",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Superconducting",
+      "Magnetic",
+      "Confinement",
+      "Fusion Assembler"
+    ]
+  },
+  "gtl_enhancedcore:universal_joint_factory": {
+    "zh_cn": [
+      "通用联合工厂",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Universal",
+      "Joint Factory",
+      "",
+      "Controller: North"
+    ]
+  },
+  "gtl_enhancedcore:void_constrained_mining_field": {
+    "zh_cn": [
+      "虚空约束采矿场",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Void-Constrained",
+      "Mining Field",
+      "",
+      "Controller: North"
+    ]
+  },
+  "gtceu:advanced_neutron_activator": {
+    "zh_cn": [
+      "中子漩涡",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Neutron Vortex",
+      "",
+      "",
+      "Controller: North"
+    ]
+  },
+  "gtceu:advanced_sps_crafting": {
+    "zh_cn": [
+      "进阶超临界合成机",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Advanced",
+      "Supercritical",
+      "Crafting Unit",
+      "Controller: North"
+    ]
+  },
+  "gtceu:atomic_energy_excitation_plant": {
+    "zh_cn": [
+      "原子能激发工厂",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Atomic Energy",
+      "Excitation Plant",
+      "",
+      "Controller: North"
+    ]
+  },
+  "gtceu:create_computation": {
+    "zh_cn": [
+      "创造计算机",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Creative",
+      "Computer",
+      "",
+      "Controller: North"
+    ]
+  },
+  "gtceu:crystalline_infinity": {
+    "zh_cn": [
+      "无限晶胞",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Crystalline",
+      "Infinity",
+      "",
+      "Controller: North"
+    ]
+  },
+  "gtceu:dimensional_focus_engraving_array": {
+    "zh_cn": [
+      "维度聚焦激光蚀刻阵列",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Dimensional Focus",
+      "Engraving Array",
+      "",
+      "Controller: North"
+    ]
+  },
+  "gtceu:dimensionally_transcendent_dirt_forge": {
+    "zh_cn": [
+      "超维度等泥土锻炉",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Dimensionally",
+      "Transcendent",
+      "Dirt Forge",
+      "Controller: North"
+    ]
+  },
+  "gtceu:dimensionally_transcendent_mixer": {
+    "zh_cn": [
+      "超维度搅拌机",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Dimensionally",
+      "Transcendent",
+      "Mixer",
+      "Controller: North"
+    ]
+  },
+  "gtceu:dimensionally_transcendent_plasma_forge": {
+    "zh_cn": [
+      "超维度等离子锻炉",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Dimensionally",
+      "Transcendent",
+      "Plasma Forge",
+      "Controller: North"
+    ]
+  },
+  "gtceu:dimensionally_transcendent_steam_boiler": {
+    "zh_cn": [
+      "超维度等蒸汽锅炉",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Dimensionally",
+      "Transcendent",
+      "Steam Boiler",
+      "Controller: North"
+    ]
+  },
+  "gtceu:dimensionally_transcendent_steam_oven": {
+    "zh_cn": [
+      "超维度蒸汽熔炉",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Dimensionally",
+      "Transcendent",
+      "Steam Oven",
+      "Controller: North"
+    ]
+  },
+  "gtceu:dyson_sphere": {
+    "zh_cn": [
+      "戴森球控制系统",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Dyson Sphere",
+      "Control System",
+      "",
+      "Controller: North"
+    ]
+  },
+  "gtceu:eye_of_harmony": {
+    "zh_cn": [
+      "鸿蒙之眼",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Eye of Harmony",
+      "",
+      "",
+      "Controller: North"
+    ]
+  },
+  "gtceu:high_performance_computation_array": {
+    "zh_cn": [
+      "高性能计算阵",
+      "列（HPCA）",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "High Performance",
+      "Computation",
+      "Array (HPCA)",
+      "Controller: North"
+    ]
+  },
+  "gtceu:luv_compressed_fusion_reactor": {
+    "zh_cn": [
+      "压缩核聚变反应",
+      "堆控制电脑 MK-I",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Compressed",
+      "Fusion Reactor",
+      "Controller MK-I",
+      "Controller: North"
+    ]
+  },
+  "gtceu:luv_fusion_reactor": {
+    "zh_cn": [
+      "核聚变反应堆",
+      "控制电脑 MK-I",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Fusion Reactor",
+      "Computer MK I",
+      "",
+      "Controller: North"
+    ]
+  },
+  "gtceu:mage_assembler": {
+    "zh_cn": [
+      "巨型组装厂",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Mega Assembly",
+      "Plant",
+      "",
+      "Controller: North"
+    ]
+  },
+  "gtceu:nano_core": {
+    "zh_cn": [
+      "纳米核心",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Nano Core",
+      "",
+      "",
+      "Controller: North"
+    ]
+  },
+  "gtceu:neutron_activator": {
+    "zh_cn": [
+      "中子活化器",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Neutron Activator",
+      "",
+      "",
+      "Controller: North"
+    ]
+  },
+  "gtceu:qft": {
+    "zh_cn": [
+      "量子操纵者",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Quantum Field",
+      "Transformer",
+      "",
+      "Controller: North"
+    ]
+  },
+  "gtceu:research_station": {
+    "zh_cn": [
+      "研究站",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Research Station",
+      "",
+      "",
+      "Controller: North"
+    ]
+  },
+  "gtceu:space_cosmic_probe_receivers": {
+    "zh_cn": [
+      "天基宇宙探测器接收器",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Space-Based",
+      "Cosmic Probe",
+      "Receiver",
+      "Controller: North"
+    ]
+  },
+  "gtceu:space_elevator": {
+    "zh_cn": [
+      "太空电梯",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Space Elevator",
+      "",
+      "",
+      "Controller: North"
+    ]
+  },
+  "gtceu:space_probe_surface_reception": {
+    "zh_cn": [
+      "宇宙探测器",
+      "地面接收单元",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Cosmic Probe",
+      "Surface",
+      "Reception Unit",
+      "Controller: North"
+    ]
+  },
+  "gtceu:star_ultimate_material_forge_factory": {
+    "zh_cn": [
+      "恒星终极物质锻造工厂",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Stellar Ultimate",
+      "Material Forge",
+      "Factory",
+      "Controller: North"
+    ]
+  },
+  "gtceu:stellar_forge": {
+    "zh_cn": [
+      "恒星炎炀锻炉",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Stellar Forge",
+      "",
+      "",
+      "Controller: North"
+    ]
+  },
+  "gtceu:super_computation": {
+    "zh_cn": [
+      "超级计算机",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Super Computer",
+      "",
+      "",
+      "Controller: North"
+    ]
+  },
+  "gtceu:super_particle_collider": {
+    "zh_cn": [
+      "超级粒子对撞机",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Super Particle",
+      "Collider",
+      "",
+      "Controller: North"
+    ]
+  },
+  "gtceu:superconducting_electromagnetism": {
+    "zh_cn": [
+      "超导电磁工厂",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Superconducting",
+      "Electromagnetic",
+      "Factory",
+      "Controller: North"
+    ]
+  },
+  "gtceu:suprachronal_assembly_line": {
+    "zh_cn": [
+      "超时空装配线",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Suprachronal",
+      "Assembly Line",
+      "",
+      "Controller: North"
+    ]
+  },
+  "gtceu:uev_compressed_fusion_reactor": {
+    "zh_cn": [
+      "压缩核聚变反应堆",
+      "控制电脑 MK-V",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Compressed",
+      "Fusion Reactor",
+      "Controller MK-V",
+      "Controller: North"
+    ]
+  },
+  "gtceu:uev_fusion_reactor": {
+    "zh_cn": [
+      "核聚变反应堆控",
+      "制电脑 MK-V",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Fusion Reactor",
+      "Controller MK-V",
+      "",
+      "Controller: North"
+    ]
+  },
+  "gtceu:uhv_compressed_fusion_reactor": {
+    "zh_cn": [
+      "压缩核聚变反应堆",
+      "控制电脑 MK-IV",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Compressed",
+      "Fusion Reactor",
+      "Controller MK-IV",
+      "Controller: North"
+    ]
+  },
+  "gtceu:uhv_fusion_reactor": {
+    "zh_cn": [
+      "核聚变反应堆控",
+      "制电脑 MK-IV",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Fusion Reactor",
+      "Controller MK-IV",
+      "",
+      "Controller: North"
+    ]
+  },
+  "gtceu:uv_compressed_fusion_reactor": {
+    "zh_cn": [
+      "压缩核聚变反应堆",
+      "控制电脑 MK-III",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Compressed",
+      "Fusion Reactor",
+      "Controller MK-III",
+      "Controller: North"
+    ]
+  },
+  "gtceu:uv_fusion_reactor": {
+    "zh_cn": [
+      "核聚变反应堆控",
+      "制电脑 MK-III",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Fusion Reactor",
+      "Computer MK III",
+      "",
+      "Controller: North"
+    ]
+  },
+  "gtceu:zpm_compressed_fusion_reactor": {
+    "zh_cn": [
+      "压缩核聚变反应堆",
+      "控制电脑 MK-II",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Compressed",
+      "Fusion Reactor",
+      "Controller MK-II",
+      "Controller: North"
+    ]
+  },
+  "gtceu:zpm_fusion_reactor": {
+    "zh_cn": [
+      "核聚变反应堆控",
+      "制电脑 MK-II",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Fusion Reactor",
+      "Computer MK II",
+      "",
+      "Controller: North"
+    ]
+  },
+  "gtl_enhancedcore:causality_terminal": {
+    "zh_cn": [
+      "因果重构终端",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Causality",
+      "Reconstruction",
+      "Terminal",
+      "Controller: North"
+    ]
+  },
+  "gtl_enhancedcore:dragon_field_proliferation_core": {
+    "zh_cn": [
+      "龙式场约束增殖核心",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Dragon-Field",
+      "Proliferation",
+      "Core",
+      "Controller: North"
+    ]
+  },
+  "gtl_enhancedcore:extreme_reactor": {
+    "zh_cn": [
+      "极限反应堆",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Extreme Reactor",
+      "",
+      "",
+      "Controller: North"
+    ]
+  },
+  "gtl_enhancedcore:high_flux_breeder_reactor": {
+    "zh_cn": [
+      "临界增殖反应堆",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "High Flux",
+      "Breeder Reactor",
+      "",
+      "Controller: North"
+    ]
+  },
+  "gtl_enhancedcore:hyperstructural_chemical_distorter": {
+    "zh_cn": [
+      "超构化学扭曲仪",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Hyperstructural",
+      "Chemical",
+      "Distorter",
+      "Controller: North"
+    ]
+  },
+  "gtl_enhancedcore:infinity_singularity_compressor": {
+    "zh_cn": [
+      "无限奇点压缩器",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Infinity",
+      "Singularity",
+      "Compressor",
+      "Controller: North"
+    ]
+  },
+  "gtl_enhancedcore:star_core_stripper": {
+    "zh_cn": [
+      "星核剥离装置",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Star Core",
+      "Stripper",
+      "",
+      "Controller: North"
+    ]
+  },
+  "gtl_enhancedcore:stellar_confinement_fusion_reactor": {
+    "zh_cn": [
+      "恒星约束聚变堆",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Stellar",
+      "Confinement",
+      "Fusion Reactor",
+      "Controller: North"
+    ]
+  },
+  "gtl_enhancedcore:stellar_vortex_space_station": {
+    "zh_cn": [
+      "星璇号空间站",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Stellar Vortex",
+      "Space Station",
+      "",
+      "Controller: North"
+    ]
+  },
+  "gtl_enhancedcore:weather_anchor": {
+    "zh_cn": [
+      "时相凝固气象锚点",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Time-Phase",
+      "Solidification",
+      "Weather Anchor",
+      "Controller: North"
+    ]
+  },
+  "gtladditions:antientropy_condensation_center": {
+    "zh_cn": [
+      "反熵冷凝中枢",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Antientropy",
+      "Condensation",
+      "Center",
+      "Controller: North"
+    ]
+  },
+  "gtladditions:apocalyptic_torsion_quantum_matrix": {
+    "zh_cn": [
+      "终焉曲折量子波动矩阵",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Apocalyptic",
+      "Torsion",
+      "Quantum Matrix",
+      "Controller: North"
+    ]
+  },
+  "gtladditions:arcane_cache_vault": {
+    "zh_cn": [
+      "密藏之匣",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Arcane",
+      "Cache Vault",
+      "",
+      "Controller: North"
+    ]
+  },
+  "gtladditions:arcanic_astrograph": {
+    "zh_cn": [
+      "奥术星图",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Arcanic",
+      "Astrograph",
+      "",
+      "Controller: North"
+    ]
+  },
+  "gtladditions:astral_convergence_nexus": {
+    "zh_cn": [
+      "星穹聚合枢纽",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Astral",
+      "Convergence",
+      "Nexus",
+      "Controller: North"
+    ]
+  },
+  "gtladditions:atomic_transmutation_core": {
+    "zh_cn": [
+      "原子置换核心",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Atomic",
+      "Transmutation",
+      "Core",
+      "Controller: North"
+    ]
+  },
+  "gtladditions:biological_simulation_laboratory": {
+    "zh_cn": [
+      "生物数据模拟室",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Biological",
+      "Simulation",
+      "Laboratory",
+      "Controller: North"
+    ]
+  },
+  "gtladditions:biosphere_iii": {
+    "zh_cn": [
+      "生态圈3号",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Biosphere III",
+      "",
+      "",
+      "Controller: North"
+    ]
+  },
+  "gtladditions:catalytic_cascade_array": {
+    "zh_cn": [
+      "催化迭升阵列",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Catalytic",
+      "Cascade Array",
+      "",
+      "Controller: North"
+    ]
+  },
+  "gtladditions:dimension_focus_infinity_crafting_array": {
+    "zh_cn": [
+      "维度聚焦无尽合成阵列",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Dimension",
+      "Focus Infinity",
+      "Crafting Array",
+      "Controller: North"
+    ]
+  },
+  "gtladditions:dimensionally_transcendent_chemical_plant": {
+    "zh_cn": [
+      "超维度化工厂",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Advanced",
+      "Chemical Plant",
+      "",
+      "Controller: North"
+    ]
+  },
+  "gtladditions:draconic_collapse_core": {
+    "zh_cn": [
+      "龙怒坍缩核心",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Draconic",
+      "Collapse Core",
+      "",
+      "Controller: North"
+    ]
+  },
+  "gtladditions:forge_of_the_antichrist": {
+    "zh_cn": [
+      "伪神之煅炉",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Forge Of The",
+      "Antichrist",
+      "",
+      "Controller: North"
+    ]
+  },
+  "gtladditions:fuxi_bagua_heaven_forging_furnace": {
+    "zh_cn": [
+      "伏羲八卦锻天炉",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Fuxi Bagua",
+      "Heaven-",
+      "forging Furnace",
+      "Controller: North"
+    ]
+  },
+  "gtladditions:garden_of_hermes": {
+    "zh_cn": [
+      "赫尔墨斯之圃",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Garden",
+      "of Hermes",
+      "",
+      "Controller: North"
+    ]
+  },
+  "gtladditions:heart_of_the_universe": {
+    "zh_cn": [
+      "宇宙之心",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Heart Of The",
+      "Universe",
+      "",
+      "Controller: North"
+    ]
+  },
+  "gtladditions:helioflare_power_forge": {
+    "zh_cn": [
+      "恒星烈焰能量煅炉",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Helioflare",
+      "Power Forge",
+      "",
+      "Controller: North"
+    ]
+  },
+  "gtladditions:heliofluix_melting_core": {
+    "zh_cn": [
+      "恒星射流融化核心",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Heliofluix",
+      "Melting Core",
+      "",
+      "Controller: North"
+    ]
+  },
+  "gtladditions:heliofusion_exoticizer": {
+    "zh_cn": [
+      "恒星聚变异化器",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Heliofusion",
+      "Exoticizer",
+      "",
+      "Controller: North"
+    ]
+  },
+  "gtladditions:heliophase_leyline_crystallizer": {
+    "zh_cn": [
+      "恒星相位龙脉结晶器",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Heliophase",
+      "Leyline",
+      "Crystallizer",
+      "Controller: North"
+    ]
+  },
+  "gtladditions:heliothermal_plasma_fabricator": {
+    "zh_cn": [
+      "恒星热能等离子制造机",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Heliothermal",
+      "Plasma",
+      "Fabricator",
+      "Controller: North"
+    ]
+  },
+  "gtladditions:inferno_cleft_smelting_vault": {
+    "zh_cn": [
+      "炽隙裂炼穹",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Inferno Cleft",
+      "Smelting Vault",
+      "",
+      "Controller: North"
+    ]
+  },
+  "gtladditions:lucid_etchdreamer": {
+    "zh_cn": [
+      "光之蚀梦者",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Lucid",
+      "Etchdreamer",
+      "",
+      "Controller: North"
+    ]
+  },
+  "gtladditions:macro_atomic_resonant_fragment_stripper": {
+    "zh_cn": [
+      "宏原子谐振碎片剥离器",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Macro Atomic",
+      "Resonant",
+      "Fragment",
+      "Stripper"
+    ]
+  },
+  "gtladditions:magnetorheological_convergence_core": {
+    "zh_cn": [
+      "磁流聚敛核心",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Magnetorheologi",
+      "cal Convergence",
+      "Core",
+      "Controller: North"
+    ]
+  },
+  "gtladditions:nebula_reaper": {
+    "zh_cn": [
+      "星云收割者",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Nebula Reaper",
+      "",
+      "",
+      "Controller: North"
+    ]
+  },
+  "gtladditions:planetary_ionisation_convergence_tower": {
+    "zh_cn": [
+      "行星电离汇流塔",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Planetary",
+      "Ionisation",
+      "Convergence",
+      "Tower"
+    ]
+  },
+  "gtladditions:primordial_evolution_nexus": {
+    "zh_cn": [
+      "太素衍化枢纽",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Primordial",
+      "Evolution Nexus",
+      "",
+      "Controller: North"
+    ]
+  },
+  "gtladditions:quantum_syphon_matrix": {
+    "zh_cn": [
+      "量子虹吸矩阵",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Quantum",
+      "Syphon Matrix",
+      "",
+      "Controller: North"
+    ]
+  },
+  "gtladditions:recursive_reverse_array": {
+    "zh_cn": [
+      "递归反演阵列",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Recursive",
+      "Reverse Array",
+      "",
+      "Controller: North"
+    ]
+  },
+  "gtladditions:skeleton_shift_rift_engine": {
+    "zh_cn": [
+      "骸变速隙机",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Skeleton Shift",
+      "Rift Engine",
+      "",
+      "Controller: North"
+    ]
+  },
+  "gtladditions:space_elevator_mkii": {
+    "zh_cn": [
+      "太空电梯MK2",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Space",
+      "Elevator MKII",
+      "",
+      "Controller: North"
+    ]
+  },
+  "gtladditions:space_infinity_integrated_ore_processor": {
+    "zh_cn": [
+      "天基无尽集",
+      "成矿石处理厂",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Space Infinity",
+      "Integrated",
+      "Ore Processor",
+      "Controller: North"
+    ]
+  },
+  "gtladditions:space_scaling_instrument": {
+    "zh_cn": [
+      "空间缩放仪",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Space Scaling",
+      "Instrument",
+      "",
+      "Controller: North"
+    ]
+  },
+  "gtladditions:spacetime_stasis_device": {
+    "zh_cn": [
+      "时空静滞装置",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Spacetime",
+      "Stasis Device",
+      "",
+      "Controller: North"
+    ]
+  },
+  "gtladditions:subatomic_transmutatioon_core": {
+    "zh_cn": [
+      "亚原子置换核心",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Subatomic",
+      "Transmutatioon",
+      "Core",
+      "Controller: North"
+    ]
+  },
+  "gtladditions:supratemporal_boosting_engine": {
+    "zh_cn": [
+      "超时空助推引擎",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Supratemporal",
+      "Boosting Engine",
+      "",
+      "Controller: North"
+    ]
+  },
+  "gtladditions:taixu_turbid_array": {
+    "zh_cn": [
+      "太虚浊化阵",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Taixu Turbid",
+      "Array",
+      "",
+      "Controller: North"
+    ]
+  },
+  "gtladditions:time_space_distorter": {
+    "zh_cn": [
+      "时空扭曲者",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Time Space",
+      "Distorter",
+      "",
+      "Controller: North"
+    ]
+  },
+  "gtladditions:titan_crip_earthbore": {
+    "zh_cn": [
+      "泰坦之握凿地机",
+      "",
+      "",
+      "主方块 · 朝北"
+    ],
+    "en_us": [
+      "Titan's Crip",
+      "Earthbore",
+      "",
+      "Controller: North"
+    ]
+  }
+}

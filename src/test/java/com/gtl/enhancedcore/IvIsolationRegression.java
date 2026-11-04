@@ -10,6 +10,7 @@ import com.gtl.enhancedcore.common.recipe.iv.IvRemainingTime;
 public final class IvIsolationRegression {
     private static int assertions;
     public static int run() {
+        laserPlantRecipeScopedParallelRegression();
         check(LongAllocation.plan(List.of(supply("iron", 10)), List.of(need(Set.of("iron"), 6), need(Set.of("iron", "copper"), 6))) == null,
                 "overlapping material cannot spend the same ten ingots twice");
         var split = LongAllocation.plan(List.of(supply("iron", 6), supply("copper", 6)),
@@ -104,6 +105,21 @@ public final class IvIsolationRegression {
         check(IvRemainingTime.estimatedDuration(BigInteger.valueOf(Long.MAX_VALUE), 1, 20, 1) == Integer.MAX_VALUE,
                 "huge remaining time saturates display without cancelling the energy debt");
         return assertions;
+    }
+
+    private static void laserPlantRecipeScopedParallelRegression() {
+        try {
+            String scope = java.nio.file.Files.readString(java.nio.file.Path.of(
+                    "src/main/java/com/gtl/enhancedcore/common/recipe/iv/IvMachineScope.java"));
+            String engine = java.nio.file.Files.readString(java.nio.file.Path.of(
+                    "src/main/java/com/gtl/enhancedcore/common/recipe/iv/IvNativeEngine.java"));
+            check(scope.contains("PRECISION_LASER_ENGRAVER_RECIPES") && scope.contains("return 1;"),
+                    "precision laser recipes have an explicit per-recipe parallel cap of one");
+            check(engine.contains("IvMachineScope.parallel(machine, ref.job.recipe)"),
+                    "native scheduling derives capacity from each job recipe, avoiding mode cache leakage");
+        } catch (java.io.IOException failure) {
+            throw new AssertionError(failure);
+        }
     }
     /**
      * 原生机器超级总成模式线程预算：新增 128，GTLCore 已有的 64 另行相加，再叠加 Ω。
@@ -368,8 +384,9 @@ public final class IvIsolationRegression {
                 "Fuxi isolated-order baseline is 128 threads");
         check(com.gtl.enhancedcore.common.recipe.iv.IvMachineScope.KEEP_NATIVE_THREADS_WITHOUT_BUFFER.contains(path),
                 "ordinary Fuxi mode retains upstream ADD thread behavior");
-        check(com.gtl.enhancedcore.common.structure.NativeIsolationPatterns.targets(id),
-                "Fuxi keeps upstream geometry while its material ports receive IV mutual-exclusion rules");
+        check(com.gtl.enhancedcore.common.structure.GtlMegastructurePatterns.targets(id)
+                        && !com.gtl.enhancedcore.common.structure.NativeIsolationPatterns.targets(id),
+                "Fuxi uses the requested blueprint through the replacement path that retains IV material-port restrictions");
         check(com.gtl.enhancedcore.common.util.TooltipPolicy.nativePages(path).contains("native_isolation"),
                 "Fuxi reuses localized native isolation restrictions, thread count and recipe catalog");
         try {
@@ -381,6 +398,12 @@ public final class IvIsolationRegression {
                     "src/main/java/com/gtl/enhancedcore/mixin/gtlcore/IvNativeAddMultipleAccessor.java"));
             check(accessor.contains("GTLAddMultipleRecipesLogic.class") && accessor.contains("@Invoker(\"getRecipeCheck\")"),
                     "ADD protected recipe-check callback is accessed through a precise invoker");
+            String replacements = java.nio.file.Files.readString(java.nio.file.Path.of(
+                    "src/main/java/com/gtl/enhancedcore/common/structure/GtlMegastructurePatterns.java"));
+            check(replacements.contains("IvMachineScope.nativeTarget(id)")
+                            && replacements.contains("new com.gtl.enhancedcore.common.recipe.iv.IvNativeHatches()")
+                            && replacements.contains("isolatedHatches.restrict(predicate)"),
+                    "the custom-geometry path still applies the shared IV port mutual-exclusion predicate");
         } catch (java.io.IOException failure) {
             throw new AssertionError(failure);
         }

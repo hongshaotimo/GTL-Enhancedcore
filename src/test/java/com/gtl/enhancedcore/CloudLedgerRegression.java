@@ -14,6 +14,7 @@ public final class CloudLedgerRegression {
         assertions += CloudMeTargetRegression.run();
         assertions += CloudPatternAccessRegression.run();
         assertions += CloudUploadSequenceRegression.run();
+        assertions += CloudAllocationChangesRegression.run();
         assertions += IvWideEnergyRegression.run();
         var furnaceModes = List.of("furnace", "alloy_smelter");
         var smelterLedger = new CloudLedger();

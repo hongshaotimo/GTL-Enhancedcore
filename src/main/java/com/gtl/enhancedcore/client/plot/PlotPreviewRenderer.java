@@ -2,7 +2,15 @@ package com.gtl.enhancedcore.client.plot;
 
 import com.gtl.enhancedcore.common.world.plot.PlotPreviewRaster;
 import com.gtl.enhancedcore.common.world.plot.PlotSettings;
+import com.gtl.enhancedcore.common.world.plot.CampusMapImage;
+import com.gtl.enhancedcore.common.world.plot.PlannedCampus;
+import com.gtl.enhancedcore.common.world.campus.CampusPlanAccess;
 import com.mojang.blaze3d.platform.NativeImage;
+import com.mojang.blaze3d.systems.RenderSystem;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
@@ -39,6 +47,10 @@ public final class PlotPreviewRenderer {
 
     private static void finish(GuiGraphics g, PlotSettings settings, int left, int top,
                                int pixels, int plots, boolean grid) {
+        if (settings.isCampus()) {
+            g.renderOutline(left - 1, top - 1, pixels + 2, pixels + 2, 0xff8ad6df);
+            return;
+        }
         int cells = settings.plotBlocks() * plots;
         if (grid) for (int i = 16; i < cells; i += 16) {
             int offset = i * pixels / cells;
@@ -92,6 +104,83 @@ public final class PlotPreviewRenderer {
             if (location != null && manager.getTexture(location) == texture) manager.release(location);
             else if (texture != null) texture.close();
             location = null; texture = null; previous = null; rasterSize = 0; count = 0;
+        }
+    }
+
+    /** Samples immutable terrain once; scrolling only transforms cached, world-aligned images. */
+    public static final class AtlasCached implements AutoCloseable {
+        private record Layer(ResourceLocation location, DynamicTexture texture) {}
+        private PlotSettings.RoadStyle roadStyle;
+        private PlannedCampus.Bounds bounds;
+        private CompletableFuture<CampusMapImage> source;
+        private CampusMapImage image;
+        private final List<Layer> layers = new ArrayList<>();
+        private int sourceBuilds, textureUploads;
+
+        public void draw(GuiGraphics g, PlotSettings settings, int x, int y, int width, int height,
+                         PlotPreviewRaster.CampusViewport region) {
+            if (source == null || settings.roadStyle() != roadStyle) {
+                close();
+                roadStyle = settings.roadStyle(); bounds = CampusPlanAccess.of(settings).bounds();
+                var capturedBounds = bounds;
+                source = CompletableFuture.supplyAsync(() -> CampusMapImage.capture(settings, capturedBounds), Util.backgroundExecutor());
+                sourceBuilds++;
+            }
+            if (image == null && source.isDone()) {
+                image = source.join();
+                for (var ignored : image.levels()) layers.add(null);
+            }
+            if (image == null) {
+                g.drawCenteredString(Minecraft.getInstance().font,
+                        Component.translatable("gtl_enhancedcore.campus.teleport.map_loading"),
+                        x + width / 2, y + height / 2 - 4, 0xffdce3e8);
+                return;
+            }
+            double scale = Minecraft.getInstance().getWindow().getGuiScale();
+            int level = image.levelFor(Math.min(region.width() / (width * scale), region.depth() / (height * scale)));
+            int maxTexture = RenderSystem.maxSupportedTextureSize();
+            while (level + 1 < image.levels().size() && (image.levels().get(level).width() > maxTexture
+                    || image.levels().get(level).height() > maxTexture)) level++;
+            var pixels = image.levels().get(level);
+            var manager = Minecraft.getInstance().getTextureManager();
+            Layer layer = layers.get(level);
+            if (layer != null && manager.getTexture(layer.location) != layer.texture) {
+                layer.texture.close(); layer = null;
+            }
+            if (layer == null) {
+                NativeImage nativeImage = new NativeImage(pixels.width(), pixels.height(), false);
+                for (int pz = 0; pz < pixels.height(); pz++) for (int px = 0; px < pixels.width(); px++) {
+                    int rgb = pixels.pixel(px, pz);
+                    nativeImage.setPixelRGBA(px, pz, 0xff000000 | ((rgb & 255) << 16) | (rgb & 0xff00) | ((rgb >>> 16) & 255));
+                }
+                var texture = new DynamicTexture(nativeImage);
+                texture.setFilter(false, false);
+                layer = new Layer(manager.register("campus_atlas", texture), texture);
+                layers.set(level, layer); textureUploads++;
+            }
+            // The caller scissors to the viewport. Mapping the full image keeps hover coordinates exact.
+            g.pose().pushPose();
+            g.pose().translate(x + (bounds.minX() - region.minX()) * width / region.width(),
+                    y + (bounds.minZ() - region.minZ()) * height / region.depth(), 0);
+            g.pose().scale((float) (width / region.width()), (float) (height / region.depth()), 1);
+            g.blit(layer.location, 0, 0, bounds.width(), bounds.depth(), 0, 0,
+                    pixels.width(), pixels.height(), pixels.width(), pixels.height());
+            g.pose().popPose();
+        }
+
+        public boolean ready() { return image != null && layers.stream().anyMatch(layer -> layer != null); }
+        public int sourceBuilds() { return sourceBuilds; }
+        public int textureUploads() { return textureUploads; }
+
+        @Override public void close() {
+            var manager = Minecraft.getInstance().getTextureManager();
+            for (Layer layer : layers) if (layer != null) {
+                if (manager.getTexture(layer.location) == layer.texture) manager.release(layer.location);
+                else layer.texture.close();
+            }
+            layers.clear(); image = null; roadStyle = null; bounds = null;
+            if (source != null) source.cancel(false);
+            source = null;
         }
     }
 

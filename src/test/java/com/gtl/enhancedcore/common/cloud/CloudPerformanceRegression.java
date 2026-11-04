@@ -54,7 +54,11 @@ public final class CloudPerformanceRegression {
         var clear = CloudPatternMatching.class.getDeclaredMethod("clear", net.minecraft.server.MinecraftServer.class);
         clear.setAccessible(true); clear.invoke(null, new Object[]{null});
         check(!cache.containsKey(null), "Recipe reload/stop invalidation retained an index");
-        return 8 + catalogueBudget();
+        int hash = probe.hashCode(); requested.put(null, 2L);
+        check(probe.outputs().get(null) == 1L && probe.hashCode() == hash, "Shared selection probe retains its exact immutable hash despite caller mutation");
+        try { probe.outputs().put(null, 3L); throw new AssertionError("Mutable selection key"); }
+        catch (UnsupportedOperationException expected) { check(probe.outputs().get(null) == 1L, "Probe cannot be changed through its accessor"); }
+        return 10 + catalogueBudget();
     }
     @SuppressWarnings("unchecked")
     private static int catalogueBudget() throws Exception {
@@ -65,6 +69,11 @@ public final class CloudPerformanceRegression {
         var catalogType = Class.forName(service.getName() + "$Catalog");
         var catalogConstructor = catalogType.getDeclaredConstructor(); catalogConstructor.setAccessible(true);
         Object catalog = catalogConstructor.newInstance();
+        var saveOpening = service.getDeclaredMethod("cacheOpeningCatalog", libraryType, catalogType);
+        saveOpening.setAccessible(true);
+        saveOpening.invoke(null, library, catalog);
+        check(!((com.gtl.enhancedcore.common.cloud.store.CloudPatternStore.Library)library).hasOpeningCatalog(),
+                "Incomplete catalogue must not become a durable empty first page");
         var buildType = Class.forName(service.getName() + "$CatalogBuild");
         var buildConstructor = buildType.getDeclaredConstructors()[0]; buildConstructor.setAccessible(true);
         Object build = buildConstructor.newInstance(library, null, catalog);
@@ -105,7 +114,7 @@ public final class CloudPerformanceRegression {
         var failed = catalogType.getDeclaredField("failureRevision"); failed.setAccessible(true); failed.setLong(catalog, 1);
         try { pending.invoke(null, library, catalog, 5); throw new AssertionError("Indexing failure remained a loading screen"); }
         catch (InvocationTargetException expected) { check(expected.getCause() instanceof IllegalStateException, "Failure diagnostic was lost"); }
-        return 8;
+        return 9;
     }
     private static GTRecipe recipe(String id) {
         return new GTRecipe(null, new ResourceLocation("gtl_enhancedcore", "perf_" + id),

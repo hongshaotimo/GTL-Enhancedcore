@@ -26,6 +26,8 @@ public abstract class CloudPatternAccessScreenMixin extends AEBaseScreen<Contain
     @Unique private String cloud$library="",cloud$scope;
     @Unique private boolean cloud$restored,cloud$serverMatched;
     @Unique private CloudTerminalViewState cloud$preferences;
+    @Unique private com.gtl.enhancedcore.client.cloud.CloudPatternNameSearch.Task cloud$inputSearch,cloud$outputSearch;
+    @Unique private String cloud$pendingInput,cloud$pendingOutput;
     @Unique private final java.util.Set<Long> cloud$records=new java.util.HashSet<>();
     @Shadow @Final private java.util.HashMap<Long,appeng.client.gui.me.patternaccess.PatternContainerRecord> byId;
     @Shadow private boolean needsRefresh;
@@ -38,7 +40,7 @@ public abstract class CloudPatternAccessScreenMixin extends AEBaseScreen<Contain
         if(size==0 && cloud$records.remove(id)){byId.remove(id);infoMap.remove(id);cachedSearches.clear();needsRefresh=true;ci.cancel();return;}
         if(id<0 && group.name().getContents() instanceof net.minecraft.network.chat.contents.TranslatableContents title
                 && title.getKey().equals("block.gtl_enhancedcore.cloud_pattern_library")) {
-            if(cloud$searchDue!=0){ci.cancel();return;}
+            if(cloud$searchDue!=0||cloud$inputSearch!=null){ci.cancel();return;}
             Object[] args=title.getArgs();
             if(args.length!=4 || Long.parseLong(String.valueOf(args[3]))!=cloud$request){ci.cancel();return;}
             String library=String.valueOf(args[0]);
@@ -77,25 +79,43 @@ public abstract class CloudPatternAccessScreenMixin extends AEBaseScreen<Contain
         cloud$searchDue=System.nanoTime();
     }
     @Unique private void cloud$save() {
-        if(cloud$restored)cloud$preferences.save(cloud$scope,new CloudTerminalViewState.View(cloud$library,
+        if(cloud$restored)cloud$preferences.saveDeferred(cloud$scope,new CloudTerminalViewState.View(cloud$library,
                 searchInField.getValue(),searchOutField.getValue()));
     }
     @Inject(method="updateBeforeRender",at=@At("TAIL"),require=1)
     private void cloud$search(CallbackInfo ci){
         String input=searchInField.getValue(),output=searchOutField.getValue();
         if(!input.equals(cloud$lastInput)||!output.equals(cloud$lastOutput)){
+            cloud$cancelSearch();
             cloud$lastInput=input;cloud$lastOutput=output;cloud$searchDue=System.nanoTime()+120_000_000L;
         }
         if(cloud$searchDue!=0&&System.nanoTime()>=cloud$searchDue){
-            cloud$searchDue=0;cloud$save();var in=com.gtl.enhancedcore.client.cloud.CloudPatternNameSearch.find(input);
-            var out=com.gtl.enhancedcore.client.cloud.CloudPatternNameSearch.find(output);var encoder=java.util.Base64.getEncoder();
+            cloud$searchDue=0;cloud$save();cloud$pendingInput=input;cloud$pendingOutput=output;
+            cloud$inputSearch=com.gtl.enhancedcore.client.cloud.CloudPatternNameSearch.start(input);
+            cloud$outputSearch=com.gtl.enhancedcore.client.cloud.CloudPatternNameSearch.start(output);
+        }
+        if(cloud$inputSearch!=null){
+            if(cloud$inputSearch.cancelled()||cloud$outputSearch.cancelled()){
+                cloud$cancelSearch();cloud$searchDue=System.nanoTime();return;
+            }
+            cloud$inputSearch.advance(128,500_000L);cloud$outputSearch.advance(128,500_000L);
+            if(!cloud$inputSearch.done()||!cloud$outputSearch.done())return;
+            // The fields are checked again before submission; cancelled/old queries never issue a request.
+            if(!input.equals(cloud$pendingInput)||!output.equals(cloud$pendingOutput)){cloud$cancelSearch();return;}
+            var in=cloud$inputSearch.result();var out=cloud$outputSearch.result();cloud$cancelSearch();
+            var encoder=java.util.Base64.getEncoder();
             ((CloudPatternAccessMenu)menu).cloud$accessSearch(input.substring(0,Math.min(96,input.length()))+"\n"+output.substring(0,Math.min(96,output.length()))
                     +"\n"+encoder.encodeToString(in.items().toByteArray())+"\n"+encoder.encodeToString(in.fluids().toByteArray())
                     +"\n"+encoder.encodeToString(out.items().toByteArray())+"\n"+encoder.encodeToString(out.fluids().toByteArray())
                     +"\n"+(++cloud$request));
         }
     }
-    @Override public void removed() { cloud$save();super.removed(); }
+    @Unique private void cloud$cancelSearch(){
+        if(cloud$inputSearch!=null)cloud$inputSearch.cancel();
+        if(cloud$outputSearch!=null)cloud$outputSearch.cancel();
+        cloud$inputSearch=null;cloud$outputSearch=null;cloud$pendingInput=null;cloud$pendingOutput=null;
+    }
+    @Override public void removed() { cloud$cancelSearch();cloud$save();super.removed(); }
     @Inject(method="clear",at=@At("HEAD"))
     private void cloud$clearRecords(CallbackInfo ci) { cloud$records.clear(); }
     // ExtendedAE cannot decode every GT virtual input or reproduce the localized server query.

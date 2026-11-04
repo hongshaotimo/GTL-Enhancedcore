@@ -1,7 +1,10 @@
 package com.gtl.enhancedcore;
 
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import com.gtl.enhancedcore.common.world.personalplot.PersonalPlotPolicy;
 import com.gtl.enhancedcore.common.world.personalplot.PersonalPlotStore;
+import com.gtl.enhancedcore.common.world.plot.PlotPresetShare;
 import com.gtl.enhancedcore.common.world.plot.PlotSettingsCodec;
 import com.gtl.enhancedcore.common.world.plot.PlotSettings;
 import com.mojang.serialization.JsonOps;
@@ -10,7 +13,10 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.UUID;
+import java.util.function.Consumer;
+import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
+import java.util.zip.ZipOutputStream;
 
 /** Real ZIP lock, restart reads, immutable owner identity and authoritative permission checks. */
 final class PersonalPlotWorldRegression {
@@ -27,6 +33,7 @@ final class PersonalPlotWorldRegression {
         Path root = Files.createTempDirectory("gtl-personal-plots-regression-");
         UUID alice = UUID.fromString("01234567-89ab-cdef-0123-456789abcdef"), bob = UUID.fromString("fedcba98-7654-3210-fedc-ba9876543210");
         try {
+            legacyArchives(root.resolve("legacy"), alice, bob);
             var empty = PersonalPlotStore.read(root); check(empty.template() == null && empty.worlds().isEmpty(), "Ordinary existing save starts without personal state");
             var template = PlotSettings.preset(3); var pending = empty.withTemplate(template); PersonalPlotStore.write(root, pending);
             check(PersonalPlotStore.read(root).equals(pending), "Saved template survives a process-independent read");
@@ -92,6 +99,79 @@ final class PersonalPlotWorldRegression {
             try (var files = Files.walk(root)) { for (Path path : files.sorted(java.util.Comparator.reverseOrder()).toList()) Files.deleteIfExists(path); }
         }
         return checks;
+    }
+    private static void legacyArchives(Path root, UUID alice, UUID bob) throws Exception {
+        // Captured v1 wire shapes: the owner preset and dimension definition are separate contracts.
+        String preset = Files.readString(Path.of("src/test/resources/personal-plot/v1-preset.json"));
+        JsonObject definition = JsonParser.parseString(Files.readString(Path.of("src/test/resources/personal-plot/v1-dimension.json"))).getAsJsonObject();
+        PlotSettings expected = new PlotSettings(5, "minecraft:light_gray_concrete", "minecraft:black_concrete",
+                "minecraft:light_gray_concrete", "minecraft:sea_lantern", PlotSettings.RoadStyle.BOULEVARD, 4,
+                PlotSettings.MarkerMode.PLOT, 0, -64, -53, "minecraft:white_concrete", PlotSettings.LineStyle.CROSSWALK, 3, 3, 2);
+        JsonObject manifest = new JsonObject(); manifest.addProperty("version", 1); manifest.addProperty("owner", alice.toString());
+        manifest.addProperty("settings", preset);
+        Path pack = PersonalPlotStore.packPath(root, alice);
+        writeFixture(pack, alice, manifest, definition);
+        byte[] original = Files.readAllBytes(pack);
+        check(PersonalPlotStore.read(root).worlds().get(alice).equals(expected), "Complete v1 owner ZIP restores all original terrain fields and default absent edges");
+        check(java.util.Arrays.equals(original, Files.readAllBytes(pack)), "Reading a legacy archive never rewrites its bytes");
+        try { PlotPresetShare.decode(preset); throw new AssertionError("Legacy interchange accepted on current UI/network decoder"); }
+        catch (PlotPresetShare.ShareException expectedFailure) { check(true, "Legacy support is limited to persisted data, current interchange stays strict"); }
+        Path template = root.resolve(PersonalPlotStore.TEMPLATE_FILE); Files.writeString(template, preset);
+        check(PersonalPlotStore.read(root).template().equals(expected), "V1 dedicated-server template restores without a manual rewrite");
+        byte[] oldTemplate = Files.readAllBytes(template);
+        try (ZipFile heldOpen = new ZipFile(pack.toFile(), StandardCharsets.UTF_8)) {
+            var mixed = PersonalPlotStore.read(root).create(bob, PlotSettings.preset(2));
+            PersonalPlotStore.write(root, mixed);
+            check(PersonalPlotStore.read(root).equals(mixed), "New v2 owners coexist with v1 owners after upgrade");
+            check(java.util.Arrays.equals(oldTemplate, Files.readAllBytes(template)), "Creating another owner leaves old template bytes unchanged");
+            PersonalPlotStore.write(root, mixed.withTemplate(PlotSettings.preset(4)));
+            check(PersonalPlotStore.read(root).worlds().get(alice).equals(expected), "Template changes retain original v1 terrain after restart read");
+            check(java.util.Arrays.equals(original, Files.readAllBytes(pack)) && heldOpen.getEntry("pack.mcmeta") != null,
+                    "Legacy owner remains immutable while its ZIP is held open on Windows");
+        }
+        for (Consumer<JsonObject> change : java.util.List.<Consumer<JsonObject>>of(
+                json -> json.addProperty("type", "minecraft:the_nether"),
+                json -> json.getAsJsonObject("generator").addProperty("type", "minecraft:flat"),
+                json -> json.getAsJsonObject("generator").addProperty("biome", "minecraft:desert"),
+                json -> json.getAsJsonObject("generator").getAsJsonObject("settings").addProperty("border_width", 3),
+                json -> json.getAsJsonObject("generator").getAsJsonObject("settings").remove("border_width"),
+                json -> json.getAsJsonObject("generator").getAsJsonObject("settings").addProperty("unknown", 1),
+                json -> json.getAsJsonObject("generator").getAsJsonObject("settings").add("geometry_extras", new JsonObject()),
+                json -> json.addProperty("unexpected", true))) {
+            JsonObject invalid = definition.deepCopy(); change.accept(invalid);
+            writeFixture(pack, alice, manifest, invalid); rejectFixture(root, pack);
+        }
+        for (Consumer<JsonObject> change : java.util.List.<Consumer<JsonObject>>of(
+                json -> json.addProperty("owner", bob.toString()),
+                json -> json.addProperty("version", 2),
+                json -> json.addProperty("settings", preset.replace("\"version\": 1", "\"version\": 100")),
+                json -> json.addProperty("settings", preset.replace("\"border_width\": 2", "\"border_width\": 2, \"border_width\": 2")),
+                json -> json.addProperty("settings", preset.replace("\"border_width\": 2", "\"plot_edge_width\": 2")),
+                json -> json.addProperty("settings", preset.replace("\"border_width\": 2", "\"border_width\": 9")),
+                json -> json.addProperty("settings", preset.replace("minecraft:black_concrete", "minecraft:command_block")),
+                json -> json.addProperty("settings", preset.replace("\"road_width\": 4", "\"road_width\": \"4\"")))) {
+            JsonObject invalid = manifest.deepCopy(); change.accept(invalid);
+            writeFixture(pack, alice, invalid, definition); rejectFixture(root, pack);
+        }
+        JsonObject newerManifest = manifest.deepCopy(); newerManifest.addProperty("settings", PlotPresetShare.encode(expected.withPlotEdgeWidth(1)));
+        writeFixture(pack, alice, newerManifest, definition); rejectFixture(root, pack);
+        writeFixture(pack, alice, manifest, definition);
+        check(PersonalPlotStore.read(root).worlds().get(alice).equals(expected), "Valid v1 archive can be read again after failed validation attempts");
+    }
+    private static void rejectFixture(Path root, Path pack) throws Exception {
+        byte[] before = Files.readAllBytes(pack);
+        try { PersonalPlotStore.read(root); throw new AssertionError("Invalid legacy archive accepted"); }
+        catch (IOException expected) { check(java.util.Arrays.equals(before, Files.readAllBytes(pack)), "Invalid legacy archives fail closed and remain untouched"); }
+    }
+    private static void writeFixture(Path path, UUID owner, JsonObject manifest, JsonObject definition) throws Exception {
+        Files.createDirectories(path.getParent());
+        try (var zip = new ZipOutputStream(Files.newOutputStream(path), StandardCharsets.UTF_8)) {
+            for (var entry : java.util.Map.of("pack.mcmeta", "{\"pack\":{\"pack_format\":15,\"description\":\"Legacy fixture\"}}",
+                    "gtl_personal_plot_owner.json", manifest.toString(),
+                    "data/gtl_enhancedcore/dimension/" + PersonalPlotStore.dimensionPath(owner) + ".json", definition.toString()).entrySet()) {
+                zip.putNextEntry(new ZipEntry(entry.getKey())); zip.write(entry.getValue().getBytes(StandardCharsets.UTF_8)); zip.closeEntry();
+            }
+        }
     }
     private static void check(boolean condition, String message) { if (!condition) throw new AssertionError(message); checks++; }
 }

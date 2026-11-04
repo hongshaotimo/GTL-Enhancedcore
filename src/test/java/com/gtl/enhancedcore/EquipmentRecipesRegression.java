@@ -17,7 +17,8 @@ public final class EquipmentRecipesRegression {
             for (var recipe : EquipmentRecipeCatalog.read(reader)) byOutput.put(recipe.output(), recipe);
         }
         var baseline = JsonParser.parseString(Files.readString(Path.of("src/test/resources/registration-baseline.json"))).getAsJsonObject();
-        Set<String> expected = new HashSet<>(Set.of("pattern_generator", "plot_world_controller"));
+        Set<String> expected = new HashSet<>(Set.of("pattern_generator", "plot_world_controller",
+                "virtual_marker", "central_teleporter"));
         for (String list : new String[]{"literal_machine_ids", "tiered_machine_ids"}) {
             baseline.getAsJsonArray(list).forEach(value -> expected.add(value.getAsString()));
         }
@@ -26,8 +27,23 @@ public final class EquipmentRecipesRegression {
         baseline.getAsJsonArray("charger_tiers").forEach(value -> expected.add(value.getAsString().toLowerCase(java.util.Locale.ROOT) + "_wireless_charger"));
         require(expected.containsAll(EquipmentRecipeCatalog.CREATIVE_MODE_ONLY_OUTPUTS),
                 "Creative-only equipment must be registered"); checked++;
-        expected.removeAll(EquipmentRecipeCatalog.CREATIVE_MODE_ONLY_OUTPUTS);
-        require(byOutput.keySet().equals(expected), "Every non-creative registered item needs exactly one acquisition recipe"); checked++;
+        require(EquipmentRecipeCatalog.CAMPUS_PRESET_ONLY_OUTPUTS.equals(Set.of("virtual_marker", "central_teleporter")),
+                "Only the two campus-exclusive devices are exempt from acquisition recipes"); checked++;
+        require(expected.containsAll(EquipmentRecipeCatalog.CAMPUS_PRESET_ONLY_OUTPUTS),
+                "Campus-exclusive equipment must be registered"); checked++;
+        String campusDevices = Files.readString(Path.of(
+                "src/main/java/com/gtl/enhancedcore/common/world/campus/CampusDeviceBlocks.java"));
+        for (String output : EquipmentRecipeCatalog.CAMPUS_PRESET_ONLY_OUTPUTS) {
+            require(campusDevices.contains(".block(\"" + output + "\","),
+                    "Exempt campus equipment must have a real block registration: " + output); checked++;
+            require(!EquipmentRecipeCatalog.requiresEquipmentRecipe(output) && !byOutput.containsKey(output),
+                    "Preset-generated device must not require or define a recipe: " + output); checked++;
+        }
+        require(EquipmentRecipeCatalog.requiresEquipmentRecipe("pattern_generator")
+                        && EquipmentRecipeCatalog.requiresEquipmentRecipe("unlisted_equipment"),
+                "Ordinary and future equipment still require recipes"); checked++;
+        expected.removeIf(output -> !EquipmentRecipeCatalog.requiresEquipmentRecipe(output));
+        require(byOutput.keySet().equals(expected), "Every recipe-required registered item needs exactly one acquisition recipe"); checked++;
         var upgradedCircuits = java.util.Map.of(
                 "stellar_confinement_fusion_reactor", "kubejs:cosmic_mainframe",
                 "hyperstructural_chemical_distorter", "kubejs:exotic_mainframe");

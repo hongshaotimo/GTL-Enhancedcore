@@ -18,7 +18,7 @@ public final class NativeHiddenStructureRegression {
         var manifest = JsonParser.parseString(Files.readString(Path.of(
                 "src/main/resources/data/gtl_enhancedcore/structures/hollow/native.json"))).getAsJsonObject();
         var machines = manifest.getAsJsonObject("machines");
-        check(machines.size() == 3, "Three active native-isolation fixtures remain after retiring four satellites");
+        check(machines.size() == 3, "Three preserved upstream fixtures remain after retiring four satellites");
         int removed = 0;
         for (var entry : machines.entrySet()) {
             var spec = entry.getValue().getAsJsonObject();

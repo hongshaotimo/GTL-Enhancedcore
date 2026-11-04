@@ -43,6 +43,24 @@ final class CloudTerminalUiChecks {
     record Session(PatternEncodingTermMenu menu, NativeScreen screen, RenderScreen wrapper) {
         int frames() { return wrapper.frames; }
         void bound(boolean value) throws Exception { menu.getClass().getField("cloud$bound").setBoolean(menu, value); }
+        void verifyRecovery(BiConsumer<Boolean,String> check) throws Exception {
+            var field = PatternEncodingTermMenu.class.getDeclaredField("encodingLogic"); field.setAccessible(true);
+            var logic = (PatternEncodingLogic)field.get(menu);
+            var state = ((com.gtl.enhancedcore.common.cloud.transfer.CloudTerminalSource)logic).cloud$sourceState();
+            var review = menu.getClass().getField("cloud$review");
+            state.putBoolean("quarantined", true); review.set(menu, "");
+            screen.layoutAt(((Screen)screen).width, ((Screen)screen).height);
+            check.accept(((net.minecraft.client.gui.components.AbstractWidget)button()).active, "Server-cleared GuiSync unlocks upload despite stale quarantined wireless item NBT");
+            review.set(menu, "source/25/operation/Cloud snapshot write failed");
+            screen.layoutAt(((Screen)screen).width, ((Screen)screen).height);
+            check.accept(((net.minecraft.client.gui.components.AbstractWidget)button()).active && button().getTooltipMessage().stream().anyMatch(c -> c.getString().contains("save") || c.getString().contains("保存")),
+                    "Recoverable failed commit offers active retry with an explicit save tooltip");
+            review.set(menu, "source/25/operation/generation_gap");
+            screen.layoutAt(((Screen)screen).width, ((Screen)screen).height);
+            check.accept(!((net.minecraft.client.gui.components.AbstractWidget)button()).active, "Unknown generation conflict remains disabled on the actual AE screen");
+            review.set(menu, ""); state.remove("quarantined");
+            screen.layoutAt(((Screen)screen).width, ((Screen)screen).height);
+        }
         CloudLibraryUploadButton button() {
             if (wrapper.failure != null) throw new IllegalStateException("Actual AE terminal render failed", wrapper.failure);
             return screen.children().stream().filter(CloudLibraryUploadButton.class::isInstance).map(CloudLibraryUploadButton.class::cast).findFirst()

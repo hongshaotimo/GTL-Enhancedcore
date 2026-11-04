@@ -47,11 +47,12 @@ public final class CloudImportJournal {
             return CloudImportIo.run(() -> writeFile(journal, committed));
         }, () -> {
             store.acknowledge(library, actor, transaction);
-            // Preserve the former ACK-before-return boundary. This final authority-only flush
-            // does not wait for unrelated libraries or unchanged payloads.
-            store.checkpointLibrary(library);
             tag.putString("status", "COMMITTED");
             REVIEWS.computeIfAbsent(root(level), unused -> new ReviewCatalog()).remember(tag);
+            // COMMITTED WAL already proves this upload. ACK may now publish; a later
+            // checkpoint failure retains dirty data and fails closed at the partition.
+            // Never roll back a confirmed upload that may already own a live lease/job.
+            return store.checkpointLibraryAsync(library);
         }).whenComplete((ignored, failure) -> level.getServer().execute(() -> activeUploads(level).remove(transaction)));
     }
     public static CloudBufferImport.ImportSink sink(ServerLevel level, UUID library, UUID actor) {
@@ -102,6 +103,16 @@ public final class CloudImportJournal {
             }
         };
     }
+    /** A failed final ACK checkpoint must be reviewable without revoking confirmed rights. */
+    public static void reviewUpload(ServerLevel level, UUID operation, RuntimeException failure) {
+        CompoundTag tag = find(level, operation);
+        tag.putBoolean("review", true);
+        Throwable cause = failure;
+        while (cause.getCause() != null) cause = cause.getCause();
+        tag.putString("failure", cause.getClass().getSimpleName() + (cause.getMessage() == null ? "" : ": " + cause.getMessage()));
+        REVIEWS.computeIfAbsent(root(level), unused -> new ReviewCatalog()).remember(tag);
+        write(level, tag);
+    }
     /** Removal completion addresses this transaction only, never a replacement block at its old position. */
     public static void retireCompletedUpload(ServerLevel level, UUID operation) {
         CompoundTag tag = find(level, operation);
@@ -120,7 +131,7 @@ public final class CloudImportJournal {
         long tick = Long.MIN_VALUE;
         void remember(CompoundTag tag) {
             UUID operation = tag.getUUID("operation");
-            if (java.util.Set.of("PREPARED", "DEBITED", "NEEDS_REVIEW").contains(tag.getString("status"))) pending.put(operation, tag.copy());
+            if (tag.getBoolean("review") || java.util.Set.of("PREPARED", "DEBITED", "NEEDS_REVIEW").contains(tag.getString("status"))) pending.put(operation, tag.copy());
             else pending.remove(operation);
         }
     }
@@ -290,7 +301,7 @@ public final class CloudImportJournal {
                     }
                     continue;
                 }
-                if (status.equals("NEEDS_REVIEW")) throw new IllegalStateException("Import requires manual review");
+                if (status.equals("NEEDS_REVIEW") || tag.getBoolean("review")) throw new IllegalStateException("Import requires manual review");
                 if (source instanceof MEPatternBufferPartMachine buffer && tag.hasUUID("sharedGroup") && !access.cloud$processed(tag.getUUID("sharedGroup"))) {
                     CloudImportedCatalysts.drainShared(buffer, tag.getCompound("sharedCatalysts"));
                     access.cloud$markProcessed(tag.getUUID("sharedGroup")); source.markDirty();
@@ -308,7 +319,16 @@ public final class CloudImportJournal {
                 if (!status.equals("COMMITTED")) complete(level, tag);
                 else {
                     var store = CloudPatternStore.get(level);
-                    store.acknowledge(tag.getUUID("library"), tag.getUUID("actor"), operation); store.checkpoint();
+                    var library = store.library(tag.getUUID("library"));
+                    var receipt = library.receipt(operation);
+                    if (receipt != null && receipt.kind().equals("UPLOAD") && receipt.status().equals("ACKNOWLEDGED")) {
+                        var entry = library.entry(receipt.subject());
+                        if ((tag.hasUUID("entry") && !tag.getUUID("entry").equals(entry.id()))
+                                || !ItemStack.matches(entry.original(), ItemStack.of(tag.getCompound("expected")))
+                                || !entry.configuration().equals(tag.getCompound("configuration")))
+                            throw new IllegalStateException("Committed upload payload disagrees with receipt");
+                    } else store.acknowledge(tag.getUUID("library"), tag.getUUID("actor"), operation);
+                    store.checkpointLibrary(tag.getUUID("library"));
                 }
                 }
             }
@@ -337,9 +357,20 @@ public final class CloudImportJournal {
     }
     /** Only four records cross the menu boundary; no item originals from unrelated entries are synchronized. */
     public static CompoundTag reviewPage(ServerLevel level, UUID libraryId, int requestedPage) {
-        var library = CloudPatternStore.get(level).library(libraryId);
+        return reviewPage(level, libraryId, requestedPage, null);
+    }
+    public static CompoundTag reviewPage(ServerLevel level, UUID libraryId, int requestedPage, CloudImportSourceAccess endpoint) {
+        var library = CloudPatternStore.get(level).libraryForReview(libraryId);
         ReviewCatalog catalog = reviewCatalog(level);
         java.util.Map<UUID, com.gtl.enhancedcore.common.cloud.store.CloudLedger.Receipt> operations = new java.util.LinkedHashMap<>();
+        if (endpoint != null && endpoint.cloud$importQuarantined()) {
+            CompoundTag markers = endpoint.cloud$saveImportMarkers();
+            UUID operation = markers.hasUUID("reviewOperation") ? markers.getUUID("reviewOperation") : quarantinedUpload(markers.getString("quarantine"));
+            if (operation != null) {
+                var receipt = library.receipt(operation);
+                operations.put(operation, receipt == null ? new com.gtl.enhancedcore.common.cloud.store.CloudLedger.Receipt(operation, "UPLOAD", operation, "NEEDS_REVIEW") : receipt);
+            }
+        }
         library.receipts().stream().filter(r -> (r.kind().equals("UPLOAD") || r.kind().equals("EXPORT"))
                 && !r.status().equals("ACKNOWLEDGED") && !r.status().equals("ROLLED_BACK")).forEach(r -> operations.put(r.operation(), r));
         catalog.pending.forEach((id, tag) -> {
@@ -347,7 +378,7 @@ public final class CloudImportJournal {
                     new com.gtl.enhancedcore.common.cloud.store.CloudLedger.Receipt(id, "UPLOAD", id, tag.getString("status")));
         });
         var pending = java.util.List.copyOf(operations.values());
-        var orders = library.recoveries().stream().filter(r -> r.status().equals("FROZEN") || r.status().equals("NEEDS_REVIEW")).toList();
+        var orders = library.healthy() ? library.recoveries().stream().filter(r -> r.status().equals("FROZEN") || r.status().equals("NEEDS_REVIEW")).toList() : java.util.List.<CloudPatternStore.Recovery>of();
         int total = pending.size() + orders.size(), pages = Math.max(1, (total + 3) / 4), page = Math.max(0, Math.min(requestedPage, pages - 1));
         ListTag rows = new ListTag();
         for (int i = page * 4; i < Math.min(total, (page + 1) * 4); i++) {
@@ -369,6 +400,7 @@ public final class CloudImportJournal {
                     row.putString("sourceDimension", tag.getString("dimension"));
                     row.putString("sourcePos", net.minecraft.core.BlockPos.of(tag.getLong("position")).toShortString());
                     row.putString("journalStatus", tag.getString("status")); row.put("expected", tag.getCompound("expected").copy());
+                    row.putString("failure", tag.getString("failure"));
                     var source = loadedSource(level, tag); ItemStackTransfer inventory = source == null ? null : inventory(source);
                     boolean identity = source instanceof CloudImportSourceAccess access && access.cloud$sourceIdentity().equals(tag.getUUID("identity"));
                     boolean processed = identity && ((CloudImportSourceAccess)source).cloud$processed(operation);
@@ -388,10 +420,16 @@ public final class CloudImportJournal {
         result.putBoolean("recoveryIndexing", !catalog.complete);
         result.putInt("recoveryPage", page); result.putInt("recoveryPages", pages); result.putInt("recovery", total); return result;
     }
-    /** Owner-only retry proves the debit against the exact source incarnation before publishing an original. */
+    private static UUID quarantinedUpload(String reason) {
+        if (!reason.startsWith("Upload ") || !reason.endsWith(" requires review")) return null;
+        try { return UUID.fromString(reason.substring(7, reason.length() - 16)); }
+        catch (IllegalArgumentException invalid) { return null; }
+    }
+    /** Team-authorized retry proves the debit against the exact source incarnation before publishing an original. */
     public static void retry(ServerLevel level, UUID libraryId, net.minecraft.server.level.ServerPlayer player, UUID operation) {
-        var store = CloudPatternStore.get(level); var library = store.library(libraryId);
-        if (!library.owner().equals(player.getUUID()) || player.serverLevel() != level) throw new SecurityException("Owner reconciliation required");
+        var store = CloudPatternStore.get(level); var library = store.libraryForReview(libraryId);
+        if (!library.authorized(player.getUUID()) || player.serverLevel() != level) throw new SecurityException("Library team reconciliation required");
+        if (activeUploads(level).contains(operation)) throw new IllegalStateException("Upload is still committing");
         CompoundTag tag = locate(level, operation);
         if (tag.getInt("schema") != 1 || !tag.getUUID("library").equals(libraryId) || !tag.getUUID("operation").equals(operation))
             throw new IllegalStateException("Import evidence identity mismatch");
@@ -405,18 +443,29 @@ public final class CloudImportJournal {
         ItemStackTransfer inventory = inventory(source); int slot = tag.getInt("slot");
         if (source instanceof CloudPatternLibraryMachine central && !central.isFormed())
             throw new IllegalStateException("Import source library must be formed before manual reconciliation");
+        if (source instanceof CloudPatternLibraryMachine central && central.cloud$importQuarantined()) {
+            CompoundTag markers = central.cloud$saveImportMarkers();
+            UUID flagged = markers.hasUUID("reviewOperation") ? markers.getUUID("reviewOperation") : quarantinedUpload(markers.getString("quarantine"));
+            if (!tag.getBoolean("review") && tag.getString("status").equals("COMMITTED") && !operation.equals(flagged))
+                throw new IllegalStateException("This completed upload does not explain the source quarantine");
+        }
         if (source instanceof MEPatternBufferPartMachine buffer && !CloudImportSourceAddress.authorized(player, buffer))
             throw new SecurityException("Current source ownership denies reconciliation");
         ItemStack expected = ItemStack.of(tag.getCompound("expected"));
         if (inventory == null || slot < 0 || slot >= inventory.getSlots() || expected.getCount() != 1) throw new IllegalStateException("Invalid import debit evidence");
+        store.retryFailedWrites();
         var priorReceipt = library.receipt(operation);
         if (priorReceipt != null) {
             if (!priorReceipt.kind().equals("UPLOAD")) throw new IllegalStateException("Only import receipts can use source debit evidence");
             var priorEntry = library.entry(priorReceipt.subject());
-            if (!ItemStack.matches(priorEntry.original(), expected) || !priorEntry.configuration().equals(tag.getCompound("configuration")))
+            if ((tag.hasUUID("entry") && !tag.getUUID("entry").equals(priorReceipt.subject()))
+                    || !ItemStack.matches(priorEntry.original(), expected) || !priorEntry.configuration().equals(tag.getCompound("configuration")))
                 throw new IllegalStateException("Import receipt payload disagrees with journal");
         }
         try {
+        boolean acknowledged = priorReceipt != null && priorReceipt.status().equals("ACKNOWLEDGED");
+        if (acknowledged && (!tag.getString("status").equals("COMMITTED") || !access.cloud$processed(operation)))
+            throw new IllegalStateException("Acknowledged upload lacks committed source evidence");
         if (!access.cloud$processed(operation)) {
             ItemStack actual = CloudImportInventoryGuard.recover(inventory, () -> {
                 if (!ItemStack.matches(inventory.getStackInSlot(slot), expected)) throw new IllegalStateException("Import debit remains uncertain");
@@ -425,11 +474,15 @@ public final class CloudImportJournal {
             if (!ItemStack.matches(actual, expected)) throw new IllegalStateException("Import debit could not be proven");
             access.cloud$markProcessed(operation); source.markDirty();
         }
-        tag.putUUID("actor", player.getUUID()); tag.putString("status", "DEBITED"); write(level, tag);
-        var receipt = library.receipt(operation);
-        if (receipt != null && receipt.status().equals("NEEDS_REVIEW")) store.resolveExternal(libraryId, player.getUUID(), operation, true);
-        complete(level, tag);
-        CompoundTag markers = access.cloud$saveImportMarkers(); markers.remove("quarantine"); access.cloud$loadImportMarkers(markers); source.markDirty();
+        if (acknowledged) store.checkpointLibrary(libraryId);
+        else {
+            tag.putUUID("actor", player.getUUID()); tag.putString("status", "DEBITED"); write(level, tag);
+            var receipt = library.receipt(operation);
+            if (receipt != null && receipt.status().equals("NEEDS_REVIEW")) store.resolveExternal(libraryId, player.getUUID(), operation, true);
+            complete(level, tag);
+        }
+        tag.remove("review"); tag.remove("failure"); write(level, tag);
+        CompoundTag markers = access.cloud$saveImportMarkers(); markers.remove("quarantine"); markers.remove("reviewOperation"); access.cloud$loadImportMarkers(markers); source.markDirty();
         reconcile(source); // Any other unresolved operation restores quarantine immediately.
         if (access.cloud$importQuarantined()) throw new IllegalStateException("Selected import reconciled; other source evidence still needs review");
         } catch (RuntimeException failure) { access.cloud$quarantineImport("Import reconciliation requires review"); source.markDirty(); throw failure; }

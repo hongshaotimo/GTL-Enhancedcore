@@ -42,6 +42,9 @@ public final class CloudNativeUiChecks {
     private Widget nativePage;
     private int phase, elapsed;
     private boolean done;
+    private CloudTerminalUiChecks.Session terminal;
+    private Widget refundPanel;
+    private final List<CompoundTag> refundActions = new ArrayList<>();
 
     public CloudNativeUiChecks() { MinecraftForge.EVENT_BUS.addListener(this::tick); }
     private void tick(TickEvent.ClientTickEvent event) {
@@ -50,12 +53,22 @@ public final class CloudNativeUiChecks {
         if (phase == 0) {
             directory = mc.gameDirectory.toPath().toAbsolutePath().normalize();
             if (mc.getOverlay() != null || !(mc.screen instanceof TitleScreen) || mc.level != null || mc.getSingleplayerServer() != null
-                    || !directory.startsWith(ROOT) || directory.equals(ROOT)
+                    || !(directory.startsWith(ROOT) && !directory.equals(ROOT)
+                    || directory.getParent().equals(Path.of("C:/IDEA/GTL-Enhancedcore/_audit/cloud-instant-upload-20261028"))
+                    || directory.getParent().equals(Path.of("C:/IDEA/GTL-Enhancedcore/_audit/cloud-refund-dissolution-20261029"))
+                    || directory.getParent().equals(Path.of("C:/Users/Administrator/.codex/worktrees/pr4-cloud-integration/GTL-Enhancedcore/_audit/pr4-integration-20261028")))
                     || !Files.isRegularFile(directory.resolve("cloud-native-ui.marker"))) return;
         }
         try {
             require(mc.level == null && mc.getSingleplayerServer() == null && mc.getConnection() == null,
                     "Title-screen synthetic fixture has no world or network connection");
+            if (Boolean.getBoolean("gtl.cloudRefundUiAudit")) { refundTick(); return; }
+            if (phase >= 9) {
+                if (++elapsed < 4 || terminal.frames() < 4) return;
+                if (phase == 9) { terminal.verify(true, this::require); terminal.verifyRecovery(this::require); phase = 10; elapsed = 0; }
+                else { screenshot("terminal-recovered.png"); finish(null); }
+                return;
+            }
             if (phase == 0) {
                 player = StellarIvGuiChecks.fixture("gtceu:suprachronal_assembly_line", true, false, false).player();
                 open(0); phase = 1;
@@ -66,11 +79,119 @@ public final class CloudNativeUiChecks {
                 String page = sample % 2 == 0 ? "main" : "network";
                 screenshot(machine + "-" + page + "-" + state + ".png");
                 if (sample % 2 == 1) verifyNativeLayout(state.equals("online"));
-                if (++phase > 8) finish(null);
+                if (++phase > 8) { terminal = CloudTerminalUiChecks.open(player); terminal.bound(true); }
                 else open(phase - 1);
                 elapsed = 0;
             }
         } catch (Throwable failure) { failure.printStackTrace(); finish(failure); }
+    }
+
+    private void refundTick() throws Exception {
+        if (phase == 0) {
+            String language = Minecraft.getInstance().getLanguageManager().getSelected();
+            require(language.equals("zh_cn") || language.equals("en_us"), "Refund screenshots use declared supported language: " + language);
+            refundTextWidths();
+            player = StellarIvGuiChecks.fixture("gtceu:suprachronal_assembly_line", true, false, false).player();
+            open(6); refundPanel = ui.getFirstWidgetById("cloud.buffer");
+            refundSnapshot(false); captureRefundActions(); phase = 1; elapsed = 0; return;
+        }
+        if (++elapsed < 25 || gui.frames < 4) return;
+        switch (phase) {
+            case 1 -> { screenshot("refund-main.png"); clickRefund("open"); refundPage("orders", true); }
+            case 2 -> {
+                screenshot("refund-orders.png"); refundBounds("orders"); clickRefund("cancel");
+                refundPage("cancellation", true); require(refundActions.isEmpty(), "Opening confirmation does not cancel orders");
+            }
+            case 3 -> {
+                screenshot("refund-confirmation.png"); refundBounds("cancellation"); clickRefund("keep");
+                refundPage("orders", true); require(refundActions.isEmpty(), "Keep orders returns without a server action");
+            }
+            case 4 -> {
+                screenshot("refund-kept.png"); clickRefund("cancel"); clickRefund("confirm");
+                require(refundActions.size() == 1 && refundActions.get(0).getString("action").equals("cancel")
+                        && refundActions.get(0).getCompound("payload").getBoolean("confirm")
+                        && refundActions.get(0).getCompound("payload").getLong("revision") == 42,
+                        "Only explicit confirmation emits cancel with current revision and confirm=true");
+                refundSnapshot(true, true); refundPage("orders", true);
+            }
+            case 5 -> {
+                screenshot("refund-online-pending.png"); refundBounds("orders");
+                refundSnapshot(true);
+            }
+            case 6 -> {
+                screenshot("refund-offline-pending.png"); refundBounds("orders");
+                require(!ui.getFirstWidgetById("cloud.orders.cancel").isActive(), "No queued jobs disables cancel");
+                require(ui.getFirstWidgetById("cloud.orders.reconnect").isActive(), "Offline pending stock offers source reconnect");
+                clickRefund("back");
+                require(((Widget)field(refundPanel, "patterns").get(refundPanel)).isVisible(), "Back restores pattern grid");
+            }
+            case 7 -> { screenshot("refund-patterns-returned.png"); finish(null); return; }
+            default -> throw new AssertionError("Unknown refund stage " + phase);
+        }
+        phase++; elapsed = 0; gui.frames = 0;
+    }
+    private void refundSnapshot(boolean pending) throws Exception { refundSnapshot(pending, !pending); }
+    private void refundSnapshot(boolean pending, boolean online) throws Exception {
+        var snapshot = ((CompoundTag)field(refundPanel, "snapshot").get(refundPanel)).copy();
+        snapshot.putLong("revision", 42); snapshot.putInt("queued", pending ? 0 : 12); snapshot.putInt("active", pending ? 0 : 3);
+        snapshot.putBoolean("accepting", !pending); snapshot.putBoolean("tasksHealthy", true);
+        snapshot.putBoolean("hasOrigin", true); snapshot.putBoolean("returnNetworkReady", online);
+        snapshot.putBoolean("networkConnected", online); snapshot.putBoolean("resumeAllowed", false);
+        snapshot.putInt("refundTypes", pending ? 8 : 0); snapshot.putInt("completedOutputTypes", pending ? 2 : 0);
+        snapshot.putInt("requestSerial", field(refundPanel, "requestSerial").getInt(refundPanel));
+        var packet = new FriendlyByteBuf(io.netty.buffer.Unpooled.buffer());
+        try { packet.writeNbt(snapshot); refundPanel.readUpdateInfo(212, packet); } finally { packet.release(); }
+    }
+    private void refundTextWidths() {
+        var font = Minecraft.getInstance().font;
+        for (String key : List.of("unused_return", "finished_return", "running_loss", "energy_loss", "cpu_cancel")) {
+            String text = net.minecraft.network.chat.Component.translatable("gtl_enhancedcore.cloud.ui.orders_" + key).getString();
+            int width = font.width(text);
+            layouts.add(Map.of("translation", key, "text", text, "pixels", width, "available", 162));
+            require(width <= 162, "Full confirmation warning fits without clipping: " + key + " (" + width + "/162)");
+        }
+        for (String key : List.of("returning", "return_waiting", "nothing_pending")) {
+            String text = net.minecraft.network.chat.Component.translatable("gtl_enhancedcore.cloud.ui.orders_" + key).getString();
+            int width = font.width(text);
+            layouts.add(Map.of("translation", key, "text", text, "pixels", width, "available", 138));
+            require(width <= 138, "Complete refund status fits without clipping: " + key + " (" + width + "/138)");
+        }
+    }
+    private void captureRefundActions() {
+        refundPanel.setUiAccess(new WidgetUIAccess() {
+            public boolean attemptMergeStack(ItemStack stack, boolean a, boolean b) { return false; }
+            public void writeUpdateInfo(Widget source, int id, Consumer<FriendlyByteBuf> writer) {}
+            public void writeClientAction(Widget source, int id, Consumer<FriendlyByteBuf> writer) {
+                if (id != 211) return;
+                var packet = new FriendlyByteBuf(io.netty.buffer.Unpooled.buffer());
+                try { writer.accept(packet); var action = new CompoundTag(); action.putString("action", packet.readUtf(32));
+                    action.put("payload", Objects.requireNonNull(packet.readNbt())); refundActions.add(action);
+                } finally { packet.release(); }
+            }
+        });
+    }
+    private void clickRefund(String name) {
+        Widget widget = ui.getFirstWidgetById("cloud.orders." + name);
+        require(widget != null && widget.isVisible() && widget.isActive(), "Clickable real refund widget: " + name);
+        var position = widget.getPosition();
+        require(widget.mouseClicked(position.x + widget.getSizeWidth() / 2.0, position.y + widget.getSizeHeight() / 2.0, 0),
+                "Real button mouseClicked handles: " + name);
+    }
+    private void refundPage(String name, boolean visible) throws Exception {
+        require(((Widget)field(refundPanel, name).get(refundPanel)).isVisible() == visible, "Refund page visibility: " + name);
+        require(!((Widget)field(refundPanel, "patterns").get(refundPanel)).isVisible(), "Order pages hide pattern controls");
+    }
+    private void refundBounds(String name) throws Exception {
+        var group = (WidgetGroup)field(refundPanel, name).get(refundPanel); var origin = group.getPosition();
+        var rows = new ArrayList<Map<String, Object>>();
+        for (Widget child : group.widgets) {
+            var point = child.getPosition(); int x = point.x - origin.x, y = point.y - origin.y;
+            require(x >= 0 && y >= 0 && x + child.getSizeWidth() <= group.getSizeWidth()
+                    && y + child.getSizeHeight() <= group.getSizeHeight(), "Refund page child stays within " + name + " bounds");
+            rows.add(Map.of("class", child.getClass().getSimpleName(), "x", x, "y", y,
+                    "width", child.getSizeWidth(), "height", child.getSizeHeight()));
+        }
+        layouts.add(Map.of("page", name, "width", group.getSizeWidth(), "height", group.getSizeHeight(), "widgets", rows));
     }
 
     private void open(int sample) throws Exception {
@@ -94,7 +215,28 @@ public final class CloudNativeUiChecks {
         Widget panel = ui.getFirstWidgetById(library ? "cloud.library" : "cloud.buffer");
         var snapshot = new CompoundTag(); snapshot.putString("status", "gtl_enhancedcore.cloud.ui.available");
         snapshot.putInt("pages", 1); snapshot.putInt("page", 0); snapshot.putBoolean("networkConnected", online);
-        field(panel, "snapshot").set(panel, snapshot);
+        var rows = new ListTag(); var row = new CompoundTag();
+        row.putString("id", "00000000-0000-0000-0000-000000000001"); row.putString("name", "Gold Ingot");
+        row.put("icon", new ItemStack(net.minecraft.world.item.Items.GOLD_INGOT).save(new CompoundTag())); rows.add(row);
+        snapshot.put("entries", rows); snapshot.putInt("total", 1); snapshot.putInt("matched", 1);
+        snapshot.putInt("libraryTotal", 1);
+        snapshot.putString("mode", "gtceu:chemical_reactor");
+        var packet = new FriendlyByteBuf(io.netty.buffer.Unpooled.buffer());
+        try { packet.writeNbt(snapshot); panel.readUpdateInfo(212, packet); } finally { packet.release(); }
+        require(fancy.getMainPage().createMainPage(fancy) == panel,
+                "Revisiting native main page reuses its populated panel without another poll: " + id);
+        var wire = new FriendlyByteBuf(io.netty.buffer.Unpooled.buffer());
+        try {
+            ui.mainGroup.writeInitialData(wire);
+            field(panel, "snapshot").set(panel, new CompoundTag());
+            ui.mainGroup.readInitialData(wire);
+            require(wire.readableBytes() == 0 && snapshot.equals(field(panel, "snapshot").get(panel)),
+                    "Complete native initial packet restores products and connection before any client tick: " + id);
+            var image = ((ImageWidget)ui.getFirstWidgetById("cloud.me.status")).getImage();
+            require(image instanceof com.lowdragmc.lowdraglib.gui.texture.ResourceTexture texture
+                    && texture.imageLocation.getPath().endsWith(online ? "status_online.png" : "status_offline.png"),
+                    "First-frame connection icon matches received state before ImageWidget polling: " + id);
+        } finally { wire.release(); }
         sink(ui.mainGroup);
         player.containerMenu = ui.getModularUIContainer();
         gui = new AuditGui(ui);
@@ -201,7 +343,8 @@ public final class CloudNativeUiChecks {
         done = true;
         var report = new LinkedHashMap<String, Object>(); report.put("status", error == null ? "PASS" : "FAIL");
         if (error != null) report.put("error", error.toString()); report.put("checks", checks); report.put("layouts", layouts);
-        report.put("scope", "Actual registered machine Fancy roots, ME flag nodes and GTLCore provider/widget/drawWirelessPage. Synthetic client-only entries; request opening replaced before native paint. No world, real C2S, binding mutation or automatic-tab-installation claim.");
+        report.put("refundUi", Boolean.getBoolean("gtl.cloudRefundUiAudit"));
+        report.put("scope", Boolean.getBoolean("gtl.cloudRefundUiAudit") ? "Real registered cloud buffer Fancy renderer and actual button mouseClicked callbacks; synthetic order/refund snapshots and captured cancel payload only. Font widths and framebuffer screenshots in the selected language. Title screen only: no world, server actions, live refund completion or persistence claim." : "Actual registered machine Fancy roots, ME flag nodes and GTLCore provider/widget/drawWirelessPage. Synthetic client-only entries; request opening replaced before native paint. No world, real C2S, binding mutation or automatic-tab-installation claim.");
         try { Files.writeString(directory.resolve("cloud-native-ui.json"), new GsonBuilder().setPrettyPrinting().create().toJson(report)); }
         catch (Exception failure) { failure.printStackTrace(); }
         Minecraft.getInstance().stop();

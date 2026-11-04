@@ -1,0 +1,21 @@
+{
+  "gtladditions:antientropy_condensation_center": "gtlcore:antifreeze_heatproof_machine_casing",
+  "gtl_enhancedcore:stellar_confinement_fusion_reactor": "gtlcore:iridium_casing",
+  "gtl_enhancedcore:hyperstructural_chemical_distorter": "gtlcore:iridium_casing",
+  "gtladditions:dimensionally_transcendent_chemical_plant": "gtceu:inert_machine_casing",
+  "gtladditions:lucid_etchdreamer": "gtlcore:iridium_casing",
+  "gtceu:advanced_sps_crafting": "gtceu:fusion_casing_mk2",
+  "gtceu:super_particle_collider": "gtlcore:lafium_mechanical_casing",
+  "gtladditions:macro_atomic_resonant_fragment_stripper": "gtlcore:hyper_mechanical_casing",
+  "gtladditions:quantum_syphon_matrix": "gtceu:high_power_casing",
+  "gtceu:huge_incubator": "gtceu:inert_machine_casing",
+  "gtladditions:titan_crip_earthbore": "gtlcore:echo_casing",
+  "gtceu:eye_of_harmony": "gtlcore:dimensionally_transcendent_casing",
+  "gtladditions:arcanic_astrograph": "gtlcore:create_casing",
+  "gtladditions:heart_of_the_universe": "gtceu:high_power_casing",
+  "gtladditions:fuxi_bagua_heaven_forging_furnace": "gtlcore:dimension_injection_casing",
+  "gtladditions:space_infinity_integrated_ore_processor": "gtlcore:space_elevator_mechanical_casing",
+  "gtladditions:apocalyptic_torsion_quantum_matrix": "gtlcore:dimensionally_transcendent_casing",
+  "gtl_enhancedcore:stellar_vortex_space_station": "gtlcore:dimensionally_transcendent_casing",
+  "gtl_enhancedcore:lanthanide_refining_hub": "gtceu:computer_casing"
+}

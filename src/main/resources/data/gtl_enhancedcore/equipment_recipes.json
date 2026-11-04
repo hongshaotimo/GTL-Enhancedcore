@@ -2421,6 +2421,64 @@
           "amount": 1152
         }
       ]
+    },
+    {
+      "output": "lanthanide_refining_hub",
+      "tier": "luv",
+      "method": "assembly_line",
+      "duration": 2400,
+      "ingredients": [
+        {
+          "item": "gtceu:luv_machine_hull",
+          "count": 1
+        },
+        {
+          "item": "gtceu:computer_casing",
+          "count": 8
+        },
+        {
+          "item": "gtceu:europium_foil",
+          "count": 64
+        },
+        {
+          "tag": "gtceu:circuits/luv",
+          "count": 8
+        },
+        {
+          "item": "gtceu:luv_electric_pump",
+          "count": 4
+        },
+        {
+          "item": "gtceu:luv_sensor",
+          "count": 2
+        },
+        {
+          "item": "gtceu:luv_emitter",
+          "count": 2
+        },
+        {
+          "item": "gtceu:polytetrafluoroethylene_large_fluid_pipe",
+          "count": 8
+        },
+        {
+          "item": "gtceu:niobium_titanium_quadruple_cable",
+          "count": 4
+        }
+      ],
+      "fluids": [
+        {
+          "fluid": "gtceu:europium",
+          "amount": 2304
+        },
+        {
+          "fluid": "gtceu:soldering_alloy",
+          "amount": 4608
+        },
+        {
+          "fluid": "gtceu:polytetrafluoroethylene",
+          "amount": 2304
+        }
+      ]
     }
   ]
 }

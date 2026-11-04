@@ -89,15 +89,21 @@ public final class IvDisplayRegression {
         var cap = balance;
         IvMachineDisplay.stellarDisplay(stellar, cap, balance, java.math.BigInteger.TEN.pow(18));
         IvMachineDisplay.stellarDisplay(stellar, cap, balance, java.math.BigInteger.TEN.pow(18));
-        check(count(stellar, "gtceu.multiblock.max_energy_per_tick") == 1
+        check(count(stellar, "gtl_enhancedcore.galaxy.max_power") == 1
                         && count(stellar, "gtceu.multiblock.max_recipe_tier") == 1
                         && count(stellar, "gtl_enhancedcore.galaxy.grid_balance") == 1
                         && count(stellar, "gtl_enhancedcore.galaxy.power_cap") == 0
                         && stellar.contains(diagnostic),
                 "stellar UI uses one upstream power/tier row and preserves machine-specific content");
         var powerLine = stellar.stream().filter(line -> line.getContents() instanceof TranslatableContents t
-                && t.getKey().equals("gtceu.multiblock.max_energy_per_tick")).findFirst().orElseThrow();
+                && t.getKey().equals("gtl_enhancedcore.galaxy.max_power")).findFirst().orElseThrow();
         var powerArgs = ((TranslatableContents)powerLine.getContents()).getArgs();
+        check(powerArgs.length == 1 && com.gtl.enhancedcore.common.machine.galaxy.GalaxyPower.MAX_TIER == com.gregtechceu.gtceu.api.GTValues.MAX,
+                "maximum power has no grid-balance suffix and the actual recipe tier stops at MAX");
+        var maxTierLine = stellar.stream().filter(line -> line.getContents() instanceof TranslatableContents t
+                && t.getKey().equals("gtceu.multiblock.max_recipe_tier")).findFirst().orElseThrow();
+        check(((Component)((TranslatableContents)maxTierLine.getContents()).getArgs()[0]).getString().equals("MAX"),
+                "maximum recipe tier label is MAX without a synthetic offset");
         check(((Component)powerArgs[0]).getStyle().getHoverEvent()
                         .getValue(net.minecraft.network.chat.HoverEvent.Action.SHOW_TEXT).getString()
                         .equals(com.gregtechceu.gtceu.utils.FormattingUtil.formatNumbers(balance)),

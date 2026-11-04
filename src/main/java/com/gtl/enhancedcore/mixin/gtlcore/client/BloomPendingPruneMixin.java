@@ -3,6 +3,9 @@ package com.gtl.enhancedcore.mixin.gtlcore.client;
 import com.gtl.enhancedcore.client.performance.bloom.DeferredQueuePruner;
 import java.util.PriorityQueue;
 import java.util.function.Predicate;
+import net.minecraft.client.multiplayer.ClientLevel;
+import org.gtlcore.gtlcore.client.bloom.BloomConfig;
+import org.gtlcore.gtlcore.config.BloomOptions;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
@@ -16,7 +19,38 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 @Mixin(targets = "org.gtlcore.gtlcore.client.bloom.SectionMeshes", remap = false)
 public abstract class BloomPendingPruneMixin {
     @Shadow private PriorityQueue<Object> pending;
+    @Shadow public abstract void clear();
     @Unique private final DeferredQueuePruner<Object> enhancedcore$pendingPruner = new DeferredQueuePruner<>();
+    @Unique private boolean enhancedcore$offSuspended;
+
+    @Inject(method = "setLevel(Lnet/minecraft/client/multiplayer/ClientLevel;)V",
+            at = @At("HEAD"), cancellable = true, require = 1, allow = 1, remap = false)
+    private void enhancedcore$suspendOffLevel(ClientLevel newLevel, CallbackInfo ci) {
+        if (enhancedcore$suspendIfOff()) ci.cancel();
+        else enhancedcore$offSuspended = false;
+        // clear() drops the old level. The first enabled setLevel rediscovers the currently
+        // loaded chunks, including every chunk received while producers were suspended.
+    }
+
+    @Inject(method = {
+            "loadChunk(Lnet/minecraft/world/level/chunk/LevelChunk;)V", "unloadChunk(II)V",
+            "dirty(III)V", "dirtyBlock(III)V", "dirtyArea(IIIIII)V", "rebuildAll()V"
+    }, at = @At("HEAD"), cancellable = true, require = 6, allow = 6, remap = false)
+    private void enhancedcore$stopOffProduction(CallbackInfo ci) {
+        if (enhancedcore$suspendIfOff()) ci.cancel();
+    }
+
+    @Unique
+    private boolean enhancedcore$suspendIfOff() {
+        if (BloomConfig.mode() != BloomOptions.Mode.OFF) return false;
+        if (!enhancedcore$offSuspended) {
+            enhancedcore$offSuspended = true;
+            // Cancel the active job, close meshes/uploads and release references once.
+            // Merely suppressing pruning would retain the still-growing dirty queue.
+            clear();
+        }
+        return true;
+    }
 
     @Redirect(method = "unloadChunk(II)V",
             at = @At(value = "INVOKE", target = "Ljava/util/PriorityQueue;removeIf(Ljava/util/function/Predicate;)Z"),

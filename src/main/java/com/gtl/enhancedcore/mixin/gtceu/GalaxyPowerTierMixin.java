@@ -16,6 +16,6 @@ public abstract class GalaxyPowerTierMixin {
     @Inject(method = {"getOverclockVoltage", "getMaxVoltage"}, at = @At("HEAD"), cancellable = true)
     private void galaxy$voltage(CallbackInfoReturnable<Long> cir) {
         if (GalaxyLinks.active((WorkableElectricMultiblockMachine)(Object)this))
-            cir.setReturnValue(Long.MAX_VALUE);
+            cir.setReturnValue(com.gregtechceu.gtceu.api.GTValues.V[com.gregtechceu.gtceu.api.GTValues.MAX]);
     }
 }

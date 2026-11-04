@@ -436,22 +436,8 @@ public final class GTLStructures {
                 .build();
     }
 
-    // ==================== 超构化学扭曲仪（UEV）：hyperstructural_chemical_distorter.schem，109×111×137 ====================
-    /**
-     * 由 SchemTool 从 hyperstructural_chemical_distorter.schem 生成。原始 schem 已含恰好 1 个钻石块
-     * （控制器 54,15,22，位于机体内部的面板正中）与 24 个钻石矿仓室位，无需降级处理。
-     * 控制器不在包围盒边界上——生成器已按就近选面处理（`BlockPattern` 以控制器为锚点，GTCEu 允许内部控制器）。
-     * <p>
-     * 字符映射：C=控制器，X=钻石矿位（仓室位，替代方块 gtlcore:iridium_casing），
-     * E=iridium_casing（用户指定的主方块与仓室成型方块），A=high_power_casing，
-     * B=ptfe_pipe_casing，N=三钛及以上温度的同种线圈，K=inert_machine_casing，L=laminated_glass，
-     * D=uev_hermetic_casing，F=uev_machine_casing，P=molecular_casing，J=superconducting_coil，
-     * I=computer_heat_vent，Q=containment_field_generator，G=cyan_lamp，O=purple_lamp，
-     * ' '=任意方块（不校验，禁止绑定空气，规则 12）。
-     * <p>
-     * 仓室（用户指定）：维护仓、并行控制仓、激光靶仓、输入输出仓、Ω-天球分歧引擎
-     * （{@code GTLAddPartAbility.INSTANCE.getTHREAD_MODIFIER()}）。不绑定 MUFFLER。
-     */
+    /** Reviewed 2026-10-30 schematic: 87 x 109 x 89, 114 hatch cells.
+     * Fixed materials and lamp candidates come from the palette; N retains CoilType. */
     public static BlockPattern hyperstructuralChemicalDistorter(MultiblockMachineDefinition def) {
         return HyperstructuralChemicalDistorterStructure.create()
                 .where('C', controller(def))
@@ -465,39 +451,13 @@ public final class GTLStructures {
                         .or(Predicates.abilities(PartAbility.IMPORT_FLUIDS).setPreviewCount(1))
                         .or(Predicates.abilities(PartAbility.EXPORT_FLUIDS).setPreviewCount(1))
                         .or(Predicates.abilities(GTLAddPartAbility.INSTANCE.getTHREAD_MODIFIER()).setPreviewCount(1).setMaxGlobalLimited(1)))
-                .where('E', block("gtlcore:iridium_casing"))
-                .where('A', block("gtceu:high_power_casing"))
-                .where('B', block("gtceu:ptfe_pipe_casing"))
                 .where('N', DistorterCoils.create())
-                .where('K', block("gtceu:inert_machine_casing"))
-                .where('L', block("gtceu:laminated_glass"))
-                .where('D', block("gtlcore:uev_hermetic_casing"))
-                .where('F', block("gtceu:uev_machine_casing"))
-                .where('P', block("gtlcore:molecular_casing"))
-                .where('J', block("gtceu:superconducting_coil"))
-                .where('I', block("gtceu:computer_heat_vent"))
-                .where('Q', block("kubejs:containment_field_generator"))
-                .where('G', block("gtceu:cyan_lamp"))
-                .where('O', block("gtceu:purple_lamp"))
                 .where(' ', Predicates.any())
                 .build();
     }
 
-    // ==================== 恒星约束聚变堆（UIV）：stellar_confinement_fusion_reactor.schem，209×119×209 ====================
-    /**
-     * 由 SchemTool 从 stellar_confinement_fusion_reactor.schem 生成。原始 schem 已含恰好 1 个钻石块
-     * （控制器 104,59,1）与 24 个钻石矿仓室位，无需降级处理。
-     * <p>
-     * 字符映射：C=控制器，X=钻石矿位（仓室位，替代方块 gtlcore:iridium_casing），
-     * G=iridium_casing（用户指定的主方块与仓室成型方块），D=high_power_casing，
-     * B=uiv_machine_casing，L=fusion_glass，I=superconducting_coil，E=fusion_casing_mk5，
-     * F=fusion_coil_mk2，N=neutronium_pipe_casing，K=computer_heat_vent，P=orange_lamp，
-     * J=laser_cooling_casing，O=containment_field_generator，A=white_lamp，
-     * ' '=任意方块（不校验，禁止绑定空气，规则 12）。
-     * <p>
-     * 仓室（用户 2026-10-05 指定）：只允许输入/输出仓室，不接受维护仓、并行控制仓、Ω-天球分歧引擎、能源仓或激光靶仓。
-     * 控制器直接从放置者所属电网取电，并行与线程由控制器自身提供。
-     */
+    /** Reviewed 2026-10-30 schematic: 167 x 95 x 167, 40 hatch cells.
+     * Only material IO ports are accepted; the controller supplies wireless EU and threads. */
     public static BlockPattern stellarConfinementFusionReactor(MultiblockMachineDefinition def) {
         return StellarConfinementFusionReactorStructure.create()
                 .where('C', controller(def))
@@ -506,19 +466,6 @@ public final class GTLStructures {
                         .or(Predicates.abilities(PartAbility.EXPORT_FLUIDS).setPreviewCount(1))
                         .or(Predicates.abilities(PartAbility.IMPORT_ITEMS).setPreviewCount(1))
                         .or(Predicates.abilities(PartAbility.EXPORT_ITEMS).setPreviewCount(1)))
-                .where('G', block("gtlcore:iridium_casing"))
-                .where('D', block("gtceu:high_power_casing"))
-                .where('B', block("gtceu:uiv_machine_casing"))
-                .where('L', block("gtceu:fusion_glass"))
-                .where('I', block("gtceu:superconducting_coil"))
-                .where('E', block("gtlcore:fusion_casing_mk5"))
-                .where('F', block("gtlcore:fusion_coil_mk2"))
-                .where('N', block("kubejs:neutronium_pipe_casing"))
-                .where('K', block("gtceu:computer_heat_vent"))
-                .where('P', block("gtceu:orange_lamp"))
-                .where('J', block("kubejs:laser_cooling_casing"))
-                .where('O', block("kubejs:containment_field_generator"))
-                .where('A', block("gtceu:white_lamp"))
                 .where(' ', Predicates.any())
                 .build();
     }

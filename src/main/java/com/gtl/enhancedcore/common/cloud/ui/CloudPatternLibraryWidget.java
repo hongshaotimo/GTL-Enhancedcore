@@ -10,6 +10,11 @@ import net.minecraft.network.chat.Component;
 public final class CloudPatternLibraryWidget extends CloudPatternPanel {
     private final WidgetGroup patterns = new WidgetGroup(28, 22, 162, 112);
     private final WidgetGroup catalysts = new WidgetGroup(28, 22, 162, 112);
+    private final WidgetGroup recovery = new WidgetGroup(28, 22, 162, 112);
+    private final ImageWidget[] recoveryRows = new ImageWidget[4];
+    private final ButtonWidget[] recoveryReviews = new ButtonWidget[4];
+    private final ButtonWidget recoveryEntry, recoveryPrevious, recoveryNext;
+    private boolean recoveryShown, recoveryAutoOpened;
     private final ButtonWidget[] cards = new ButtonWidget[36];
     private final ImageWidget[] icons = new ImageWidget[36];
     private final ImageWidget state;
@@ -21,7 +26,11 @@ public final class CloudPatternLibraryWidget extends CloudPatternPanel {
     public CloudPatternLibraryWidget(CloudPatternUiHost host) {
         super(host, "library", "library");
         setSizeWidth(218);
-        addWidget(patterns); addWidget(catalysts);
+        addWidget(patterns); addWidget(catalysts); addWidget(recovery);
+        recoveryEntry = glyphButton(this, 6, 108, 18, 18, CloudPatternGlyphTexture.ORDERS, () -> {
+            if (recoveryShown) showPatterns(); else showRecovery();
+        });
+        recoveryEntry.setId("cloud.recovery");
         state = new ImageWidget(28, 132, 160, 8, new TextTexture(this::connectionState).setColor(MUTED)
                 .setDropShadow(false).setWidth(160).setType(TextTexture.TextType.LEFT_HIDE));
         state.setClientSideWidget(); addWidget(state);
@@ -32,8 +41,9 @@ public final class CloudPatternLibraryWidget extends CloudPatternPanel {
         networkUndo = glyphButton(this, 190, 3, 18, 18, CloudPatternGlyphTexture.UNDO, this::confirmNetworkUndo);
         networkUndo.setId("cloud.network.undo").setHoverTooltips(PREFIX + "network_undo");
         networkUndo.setActive(false);
+        machineCatalystsButton(110, this::showPatterns);
         searchField(patterns, 98);
-        filter = button(patterns, 102, 0, 60, 14, this::typeLabel, this::cycleType);
+        filter = cycleButton(patterns, 102, 0, 60, 14, this::typeLabel, this::cycleType);
         filter.setId("cloud.type");
         for (int i = 0; i < cards.length; i++) {
             final int index = i; int x = i % 9 * 18, y = 18 + i / 9 * 18;
@@ -51,7 +61,89 @@ public final class CloudPatternLibraryWidget extends CloudPatternPanel {
         }
         pagination(patterns, 94);
         catalystPage(catalysts, this::showPatterns);
+        text(recovery, 1, 3, 140, 10, () -> tr("recovery_pending", snapshot.getInt("recovery")), INK);
+        glyphButton(recovery, 146, 0, 16, 16, CloudPatternGlyphTexture.BACK, this::showPatterns)
+                .setId("cloud.recovery.back").setHoverTooltips(PREFIX + "back_patterns");
+        for (int i = 0; i < recoveryRows.length; i++) {
+            final int index = i; int y = 17 + i * 18;
+            recoveryRows[i] = new ImageWidget(0, y, 108, 16, new GuiTextureGroup(CloudPatternTextures.RECESS,
+                    new TextTexture(() -> recoveryLabel(index).replace("%", "%%")).setColor(INK).setDropShadow(false)
+                            .setWidth(102).setType(TextTexture.TextType.HIDE)));
+            recoveryRows[i].setClientSideWidget(); recoveryRows[i].setId("cloud.recovery.row." + i); recovery.addWidget(recoveryRows[i]);
+            recoveryReviews[i] = button(recovery, 110, y, 52, 16,
+                    () -> tr(isTransfer(recoveryEntry(index)) ? "recovery_review_short" : "recovery_visit_short"),
+                    () -> reviewRecovery(index));
+            recoveryReviews[i].setId("cloud.recovery.review." + i);
+        }
+        recoveryPrevious = glyphButton(recovery, 0, 88, 16, 16, CloudPatternGlyphTexture.PREVIOUS, () -> changeRecoveryPage(-1));
+        recoveryPrevious.setId("cloud.recovery.previous").setHoverTooltips(PREFIX + "previous_page");
+        text(recovery, 20, 91, 122, 10, () -> tr("page_count", recoveryPage + 1, Math.max(1, snapshot.getInt("recoveryPages"))), MUTED);
+        recoveryNext = glyphButton(recovery, 146, 88, 16, 16, CloudPatternGlyphTexture.NEXT, () -> changeRecoveryPage(1));
+        recoveryNext.setId("cloud.recovery.next").setHoverTooltips(PREFIX + "next_page");
         showPatterns();
+    }
+    private CompoundTag recoveryEntry(int index) {
+        var entries = snapshot.getList("recoveryEntries", Tag.TAG_COMPOUND);
+        return index < entries.size() ? entries.getCompound(index) : null;
+    }
+    private static boolean isTransfer(CompoundTag entry) { return entry != null && entry.getString("kind").equals("transfer"); }
+    private String recoveryLabel(int index) {
+        var entry = recoveryEntry(index);
+        if (entry == null) return index == 0 ? tr("no_recovery") : "";
+        return tr(isTransfer(entry) ? "recovery_transfer_row" : "recovery_order_row",
+                recoveryPage * 4 + index + 1, entry.getString("status"));
+    }
+    private void showRecovery() {
+        closeCatalysts(); recoveryShown = true;
+        patterns.setVisible(false); catalysts.setVisible(false); recovery.setVisible(true);
+    }
+    private void changeRecoveryPage(int direction) {
+        int next = recoveryPage + direction;
+        if (next >= 0 && next < Math.max(1, snapshot.getInt("recoveryPages"))) { recoveryPage = next; request(); }
+    }
+    private void reviewRecovery(int index) {
+        var entry = recoveryEntry(index);
+        if (!isTransfer(entry) || !snapshot.getBoolean("recoveryOwner") || snapshot.getBoolean("recoveryBusy")) return;
+        recoveryId = entry.getString("operation");
+        if (recoveryId.isEmpty()) recoveryId = entry.getString("id");
+        action("review_transfer");
+    }
+    private Component[] recoveryTooltip(CompoundTag entry) {
+        var lines = new java.util.ArrayList<Component>();
+        if (entry == null) {
+            lines.add(Component.translatable(PREFIX + (snapshot.getBoolean("recoveryIndexing") ? "recovery_indexing" : "no_recovery")));
+        } else {
+            lines.add(Component.translatable(PREFIX + (isTransfer(entry) ? "review_transfer" : "recovery_visit_short")));
+            lines.add(Component.translatable(PREFIX + "recovery_operation", entry.getString("operation")));
+            lines.add(Component.translatable(PREFIX + "recovery_record_status", entry.getString("status"), entry.getString("journalStatus")));
+            if (!entry.getString("sourcePos").isEmpty()) lines.add(Component.translatable(PREFIX + "source",
+                    entry.getString("sourceDimension"), entry.getString("sourcePos")));
+            if (!entry.getString("expectedName").isEmpty()) lines.add(Component.translatable(PREFIX + "recovery_expected", entry.getString("expectedName")));
+            if (entry.contains("actualName")) lines.add(Component.translatable(PREFIX + "recovery_actual",
+                    entry.getString("actualName").isEmpty() ? tr("recovery_empty_slot") : entry.getString("actualName")));
+            String evidence = entry.getString("evidence");
+            if (!evidence.isEmpty()) lines.add(Component.translatable(evidence));
+            if (!entry.getString("failure").isEmpty()) lines.add(Component.translatable(PREFIX + "recovery_diagnostic_detail", entry.getString("failure")));
+            if (!isTransfer(entry)) lines.add(Component.translatable(PREFIX + "recovery_original_node"));
+            else if (!snapshot.getBoolean("recoveryOwner")) lines.add(Component.translatable(PREFIX + "recovery_owner_only"));
+            else if (snapshot.getBoolean("recoveryBusy")) lines.add(Component.translatable(PREFIX + "recovery_busy"));
+        }
+        lines.add(Component.translatable(PREFIX + "recovery_safe_hint"));
+        if (entry == null) addDiagnostics(lines);
+        else {
+            lines.add(Component.translatable(PREFIX + (snapshot.getBoolean("networkConnected") ? "me_connected" : "me_disconnected")));
+            if (snapshot.getBoolean("importQuarantined")) lines.add(Component.translatable(PREFIX + "recovery_quarantined"));
+        }
+        return lines.toArray(Component[]::new);
+    }
+    private void addDiagnostics(java.util.List<Component> lines) {
+        lines.add(Component.translatable(PREFIX + (snapshot.getBoolean("networkConnected") ? "me_connected" : "me_disconnected")));
+        if (snapshot.getBoolean("importQuarantined")) lines.add(Component.translatable(PREFIX + "recovery_quarantined"));
+        String reason = snapshot.getString("quarantineReason");
+        if (!reason.isEmpty()) lines.add(Component.translatable(PREFIX + "recovery_quarantine_reason", reason));
+        String detail = snapshot.getString("diagnosticDetail");
+        if (!diagnostic().isEmpty()) lines.add(Component.literal(diagnostic()));
+        if (!detail.isEmpty()) lines.add(Component.translatable(PREFIX + "recovery_diagnostic_detail", detail));
     }
     private void confirmNetworkImport() {
         if (snapshot.getBoolean("networkImportRunning") || snapshot.getBoolean("networkUndoRunning")) return;
@@ -120,6 +212,8 @@ public final class CloudPatternLibraryWidget extends CloudPatternPanel {
         super.initWidget();
     }
     private String connectionState() {
+        if (snapshot.getBoolean("importQuarantined")) return tr("recovery_quarantined_short", snapshot.getInt("recovery"));
+        if (snapshot.getInt("recovery") > 0) return tr("recovery_pending", snapshot.getInt("recovery"));
         if (snapshot.getString("diagnostic").endsWith(".uploading"))
             return Component.translatable(snapshot.getString("diagnostic")).getString();
         if (snapshot.getBoolean("networkUndoRunning")) return undoState();
@@ -182,17 +276,20 @@ public final class CloudPatternLibraryWidget extends CloudPatternPanel {
         return lines.toArray(Component[]::new);
     }
     private CompoundTag entry(int index) { var entries = snapshot.getList("entries", Tag.TAG_COMPOUND); return index < entries.size() ? entries.getCompound(index) : null; }
-    private void cycleType() {
+    private void cycleType(int direction) {
         var types = snapshot.getList("types", Tag.TAG_STRING); int index = -1;
         for (int i = 0; i < types.size(); i++) if (types.getString(i).equals(type)) index = i;
-        type = index + 1 < types.size() ? types.getString(index + 1) : ""; page = 0; request();
+        int next = Math.floorMod(index + 1 + direction, types.size() + 1);
+        type = next == 0 ? "" : types.getString(next - 1); page = 0; request();
     }
     private String typeLabel() { return type.isEmpty() ? tr("all_types_short") : recipeType(type); }
-    private void showPatterns() { closeCatalysts(); patterns.setVisible(true); catalysts.setVisible(false); }
+    private void showPatterns() { closeCatalysts(); recoveryShown = false; recovery.setVisible(false); patterns.setVisible(true); catalysts.setVisible(false); }
     @Override void updated() {
         page = Math.max(0, snapshot.getInt("page"));
+        recoveryPage = Math.max(0, snapshot.getInt("recoveryPage"));
         var stateTooltip = new java.util.ArrayList<Component>();
         stateTooltip.add(Component.literal(status()));
+        addDiagnostics(stateTooltip);
         String networkStatus = snapshot.getString("networkStatus");
         if (!networkStatus.isEmpty()) stateTooltip.add(Component.translatable(networkStatus));
         if (snapshot.getBoolean("networkImportRunning") || snapshot.getBoolean("networkImportFinished"))
@@ -200,13 +297,36 @@ public final class CloudPatternLibraryWidget extends CloudPatternPanel {
         if (snapshot.getBoolean("networkUndoRunning") || snapshot.getBoolean("networkUndoFinished"))
             stateTooltip.addAll(java.util.Arrays.asList(undoTooltip()));
         state.setHoverTooltips(stateTooltip.toArray(Component[]::new));
-        networkImport.setActive(!snapshot.getBoolean("networkImportRunning") && !snapshot.getBoolean("networkUndoRunning"));
-        networkImport.setHoverTooltips(importTooltip());
+        networkImport.setActive(!snapshot.getBoolean("importQuarantined") && !snapshot.getBoolean("networkImportRunning") && !snapshot.getBoolean("networkUndoRunning"));
+        var importLines = new java.util.ArrayList<Component>(java.util.Arrays.asList(importTooltip()));
+        if (snapshot.getBoolean("importQuarantined")) addDiagnostics(importLines);
+        networkImport.setHoverTooltips(importLines.toArray(Component[]::new));
         networkUndo.setActive(!snapshot.getBoolean("networkUndoRunning")
                 && (snapshot.getBoolean("networkUndoAvailable") || snapshot.getBoolean("networkImportRunning")));
         networkUndo.setHoverTooltips(undoTooltip());
-        filter.setHoverTooltips(Component.literal(typeLabel()));
+        filter.setHoverTooltips(Component.literal(typeLabel()), Component.translatable(PREFIX + "type_hint"));
         updateCatalystPage(patterns, catalysts);
+        var recoveryLines = new java.util.ArrayList<Component>();
+        recoveryLines.add(Component.translatable(PREFIX + "recovery_pending", snapshot.getInt("recovery")));
+        if (snapshot.getBoolean("recoveryIndexing")) recoveryLines.add(Component.translatable(PREFIX + "recovery_indexing"));
+        recoveryLines.add(Component.translatable(PREFIX + "recovery_open_hint"));
+        addDiagnostics(recoveryLines);
+        recoveryEntry.setHoverTooltips(recoveryLines.toArray(Component[]::new));
+        if (!recoveryAutoOpened && (snapshot.getInt("recovery") > 0 || snapshot.getBoolean("importQuarantined"))) {
+            recoveryAutoOpened = true; showRecovery();
+        }
+        recovery.setVisible(recoveryShown);
+        if (recoveryShown) { patterns.setVisible(false); catalysts.setVisible(false); }
+        recoveryPrevious.setActive(recoveryPage > 0);
+        recoveryNext.setActive(recoveryPage + 1 < snapshot.getInt("recoveryPages"));
+        for (int i = 0; i < recoveryRows.length; i++) {
+            var entry = recoveryEntry(i);
+            recoveryRows[i].setVisible(entry != null || i == 0);
+            recoveryRows[i].setHoverTooltips(recoveryTooltip(entry));
+            recoveryReviews[i].setVisible(entry != null);
+            recoveryReviews[i].setActive(isTransfer(entry) && snapshot.getBoolean("recoveryOwner") && !snapshot.getBoolean("recoveryBusy"));
+            recoveryReviews[i].setHoverTooltips(recoveryTooltip(entry));
+        }
         for (int i = 0; i < cards.length; i++) {
             var entry = entry(i); cards[i].setActive(true); icons[i].setVisible(entry != null);
             if (entry == null) { cards[i].setButtonTexture(CloudPatternTextures.SLOT); cards[i].setHoverTooltips(new Component[0]); continue; }

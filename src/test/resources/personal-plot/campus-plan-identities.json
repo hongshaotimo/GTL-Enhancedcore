@@ -1,0 +1,108 @@
+{
+  "schemaVersion": 1,
+  "frozenDate": "2026-11-04",
+  "baseline": "Published five campus layouts restored to the selected 4.6.3 source; future presets append a new RoadStyle and independent layout resources, never regenerate these expectations for a layout edit",
+  "fingerprintDefinition": "CampusPlanAccess.fingerprint: binary schema/style/world and AE bounds/full ordered plots/workshops/tiers/targets; IDs, XYZ controllers, target order and inclusive bounds are all covered",
+  "presets": [
+    {
+      "roadStyle": "CAMPUS",
+      "roadStyleOrdinal": 7,
+      "layoutIdentity": "campus-plan-v1:CAMPUS:e3dc71cacc4c1f510d3132c735a8c0ef29ace7b759c98115fe9710413fab46c2",
+      "machinePlots": 317,
+      "targets": 322,
+      "workshops": 4,
+      "worldBounds": [
+        -1504,
+        -1504,
+        1503,
+        1503
+      ],
+      "aeBounds": [
+        -80,
+        -80,
+        79,
+        79
+      ]
+    },
+    {
+      "roadStyle": "CAMPUS_PARK",
+      "roadStyleOrdinal": 8,
+      "layoutIdentity": "campus-plan-v1:CAMPUS_PARK:e6cc966f2dd7e707901525e38e8f9ccab6e1787db76d59bee51dfdf2970875d9",
+      "machinePlots": 228,
+      "targets": 233,
+      "workshops": 4,
+      "worldBounds": [
+        -528,
+        -5040,
+        527,
+        5039
+      ],
+      "aeBounds": [
+        -80,
+        -80,
+        79,
+        79
+      ]
+    },
+    {
+      "roadStyle": "CAMPUS_COMPACT",
+      "roadStyleOrdinal": 9,
+      "layoutIdentity": "campus-plan-v1:CAMPUS_COMPACT:fe0775bfaec77b99a61b71ee9c39cbcab409dc0098d2fde2341c077de34a43f7",
+      "machinePlots": 228,
+      "targets": 233,
+      "workshops": 4,
+      "worldBounds": [
+        -912,
+        -912,
+        911,
+        911
+      ],
+      "aeBounds": [
+        -80,
+        -80,
+        79,
+        79
+      ]
+    },
+    {
+      "roadStyle": "CAMPUS_DENSE",
+      "roadStyleOrdinal": 10,
+      "layoutIdentity": "campus-plan-v1:CAMPUS_DENSE:fdd29d67a390025cb82875c714f8ddd99676ae51e3914570920dc7b1968524a2",
+      "machinePlots": 228,
+      "targets": 233,
+      "workshops": 4,
+      "worldBounds": [
+        -1000,
+        -1000,
+        999,
+        999
+      ],
+      "aeBounds": [
+        -80,
+        -80,
+        79,
+        79
+      ]
+    },
+    {
+      "roadStyle": "CAMPUS_WOODLAND",
+      "roadStyleOrdinal": 11,
+      "layoutIdentity": "campus-plan-v1:CAMPUS_WOODLAND:a0965b7c5620b7a306d72802147a48ada4447493e0dc0634dbc82868db6688fe",
+      "machinePlots": 226,
+      "targets": 231,
+      "workshops": 4,
+      "worldBounds": [
+        -1000,
+        -1000,
+        999,
+        999
+      ],
+      "aeBounds": [
+        -80,
+        -80,
+        79,
+        79
+      ]
+    }
+  ]
+}

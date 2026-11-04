@@ -43,7 +43,7 @@ public final class CloudLibraryService {
         if (actor == null || libraryId == null || !level.getServer().isSameThread()) return false;
         try {
             var library = CloudPatternStore.get(level).library(libraryId);
-            if (!library.authorized(actor) || !sameTeam(library.owner(), actor)) return false;
+            if (!library.authorized(actor)) return false;
             if (!FTBChunksAPI.api().isManagerLoaded()) return false;
             var claim = FTBChunksAPI.api().getManager().getChunk(new ChunkDimPos(level.dimension(), pos.getX() >> 4, pos.getZ() >> 4));
             if (claim == null) return true;
@@ -67,6 +67,7 @@ public final class CloudLibraryService {
     }
 
     public static boolean sameTeam(UUID owner, UUID player) {
+        if (owner == null || player == null) return false;
         if (owner.equals(player)) return true;
         var manager = FTBTeamsAPI.api().getManager();
         var a = manager.getTeamForPlayerID(owner);
@@ -97,6 +98,10 @@ public final class CloudLibraryService {
     }
     public static Map<AEKey, Long> catalysts(ServerLevel level, UUID libraryId) {
         CompoundTag saved = CloudPatternStore.get(level).library(libraryId).catalysts();
+        return CloudCatalystSource.snapshot(itemContents(saved), fluidContents(saved));
+    }
+    public static Map<AEKey, Long> machineCatalysts(ServerLevel level, UUID libraryId, String definition) {
+        CompoundTag saved = CloudPatternStore.get(level).library(libraryId).machineCatalysts(definition);
         return CloudCatalystSource.snapshot(itemContents(saved), fluidContents(saved));
     }
     public static Map<AEKey, Long> catalysts(CloudPatternStore.Entry entry) {
@@ -211,9 +216,35 @@ public final class CloudLibraryService {
     public static void catalogChanged(CloudPatternStore.Library library, UUID entryId) {
         Catalog catalog = CATALOGS.get(library);
         if (catalog == null) return;
+        if (entryId != null && publishSingle(library, catalog, entryId)) return;
         if (entryId == null) catalog.rebuild = true; else catalog.dirty.add(entryId);
         ServerLevel level = catalog.level.get();
         if (level != null) catalog(library, level);
+    }
+
+    /** Upload/ACK changes one row. Publish it immediately when the existing catalogue is ready;
+     * archive/export mutations fall back to the conservative full summary path. */
+    private static boolean publishSingle(CloudPatternStore.Library library, Catalog catalog, UUID entryId) {
+        if (catalog.build != null || catalog.rebuild || catalog.revision + 1 != library.catalogRevision()) return false;
+        ServerLevel level = catalog.level.get(); if (level == null) return false;
+        CatalogRow old = catalog.rows.get(entryId);
+        CatalogRow next = catalogRow(library.entry(entryId), level);
+        if (old != null && (old.exported != next.exported || !old.types.equals(next.types)
+                || !Arrays.equals(old.items, next.items) || !Arrays.equals(old.fluids, next.fluids))) return false;
+        catalog.rows.put(entryId, next);
+        if (old == null && !next.exported) {
+            var visible = new ArrayList<>(catalog.visible); visible.add(entryId); catalog.visible = List.copyOf(visible);
+        }
+        catalog.types.addAll(next.types);
+        for (int id : next.items) if (id >= 0) catalog.searchItems = withBit(catalog.searchItems, id);
+        for (int id : next.fluids) if (id >= 0) catalog.searchFluids = withBit(catalog.searchFluids, id);
+        catalog.searches.clear(); catalog.terminalSearches.clear(); catalog.targets.clear();
+        catalog.dirty.remove(entryId); catalog.failureRevision = Long.MIN_VALUE; catalog.failure = "";
+        catalog.revision = library.catalogRevision();
+        return true;
+    }
+    private static long[] withBit(long[] bits, int id) {
+        BitSet value = BitSet.valueOf(bits); value.set(id); return value.toLongArray();
     }
 
     private static CatalogRow catalogRow(CloudPatternStore.Entry original, ServerLevel level) {
@@ -259,6 +290,12 @@ public final class CloudLibraryService {
         while(catalog.terminalSearches.size()>32)catalog.terminalSearches.remove(catalog.terminalSearches.keySet().iterator().next());
         return result;
     }
+    public static void prepareOpeningCatalog(ServerLevel level, UUID libraryId) {
+        var store = CloudPatternStore.get(level);
+        if (!store.healthy()) return;
+        var library = store.library(libraryId);
+        if (library.healthy() && !library.hasOpeningCatalog()) cacheOpeningCatalog(library, catalog(library, level));
+    }
     private static Catalog catalog(CloudPatternStore.Library library, ServerLevel level) {
         Catalog catalog = CATALOGS.computeIfAbsent(library, ignored -> new Catalog());
         if (level != null && catalog.level.get() != level) catalog.level = new java.lang.ref.WeakReference<>(level);
@@ -272,13 +309,13 @@ public final class CloudLibraryService {
         }
         return catalog;
     }
+    /** Display invalidation only; never queues work from menu polling. */
+    public static long catalogUiRevision(CloudPatternStore.Library library) {
+        Catalog catalog = CATALOGS.get(library);
+        return catalog == null ? 0 : 31 * catalog.revision + catalog.failureRevision;
+    }
     public static boolean catalogReady(CloudPatternStore.Library library, ServerLevel level) {
         return catalog(library, level).revision == library.catalogRevision();
-    }
-    public static void warmCatalog(ServerLevel level, UUID libraryId) {
-        if (libraryId == null) return;
-        try { catalog(CloudPatternStore.get(level).library(libraryId), level); }
-        catch (RuntimeException unavailable) { /* An unhealthy authority is handled by the normal menu guards. */ }
     }
     @net.minecraftforge.eventbus.api.SubscribeEvent
     public static void tickCatalogs(net.minecraftforge.event.TickEvent.ServerTickEvent event) {
@@ -293,6 +330,7 @@ public final class CloudLibraryService {
                 else {
                     build.target.build = null;
                     if (build.target.revision != build.library.catalogRevision()) catalog(build.library, build.level);
+                    else cacheOpeningCatalog(build.library, build.target);
                 }
             } catch (RuntimeException failure) {
                 build.target.build = null; build.target.rebuild = true;
@@ -301,6 +339,15 @@ public final class CloudLibraryService {
                 org.slf4j.LoggerFactory.getLogger(CloudLibraryService.class).warn("Cloud catalogue indexing stopped", failure);
             }
         }
+    }
+    private static void cacheOpeningCatalog(CloudPatternStore.Library library, Catalog catalog) {
+        if (catalog.revision != library.catalogRevision() || library.hasOpeningCatalog()) return;
+        var opening = new CompoundTag(); var first = new ListTag(); var types = new ListTag();
+        catalog.visible.stream().limit(PAGE_SIZE).forEach(id -> first.add(StringTag.valueOf(id.toString())));
+        catalog.types.forEach(type -> types.add(StringTag.valueOf(type)));
+        opening.put("first", first); opening.put("types", types); opening.putInt("total", catalog.visible.size());
+        opening.putLongArray("searchItems", catalog.searchItems); opening.putLongArray("searchFluids", catalog.searchFluids);
+        library.cacheOpeningCatalog(opening);
     }
     public static CompoundTag page(ServerLevel level, UUID libraryId, String search, String type, int requestedPage, String selected) {
         return page(level, libraryId, search, type, requestedPage, selected, CloudPatternSearch.EMPTY);
@@ -324,10 +371,24 @@ public final class CloudLibraryService {
     /** Results are complete. Filtering never publishes a partial count or advances on menu polling. */
     public static CompoundTag page(ServerLevel level, UUID libraryId, String search, String type, int requestedPage, String selected, CloudPatternSearch localized) {
         var library = CloudPatternStore.get(level).library(libraryId);
+        if (search.isBlank() && type.isEmpty() && requestedPage == 0 && selected.isEmpty()) {
+            var opening = library.openingCatalog();
+            if (!opening.isEmpty()) {
+                var rows = new ListTag();
+                for (var id : opening.getList("first", Tag.TAG_STRING)) rows.add(entry(library.entry(UUID.fromString(id.getAsString())), level));
+                opening.remove("first"); opening.remove("schema"); opening.remove("catalogRevision");
+                opening.put("entries", rows); opening.putInt("page", 0);
+                opening.putInt("pages", Math.max(1, (opening.getInt("total") + PAGE_SIZE - 1) / PAGE_SIZE));
+                opening.putInt("libraryTotal", library.storedCount()); opening.putInt("indexed", opening.getInt("total"));
+                opening.putBoolean("indexing", false); opening.putLong("revision", library.revision());
+                opening.putInt("recovery", library.recoveries().size()); return opening;
+            }
+        }
         Catalog catalog = catalog(library, level);
         if (catalog.revision != library.catalogRevision()) {
             return pendingPage(library, catalog, requestedPage);
         }
+        if (!library.hasOpeningCatalog()) cacheOpeningCatalog(library, catalog);
         String query = search.strip().toLowerCase(Locale.ROOT);
         List<UUID> matches;
         if (query.isEmpty() && type.isEmpty()) {

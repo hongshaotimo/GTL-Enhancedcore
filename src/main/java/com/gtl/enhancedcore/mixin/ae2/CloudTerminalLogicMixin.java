@@ -26,6 +26,11 @@ public abstract class CloudTerminalLogicMixin implements CloudTerminalSource {
         cloud$reconciled = false;
         cloud$reconcile();
     }
+    @Inject(method = "readFromNBT", at = @At("HEAD"))
+    private void cloud$beginRead(CompoundTag tag, CallbackInfo ci) {
+        // Inventory callbacks during AE deserialization must not reconcile the previous source state.
+        cloud$reconciled = true;
+    }
     @Inject(method = "getEncodedPatternInv", at = @At("HEAD"))
     private void cloud$beforeAccess(CallbackInfoReturnable<InternalInventory> ci) { cloud$reconcile(); }
     @Unique private void cloud$reconcile() {

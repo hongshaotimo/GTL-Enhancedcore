@@ -1,0 +1,190 @@
+{
+  "sourceSize": [
+    87,
+    109,
+    89
+  ],
+  "size": [
+    87,
+    109,
+    89
+  ],
+  "sourceController": [
+    43,
+    13,
+    18
+  ],
+  "sourceNormal": [
+    0,
+    0,
+    -1
+  ],
+  "controllerPosition": [
+    43,
+    13,
+    70
+  ],
+  "bindings": {
+    " ": {
+      "mode": "any"
+    },
+    "C": {
+      "mode": "controller"
+    },
+    "X": {
+      "mode": "hatch",
+      "fallback": "gtlcore:iridium_casing"
+    },
+    "F": {
+      "mode": "literal",
+      "block": "gtceu:computer_heat_vent",
+      "properties": {}
+    },
+    "L": {
+      "mode": "literal",
+      "block": "gtceu:cyan_lamp",
+      "properties": {
+        "bloom": "false",
+        "inverted": "true",
+        "lit": "true",
+        "powered": "false"
+      }
+    },
+    "K": {
+      "mode": "literal",
+      "block": "gtceu:inert_machine_casing",
+      "properties": {}
+    },
+    "J": {
+      "mode": "literal",
+      "block": "gtceu:laminated_glass",
+      "properties": {}
+    },
+    "I": {
+      "mode": "literal",
+      "block": "gtceu:superconducting_coil",
+      "properties": {
+        "active": "false"
+      }
+    },
+    "N": {
+      "mode": "distorter_coils",
+      "preview": "gtceu:tritanium_coil_block"
+    },
+    "O": {
+      "mode": "literal",
+      "block": "gtceu:white_lamp",
+      "properties": {
+        "bloom": "false",
+        "inverted": "true",
+        "lit": "true",
+        "powered": "false"
+      }
+    },
+    "A": {
+      "mode": "literal",
+      "block": "gtlcore:dimension_injection_casing",
+      "properties": {}
+    },
+    "D": {
+      "mode": "literal",
+      "block": "gtlcore:extreme_strength_tritanium_casing",
+      "properties": {}
+    },
+    "E": {
+      "mode": "literal",
+      "block": "gtlcore:iridium_casing",
+      "properties": {}
+    },
+    "P": {
+      "mode": "literal",
+      "block": "gtlcore:molecular_casing",
+      "properties": {}
+    },
+    "B": {
+      "mode": "literal",
+      "block": "gtlcore:stellar_containment_casing",
+      "properties": {}
+    },
+    "Q": {
+      "mode": "literal",
+      "block": "kubejs:containment_field_generator",
+      "properties": {}
+    },
+    "G": {
+      "mode": "literal",
+      "block": "kubejs:force_field_glass",
+      "properties": {}
+    }
+  },
+  "counts": {
+    " ": 774466,
+    "A": 20564,
+    "B": 10131,
+    "C": 1,
+    "D": 5631,
+    "E": 5291,
+    "F": 349,
+    "G": 5872,
+    "I": 1941,
+    "J": 6814,
+    "K": 5184,
+    "L": 327,
+    "N": 6495,
+    "O": 160,
+    "P": 547,
+    "Q": 100,
+    "X": 114
+  },
+  "controller": "C",
+  "hatches": [
+    "X"
+  ],
+  "diamondOreMarkers": 114,
+  "hatchFallback": "gtlcore:iridium_casing",
+  "sourceSha256": "40929e99e5285d52d699de779f83afe18c43f25e7e1bd120c883189e1825cb36",
+  "sha256": "73fd9207a10134f009c9333bd3d1dcacb18b9302d345603a4cf2e113f4c46b82",
+  "sourceRevision": "user-request-20261102",
+  "sourceSchematic": "SchemTool/input/hyperstructural_chemical_distorter.schem",
+  "sourceCounts": {
+    " ": 773958,
+    "A": 20760,
+    "B": 10187,
+    "C": 1,
+    "D": 5831,
+    "E": 5345,
+    "F": 349,
+    "G": 5872,
+    "I": 1941,
+    "J": 6814,
+    "K": 5186,
+    "L": 327,
+    "N": 6495,
+    "O": 160,
+    "P": 547,
+    "Q": 100,
+    "X": 114
+  },
+  "rawPatternSha256": "8f757aaf3d32db86efccdfd4074f2f3ce0ca2ecce959bb167976ed582a52916a",
+  "hiddenRemoval": {
+    "algorithm": "exterior-26-once; opaque-model-and-texture-evidence; removed-to-any",
+    "removed": 508,
+    "removedBySymbol": {
+      "A": 196,
+      "B": 56,
+      "D": 200,
+      "E": 54,
+      "K": 2
+    },
+    "opaqueSymbols": "FKADEPBQ",
+    "protectedModes": [
+      "controller",
+      "hatch",
+      "original",
+      "casing",
+      "heating_coils",
+      "distorter_coils"
+    ],
+    "protectedLiteralCoilsAndStates": true
+  }
+}

@@ -26,7 +26,7 @@ final class CopyKeysScreen extends ConfigPage {
         toggle("live_recipe", left + half + 6, y, half, CopyKeysConfig.liveGenerateRecipe());
         y += 30;
         button("reload_copy_keys", left, y, bodyWidth,
-                () -> attempt(() -> { CopyKeysConfig.reload(); status = tr("reloaded"); rebuildWidgets(); }));
+                () -> attempt(() -> { CopyKeysConfig.reload(); notice(tr("reloaded")); rebuildWidgets(); }));
         button("back", left, height - 27, bodyWidth, this::onClose);
     }
 

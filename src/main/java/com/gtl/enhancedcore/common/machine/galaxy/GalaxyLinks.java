@@ -10,6 +10,8 @@ import net.minecraft.server.level.ServerLevel;
 
 /** Resolve only already-loaded blocks. Links never force-load a dimension or chunk. */
 public final class GalaxyLinks {
+    public static final int EXTRA_THREADS = 10_000;
+    public static final int REQUIRED_ARRAYS = 64;
     private GalaxyLinks() {}
     public static List<IMultiController> controllers(GalaxyConnectionHatch hatch) {
         if (!(hatch.getLevel() instanceof ServerLevel level)) return hatch.getControllers();
@@ -46,19 +48,34 @@ public final class GalaxyLinks {
     public static boolean crossRecipeEnabledByConnection(WorkableElectricMultiblockMachine machine) {
         return active(machine) && !hasThreadModifierHatch(machine);
     }
-    public static boolean connectionProvidesUnlimitedCapacity(boolean linkActive, boolean hasThreadModifierHatch) {
-        return linkActive && !hasThreadModifierHatch;
+    public static boolean connectionProvidesUnlimitedCapacity(boolean linkActive, boolean hasThreadModifierHatch, int arrays) {
+        return linkActive && !hasThreadModifierHatch && arrays >= REQUIRED_ARRAYS;
     }
     public static boolean unlimited(WorkableElectricMultiblockMachine machine) {
-        return connectionProvidesUnlimitedCapacity(active(machine), hasThreadModifierHatch(machine));
+        var station = linkedStation(machine);
+        return connectionProvidesUnlimitedCapacity(station != null, hasThreadModifierHatch(machine),
+                station == null ? 0 : station.getAstralArrayCount());
+    }
+    public static int connectionThreads(boolean linkActive, boolean hasThreadModifierHatch, int arrays, int original) {
+        if (!linkActive || hasThreadModifierHatch) return original;
+        return connectionProvidesUnlimitedCapacity(true, false, arrays) ? Integer.MAX_VALUE
+                : (int)Math.min(Integer.MAX_VALUE, (long)original + EXTRA_THREADS);
     }
     public static int threads(WorkableElectricMultiblockMachine machine, int original) {
-        if (!active(machine)) return original;
-        return unlimited(machine) ? Integer.MAX_VALUE : original;
+        var station = linkedStation(machine);
+        return connectionThreads(station != null, hasThreadModifierHatch(machine),
+                station == null ? 0 : station.getAstralArrayCount(), original);
     }
     public static long batchBudget(WorkableElectricMultiblockMachine machine, long original) {
         if (!active(machine)) return original;
         if (unlimited(machine)) return (long)Integer.MAX_VALUE * Integer.MAX_VALUE;
-        return original;
+        if (hasThreadModifierHatch(machine)) return original;
+        // Ordinary GTLCore and the fragment stripper supply one native parallel lane;
+        // ADD budgets that already read enhanced thread getters bypass this method.
+        return ordinaryBatchBudget(original);
+    }
+    public static long ordinaryBatchBudget(long original) {
+        return original > Long.MAX_VALUE / (EXTRA_THREADS + 1L)
+                ? Long.MAX_VALUE : original * (EXTRA_THREADS + 1L);
     }
 }

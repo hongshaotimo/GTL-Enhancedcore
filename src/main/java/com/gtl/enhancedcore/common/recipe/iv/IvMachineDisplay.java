@@ -26,6 +26,11 @@ public final class IvMachineDisplay {
                 .withStyle(ChatFormatting.AQUA);
     }
 
+    public static Component nativeModeLine() {
+        return Component.translatable("gtceu.gui.machinemode",
+                Component.translatable("gtl_enhancedcore.gui.cloud_native_mode")).withStyle(ChatFormatting.AQUA);
+    }
+
     /** Preserve null on the client: it disables server-side text polling in the upstream widget. */
     public static Consumer<List<Component>> wrap(WorkableElectricMultiblockMachine machine,
             Consumer<List<Component>> upstream) {
@@ -53,6 +58,21 @@ public final class IvMachineDisplay {
             canonicalLine(text, "gtceu.multiblock.parallel", unlimitedLine("gtceu.multiblock.parallel"));
             canonicalLine(text, "gtladditions.multiblock.threads", unlimitedLine("gtladditions.multiblock.threads"));
         }
+        if (machine.isFormed() && IvMachineScope.crossRecipeEnabled(machine)
+                && ((IvNativeAccess)machine.getRecipeLogic()).iv$nativeInputsActive()) {
+            canonicalLine(text, "gtceu.gui.machinemode", nativeModeLine());
+            int threads = plainThreads(machine);
+            if (!IvMachineScope.unlimited(machine))
+                canonicalLine(text, "gtladditions.multiblock.threads", threads > 1 ? threadLine(threads) : null);
+            text.add(Component.translatable("gtl_enhancedcore.cloud.ui.native_inputs").withStyle(ChatFormatting.GRAY));
+            return;
+        }
+        if (machine.isFormed() && IvBuffers.genericCloudTarget(machine)) {
+            var access = (IvNativeAccess) machine.getRecipeLogic();
+            isolation(text, IvMachineScope.parallel(machine), IvMachineScope.threads(machine), access.iv$summary());
+            text.add(Component.translatable("gtl_enhancedcore.cloud.ui.native_inputs").withStyle(ChatFormatting.GRAY));
+            return;
+        }
         if (!IvMachineScope.nativeTarget(machine) || !machine.isFormed()) return;
         if (!IvMachineScope.crossRecipeEnabled(machine)) {
             int threads = plainThreads(machine);
@@ -67,13 +87,15 @@ public final class IvMachineDisplay {
 
     /** The upstream capacity rows retain their position, gray labels and colored values. */
     public static void stellarDisplay(List<Component> text, BigInteger powerCap, BigInteger balance, BigInteger batchEut) {
-        canonicalLine(text, "gtceu.multiblock.max_energy_per_tick", Component.translatable(
-                "gtceu.multiblock.max_energy_per_tick",
-                energyValue(powerCap, ChatFormatting.RED),
-                Component.translatable("gtl_enhancedcore.galaxy.grid_limited").withStyle(ChatFormatting.RED))
+        for (int i = 0; i < text.size(); i++) {
+            if ("gtceu.multiblock.max_energy_per_tick".equals(key(text.get(i))))
+                text.set(i, Component.translatable("gtl_enhancedcore.galaxy.max_power"));
+        }
+        canonicalLine(text, "gtl_enhancedcore.galaxy.max_power", Component.translatable(
+                "gtl_enhancedcore.galaxy.max_power", energyValue(powerCap, ChatFormatting.RED))
                 .withStyle(ChatFormatting.GRAY));
         canonicalLine(text, "gtceu.multiblock.max_recipe_tier", Component.translatable(
-                "gtceu.multiblock.max_recipe_tier", Component.literal("MAX+16").withStyle(ChatFormatting.RED))
+                "gtceu.multiblock.max_recipe_tier", Component.literal("MAX").withStyle(ChatFormatting.RED))
                 .withStyle(ChatFormatting.GRAY));
         canonicalLine(text, "gtl_enhancedcore.galaxy.power_cap", null);
         canonicalLine(text, "gtl_enhancedcore.galaxy.grid_balance", balance == null ? null : Component.translatable(

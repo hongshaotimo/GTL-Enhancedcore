@@ -1,12 +1,12 @@
 package com.gtl.enhancedcore;
 
-import com.gtl.enhancedcore.common.machine.hatch.CreativeComputationPolicy;
 import com.gtl.enhancedcore.common.machine.hatch.CreativeComputationSource;
 import com.gtl.enhancedcore.common.recipe.ComputationWaivers;
 import org.gtlcore.gtlcore.api.machine.computation.ComputationAmounts;
 import org.gtlcore.gtlcore.api.machine.computation.ComputationScheduler;
 import java.util.List;
 import java.util.Map;
+import java.math.BigInteger;
 
 /** Exercises the production source against the actual GTLCore scheduler, without a Forge world. */
 final class CreativeComputationPolicyRegression {
@@ -14,10 +14,15 @@ final class CreativeComputationPolicyRegression {
 
     private CreativeComputationPolicyRegression() {}
 
+    public static void main(String[] args) {
+        System.out.println("Creative computation regression checks: " + run());
+    }
+
     static int run() {
         checked = 0;
-        check(CreativeComputationPolicy.MAX_CWU_PER_TICK == 2_100_000_000,
-                "the configured gameplay default stays unchanged");
+        unlimitedSupply();
+        bigIntegerSupply();
+        unlimitedLifecycle();
         sharedBudget();
         refundAndTicks();
         longAllocation();
@@ -28,7 +33,8 @@ final class CreativeComputationPolicyRegression {
 
     private static void sharedBudget() {
         long[] tick = {100};
-        var source = source(tick, CreativeComputationPolicy.MAX_CWU_PER_TICK);
+        // A finite fixture still protects normal GTLCore scheduling semantics.
+        var source = source(tick, 2_100_000_000L);
         var scheduler = new ComputationScheduler();
         scheduler.advance(tick[0]);
         var owner = new Object();
@@ -127,6 +133,89 @@ final class CreativeComputationPolicyRegression {
         online[0] = true;
         check(scheduler.available(new Object(), List.of(first, second)) == 200,
                 "failed allocation releases all reservations");
+    }
+
+    private static void unlimitedSupply() {
+        long[] tick = {200};
+        var source = new CreativeComputationSource(() -> tick[0], () -> true);
+        check(source.unlimited(), "the actual creative source has no finite per-tick budget");
+        check(source.gtlcore$computationCapacity() == Long.MAX_VALUE
+                        && source.gtlcore$availableComputation() == Long.MAX_VALUE,
+                "the long capability advertises its full representable demand, not 2.1 billion");
+        var first = source.gtlcore$withdrawComputation(Long.MAX_VALUE);
+        var second = source.gtlcore$withdrawComputation(Long.MAX_VALUE);
+        check(first != null && first.amount() == Long.MAX_VALUE
+                        && second != null && second.amount() == Long.MAX_VALUE,
+                "one physical source supplies multiple full-long requests in the same tick");
+        BigInteger twoLongs = BigInteger.valueOf(Long.MAX_VALUE).multiply(BigInteger.TWO);
+        check(source.deliveredComputation().equals(twoLongs),
+                "real supplied computation aggregates beyond Long.MAX_VALUE without saturation");
+        check(source.gtlcore$availableComputation() == Long.MAX_VALUE,
+                "completed requests never exhaust the infinite creative supply");
+        first.refund().run();
+        first.refund().run();
+        check(source.deliveredComputation().equals(BigInteger.valueOf(Long.MAX_VALUE)),
+                "a failed long transaction reverses its exact supplied amount at most once");
+        second.refund().run();
+        check(source.deliveredComputation().signum() == 0,
+                "refunding all long requests restores the BigInteger supply accounting exactly");
+    }
+
+    private static void bigIntegerSupply() {
+        long[] tick = {300};
+        var source = new CreativeComputationSource(() -> tick[0], () -> true);
+        BigInteger requested = BigInteger.TEN.pow(100);
+        var first = source.withdrawComputation(requested);
+        var second = source.withdrawComputation(requested.add(BigInteger.ONE));
+        check(first != null && first.amount().equals(requested)
+                        && second != null && second.amount().equals(requested.add(BigInteger.ONE)),
+                "the real BigInteger withdrawal path supplies 10^100 CWU without a long projection");
+        check(source.deliveredComputation().equals(requested.multiply(BigInteger.TWO).add(BigInteger.ONE)),
+                "arbitrary-precision requested amounts remain exact after real withdrawal");
+        first.refund().run();
+        first.refund().run();
+        check(source.deliveredComputation().equals(requested.add(BigInteger.ONE)),
+                "a BigInteger receipt refunds its own amount exactly once");
+        second.refund().run();
+        check(source.deliveredComputation().signum() == 0,
+                "BigInteger receipts return the exact net supply accounting to zero");
+        check(source.withdrawComputation(BigInteger.ZERO) == null
+                        && source.withdrawComputation(BigInteger.ONE.negate()) == null,
+                "zero and negative BigInteger requests never manufacture computation");
+        var finite = new CreativeComputationSource(() -> tick[0], () -> BigInteger.valueOf(100), () -> true);
+        check(!finite.unlimited() && finite.withdrawComputation(requested) == null,
+                "ordinary finite-source fixtures cannot use the creative unbounded path");
+    }
+
+    private static void unlimitedLifecycle() {
+        long[] tick = {400};
+        boolean[] online = {true};
+        var source = new CreativeComputationSource(() -> tick[0], () -> online[0]);
+        BigInteger huge = BigInteger.TEN.pow(100);
+        var previousTick = source.withdrawComputation(huge);
+        check(previousTick != null && source.deliveredComputation().equals(huge),
+                "online creative supply records the actual current-tick BigInteger amount");
+        tick[0]++;
+        check(source.deliveredComputation().signum() == 0,
+                "a new world tick resets only delivered-computation statistics");
+        var currentTick = source.withdrawComputation(BigInteger.valueOf(75));
+        previousTick.refund().run();
+        check(source.deliveredComputation().equals(BigInteger.valueOf(75)),
+                "an old receipt cannot reduce the next tick's supplied computation");
+        online[0] = false;
+        check(source.gtlcore$computationCapacity() == 0
+                        && source.gtlcore$availableComputation() == 0
+                        && !source.gtlcore$canBridgeComputation(),
+                "an unformed or unloaded creative source exposes neither supply nor a route");
+        check(source.withdrawComputation(huge) == null && source.gtlcore$withdrawComputation(1) == null,
+                "both BigInteger and long consumers reject offline creative supply");
+        currentTick.refund().run();
+        check(source.deliveredComputation().signum() == 0,
+                "going offline still allows an already-issued receipt to refund its supplied work");
+        online[0] = true;
+        check(source.withdrawComputation(huge) != null
+                        && source.gtlcore$availableComputation() == Long.MAX_VALUE,
+                "a restored online source immediately supplies arbitrary-precision work again");
     }
 
     private static void waivers() {

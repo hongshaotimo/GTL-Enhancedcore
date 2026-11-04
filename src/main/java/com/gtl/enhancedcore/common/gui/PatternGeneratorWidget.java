@@ -302,12 +302,12 @@ public final class PatternGeneratorWidget extends WidgetGroup {
         label.setClientSideWidget(); return label;
     }
     private static ImageWidget text(int x, int y, int width, int height, Supplier<String> supplier) {
-        var image = new ImageWidget(x, y, width, height, new TextTexture(supplier).setWidth(width)
+        var image = new ImageWidget(x, y, width, height, new TextTexture(() -> supplier.get().replace("%", "%%")).setWidth(width)
                 .setType(TextTexture.TextType.LEFT_HIDE).setColor(0xff303030).setDropShadow(false));
         image.setClientSideWidget(); return image;
     }
     private static ImageWidget center(int x, int y, int width, int height, Supplier<String> supplier) {
-        var image = new ImageWidget(x, y, width, height, new TextTexture(supplier).setWidth(width)
+        var image = new ImageWidget(x, y, width, height, new TextTexture(() -> supplier.get().replace("%", "%%")).setWidth(width)
                 .setType(TextTexture.TextType.HIDE).setColor(0xff303030).setDropShadow(false));
         image.setClientSideWidget(); return image;
     }
@@ -316,7 +316,7 @@ public final class PatternGeneratorWidget extends WidgetGroup {
     }
     private ButtonWidget button(int x, int y, int width, int height, Supplier<String> title, Runnable clicked) {
         var button = new ButtonWidget(x, y, width, height, new GuiTextureGroup(GuiTextures.VANILLA_BUTTON,
-                new TextTexture(title).setWidth(width - 6).setType(TextTexture.TextType.HIDE).setColor(0xff303030).setDropShadow(false)),
+                new TextTexture(() -> title.get().replace("%", "%%")).setWidth(width - 6).setType(TextTexture.TextType.HIDE).setColor(0xff303030).setDropShadow(false)),
                 click -> { if (click.isRemote) clicked.run(); });
         button.setClientSideWidget(); return button;
     }
@@ -409,7 +409,7 @@ public final class PatternGeneratorWidget extends WidgetGroup {
                     new ColorBorderTexture(1, value.checked() && selectable ? 0xff477447 : 0xff9696a5)), click -> {});
             this.value = value; this.selectable = selectable;
             iconTexture = new ItemStackTexture(icon);
-            nameTexture = new TextTexture(value.outputs().isEmpty() ? "" : value.outputs().getFirst().what().getDisplayName().getString())
+            nameTexture = new TextTexture((value.outputs().isEmpty() ? "" : value.outputs().getFirst().what().getDisplayName().getString()).replace("%", "%%"))
                     .setWidth(Math.max(1, width - 30)).setType(TextTexture.TextType.LEFT_HIDE).setColor(0xff303030).setDropShadow(false);
             checkTexture = new TextTexture("✓").setColor(0xff265226).setDropShadow(false);
             setOnPressCallback(click -> { if (click.isRemote && selectable && pendingCount == 0 && ready)

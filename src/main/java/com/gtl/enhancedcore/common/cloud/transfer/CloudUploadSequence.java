@@ -8,8 +8,9 @@ import java.util.function.Supplier;
 public final class CloudUploadSequence {
     private CloudUploadSequence() {}
     public static CompletableFuture<Void> run(Executor server, Supplier<CompletableFuture<Void>> debit,
-            Supplier<CompletableFuture<Void>> payload, Supplier<CompletableFuture<Void>> committed, Runnable acknowledge) {
+            Supplier<CompletableFuture<Void>> payload, Supplier<CompletableFuture<Void>> committed,
+            Supplier<CompletableFuture<Void>> acknowledge) {
         return debit.get().thenComposeAsync(ignored -> payload.get(), server)
-                .thenCompose(ignored -> committed.get()).thenRunAsync(acknowledge, server);
+                .thenCompose(ignored -> committed.get()).thenComposeAsync(ignored -> acknowledge.get(), server);
     }
 }

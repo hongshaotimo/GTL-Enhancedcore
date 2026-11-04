@@ -14,7 +14,7 @@ final class ItemTipBrowser extends ConfigPage {
     private EditBox search;
     ItemTipBrowser(Screen parent) { super(parent, "tips"); }
     private List<String> matches() {
-        String find = query.toLowerCase(Locale.ROOT);
+        String find = query.strip().toLowerCase(Locale.ROOT);
         return ClientTooltipConfig.itemIds().stream().filter(id -> id.contains(find)
                 || ForgeRegistries.ITEMS.getValue(new ResourceLocation(id)).getDescription().getString()
                     .toLowerCase(Locale.ROOT).contains(find)).toList();

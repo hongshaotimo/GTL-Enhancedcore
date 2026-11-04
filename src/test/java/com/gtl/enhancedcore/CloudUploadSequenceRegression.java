@@ -14,7 +14,8 @@ public final class CloudUploadSequenceRegression {
             var committed = new CompletableFuture<Void>();
             var done = CloudUploadSequence.run(Runnable::run, () -> { events.add("debit"); return debit; },
                     () -> { events.add("payload"); return payload; },
-                    () -> { events.add("committed"); return committed; }, () -> events.add("ACK"));
+                    () -> { events.add("committed"); return committed; },
+                    () -> { events.add("ACK"); return CompletableFuture.completedFuture(null); });
             check(events.equals(List.of("debit")) && !done.isDone(), "No server wait or premature ACK before debit durability"); checks++;
             var stages = List.of(debit, payload, committed);
             for (int phase = 0; phase < 3; phase++) {
@@ -25,6 +26,21 @@ public final class CloudUploadSequenceRegression {
             check(fail < 0 ? events.equals(List.of("debit", "payload", "committed", "ACK"))
                     : done.isCompletedExceptionally() && !events.contains("ACK"), "ACK only follows ordered durable success"); checks++;
         }
+        var durability = new CompletableFuture<Void>(); var events = new ArrayList<String>();
+        var visible = CloudUploadSequence.run(Runnable::run,
+                () -> { events.add("debit"); return CompletableFuture.completedFuture(null); },
+                () -> { events.add("payload"); return CompletableFuture.completedFuture(null); },
+                () -> { events.add("committed"); return CompletableFuture.completedFuture(null); },
+                () -> { events.add("ACK"); return durability; });
+        check(events.equals(List.of("debit", "payload", "committed", "ACK")) && !visible.isDone(), "ACK publishes before final durability completes"); checks++;
+        durability.complete(null); check(visible.isDone() && !visible.isCompletedExceptionally(), "Final durability completion releases upload future"); checks++;
+        var failedDurability = new CompletableFuture<Void>(); var confirmed = new ArrayList<String>();
+        var failed = CloudUploadSequence.run(Runnable::run, () -> CompletableFuture.completedFuture(null),
+                () -> CompletableFuture.completedFuture(null), () -> CompletableFuture.completedFuture(null),
+                () -> { confirmed.add("ACK"); return failedDurability; });
+        failedDurability.completeExceptionally(new IllegalStateException("final disk failure"));
+        check(failed.isCompletedExceptionally() && confirmed.equals(List.of("ACK")),
+                "Final checkpoint failure propagates without replaying or rolling back confirmed ACK"); checks++;
         return checks;
     }
     public static void main(String[] args) { System.out.println("Cloud upload sequence checks: " + run()); }

@@ -1,6 +1,7 @@
 package com.gtl.enhancedcore.client.plotinfo;
 
 import com.gtl.enhancedcore.client.plot.CreateWorldPlotScreen;
+import com.gtl.enhancedcore.client.plot.CampusPlanScreen;
 import com.gtl.enhancedcore.client.plot.PlotPreviewRenderer;
 import com.gtl.enhancedcore.common.item.PlotControllerEnvironment;
 import com.gtl.enhancedcore.common.world.personalplot.PersonalPlotNetwork;
@@ -73,6 +74,11 @@ public final class PersonalPlotWorldScreen extends Screen {
                     PlotSettings settings = previewSettings();
                     if (settings != null) { minecraft.keyboardHandler.setClipboard(PlotPresetShare.encode(settings)); copied = true; }
                 }, !pending && previewSettings() != null, tr("copy_preset_hint"));
+        if (previewSettings() != null && previewSettings().isCampus())
+            action(Component.translatable("gtl_enhancedcore.create_world_plot.campus_map_button"),
+                    previewX + previewWidth - 60, contentY - 3, 60,
+                    () -> minecraft.setScreen(new CampusPlanScreen(this, previewSettings())), !pending,
+                    Component.translatable("gtl_enhancedcore.create_world_plot.campus_open_plan"));
 
         int count = snapshot.canEditTemplate() ? 3 : 2;
         int y = contentBottom - count * 26 + 4;
@@ -176,7 +182,7 @@ public final class PersonalPlotWorldScreen extends Screen {
     private void drawPreviews(GuiGraphics g) {
         PlotSettings shown = previewSettings();
         Component heading = tr(snapshot.settings() == null ? "preview_template" : "preview_personal");
-        g.drawString(font, clipped(heading, previewWidth - 6), previewX + 3, contentY + 4, GOLD, false);
+        g.drawString(font, clipped(heading, previewWidth - (shown != null && shown.isCampus() ? 66 : 6)), previewX + 3, contentY + 4, GOLD, false);
         if (shown == null) {
             g.drawWordWrap(font, tr("no_preview"), previewX + 8, contentY + 31, Math.max(20, previewWidth - 16), MUTED);
             return;
@@ -191,7 +197,10 @@ public final class PersonalPlotWorldScreen extends Screen {
         preview(g, four, shown, beside ? px + size + 10 : px, beside ? py : py + size + 17, size, 2);
         int summaryY = py + size + 23;
         if (beside && summaryY + 22 < contentBottom) {
-            g.drawString(font, clipped(tr("size", shown.plotChunks(), shown.plotChunks(), shown.plotBlocks()), previewWidth - 6),
+            Component summary = shown.isCampus() ? Component.translatable("gtl_enhancedcore.create_world_plot.campus_status",
+                    shown.campusPlotCount(), shown.surfaceY())
+                    : tr("size", shown.plotChunks(), shown.plotChunks(), shown.plotBlocks());
+            g.drawString(font, clipped(summary, previewWidth - 6),
                     previewX + 3, summaryY, INK, false);
             g.drawString(font, clipped(tr("levels", shown.bedrockY(), shown.surfaceY()), previewWidth - 6),
                     previewX + 3, summaryY + 13, MUTED, false);
@@ -206,9 +215,9 @@ public final class PersonalPlotWorldScreen extends Screen {
     private void preview(GuiGraphics g, PlotPreviewRenderer.Cached cache, PlotSettings settings,
                          int x, int y, int size, int count) {
         cache.draw(g, settings, x, y, size, count, false);
-        Component caption = Component.translatable(count == 1
-                ? "gtl_enhancedcore.create_world_plot.preview_single"
-                : "gtl_enhancedcore.create_world_plot.preview_four");
+        Component caption = Component.translatable(settings.isCampus()
+                ? count == 1 ? "gtl_enhancedcore.create_world_plot.campus_core_preview" : "gtl_enhancedcore.create_world_plot.campus_overview"
+                : count == 1 ? "gtl_enhancedcore.create_world_plot.preview_single" : "gtl_enhancedcore.create_world_plot.preview_four");
         String text = clipped(caption, size + 4);
         g.drawString(font, text, x + (size - font.width(text)) / 2, y + size + 4, MUTED, false);
     }

@@ -34,7 +34,8 @@ public final class PerformanceMixinPlugin implements IMixinConfigPlugin {
         if (mixinClassName.startsWith("com.gtl.enhancedcore.mixin.ftbquests.client."))
             return hasClass(targetClassName);
         if (!ForeignMachineMixinPolicy.shouldApply(MachineOverrideConfig.current(), mixinClassName)) return false;
-        if (mixinClassName.endsWith(".MapRegionPackedImageMixin") || mixinClassName.endsWith(".BloomPendingPruneMixin"))
+        if (mixinClassName.endsWith(".MapRegionPackedImageMixin") || mixinClassName.endsWith(".BloomPendingPruneMixin")
+                || mixinClassName.endsWith(".BloomChunkProductionMixin"))
             return PerformanceMixinPlugin.class.getClassLoader().getResource(targetClassName.replace('.', '/') + ".class") != null;
         if (mixinClassName.startsWith("com.gtl.enhancedcore.mixin.ae2ct.client.")
                 || mixinClassName.startsWith("com.gtl.enhancedcore.mixin.jer.client."))
@@ -57,13 +58,8 @@ public final class PerformanceMixinPlugin implements IMixinConfigPlugin {
 
     private static boolean jeiPresent() {
         if (jeiPresent == null) {
-            try {
-                Class.forName("mezz.jei.gui.recipes.RecipeLayoutWithButtons", false,
-                        PerformanceMixinPlugin.class.getClassLoader());
-                jeiPresent = true;
-            } catch (ClassNotFoundException | LinkageError absent) {
-                jeiPresent = false;
-            }
+            // Target classes must remain unloaded until all Mixin configurations are prepared.
+            jeiPresent = hasClass("mezz.jei.gui.recipes.RecipeLayoutWithButtons");
         }
         return jeiPresent;
     }

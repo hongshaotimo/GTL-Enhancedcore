@@ -1,0 +1,2017 @@
+{
+  "macro_atomic_resonant_fragment_stripper": {
+    "originalSize": [
+      77,
+      25,
+      77
+    ],
+    "namespace": "gtladditions",
+    "bindings": {
+      " ": {
+        "mode": "any"
+      },
+      "@": {
+        "mode": "original",
+        "sample": [
+          51,
+          7,
+          38
+        ]
+      },
+      "#": {
+        "mode": "hatch",
+        "sample": [
+          50,
+          7,
+          37
+        ],
+        "block": "gtlcore:hyper_mechanical_casing",
+        "fallback": "gtlcore:hyper_mechanical_casing"
+      },
+      "A": {
+        "mode": "literal",
+        "block": "gtceu:fusion_glass",
+        "properties": {}
+      },
+      "F": {
+        "mode": "literal",
+        "block": "gtceu:orange_lamp",
+        "properties": {
+          "bloom": "false",
+          "inverted": "true",
+          "lit": "true",
+          "powered": "false"
+        }
+      },
+      "H": {
+        "mode": "literal",
+        "block": "gtceu:purple_lamp",
+        "properties": {
+          "bloom": "false",
+          "inverted": "true",
+          "lit": "true",
+          "powered": "false"
+        }
+      },
+      "N": {
+        "mode": "literal",
+        "block": "gtceu:white_lamp",
+        "properties": {
+          "bloom": "false",
+          "inverted": "true",
+          "lit": "true",
+          "powered": "false"
+        }
+      },
+      "E": {
+        "mode": "literal",
+        "block": "gtlcore:echo_casing",
+        "properties": {}
+      },
+      "O": {
+        "mode": "literal",
+        "block": "gtlcore:enhance_hyper_mechanical_casing",
+        "properties": {}
+      },
+      "G": {
+        "mode": "casing",
+        "sample": [
+          50,
+          7,
+          37
+        ],
+        "block": "gtlcore:hyper_mechanical_casing"
+      },
+      "B": {
+        "mode": "literal",
+        "block": "gtlcore:qft_coil",
+        "properties": {
+          "active": "false"
+        }
+      },
+      "I": {
+        "mode": "literal",
+        "block": "gtlcore:sps_casing",
+        "properties": {}
+      },
+      "D": {
+        "mode": "literal",
+        "block": "kubejs:annihilate_core",
+        "properties": {}
+      },
+      "M": {
+        "mode": "literal",
+        "block": "kubejs:dimensional_bridge_casing",
+        "properties": {}
+      },
+      "L": {
+        "mode": "literal",
+        "block": "kubejs:dyson_control_casing",
+        "properties": {}
+      },
+      "J": {
+        "mode": "literal",
+        "block": "kubejs:dyson_control_toroid",
+        "properties": {}
+      },
+      "K": {
+        "mode": "literal",
+        "block": "kubejs:dyson_receiver_casing",
+        "properties": {}
+      },
+      "Q": {
+        "mode": "original",
+        "sample": [
+          32,
+          10,
+          30
+        ],
+        "block": "kubejs:starmetal_coil_block"
+      }
+    },
+    "controller": "@",
+    "hatches": [
+      "#"
+    ],
+    "sourceSize": [
+      101,
+      101,
+      59
+    ],
+    "size": [
+      101,
+      101,
+      59
+    ],
+    "sourceController": [
+      50,
+      8,
+      58
+    ],
+    "sourceNormal": [
+      0,
+      0,
+      1
+    ],
+    "controllerPosition": [
+      50,
+      8,
+      58
+    ],
+    "counts": {
+      " ": 451274,
+      "#": 184,
+      "@": 1,
+      "A": 10033,
+      "B": 14742,
+      "D": 640,
+      "E": 46465,
+      "F": 16,
+      "G": 34135,
+      "H": 346,
+      "I": 4950,
+      "J": 14758,
+      "K": 3252,
+      "L": 5068,
+      "M": 176,
+      "N": 257,
+      "O": 7568,
+      "Q": 7994
+    },
+    "sourceCounts": {
+      " ": 449048,
+      "#": 184,
+      "@": 1,
+      "A": 10033,
+      "B": 14742,
+      "D": 650,
+      "E": 48609,
+      "F": 16,
+      "G": 34135,
+      "H": 346,
+      "I": 4950,
+      "J": 14758,
+      "K": 3252,
+      "L": 5068,
+      "M": 176,
+      "N": 257,
+      "O": 7640,
+      "Q": 7994
+    },
+    "diamondOreMarkers": 184,
+    "hatchFallback": "gtlcore:hyper_mechanical_casing",
+    "sourceSha256": "263e6a826c4b3bb9918885d6a0e4098e2f4fa1f08d6adcab01b48548c5286a16",
+    "sha256": "8c3ffbae8154dad0aa7f28ad549bad25bdb6f76625f3b6340d6ee203dc6dd5c5",
+    "rawPatternSha256": "e7b5e5fa5d127f27efdc45ac357cc223ca2b9b6af73088404388529497826642",
+    "sourceRevision": "user-request-20261102",
+    "sourceSchematic": "SchemTool/input/macro_atomic_resonant_fragment_stripper.schem",
+    "hiddenRemoval": {
+      "algorithm": "exterior-26-once; opaque-model-and-texture-evidence; removed-to-any",
+      "removed": 2226,
+      "removedBySymbol": {
+        "D": 10,
+        "E": 2144,
+        "O": 72
+      },
+      "opaqueSymbols": "EOIDM",
+      "protectedModes": [
+        "controller",
+        "hatch",
+        "original",
+        "casing",
+        "heating_coils",
+        "distorter_coils"
+      ],
+      "protectedLiteralCoilsAndStates": true
+    }
+  },
+  "quantum_syphon_matrix": {
+    "originalSize": [
+      11,
+      6,
+      7
+    ],
+    "namespace": "gtladditions",
+    "bindings": {
+      " ": {
+        "mode": "any"
+      },
+      "@": {
+        "mode": "original",
+        "sample": [
+          3,
+          5,
+          5
+        ]
+      },
+      "#": {
+        "mode": "hatch",
+        "sample": [
+          2,
+          1,
+          0
+        ],
+        "block": "gtceu:high_power_casing",
+        "fallback": "gtceu:high_power_casing"
+      },
+      "B": {
+        "mode": "literal",
+        "block": "gtceu:cyan_lamp",
+        "properties": {
+          "bloom": "false",
+          "inverted": "true",
+          "lit": "true",
+          "powered": "false"
+        }
+      },
+      "D": {
+        "mode": "literal",
+        "block": "gtceu:fusion_glass",
+        "properties": {}
+      },
+      "I": {
+        "mode": "casing",
+        "sample": [
+          2,
+          1,
+          0
+        ],
+        "block": "gtceu:high_power_casing"
+      },
+      "K": {
+        "mode": "literal",
+        "block": "gtceu:orange_lamp",
+        "properties": {
+          "bloom": "false",
+          "inverted": "true",
+          "lit": "true",
+          "powered": "false"
+        }
+      },
+      "L": {
+        "mode": "literal",
+        "block": "gtceu:white_lamp",
+        "properties": {
+          "bloom": "false",
+          "inverted": "true",
+          "lit": "true",
+          "powered": "false"
+        }
+      },
+      "E": {
+        "mode": "literal",
+        "block": "gtlcore:molecular_casing",
+        "properties": {}
+      },
+      "A": {
+        "mode": "literal",
+        "block": "gtlcore:naquadah_alloy_casing",
+        "properties": {}
+      },
+      "G": {
+        "mode": "literal",
+        "block": "kubejs:accelerated_pipeline",
+        "properties": {}
+      },
+      "F": {
+        "mode": "literal",
+        "block": "kubejs:hollow_casing",
+        "properties": {}
+      },
+      "H": {
+        "mode": "literal",
+        "block": "kubejs:neutronium_gearbox",
+        "properties": {}
+      },
+      "J": {
+        "mode": "literal",
+        "block": "kubejs:neutronium_pipe_casing",
+        "properties": {}
+      }
+    },
+    "controller": "@",
+    "hatches": [
+      "#"
+    ],
+    "sourceSize": [
+      73,
+      69,
+      73
+    ],
+    "size": [
+      73,
+      69,
+      73
+    ],
+    "sourceController": [
+      36,
+      9,
+      70
+    ],
+    "sourceNormal": [
+      0,
+      0,
+      1
+    ],
+    "controllerPosition": [
+      36,
+      9,
+      70
+    ],
+    "counts": {
+      " ": 301807,
+      "#": 194,
+      "@": 1,
+      "A": 24117,
+      "B": 944,
+      "D": 2024,
+      "E": 23695,
+      "F": 2792,
+      "G": 1012,
+      "H": 182,
+      "I": 10566,
+      "J": 140,
+      "K": 8,
+      "L": 219
+    },
+    "sourceCounts": {
+      " ": 260881,
+      "#": 194,
+      "@": 1,
+      "A": 48074,
+      "B": 944,
+      "D": 2024,
+      "E": 39218,
+      "F": 3254,
+      "G": 1976,
+      "H": 198,
+      "I": 10566,
+      "J": 144,
+      "K": 8,
+      "L": 219
+    },
+    "diamondOreMarkers": 194,
+    "hatchFallback": "gtceu:high_power_casing",
+    "sourceSha256": "812ee101d6c8373e4d14eb0dc942146e5b4d963f4acfeafb210a2aa7187a8555",
+    "sha256": "ed4e02a764e9a8e20e5eb603619ace6ee7d3560db785f920f68b3f994422a409",
+    "rawPatternSha256": "737fa165e62437a9b03aec8dac0f299e6a51efa1f376bec3a697e716690d6198",
+    "sourceRevision": "user-request-20261102",
+    "sourceSchematic": "SchemTool/input/quantum_syphon_matrix.schem",
+    "hiddenRemoval": {
+      "algorithm": "exterior-26-once; opaque-model-and-texture-evidence; removed-to-any",
+      "removed": 40926,
+      "removedBySymbol": {
+        "A": 23957,
+        "E": 15523,
+        "F": 462,
+        "G": 964,
+        "H": 16,
+        "J": 4
+      },
+      "opaqueSymbols": "EAGFHJ",
+      "protectedModes": [
+        "controller",
+        "hatch",
+        "original",
+        "casing",
+        "heating_coils",
+        "distorter_coils"
+      ],
+      "protectedLiteralCoilsAndStates": true
+    }
+  },
+  "huge_incubator": {
+    "originalSize": [
+      29,
+      26,
+      30
+    ],
+    "namespace": "gtceu",
+    "bindings": {
+      " ": {
+        "mode": "any"
+      },
+      "@": {
+        "mode": "original",
+        "sample": [
+          29,
+          1,
+          14
+        ]
+      },
+      "#": {
+        "mode": "hatch",
+        "sample": [
+          0,
+          0,
+          13
+        ],
+        "block": "gtceu:inert_machine_casing",
+        "fallback": "gtceu:inert_machine_casing"
+      },
+      "H": {
+        "mode": "literal",
+        "block": "gtceu:cleanroom_glass",
+        "properties": {}
+      },
+      "A": {
+        "mode": "literal",
+        "block": "gtceu:cyan_lamp",
+        "properties": {
+          "bloom": "false",
+          "inverted": "true",
+          "lit": "true",
+          "powered": "false"
+        }
+      },
+      "D": {
+        "mode": "literal",
+        "block": "gtceu:green_lamp",
+        "properties": {
+          "bloom": "false",
+          "inverted": "true",
+          "lit": "true",
+          "powered": "false"
+        }
+      },
+      "G": {
+        "mode": "casing",
+        "sample": [
+          0,
+          0,
+          13
+        ],
+        "block": "gtceu:inert_machine_casing"
+      },
+      "I": {
+        "mode": "literal",
+        "block": "gtceu:lime_lamp",
+        "properties": {
+          "bloom": "false",
+          "inverted": "true",
+          "lit": "true",
+          "powered": "false"
+        }
+      },
+      "F": {
+        "mode": "literal",
+        "block": "gtceu:ptfe_pipe_casing",
+        "properties": {}
+      },
+      "B": {
+        "mode": "literal",
+        "block": "gtceu:sterilizing_filter_casing",
+        "properties": {}
+      },
+      "E": {
+        "mode": "literal",
+        "block": "gtceu:sturdy_machine_casing",
+        "properties": {}
+      },
+      "O": {
+        "mode": "literal",
+        "block": "gtceu:tungstensteel_turbine_casing",
+        "properties": {}
+      },
+      "J": {
+        "mode": "literal",
+        "block": "gtceu:white_lamp",
+        "properties": {
+          "bloom": "false",
+          "inverted": "true",
+          "lit": "true",
+          "powered": "false"
+        }
+      },
+      "K": {
+        "mode": "literal",
+        "block": "gtlcore:degenerate_rhenium_constrained_casing",
+        "properties": {}
+      },
+      "N": {
+        "mode": "literal",
+        "block": "gtlcore:hyper_core",
+        "properties": {
+          "active": "false"
+        }
+      },
+      "L": {
+        "mode": "literal",
+        "block": "gtlcore:sps_casing",
+        "properties": {}
+      },
+      "Q": {
+        "mode": "literal",
+        "block": "kubejs:containment_field_generator",
+        "properties": {}
+      },
+      "M": {
+        "mode": "literal",
+        "block": "minecraft:sponge",
+        "properties": {}
+      }
+    },
+    "controller": "@",
+    "hatches": [
+      "#"
+    ],
+    "sourceSize": [
+      59,
+      68,
+      59
+    ],
+    "size": [
+      59,
+      68,
+      59
+    ],
+    "sourceController": [
+      29,
+      32,
+      40
+    ],
+    "sourceNormal": [
+      0,
+      0,
+      1
+    ],
+    "controllerPosition": [
+      29,
+      32,
+      40
+    ],
+    "counts": {
+      " ": 190504,
+      "#": 394,
+      "@": 1,
+      "A": 14,
+      "B": 347,
+      "D": 56,
+      "E": 472,
+      "F": 368,
+      "G": 790,
+      "H": 16931,
+      "I": 32,
+      "J": 36,
+      "K": 5320,
+      "L": 17255,
+      "M": 2740,
+      "N": 8,
+      "O": 1308,
+      "Q": 132
+    },
+    "sourceCounts": {
+      " ": 185434,
+      "#": 394,
+      "@": 1,
+      "A": 14,
+      "B": 503,
+      "D": 56,
+      "E": 718,
+      "F": 368,
+      "G": 790,
+      "H": 16931,
+      "I": 32,
+      "J": 36,
+      "K": 5591,
+      "L": 21566,
+      "M": 2740,
+      "N": 8,
+      "O": 1386,
+      "Q": 140
+    },
+    "diamondOreMarkers": 394,
+    "hatchFallback": "gtceu:inert_machine_casing",
+    "sourceSha256": "be9d4dc27336c4f794f1ad69f7c7f8650aaf620a0c6cc38c3064afbdc462c8dc",
+    "sha256": "3c09967a7cdbf1bb0f96d5841cea8d93eb33122f23a852c53ef67840b26c8ebc",
+    "rawPatternSha256": "136dedd9a87c799852c720f62cddb776b35d90644c61623f3ff3ba1beb2d7d50",
+    "sourceRevision": "user-request-20261102",
+    "sourceSchematic": "SchemTool/input/huge_incubator.schem",
+    "hiddenRemoval": {
+      "algorithm": "exterior-26-once; opaque-model-and-texture-evidence; removed-to-any",
+      "removed": 5070,
+      "removedBySymbol": {
+        "B": 156,
+        "E": 246,
+        "K": 271,
+        "L": 4311,
+        "O": 78,
+        "Q": 8
+      },
+      "opaqueSymbols": "FBEOKLQ",
+      "protectedModes": [
+        "controller",
+        "hatch",
+        "original",
+        "casing",
+        "heating_coils",
+        "distorter_coils"
+      ],
+      "protectedLiteralCoilsAndStates": true
+    }
+  },
+  "titan_crip_earthbore": {
+    "originalSize": [
+      13,
+      16,
+      11
+    ],
+    "namespace": "gtladditions",
+    "bindings": {
+      " ": {
+        "mode": "any"
+      },
+      "@": {
+        "mode": "original",
+        "sample": [
+          5,
+          15,
+          6
+        ]
+      },
+      "#": {
+        "mode": "hatch",
+        "sample": [
+          3,
+          15,
+          5
+        ],
+        "block": "gtlcore:echo_casing",
+        "fallback": "gtlcore:echo_casing"
+      },
+      "A": {
+        "mode": "literal",
+        "block": "gtceu:fusion_glass",
+        "properties": {}
+      },
+      "B": {
+        "mode": "literal",
+        "block": "gtceu:orange_lamp",
+        "properties": {
+          "bloom": "false",
+          "inverted": "true",
+          "lit": "true",
+          "powered": "false"
+        }
+      },
+      "J": {
+        "mode": "literal",
+        "block": "gtceu:white_lamp",
+        "properties": {
+          "bloom": "false",
+          "inverted": "true",
+          "lit": "true",
+          "powered": "false"
+        }
+      },
+      "K": {
+        "mode": "literal",
+        "block": "gtlcore:aluminium_bronze_casing",
+        "properties": {}
+      },
+      "D": {
+        "mode": "casing",
+        "sample": [
+          3,
+          15,
+          5
+        ],
+        "block": "gtlcore:echo_casing"
+      },
+      "L": {
+        "mode": "literal",
+        "block": "gtlcore:hyper_mechanical_casing",
+        "properties": {}
+      },
+      "M": {
+        "mode": "literal",
+        "block": "gtlcore:sps_casing",
+        "properties": {}
+      },
+      "G": {
+        "mode": "literal",
+        "block": "kubejs:machine_casing_grinding_head",
+        "properties": {}
+      },
+      "E": {
+        "mode": "literal",
+        "block": "kubejs:molecular_coil",
+        "properties": {}
+      },
+      "I": {
+        "mode": "literal",
+        "block": "kubejs:neutronium_gearbox",
+        "properties": {}
+      },
+      "H": {
+        "mode": "literal",
+        "block": "kubejs:neutronium_pipe_casing",
+        "properties": {}
+      },
+      "F": {
+        "mode": "literal",
+        "block": "minecraft:bedrock",
+        "properties": {}
+      }
+    },
+    "controller": "@",
+    "hatches": [
+      "#"
+    ],
+    "sourceSize": [
+      109,
+      157,
+      109
+    ],
+    "size": [
+      109,
+      157,
+      109
+    ],
+    "sourceController": [
+      54,
+      124,
+      90
+    ],
+    "sourceNormal": [
+      0,
+      0,
+      1
+    ],
+    "controllerPosition": [
+      54,
+      124,
+      90
+    ],
+    "counts": {
+      " ": 1589575,
+      "#": 116,
+      "@": 1,
+      "A": 9512,
+      "B": 32,
+      "D": 152204,
+      "E": 108,
+      "F": 70643,
+      "G": 1,
+      "H": 3,
+      "I": 9,
+      "J": 4,
+      "K": 939,
+      "L": 20042,
+      "M": 22128
+    },
+    "sourceCounts": {
+      " ": 1587999,
+      "#": 116,
+      "@": 1,
+      "A": 9512,
+      "B": 32,
+      "D": 152204,
+      "E": 108,
+      "F": 70643,
+      "G": 1,
+      "H": 3,
+      "I": 9,
+      "J": 4,
+      "K": 939,
+      "L": 21618,
+      "M": 22128
+    },
+    "diamondOreMarkers": 116,
+    "hatchFallback": "gtlcore:echo_casing",
+    "sourceSha256": "1193fbf2ef006507651cd77c67c8d8212b08678fc21db6ff4fee44891329bcbd",
+    "sha256": "41fef07cf0b90aaca4264af4034f2e325bf6d2bfceffca45ba32095adb466a2b",
+    "rawPatternSha256": "5af8568e430c5992bf7bf976466dd4377402e82280435451d3c991912169c521",
+    "sourceRevision": "user-request-20261102",
+    "sourceSchematic": "SchemTool/input/titan_crip_earthbore.schem",
+    "hiddenRemoval": {
+      "algorithm": "exterior-26-once; opaque-model-and-texture-evidence; removed-to-any",
+      "removed": 1576,
+      "removedBySymbol": {
+        "L": 1576
+      },
+      "opaqueSymbols": "KLMIH",
+      "protectedModes": [
+        "controller",
+        "hatch",
+        "original",
+        "casing",
+        "heating_coils",
+        "distorter_coils"
+      ],
+      "protectedLiteralCoilsAndStates": true
+    }
+  },
+  "eye_of_harmony": {
+    "originalSize": [
+      33,
+      33,
+      33
+    ],
+    "namespace": "gtceu",
+    "bindings": {
+      " ": {
+        "mode": "any"
+      },
+      "@": {
+        "mode": "original",
+        "sample": [
+          32,
+          16,
+          16
+        ]
+      },
+      "#": {
+        "mode": "hatch",
+        "sample": [
+          32,
+          13,
+          14
+        ],
+        "block": "gtceu:high_power_casing",
+        "fallback": "gtlcore:dimensionally_transcendent_casing"
+      },
+      "G": {
+        "mode": "literal",
+        "block": "gtceu:cyan_lamp",
+        "properties": {
+          "bloom": "false",
+          "inverted": "true",
+          "lit": "true",
+          "powered": "false"
+        }
+      },
+      "H": {
+        "mode": "literal",
+        "block": "gtceu:high_power_casing",
+        "properties": {}
+      },
+      "I": {
+        "mode": "literal",
+        "block": "gtceu:purple_lamp",
+        "properties": {
+          "bloom": "false",
+          "inverted": "true",
+          "lit": "true",
+          "powered": "false"
+        }
+      },
+      "J": {
+        "mode": "literal",
+        "block": "gtceu:white_lamp",
+        "properties": {
+          "bloom": "false",
+          "inverted": "true",
+          "lit": "true",
+          "powered": "false"
+        }
+      },
+      "B": {
+        "mode": "literal",
+        "block": "gtlcore:dimension_injection_casing",
+        "properties": {}
+      },
+      "A": {
+        "mode": "literal",
+        "block": "gtlcore:dimensionally_transcendent_casing",
+        "properties": {}
+      },
+      "D": {
+        "mode": "literal",
+        "block": "kubejs:dimensional_bridge_casing",
+        "properties": {}
+      },
+      "F": {
+        "mode": "literal",
+        "block": "kubejs:dimensional_stability_casing",
+        "properties": {}
+      },
+      "E": {
+        "mode": "literal",
+        "block": "kubejs:spacetime_compression_field_generator",
+        "properties": {}
+      }
+    },
+    "controller": "@",
+    "hatches": [
+      "#"
+    ],
+    "sourceSize": [
+      191,
+      191,
+      187
+    ],
+    "size": [
+      191,
+      191,
+      187
+    ],
+    "sourceController": [
+      95,
+      150,
+      186
+    ],
+    "sourceNormal": [
+      0,
+      0,
+      1
+    ],
+    "controllerPosition": [
+      95,
+      150,
+      186
+    ],
+    "counts": {
+      " ": 6727720,
+      "#": 220,
+      "@": 1,
+      "A": 70677,
+      "B": 19394,
+      "D": 226,
+      "E": 242,
+      "F": 336,
+      "G": 72,
+      "H": 2884,
+      "I": 54,
+      "J": 121
+    },
+    "sourceCounts": {
+      " ": 6612347,
+      "#": 220,
+      "@": 1,
+      "A": 179699,
+      "B": 21801,
+      "D": 226,
+      "E": 290,
+      "F": 336,
+      "G": 72,
+      "H": 6780,
+      "I": 54,
+      "J": 121
+    },
+    "diamondOreMarkers": 220,
+    "hatchFallback": "gtlcore:dimensionally_transcendent_casing",
+    "sourceSha256": "d68e743ee3d4381db330cee6831706a58d5232ae403c4be969f36075e7eb6225",
+    "sha256": "85b24f619bd397f8e014a07b741325d6c3d0a3ae14675232c8a9e55a7b5a7028",
+    "rawPatternSha256": "a01f7087a70ad39d1764b5aa9f544d3717b6449fd1de34eed83e137e50fed607",
+    "sourceRevision": "user-request-20261102",
+    "sourceSchematic": "SchemTool/input/eye_of_harmony.schem",
+    "hiddenRemoval": {
+      "algorithm": "exterior-26-once; opaque-model-and-texture-evidence; removed-to-any",
+      "removed": 115373,
+      "removedBySymbol": {
+        "A": 109022,
+        "B": 2407,
+        "E": 48,
+        "H": 3896
+      },
+      "opaqueSymbols": "HBADFE",
+      "protectedModes": [
+        "controller",
+        "hatch",
+        "original",
+        "casing",
+        "heating_coils",
+        "distorter_coils"
+      ],
+      "protectedLiteralCoilsAndStates": true
+    }
+  },
+  "arcanic_astrograph": {
+    "originalSize": [
+      33,
+      33,
+      33
+    ],
+    "namespace": "gtladditions",
+    "bindings": {
+      " ": {
+        "mode": "any"
+      },
+      "@": {
+        "mode": "original",
+        "sample": [
+          32,
+          16,
+          16
+        ]
+      },
+      "#": {
+        "mode": "hatch",
+        "sample": [
+          32,
+          13,
+          14
+        ],
+        "block": "gtceu:high_power_casing",
+        "fallback": "gtlcore:create_casing"
+      },
+      "G": {
+        "mode": "literal",
+        "block": "gtceu:cyan_lamp",
+        "properties": {
+          "bloom": "false",
+          "inverted": "true",
+          "lit": "true",
+          "powered": "false"
+        }
+      },
+      "H": {
+        "mode": "literal",
+        "block": "gtceu:high_power_casing",
+        "properties": {}
+      },
+      "I": {
+        "mode": "literal",
+        "block": "gtceu:white_lamp",
+        "properties": {
+          "bloom": "false",
+          "inverted": "true",
+          "lit": "true",
+          "powered": "false"
+        }
+      },
+      "J": {
+        "mode": "literal",
+        "block": "gtceu:yellow_lamp",
+        "properties": {
+          "bloom": "false",
+          "inverted": "true",
+          "lit": "true",
+          "powered": "false"
+        }
+      },
+      "A": {
+        "mode": "literal",
+        "block": "gtlcore:create_casing",
+        "properties": {}
+      },
+      "B": {
+        "mode": "literal",
+        "block": "gtlcore:dimension_injection_casing",
+        "properties": {}
+      },
+      "K": {
+        "mode": "literal",
+        "block": "gtlcore:enhance_hyper_mechanical_casing",
+        "properties": {}
+      },
+      "D": {
+        "mode": "literal",
+        "block": "kubejs:dimension_creation_casing",
+        "properties": {}
+      },
+      "F": {
+        "mode": "literal",
+        "block": "kubejs:dimensional_stability_casing",
+        "properties": {}
+      },
+      "E": {
+        "mode": "literal",
+        "block": "kubejs:spacetime_compression_field_generator",
+        "properties": {}
+      }
+    },
+    "controller": "@",
+    "hatches": [
+      "#"
+    ],
+    "sourceSize": [
+      291,
+      291,
+      149
+    ],
+    "size": [
+      291,
+      291,
+      149
+    ],
+    "sourceController": [
+      145,
+      42,
+      148
+    ],
+    "sourceNormal": [
+      0,
+      0,
+      1
+    ],
+    "controllerPosition": [
+      145,
+      42,
+      148
+    ],
+    "counts": {
+      " ": 12365581,
+      "#": 230,
+      "@": 1,
+      "A": 171067,
+      "B": 70688,
+      "D": 624,
+      "E": 1376,
+      "F": 1092,
+      "G": 32,
+      "H": 2320,
+      "I": 256,
+      "J": 40,
+      "K": 4162
+    },
+    "sourceCounts": {
+      " ": 11936792,
+      "#": 230,
+      "@": 1,
+      "A": 566519,
+      "B": 102427,
+      "D": 624,
+      "E": 1704,
+      "F": 1326,
+      "G": 32,
+      "H": 2920,
+      "I": 256,
+      "J": 40,
+      "K": 4598
+    },
+    "diamondOreMarkers": 230,
+    "hatchFallback": "gtlcore:create_casing",
+    "sourceSha256": "51d7b5576705a2afbee23520ffc7589b383de0bf16f8b5e8647ca09709ce8ec4",
+    "sha256": "dc5784eed663cb5e9da1ab18234f94f8e792b999dd257659817d7e2d3c88075a",
+    "rawPatternSha256": "160afcf6ebb45dd80f91f8621c06bc9feaa0e67869de563d5337900401e769ec",
+    "sourceRevision": "user-request-20261102",
+    "sourceSchematic": "SchemTool/input/arcanic_astrograph.schem",
+    "hiddenRemoval": {
+      "algorithm": "exterior-26-once; opaque-model-and-texture-evidence; removed-to-any",
+      "removed": 428789,
+      "removedBySymbol": {
+        "A": 395452,
+        "B": 31739,
+        "E": 328,
+        "F": 234,
+        "H": 600,
+        "K": 436
+      },
+      "opaqueSymbols": "HABKFE",
+      "protectedModes": [
+        "controller",
+        "hatch",
+        "original",
+        "casing",
+        "heating_coils",
+        "distorter_coils"
+      ],
+      "protectedLiteralCoilsAndStates": true
+    }
+  },
+  "heart_of_the_universe": {
+    "originalSize": [
+      121,
+      112,
+      109
+    ],
+    "namespace": "gtladditions",
+    "bindings": {
+      " ": {
+        "mode": "any"
+      },
+      "@": {
+        "mode": "original",
+        "sample": [
+          93,
+          23,
+          62
+        ]
+      },
+      "#": {
+        "mode": "hatch",
+        "sample": [
+          30,
+          11,
+          38
+        ],
+        "block": "gtlcore:dimension_injection_casing",
+        "fallback": "gtceu:high_power_casing"
+      },
+      "B": {
+        "mode": "literal",
+        "block": "gtceu:cyan_lamp",
+        "properties": {
+          "bloom": "false",
+          "inverted": "true",
+          "lit": "true",
+          "powered": "false"
+        }
+      },
+      "G": {
+        "mode": "literal",
+        "block": "gtceu:high_power_casing",
+        "properties": {}
+      },
+      "I": {
+        "mode": "literal",
+        "block": "gtceu:white_lamp",
+        "properties": {
+          "bloom": "false",
+          "inverted": "true",
+          "lit": "true",
+          "powered": "false"
+        }
+      },
+      "J": {
+        "mode": "literal",
+        "block": "gtceu:yellow_lamp",
+        "properties": {
+          "bloom": "false",
+          "inverted": "true",
+          "lit": "true",
+          "powered": "false"
+        }
+      },
+      "F": {
+        "mode": "literal",
+        "block": "gtladditions:temporal_anchor_field_casing",
+        "properties": {}
+      },
+      "L": {
+        "mode": "literal",
+        "block": "gtlcore:create_casing",
+        "properties": {}
+      },
+      "M": {
+        "mode": "literal",
+        "block": "gtlcore:dimension_injection_casing",
+        "properties": {}
+      },
+      "A": {
+        "mode": "literal",
+        "block": "gtlcore:graviton_field_constraint_casing",
+        "properties": {}
+      },
+      "D": {
+        "mode": "literal",
+        "block": "gtlcore:hyper_mechanical_casing",
+        "properties": {}
+      },
+      "H": {
+        "mode": "literal",
+        "block": "kubejs:annihilate_core",
+        "properties": {}
+      },
+      "E": {
+        "mode": "literal",
+        "block": "kubejs:dimensional_stability_casing",
+        "properties": {}
+      },
+      "K": {
+        "mode": "literal",
+        "block": "kubejs:dyson_deployment_magnet",
+        "properties": {}
+      }
+    },
+    "controller": "@",
+    "hatches": [
+      "#"
+    ],
+    "sourceSize": [
+      241,
+      226,
+      217
+    ],
+    "size": [
+      241,
+      226,
+      217
+    ],
+    "sourceController": [
+      120,
+      82,
+      147
+    ],
+    "sourceNormal": [
+      0,
+      0,
+      1
+    ],
+    "controllerPosition": [
+      120,
+      82,
+      147
+    ],
+    "counts": {
+      " ": 11499867,
+      "#": 170,
+      "@": 1,
+      "A": 988,
+      "B": 82,
+      "D": 177204,
+      "E": 5930,
+      "F": 82108,
+      "G": 5707,
+      "H": 766,
+      "I": 254,
+      "J": 4,
+      "K": 28283,
+      "L": 4496,
+      "M": 13262
+    },
+    "sourceCounts": {
+      " ": 11186186,
+      "#": 170,
+      "@": 1,
+      "A": 988,
+      "B": 82,
+      "D": 431716,
+      "E": 7246,
+      "F": 134496,
+      "G": 7044,
+      "H": 904,
+      "I": 254,
+      "J": 4,
+      "K": 28283,
+      "L": 6376,
+      "M": 15372
+    },
+    "diamondOreMarkers": 170,
+    "hatchFallback": "gtceu:high_power_casing",
+    "sourceSha256": "06b55094568d6a602ffc21422ed695faac9a84277962608e35cf5d13aa035db3",
+    "sha256": "969c93fa63d51f64e35753ad3c64f1fbfd11e12d25c65da77bf01d330a675e6c",
+    "rawPatternSha256": "a7305e28157383b21d131cd901cc8b62638d0eb6f6daf9940e600cc0bcdf7390",
+    "sourceRevision": "user-request-20261102",
+    "sourceSchematic": "SchemTool/input/heart_of_the_universe.schem",
+    "hiddenRemoval": {
+      "algorithm": "exterior-26-once; opaque-model-and-texture-evidence; removed-to-any",
+      "removed": 313681,
+      "removedBySymbol": {
+        "D": 254512,
+        "E": 1316,
+        "F": 52388,
+        "G": 1337,
+        "H": 138,
+        "L": 1880,
+        "M": 2110
+      },
+      "opaqueSymbols": "GFLMADHE",
+      "protectedModes": [
+        "controller",
+        "hatch",
+        "original",
+        "casing",
+        "heating_coils",
+        "distorter_coils"
+      ],
+      "protectedLiteralCoilsAndStates": true
+    }
+  },
+  "fuxi_bagua_heaven_forging_furnace": {
+    "originalSize": [
+      43,
+      39,
+      109
+    ],
+    "namespace": "gtladditions",
+    "bindings": {
+      " ": {
+        "mode": "any"
+      },
+      "@": {
+        "mode": "original",
+        "sample": [
+          108,
+          19,
+          21
+        ]
+      },
+      "#": {
+        "mode": "hatch",
+        "sample": [
+          108,
+          17,
+          20
+        ],
+        "block": "gtlcore:dimension_injection_casing",
+        "fallback": "gtlcore:dimension_injection_casing"
+      },
+      "A": {
+        "mode": "literal",
+        "block": "gtceu:atomic_casing",
+        "properties": {}
+      },
+      "D": {
+        "mode": "literal",
+        "block": "gtceu:cyan_lamp",
+        "properties": {
+          "bloom": "false",
+          "inverted": "true",
+          "lit": "true",
+          "powered": "false"
+        }
+      },
+      "E": {
+        "mode": "literal",
+        "block": "gtceu:white_lamp",
+        "properties": {
+          "bloom": "false",
+          "inverted": "true",
+          "lit": "true",
+          "powered": "false"
+        }
+      },
+      "F": {
+        "mode": "literal",
+        "block": "gtceu:yellow_lamp",
+        "properties": {
+          "bloom": "false",
+          "inverted": "true",
+          "lit": "true",
+          "powered": "false"
+        }
+      },
+      "K": {
+        "mode": "literal",
+        "block": "gtlcore:compressed_fusion_coil_mk2_prototype",
+        "properties": {
+          "active": "false"
+        }
+      },
+      "B": {
+        "mode": "literal",
+        "block": "gtlcore:dimension_injection_casing",
+        "properties": {}
+      },
+      "G": {
+        "mode": "literal",
+        "block": "gtlcore:dragon_strength_tritanium_casing",
+        "properties": {}
+      },
+      "I": {
+        "mode": "literal",
+        "block": "gtlcore:hyper_mechanical_casing",
+        "properties": {}
+      },
+      "M": {
+        "mode": "literal",
+        "block": "gtlcore:ultimate_stellar_containment_casing",
+        "properties": {}
+      },
+      "L": {
+        "mode": "literal",
+        "block": "kubejs:dimensional_stability_casing",
+        "properties": {}
+      },
+      "O": {
+        "mode": "original",
+        "sample": [
+          21,
+          19,
+          21
+        ],
+        "block": "kubejs:eternity_coil_block"
+      },
+      "H": {
+        "mode": "literal",
+        "block": "kubejs:molecular_coil",
+        "properties": {}
+      },
+      "N": {
+        "mode": "literal",
+        "block": "kubejs:restraint_device",
+        "properties": {}
+      }
+    },
+    "controller": "@",
+    "hatches": [
+      "#"
+    ],
+    "sourceSize": [
+      157,
+      182,
+      162
+    ],
+    "size": [
+      157,
+      182,
+      162
+    ],
+    "sourceController": [
+      78,
+      64,
+      161
+    ],
+    "sourceNormal": [
+      0,
+      0,
+      1
+    ],
+    "controllerPosition": [
+      78,
+      64,
+      161
+    ],
+    "counts": {
+      " ": 4341578,
+      "#": 186,
+      "@": 1,
+      "A": 93504,
+      "B": 42876,
+      "D": 18,
+      "E": 120,
+      "F": 76,
+      "G": 43764,
+      "H": 9628,
+      "I": 44952,
+      "K": 415,
+      "L": 2936,
+      "M": 37084,
+      "N": 66,
+      "O": 11784
+    },
+    "sourceCounts": {
+      " ": 4116738,
+      "#": 186,
+      "@": 1,
+      "A": 238203,
+      "B": 46243,
+      "D": 18,
+      "E": 120,
+      "F": 76,
+      "G": 66150,
+      "H": 9628,
+      "I": 87954,
+      "K": 415,
+      "L": 2980,
+      "M": 48360,
+      "N": 132,
+      "O": 11784
+    },
+    "diamondOreMarkers": 186,
+    "hatchFallback": "gtlcore:dimension_injection_casing",
+    "sourceSha256": "0889751d4fc0efc8632e8857f445ac61d76fef03df1618cbf7c4bb3ce36c51b7",
+    "sha256": "333b73d348d50c5ef138d244ee367b8623c1ce4b60d6252d4817b8cdbeb4e836",
+    "rawPatternSha256": "dfcf883c59d321f03f35505e67551c8895898e775e95c6f04595bee582dcd44f",
+    "sourceRevision": "user-request-20261102",
+    "sourceSchematic": "SchemTool/input/fuxi_bagua_heaven_forging_furnace.schem",
+    "hiddenRemoval": {
+      "algorithm": "exterior-26-once; opaque-model-and-texture-evidence; removed-to-any",
+      "removed": 224840,
+      "removedBySymbol": {
+        "A": 144699,
+        "B": 3367,
+        "G": 22386,
+        "I": 43002,
+        "L": 44,
+        "M": 11276,
+        "N": 66
+      },
+      "opaqueSymbols": "ABGIMLN",
+      "protectedModes": [
+        "controller",
+        "hatch",
+        "original",
+        "casing",
+        "heating_coils",
+        "distorter_coils"
+      ],
+      "protectedLiteralCoilsAndStates": true
+    }
+  },
+  "space_infinity_integrated_ore_processor": {
+    "originalSize": [
+      57,
+      45,
+      66
+    ],
+    "namespace": "gtladditions",
+    "bindings": {
+      " ": {
+        "mode": "any"
+      },
+      "@": {
+        "mode": "original",
+        "sample": [
+          59,
+          8,
+          20
+        ]
+      },
+      "#": {
+        "mode": "hatch",
+        "sample": [
+          58,
+          8,
+          19
+        ],
+        "block": "gtlcore:space_elevator_mechanical_casing",
+        "fallback": "gtlcore:dimensionally_transcendent_casing"
+      },
+      "A": {
+        "mode": "literal",
+        "block": "gtceu:cyan_lamp",
+        "properties": {
+          "bloom": "false",
+          "inverted": "true",
+          "lit": "true",
+          "powered": "false"
+        }
+      },
+      "H": {
+        "mode": "literal",
+        "block": "gtceu:orange_lamp",
+        "properties": {
+          "bloom": "false",
+          "inverted": "true",
+          "lit": "true",
+          "powered": "false"
+        }
+      },
+      "I": {
+        "mode": "literal",
+        "block": "gtceu:white_lamp",
+        "properties": {
+          "bloom": "false",
+          "inverted": "true",
+          "lit": "true",
+          "powered": "false"
+        }
+      },
+      "J": {
+        "mode": "literal",
+        "block": "gtladditions:temporal_anchor_field_casing",
+        "properties": {}
+      },
+      "K": {
+        "mode": "literal",
+        "block": "gtlcore:dimensionally_transcendent_casing",
+        "properties": {}
+      },
+      "L": {
+        "mode": "literal",
+        "block": "gtlcore:hyper_mechanical_casing",
+        "properties": {}
+      },
+      "F": {
+        "mode": "literal",
+        "block": "gtlcore:power_module_7",
+        "properties": {
+          "active": "false"
+        }
+      },
+      "B": {
+        "mode": "literal",
+        "block": "gtlcore:space_elevator_mechanical_casing",
+        "properties": {}
+      },
+      "D": {
+        "mode": "literal",
+        "block": "gtlcore:space_elevator_support",
+        "properties": {
+          "active": "false"
+        }
+      },
+      "G": {
+        "mode": "literal",
+        "block": "kubejs:dimensional_bridge_casing",
+        "properties": {}
+      },
+      "E": {
+        "mode": "literal",
+        "block": "kubejs:space_elevator_internal_support",
+        "properties": {}
+      }
+    },
+    "controller": "@",
+    "hatches": [
+      "#"
+    ],
+    "sourceSize": [
+      171,
+      101,
+      237
+    ],
+    "size": [
+      171,
+      101,
+      237
+    ],
+    "sourceController": [
+      85,
+      53,
+      3
+    ],
+    "sourceNormal": [
+      0,
+      0,
+      -1
+    ],
+    "controllerPosition": [
+      85,
+      53,
+      233
+    ],
+    "counts": {
+      " ": 3737469,
+      "#": 220,
+      "@": 1,
+      "A": 4557,
+      "B": 2794,
+      "D": 9074,
+      "E": 888,
+      "F": 600,
+      "G": 78,
+      "H": 506,
+      "I": 586,
+      "J": 232023,
+      "K": 59413,
+      "L": 45018
+    },
+    "sourceCounts": {
+      " ": 3311177,
+      "#": 220,
+      "@": 1,
+      "A": 4557,
+      "B": 15522,
+      "D": 9074,
+      "E": 888,
+      "F": 600,
+      "G": 78,
+      "H": 506,
+      "I": 586,
+      "J": 586123,
+      "K": 90113,
+      "L": 73782
+    },
+    "diamondOreMarkers": 220,
+    "hatchFallback": "gtlcore:dimensionally_transcendent_casing",
+    "sourceSha256": "474c5cf2768a6bfa44afba9d2b482ee84cf2cb9912be9717cfb47174d852d164",
+    "sha256": "7730ec3aeef94ba4a0afe43b14d20c37d4daa5851485a13748f166db8d5183db",
+    "rawPatternSha256": "18f70d65fc61479182a34cbedba8a3f677ad5e61ab82711bff3b8ed57ea9f204",
+    "sourceRevision": "user-request-20261102",
+    "sourceSchematic": "SchemTool/input/space_infinity_integrated_ore_processor.schem",
+    "hiddenRemoval": {
+      "algorithm": "exterior-26-once; opaque-model-and-texture-evidence; removed-to-any",
+      "removed": 426292,
+      "removedBySymbol": {
+        "B": 12728,
+        "J": 354100,
+        "K": 30700,
+        "L": 28764
+      },
+      "opaqueSymbols": "JKLBG",
+      "protectedModes": [
+        "controller",
+        "hatch",
+        "original",
+        "casing",
+        "heating_coils",
+        "distorter_coils"
+      ],
+      "protectedLiteralCoilsAndStates": true
+    }
+  },
+  "apocalyptic_torsion_quantum_matrix": {
+    "originalSize": [
+      65,
+      65,
+      43
+    ],
+    "namespace": "gtladditions",
+    "bindings": {
+      " ": {
+        "mode": "any"
+      },
+      "@": {
+        "mode": "original",
+        "sample": [
+          39,
+          30,
+          32
+        ]
+      },
+      "#": {
+        "mode": "hatch",
+        "sample": [
+          42,
+          25,
+          27
+        ],
+        "block": "gtlcore:manipulator",
+        "fallback": "gtlcore:dimensionally_transcendent_casing"
+      },
+      "H": {
+        "mode": "literal",
+        "block": "gtceu:cyan_lamp",
+        "properties": {
+          "bloom": "false",
+          "inverted": "true",
+          "lit": "true",
+          "powered": "false"
+        }
+      },
+      "I": {
+        "mode": "literal",
+        "block": "gtceu:orange_lamp",
+        "properties": {
+          "bloom": "false",
+          "inverted": "true",
+          "lit": "true",
+          "powered": "false"
+        }
+      },
+      "J": {
+        "mode": "literal",
+        "block": "gtceu:white_lamp",
+        "properties": {
+          "bloom": "false",
+          "inverted": "true",
+          "lit": "true",
+          "powered": "false"
+        }
+      },
+      "K": {
+        "mode": "literal",
+        "block": "gtladditions:god_forge_energy_casing",
+        "properties": {}
+      },
+      "L": {
+        "mode": "literal",
+        "block": "gtladditions:god_forge_inner_casing",
+        "properties": {}
+      },
+      "F": {
+        "mode": "literal",
+        "block": "gtladditions:quantum_glass",
+        "properties": {}
+      },
+      "M": {
+        "mode": "literal",
+        "block": "gtladditions:suprachronal_magnetic_confinement_casing",
+        "properties": {}
+      },
+      "N": {
+        "mode": "literal",
+        "block": "gtladditions:temporal_anchor_field_casing",
+        "properties": {}
+      },
+      "E": {
+        "mode": "literal",
+        "block": "gtlcore:dimensionally_transcendent_casing",
+        "properties": {}
+      },
+      "B": {
+        "mode": "literal",
+        "block": "gtlcore:manipulator",
+        "properties": {}
+      },
+      "A": {
+        "mode": "literal",
+        "block": "gtlcore:qft_coil",
+        "properties": {
+          "active": "false"
+        }
+      },
+      "G": {
+        "mode": "literal",
+        "block": "gtlcore:spacetimecontinuumripper",
+        "properties": {
+          "active": "false"
+        }
+      },
+      "D": {
+        "mode": "literal",
+        "block": "kubejs:dimensional_bridge_casing",
+        "properties": {}
+      }
+    },
+    "controller": "@",
+    "hatches": [
+      "#"
+    ],
+    "sourceSize": [
+      205,
+      154,
+      205
+    ],
+    "size": [
+      205,
+      154,
+      205
+    ],
+    "sourceController": [
+      102,
+      62,
+      12
+    ],
+    "sourceNormal": [
+      0,
+      0,
+      -1
+    ],
+    "controllerPosition": [
+      102,
+      62,
+      192
+    ],
+    "counts": {
+      " ": 5817841,
+      "#": 80,
+      "@": 1,
+      "A": 154032,
+      "B": 37660,
+      "D": 10206,
+      "E": 5500,
+      "F": 2528,
+      "G": 2578,
+      "H": 226,
+      "I": 16,
+      "J": 24,
+      "K": 128,
+      "L": 13616,
+      "M": 206553,
+      "N": 220861
+    },
+    "sourceCounts": {
+      " ": 5470071,
+      "#": 80,
+      "@": 1,
+      "A": 154032,
+      "B": 39356,
+      "D": 11755,
+      "E": 5704,
+      "F": 2528,
+      "G": 2578,
+      "H": 226,
+      "I": 16,
+      "J": 24,
+      "K": 128,
+      "L": 15372,
+      "M": 513518,
+      "N": 256461
+    },
+    "diamondOreMarkers": 80,
+    "hatchFallback": "gtlcore:dimensionally_transcendent_casing",
+    "sourceSha256": "0adfdaa2b3bd80119d9b83df4f3967dd2c4cac24a22a3511a178e414cc38cd26",
+    "sha256": "a60b3ef75e4b12686ad6f9758ba2890210ae4a9650d1e4e1cf28ce7c4aca17d4",
+    "rawPatternSha256": "f032bcb81e04cf2c63d8767a020b512f07ce653dff781cb6b6fb750fd23e739f",
+    "sourceRevision": "user-request-20261102",
+    "sourceSchematic": "SchemTool/input/apocalyptic_torsion_quantum_matrix.schem",
+    "hiddenRemoval": {
+      "algorithm": "exterior-26-once; opaque-model-and-texture-evidence; removed-to-any",
+      "removed": 347770,
+      "removedBySymbol": {
+        "B": 1696,
+        "D": 1549,
+        "E": 204,
+        "L": 1756,
+        "M": 306965,
+        "N": 35600
+      },
+      "opaqueSymbols": "KLMNEBD",
+      "protectedModes": [
+        "controller",
+        "hatch",
+        "original",
+        "casing",
+        "heating_coils",
+        "distorter_coils"
+      ],
+      "protectedLiteralCoilsAndStates": true
+    }
+  }
+}

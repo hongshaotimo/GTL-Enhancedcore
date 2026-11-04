@@ -10,6 +10,7 @@ final class PlotRoadAlignmentRegression {
         int checks = 0;
         for (int chunks = 1; chunks <= 11; chunks++) {
             for (var preset : PlotSettings.RoadPreset.values()) {
+                if (preset == PlotSettings.RoadPreset.CAMPUS) continue;
                 var settings = PlotSettings.defaults().withPlotChunks(chunks).withRoadPreset(preset)
                         .withMarkerMode(PlotSettings.MarkerMode.NONE).withPlotEdgeWidth(0);
                 int p = settings.plotBlocks();
@@ -33,6 +34,9 @@ final class PlotRoadAlignmentRegression {
                         .withLineStyle(line).withRoadWidth(width).withBorderWidth(width % 9)
                         .withDashLength(width).withDashGap(33 - width).withMarkerMode(PlotSettings.MarkerMode.NONE)
                         .withPlotEdgeWidth(0);
+                // Fixed finite campuses have their own geometry contracts in CampusRegression;
+                // per-plot periodic road invariants apply only to configurable road layouts.
+                if (settings.isCampus()) continue;
                 int p = settings.plotBlocks();
                 for (int x : new int[]{0, 1, 2, width - 1, width, p / 4 - 1, p / 4, p / 2 - 1, p / 2, p - 1})
                     for (int z = 0; z < p; z++) checks += aligned(settings, x, z);

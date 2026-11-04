@@ -20,9 +20,15 @@ public final class CloudPatternUi {
     }
 
     /** A per-menu provider keeps panel state separate for every viewer. */
-    private record Page(CloudPatternUiHost host, IFancyUIProvider machine, boolean library) implements IFancyUIProvider {
+    private static final class Page implements IFancyUIProvider {
+        private final IFancyUIProvider machine;
+        private final Widget panel;
+        private Page(CloudPatternUiHost host, IFancyUIProvider machine, boolean library) {
+            this.machine = machine;
+            panel = library ? new CloudPatternLibraryWidget(host) : new CloudPatternBufferWidget(host);
+        }
         @Override public Widget createMainPage(FancyMachineUIWidget ui) {
-            return library ? new CloudPatternLibraryWidget(host) : new CloudPatternBufferWidget(host);
+            return panel;
         }
         @Override public IGuiTexture getTabIcon() { return machine.getTabIcon(); }
         @Override public Component getTitle() { return machine.getTitle(); }

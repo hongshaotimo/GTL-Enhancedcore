@@ -61,8 +61,10 @@ public final class IvNativeEngine {
         if (!IvMachineScope.nativeTarget(machine) && !IvBuffers.genericCloudTarget(machine))
             throw new IllegalArgumentException("Not an isolated native or cloud-adapted machine");
     }
-    public void tick() {
-        if (machine.isRemote()) return;
+    public void tick() { tick(true); }
+    /** Stop admitting new batches while a native-input turn waits for committed cloud work. */
+    public void tick(boolean allowStarts) {
+        if (machine.isRemote() || access.iv$nativeInputsActive()) return;
         if (!machine.isRecipeLogicAvailable() || !machine.hasProxies()) {
             invalidateRuntime();
             var summary = access.iv$summary();
@@ -74,7 +76,7 @@ public final class IvNativeEngine {
                             ? RecipeLogic.Status.WAITING : RecipeLogic.Status.SUSPEND);
             return;
         }
-        try { tickOrders(); }
+        try { tickOrders(allowStarts); }
         catch (RuntimeException failure) {
             fault = true; logic.setWorkingEnabled(false);
             var summary = access.iv$summary();
@@ -203,7 +205,12 @@ public final class IvNativeEngine {
         }
         return true;
     }
-    private void tickOrders() {
+    public boolean hasActiveBatches() {
+        for (var buffer : IvBuffers.collect(machine))
+            for (var job : IvBuffers.jobs(buffer, machine)) if (job.active() && !job.halted) return true;
+        return false;
+    }
+    private void tickOrders(boolean allowStarts) {
         if (fault && !logic.isWorkingEnabled()) return;
         fault = false; clearDiagnostics();
         // Do not adopt a legacy, already-paid recipe as a new order.
@@ -256,7 +263,7 @@ public final class IvNativeEngine {
                     "cancelledOperations", ref.job.cancelledOperations);
             return true;
         });
-        if (logic.isWorkingEnabled()) { start(all); advance(all); }
+        if (logic.isWorkingEnabled()) { if (allowStarts) start(all); advance(all); }
         if (all.stream().noneMatch(ref -> !ref.job.halted && (ref.job.active() || ref.job.remaining > 0)))
             ComputationNetwork.forget(machine);
         publish(all);
@@ -345,12 +352,13 @@ public final class IvNativeEngine {
         long[] freeParallel = new long[chosen.size()];
         for (int i = 0; i < wants.length; i++) {
             var ref = chosen.get(i);
-            var virtual = IvBuffers.availableVirtual(ref.buffer, ref.job);
+            var virtual = IvBuffers.availableVirtual(ref.buffer, ref.job, machine);
             if (IvMachineScope.unmeteredBatch(machine, ref.job.recipe)) {
                 freeParallel[i] = IvRecipeInputs.maxParallel(ref.job.recipe, ref.job.inventory, virtual, ref.job.remaining);
             } else {
                 wants[i] = IvRecipeInputs.maxParallel(ref.job.recipe, ref.job.inventory,
-                        virtual, Math.min(budget, ref.job.remaining));
+                        virtual, Math.min(Math.min(budget,
+                                IvMachineScope.parallel(machine, ref.job.recipe)), ref.job.remaining));
             }
             if (wants[i] == 0 && freeParallel[i] == 0)
                 waiting(ref, budget == 0 ? "gtl_enhancedcore.diagnostic.iv_parallel" : "gtl_enhancedcore.diagnostic.iv_catalyst");
@@ -383,7 +391,7 @@ public final class IvNativeEngine {
     private void prepare(Ref ref, long granted, long capacity, String cycle) {
         var job = ref.job;
         try {
-            var virtual = IvBuffers.availableVirtual(ref.buffer, job);
+            var virtual = IvBuffers.availableVirtual(ref.buffer, job, machine);
             GTRecipe scaled;
             GTRecipe timing;
             var wireless = wireless();
@@ -428,7 +436,8 @@ public final class IvNativeEngine {
                 var context = new IvNativeMatchContext(machine, job.inventory, virtual, job.remaining, granted);
                 scaled = context.prepare(job.recipe);
                 if (scaled == null) {
-                    waiting(ref, "gtl_enhancedcore.diagnostic.conditions", modifierDetail(job.recipe));
+                    waiting(ref, "gtl_enhancedcore.diagnostic.conditions",
+                            context.rejection() == null ? modifierDetail(job.recipe) : context.rejection());
                     return;
                 }
                 parallel = Math.max(1, IGTRecipe.of(scaled).getRealParallels());
@@ -472,10 +481,11 @@ public final class IvNativeEngine {
             }
             long eut = wireless == null ? RecipeHelper.getInputEUt(timing) : 0;
             if (eut < 0 || timing.duration < 1) throw new IllegalStateException("Invalid native timing");
-            // Persist only extra tick capabilities: EU is charged by the per-order energy ledger.
-            GTRecipe tick = scaled.copy();
-            tick.inputs.clear(); tick.outputs.clear(); tick.tickInputs.remove(EURecipeCapability.CAP);
-            tick.duration = timing.duration; IGTRecipe.of(tick).setHasTick(!tick.tickInputs.isEmpty());
+            // Keep the actual modified recipe for upstream lifecycle callbacks, including
+            // fusion heat/color and recipe-dependent machine logic. Native tick IO gets
+            // a separate view: the order ledger alone pays EU and ordinary inputs/outputs.
+            GTRecipe committed = scaled.copy(); committed.duration = timing.duration;
+            GTRecipe tick = IvNativeRecipeContext.tickRecipe(committed);
             boolean research = tick.data.getBoolean("duration_is_total_cwu");
             if (research && ComputationRecipes.required(tick.tickInputs.getOrDefault(CWURecipeCapability.CAP, List.of())) <= 0)
                 throw new IllegalArgumentException("Native research requires positive tick computation");
@@ -490,10 +500,12 @@ public final class IvNativeEngine {
             }
             BigInteger firstPayment = wireless == null ? BigInteger.valueOf(eut) : wirelessEUt;
             if (!powerReady(ref, firstPayment, wireless, inputPower())) return;
-            GTRecipeSerializer.CODEC.encodeStart(NbtOps.INSTANCE, tick).getOrThrow(false, ignored -> {});
-            if (!machine.beforeWorking(scaled)) {
-                waiting(ref, "gtl_enhancedcore.diagnostic.conditions", nativeDetail("startup", job.recipe.id.toString()));
-                return;
+            GTRecipeSerializer.CODEC.encodeStart(NbtOps.INSTANCE, committed).getOrThrow(false, ignored -> {});
+            try (var callback = access.iv$recipeContext(scaled, job.recipe, 0, timing.duration)) {
+                if (!machine.beforeWorking(scaled)) {
+                    waiting(ref, "gtl_enhancedcore.diagnostic.conditions", nativeDetail("startup", job.recipe.id.toString()));
+                    return;
+                }
             }
             GTRecipe outputs = IParallelLogic.getRecipeOutputChance(machine, scaled);
             GTRecipe inputRoll = scaled.copy(); inputRoll.outputs.clear();
@@ -508,7 +520,7 @@ public final class IvNativeEngine {
                     : firstPayment.multiply(BigInteger.valueOf(timing.duration));
             IvRecipeInputs.subtract(job.inventory, consumed);
             job.completion.putAll(produced); job.remaining -= parallel; job.parallel = parallel;
-            job.nativeRecipe = tick; job.nativeWireless = wireless != null; job.nativeWirelessEUt = wirelessEUt;
+            job.nativeRecipe = committed; job.nativeWireless = wireless != null; job.nativeWirelessEUt = wirelessEUt;
             job.nativeCapacity = capacity;
             job.nativeComputation.reset();
             job.eut = eut; job.duration = timing.duration; job.elapsed = 0;
@@ -547,6 +559,7 @@ public final class IvNativeEngine {
             parallelBudget -= job.nativeCapacity;
             if (!allowed(ref)) continue;
             if (job.nativeRecipe == null) throw new IllegalStateException("Missing native batch tick snapshot");
+            GTRecipe tick = IvNativeRecipeContext.tickRecipe(job.nativeRecipe);
             var conditions = job.nativeRecipe.checkConditions(logic);
             if (!conditions.isSuccess()) {
                 waiting(ref, "gtl_enhancedcore.diagnostic.conditions", resultDetail(conditions, "gtl_enhancedcore.diagnostic.conditions"));
@@ -563,16 +576,17 @@ public final class IvNativeEngine {
             boolean research = job.nativeRecipe.data.getBoolean("duration_is_total_cwu");
             IvNativeRecoveryState.PaidTick nextTick;
             // Keep all CWU receipts open until the order's EU payment has also succeeded.
-            try (var context = IvComputationContext.begin(job, logic, job.nativeRecipe);
-                 var scope = ComputationRecipes.begin(machine, job.nativeRecipe)) {
-                var tickMatch = job.nativeRecipe.matchTickRecipe(machine);
+            try (var callback = access.iv$recipeContext(job.nativeRecipe, job.recipe, job.elapsed, job.duration);
+                 var context = IvComputationContext.begin(job, logic, tick);
+                 var scope = ComputationRecipes.begin(machine, tick)) {
+                var tickMatch = tick.matchTickRecipe(machine);
                 if (!tickMatch.isSuccess()) {
                     waiting(ref, "gtl_enhancedcore.diagnostic.conditions", resultDetail(tickMatch, "gtl_enhancedcore.diagnostic.conditions"));
                     continue;
                 }
                 if (!powerReady(ref, payment, job.nativeWireless ? wireless : null, powerBudget)) continue;
                 if (!callbacks) {
-                    if (!machine.onWorking() || !logic.isWorkingEnabled()) {
+                    if (!access.iv$onWorking() || !logic.isWorkingEnabled()) {
                         for (var waiting : running)
                             waiting(waiting, "gtl_enhancedcore.diagnostic.conditions", nativeDetail("working", waiting.job.recipe.id.toString()));
                         return;
@@ -580,7 +594,7 @@ public final class IvNativeEngine {
                     callbacks = true;
                 }
                 nextTick = research ? null : IvNativeRecoveryState.paid(job.energyLeft, payment, job.elapsed, job.duration);
-                var tickResult = logic.handleTickRecipe(job.nativeRecipe);
+                var tickResult = logic.handleTickRecipe(tick);
                 if (!tickResult.isSuccess() || scope.failed()) {
                     waiting(ref, "gtl_enhancedcore.diagnostic.conditions", resultDetail(tickResult, "gtl_enhancedcore.diagnostic.conditions"));
                     continue;
@@ -639,13 +653,16 @@ public final class IvNativeEngine {
             if (IvTaskLog.TRACE_TICKS) IvTaskLog.event(ref.buffer, job, "NATIVE_ADVANCE", "PAID",
                     "paidEU", payment.toString(), "energyLeft", job.energyLeft.toString(), "elapsed", job.elapsed, "duration", job.duration);
             if (nextTick.complete()) {
+                GTRecipe completedRecipe = job.nativeRecipe;
                 job.completeBatch();
                 job.nativeRecipe = null; job.nativeWireless = false; job.nativeWirelessEUt = BigInteger.ZERO;
                 job.nativeCapacity = 0;
                 job.validateAccounting();
                 ref.buffer.markDirty();
                 if (all.stream().noneMatch(other -> other.job.active() && other.job.cycle.equals(job.cycle))) {
-                    try { machine.afterWorking(); } catch (RuntimeException failure) { IvTaskLog.error(ref.buffer, job, "FINISH_CALLBACK", failure); }
+                    try (var callback = access.iv$recipeContext(completedRecipe, job.recipe, job.elapsed, job.duration)) {
+                        machine.afterWorking();
+                    }
                 }
                 IvTaskLog.event(ref.buffer, job, "BATCH_COMPLETE", "OK",
                         "remaining", job.remaining, "completedOperations", job.completedOperations, "pending", IvTaskLog.stock(job.pending));

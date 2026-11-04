@@ -54,11 +54,39 @@ public final class LazyMultiblockPreviewWidget extends WidgetGroup {
 
     public synchronized void ensureLoaded() {
         if (delegate != null) return;
-        delegate = PatternPreviewWidget.getPatternWidget(definition);
+        if (org.gtlcore.gtlcore.client.preview.PreviewSettings.enabled()) {
+            PreviewPreparation.begin(this, definition);
+            return;
+        }
+        installReady(PatternPreviewWidget.getPatternWidget(definition));
+    }
+
+    synchronized void installReady(PatternPreviewWidget prepared) {
+        delegate = prepared;
         footprintText = estimateFootprint(definition);
         Set<Runnable> before = snapshotCloseListeners(getGui());
         addWidget(delegate);
         rememberCloseListeners(getGui(), before);
+    }
+
+    public boolean isReady() { return delegate != null; }
+
+    @Override
+    public void drawInBackground(net.minecraft.client.gui.GuiGraphics graphics, int mouseX, int mouseY, float partialTicks) {
+        PreviewPreparation.advance(this, PreviewPreparation.FRAME_BUDGET_NANOS);
+        super.drawInBackground(graphics, mouseX, mouseY, partialTicks);
+        if (delegate == null) {
+            String key = PreviewPreparation.failed(this) ? "gtl_enhancedcore.jei.preview_failed"
+                    : "gtl_enhancedcore.jei.preview_preparing";
+            var font = net.minecraft.client.Minecraft.getInstance().font;
+            var lines = font.split(net.minecraft.network.chat.Component.translatable(key), 144);
+            int lineY = getPosition().y + 70;
+            for (var line : lines) {
+                graphics.drawString(font, line, getPosition().x + (160 - font.width(line)) / 2,
+                        lineY, 0xFFFFFFFF, true);
+                lineY += font.lineHeight;
+            }
+        }
     }
 
     @Override
@@ -115,6 +143,12 @@ public final class LazyMultiblockPreviewWidget extends WidgetGroup {
         Widget widget = ((com.lowdragmc.lowdraglib.jei.ModularWrapper<?>) info).getWidget();
         if (widget instanceof LazyMultiblockPreviewWidget lazy) {
             lazy.ensureLoaded();
+            if (!lazy.isReady()) {
+                // The visible loading shell has no material widgets yet. Once ready,
+                // JEI rebuilds this layout and the original category binds native slots.
+                info.setRecipeWidget(0, 0);
+                return true;
+            }
         }
         return false;
     }
@@ -174,11 +208,19 @@ public final class LazyMultiblockPreviewWidget extends WidgetGroup {
 
     /** Release delegate widgets and their references to the shared dummy world. */
     public synchronized void clearLoaded() {
+        PreviewPreparation.cancel(this);
         if (delegate != null) {
             // LDLib keeps SceneWidget::releaseCacheBuffer callbacks after
             // removeWidget. Remove exactly the callbacks added by this delegate.
             removeDelegateCloseListeners();
-            for (Widget child : delegate.widgets) {
+            releaseScene(delegate);
+            removeWidget(delegate);
+            delegate = null;
+        }
+    }
+
+    static void releaseScene(PatternPreviewWidget widget) {
+            for (Widget child : widget.widgets) {
                 if (child instanceof SceneWidget scene && scene.getRenderer() != null) {
                     ChamberPreviewOverlay.clear(scene);
                     scene.getRenderer().deleteCacheBuffer();
@@ -197,9 +239,6 @@ public final class LazyMultiblockPreviewWidget extends WidgetGroup {
                     if (core instanceof it.unimi.dsi.fastutil.objects.ObjectOpenHashSet<?> set) set.trim();
                 }
             }
-            removeWidget(delegate);
-            delegate = null;
-        }
     }
 
     public static void clearAll() {

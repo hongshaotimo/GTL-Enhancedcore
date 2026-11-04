@@ -20,7 +20,7 @@ import org.gtlcore.gtlcore.integration.terminal.StableBlockCandidates;
 
 import static com.gtl.enhancedcore.common.registration.MachineRegistrationSupport.*;
 
-/** Exact 199 x 216 x 199 imported blueprint; only the 24 marked cells accept ports. */
+/** Reviewed imported blueprint; only the schematic's marked interface accepts ports. */
 public final class StellarVortexStructure {
     private static final String ROOT = "/data/gtl_enhancedcore/structures/stellar_vortex_space_station";
     private static final JsonObject BINDINGS = readBindings();
@@ -64,7 +64,8 @@ public final class StellarVortexStructure {
     /** Keep the enormous unconstrained volume absent from the preview position map. */
     public static BlockInfo[][][] preview(MultiblockMachineDefinition definition) {
         var matches=((com.gtl.enhancedcore.mixin.gtceu.BlockPatternAccessor)definition.getPatternFactory().get()).gtlEnhancedcore$getBlockMatches();
-        BlockInfo[][][] result=new BlockInfo[199][216][199];
+        int depth=matches.length, height=matches[0].length, width=matches[0][0].length;
+        BlockInfo[][][] result=new BlockInfo[width][height][depth];
         var choices=new java.util.HashMap<Character,BlockInfo>();
         BlockInfo casing=BlockInfo.fromBlockState(requiredBlockBlock("gtlcore:dimensionally_transcendent_casing").defaultBlockState());
         BlockInfo input=PartAbility.IMPORT_ITEMS.getAllBlocks().stream()
@@ -76,7 +77,7 @@ public final class StellarVortexStructure {
         boolean[] sourcePlaced={false};boolean[] inputPlaced={false};int[] aisle={0};
         StructurePatterns.data(ROOT+".pattern.gz").forEachAisle(rows->{
             int z=aisle[0]++;
-            for(int y=0;y<216;y++)for(int x=0;x<199;x++) {
+            for(int y=0;y<height;y++)for(int x=0;x<width;x++) {
                 char symbol=rows[y].charAt(x);
                 if(symbol==' ')continue;
                 BlockInfo info;
@@ -90,7 +91,7 @@ public final class StellarVortexStructure {
                     if(info==null) { info=previewCandidate(matches[z][y][x],symbol);choices.put(symbol,info); }
                 }
                 // Preview is baked at NORTH with LEFT/UP/FRONT pattern axes.
-                result[198-x][y][198-z]=info;
+                result[width-1-x][y][depth-1-z]=info;
             }
         });
         return result;

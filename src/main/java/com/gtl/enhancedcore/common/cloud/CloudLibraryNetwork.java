@@ -43,6 +43,9 @@ public final class CloudLibraryNetwork {
                 || main.libraryId() == null || main.owner() == null) return null;
         try {
             var library = CloudPatternStore.get(level).library(main.libraryId());
+            if (!library.healthy()) return null;
+            IGrid wireless = CloudMeConnection.selectedGrid(main);
+            if (wireless != null) return main.getMainNode().isActive() && main.getMainNode().getGrid() == wireless ? wireless : null;
             var anchor = library.meAnchor();
             if (anchor.isEmpty()) {
                 IGrid candidate = main.getMainNode().isActive() ? main.getMainNode().getGrid() : null;

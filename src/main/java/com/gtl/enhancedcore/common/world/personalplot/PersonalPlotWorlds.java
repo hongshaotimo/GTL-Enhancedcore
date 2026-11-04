@@ -193,7 +193,8 @@ public final class PersonalPlotWorlds {
         ServerLevel target = player.server.getLevel(key(player.getUUID()));
         if (player.level() == target) return "";
         if (player.isPassenger() || player.isSleeping()) return PREFIX + "travel_blocked";
-        BlockPos destination = safePosition(target, new BlockPos(settings.plotBlocks() / 2, settings.surfaceY() + 1, settings.plotBlocks() / 2));
+        int spawn = settings.isCampus() ? 0 : settings.plotBlocks() / 2;
+        BlockPos destination = safePosition(target, new BlockPos(spawn, settings.surfaceY() + 1, spawn));
         if (destination == null) return PREFIX + "unsafe_destination";
         CompoundTag back = new CompoundTag(); back.putString("dimension", player.level().dimension().location().toString());
         back.putDouble("x", player.getX()); back.putDouble("y", player.getY()); back.putDouble("z", player.getZ());

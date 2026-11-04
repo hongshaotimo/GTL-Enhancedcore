@@ -72,20 +72,24 @@ public final class IvBufferRegistry {
                 .map(block -> new BlockInfo(block.defaultBlockState())).toArray(BlockInfo[]::new));
     }
 
-    /** Ordinary materials and isolated buffers share one quota; connection ports are independent. */
+    /** Cloud buffers allow auxiliary materials; other isolated buffers retain exclusive inputs. */
     public static TraceabilityPredicate materialPorts(int maxSuperBuffers) {
         if (maxSuperBuffers < 0 && maxSuperBuffers != -1)
             throw new IllegalArgumentException("Maximum buffer count must be -1 (unlimited) or non-negative");
         return new TraceabilityPredicate(world -> {
             var block = world.getBlockState().getBlock();
             if (com.gtl.enhancedcore.common.machine.galaxy.GalaxyConnectionHatch.isConnectionPortBlock(block)) return true;
-            boolean isolated = contains(ForgeRegistries.BLOCKS.getKey(block));
+            var id = ForgeRegistries.BLOCKS.getKey(block);
+            boolean isolated = contains(id);
             if (!isolated && !IvNativeHatches.materials(block)) return false;
 
             MaterialPortSelection selection = world.getMatchContext()
                     .getOrCreate("gtlEnhancedcoreMaterialPortSelection", MaterialPortSelection::new);
-            if (selection.isolated == null) selection.isolated = isolated;
-            if (selection.isolated != isolated) return false;
+            boolean cloud = id != null && id.getNamespace().equals("gtl_enhancedcore") && id.getPath().equals("cloud_pattern_buffer");
+            if (!cloud) {
+                if (selection.isolated == null) selection.isolated = isolated;
+                if (selection.isolated != isolated) return false;
+            }
             if (isolated) {
                 if (maxSuperBuffers >= 0 && selection.superBuffers >= maxSuperBuffers) return false;
                 selection.superBuffers++;

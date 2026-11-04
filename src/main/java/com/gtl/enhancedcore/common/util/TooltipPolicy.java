@@ -35,7 +35,7 @@ public final class TooltipPolicy {
             Map.entry("cloud_library", page(List.of("cloud.library.flavor", "cloud.library.intro", "cloud.library.usage",
                     "cloud.library.catalyst", "cloud.library.terminal", "cloud.library.isolation"), List.of())),
             Map.entry("cloud_buffer", page(List.of("cloud.buffer.intro", "cloud.buffer.modes", "cloud.buffer.multiple",
-                    "cloud.buffer.catalyst"), List.of())),
+                    "cloud.buffer.catalyst", "cloud.buffer.native_inputs", "cloud.buffer.auxiliary"), List.of())),
             Map.entry("large_furnace", page(
                     List.of("large_furnace.efficient", "large_furnace.base_parallel", "large_furnace.base_threads",
                             "large_furnace.cross_recipe_parallel", "large_furnace.voltage_scaling",
@@ -65,11 +65,11 @@ public final class TooltipPolicy {
                     List.of("add_threads.cross_recipe", "add_threads.threads"), List.of())),
             Map.entry("wood_distillation", page(
                     List.of("wood_distillation.cross_recipe", "wood_distillation.threads"), List.of())),
-            // 用户 2026-10-25 指定文案；“1万线程/64星阵解锁”按实际逻辑（靶仓接通即无限）改写为 buff 行。
+            // 星阵不足64个时仅额外增加10,000线程，装满后解锁无限容量。
             Map.entry("stellar_vortex", page(List.of("stellar_vortex.flavor", "stellar_vortex.intro", "stellar_vortex.power",
                     "stellar_vortex.circuit", "stellar_vortex.buff", "stellar_vortex.pair"), List.of())),
             Map.entry("galaxy_source", page(List.of("galaxy_source.intro", "galaxy_source.pair", "galaxy_source.targets"), List.of())),
-            Map.entry("galaxy_target", page(List.of("galaxy_target.intro", "galaxy_target.pair", "galaxy_target.loss", "galaxy_target.reset"), List.of())),
+            Map.entry("galaxy_target", page(List.of("galaxy_target.intro", "galaxy_target.buff", "galaxy_target.pair", "galaxy_target.loss", "galaxy_target.reset"), List.of())),
             Map.entry("weather_anchor", page(
                     List.of("weather_anchor.flavor", "weather_anchor.intro", "weather_anchor.power",
                             "weather_anchor.supply", "supports_laser_hatch"),
@@ -106,6 +106,10 @@ public final class TooltipPolicy {
                             "extreme_reactor.hatches"), List.of())),
             Map.entry("platinum_refining_matrix", page(
                     List.of("platinum_refining_matrix.tips", "platinum_refining_matrix.parallel", "no_laser_input"),
+                    List.of())),
+            Map.entry("lanthanide_refining_hub", page(
+                    List.of("lanthanide_refining_hub.intro", "lanthanide_refining_hub.batch",
+                            "lanthanide_refining_hub.parallel", "lanthanide_refining_hub.hatches", "no_laser_input"),
                     List.of())),
             Map.entry("void_constrained_mining_field", page(
                     List.of("void_constrained_mining_field.tips", "void_constrained_mining_field.parallel",

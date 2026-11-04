@@ -56,6 +56,11 @@ public final class GTLEnhancedcoreRecipeTypes {
             .setMaxIOSize(1, 6, 0, 0)
             .setEUIO(IO.IN);
 
+    /** Monazite and carbon plus water and sulfuric acid produce sixteen deterministic dust outputs. */
+    public static final GTRecipeType LANTHANIDE_REFINING = register("lanthanide_refining")
+            .setMaxIOSize(2, 16, 2, 0)
+            .setEUIO(IO.IN);
+
     /**
      * 龙式场约束增殖核心的唯一配方类型「异种物质增殖」
      * （显示名走翻译键 gtl_enhancedcore.exotic_proliferation，JEI 与 tooltip 共用该键）。

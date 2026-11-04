@@ -54,12 +54,25 @@ final class MachineOverrideConfigRegression {
 
     private static void selection(Settings settings) throws Exception {
         Set<String> structures = Set.of("gtceu.GtlMegastructurePatternMixin", "gtceu.LucidEtchdreamerPreviewMixin",
-                "gtlcore.client.LucidSparsePreviewShapeMixin");
-        Set<String> shared = Set.of("gtceu.IvNativeParallelMixin", "gtceu.GalaxyRecipeLogicMixin", "gtceu.GalaxyMachineDisplayMixin", "gtceu.GalaxyConnectionHatchUiMixin", "gtladditions.GalaxyMutableModeMixin", "gtceu.RetiredLightHunterDefinitionMixin",
+                "gtlcore.client.LucidSparsePreviewShapeMixin",
+                "gtlcore.client.EyeOfHarmonyEffectAnchorMixin",
+                "gtlcore.client.CelestialEffectViewDistanceMixin",
+                "gtladditions.client.ArcanicAstrographEffectAnchorMixin",
+                "gtladditions.client.HeartOfTheUniverseEffectSizeMixin",
+                "gtladditions.client.HeartOfTheUniverseEffectBoundsMixin",
+                "gtladditions.ArcanicAstrographCollectionAnchorMixin");
+        Set<String> shared = Set.of("gtceu.IvNativeRecipeLogicMixin", "gtlcore.IvNativeMultipleGuardMixin", "gtceu.IvNativeParallelMixin", "gtceu.GalaxyRecipeLogicMixin", "gtceu.GalaxyMachineDisplayMixin", "gtceu.GalaxyConnectionHatchUiMixin", "gtladditions.GalaxyMutableModeMixin", "gtceu.RetiredLightHunterDefinitionMixin",
+                // These hooks also serve our own machines; foreign targets are guarded inside the panel palette.
+                "gtceu.StructurePanelAppearanceMixin", "gtceu.client.StructurePanelRendererMixin",
+                "gtceu.client.GtRecipeGridMixin",
+                "gtlcore.CreativeComputationSchedulerMixin", "gtlcore.CreativeComputationTransactionAccessor",
                 "gtladditions.GalaxyThreadCapacityMixin", "gtladditions.GalaxyMachineCapacityMixin", "gtladditions.GalaxySpecialBudgetMixin", "gtladditions.GalaxyAddParallelMixin",
                 "gtladditions.GalaxyWirelessEnergyHandlerMixin",
                 "gtlcore.GalaxyParallelCapacityMixin", "gtlcore.GalaxyChanceSimulationMixin", "mc.PersonalPlotServerAccessor", "gtceu.PersonalPlotDimensionConditionMixin",
                 "gtlcore.client.BloomPendingPruneMixin",
+                "gtlcore.client.BloomChunkProductionMixin", "gtlcore.ClientPatternSlotCapacityMixin",
+                "gtceu.EmptyRecipeContentsMixin", "gtceu.StructureSearchControllerMixin",
+                "gtceu.StructureSearchPatternMixin", "gtceu.StructureWorldIndexMixin", "gtceu.StructureSearchWakeMixin",
                 "gtlcore.client.PreviewFootprintInfoMixin",
                 "travelanchors.TravelAnchorRangeMixin",
                 "gtceu.BlockPatternAccessor", "gtceu.MultiblockMachineDefinitionAccessor",

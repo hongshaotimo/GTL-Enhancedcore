@@ -20,7 +20,7 @@ import net.minecraft.resources.ResourceLocation;
 /** A local recipe workbench. No terrain or creation state is changed before confirmation. */
 public final class CreateWorldPlotScreen extends Screen {
     private static final String KEY = "gtl_enhancedcore.create_world_plot.";
-    private static final String[] PAGES = {"page_layout", "page_roads", "page_materials", "page_height"};
+    private static final String[] PAGES = {"page_presets", "page_layout", "page_roads", "page_materials", "page_height"};
     private static final String[] MATERIAL_KEYS = {"ground", "plot_edge_block", "road_block", "border_block", "line_block", "marker_block"};
     private static final int[] COLORS = {0xffd4d5ce,0xffe06101,0xffa9309f,0xff2489c7,
             0xfff0af15,0xff5ea819,0xffd5658f,0xff36393d,0xff7d7d73,0xff157788,
@@ -39,8 +39,8 @@ public final class CreateWorldPlotScreen extends Screen {
     private final Map<AbstractWidget,Integer> contentY = new IdentityHashMap<>();
     private PlotSettings draft, validatedPreview;
     private int page, materialTarget, left, top, bodyWidth, bodyHeight;
-    private int editorX, editorY, editorWidth, editorBottom, previewX, previewWidth, scroll, contentHeight, diagramY = -1;
-    private final int[] pageScroll = new int[4];
+    private int editorX, editorY, editorWidth, editorBottom, previewX, previewY, previewWidth, scroll, contentHeight, diagramY = -1;
+    private final int[] pageScroll = new int[PAGES.length];
     private Component error = CommonComponents.EMPTY;
     private FlatButton done, share;
     private boolean building, grid;
@@ -74,27 +74,69 @@ public final class CreateWorldPlotScreen extends Screen {
         building = true; labels.clear(); editorWidgets.clear(); fixedWidgets.clear(); contentY.clear(); diagramY = -1;
         bodyWidth = Math.min(900, width - 12); bodyHeight = Math.min(500, height - 12);
         left = (width - bodyWidth) / 2; top = (height - bodyHeight) / 2;
-        editorX = left + 12; editorY = top + 65; editorBottom = top + bodyHeight - 46;
+        editorX = left + 12; editorY = top + 65; previewY = editorY; editorBottom = top + bodyHeight - 46;
         editorWidth = (bodyWidth - 42) * 56 / 100;
         previewX = editorX + editorWidth + 18; previewWidth = left + bodyWidth - 12 - previewX;
-        int tw = (editorWidth + 4) / PAGES.length;
+        int tabX = editorX, tabY = top + 37;
         for (int i = 0; i < PAGES.length; i++) {
             int selected = i;
-            fixed(() -> tr(PAGES[selected]), editorX + i * tw, top + 37, tw - 3, 20,
+            int tabWidth = Math.max(24, font.width(tr(PAGES[selected])) + 12);
+            if (tabX + tabWidth > editorX + editorWidth) { tabX = editorX; tabY += 23; }
+            fixed(() -> tr(PAGES[selected]), tabX, tabY, tabWidth, 20,
                     () -> { pageScroll[page] = scroll; page = selected; rebuildWidgets(); }, () -> page == selected);
+            tabX += tabWidth + 3;
         }
+        editorY = Math.max(editorY, tabY + 28);
         scroll = pageScroll[page];
-        contentHeight = switch (page) { case 0 -> layoutPage(); case 1 -> roadsPage(); case 2 -> materialsPage(); default -> heightPage(); };
+        contentHeight = switch (page) { case 0 -> presetsPage(); case 1 -> layoutPage(); case 2 -> roadsPage(); case 3 -> materialsPage(); default -> heightPage(); };
         int buttonWidth = Math.min(130, bodyWidth / 3);
         done = fixed(() -> confirmLabel, left + bodyWidth - buttonWidth - 12, top + bodyHeight - 27, buttonWidth, 20, this::commit, () -> true);
         fixed(() -> CommonComponents.GUI_CANCEL, left + 12, top + bodyHeight - 27, 58, 20, this::onClose, () -> false);
         share = fixed(() -> tr("share_presets"), left + 76, top + bodyHeight - 27, Math.min(100, bodyWidth - buttonWidth - 100), 20,
                 this::openShare, () -> false);
-        fixed(() -> tr(grid ? "grid_on" : "grid_off"), previewX, top + 37, previewWidth, 20, () -> grid = !grid, () -> grid);
+        fixed(() -> draft.isCampus() ? tr("campus_map_button") : tr(grid ? "grid_on" : "grid_off"),
+                previewX, top + 37, previewWidth, 20,
+                () -> { if (draft.isCampus()) minecraft.setScreen(new CampusPlanScreen(this, draft)); else grid = !grid; },
+                () -> !draft.isCampus() && grid);
         building = false; validate(); updateScroll(scroll);
     }
+    private int presetsPage() {
+        edit(() -> tr("campus_preset"), editorX, 0, editorWidth, 30,
+                () -> selectTerrainPreset(PlotSettings.plannedCampus()),
+                () -> draft.roadStyle() == PlotSettings.plannedCampus().roadStyle())
+                .setTooltip(Tooltip.create(tr("campus_preset_hint")));
+        int y = hint(tr("campus_preset_hint"), 39);
+        edit(() -> tr("campus_free_plots"), editorX, y + 8, editorWidth, 24,
+                () -> selectTerrainPreset(PlotSettings.defaults()), () -> !draft.isCampus());
+        return y + 40;
+    }
+    private void selectTerrainPreset(PlotSettings settings) {
+        draft = settings; validatedPreview = draft; resetInputs();
+        pageScroll[page] = scroll; page = 1; pageScroll[page] = 0; rebuildWidgets();
+    }
     private int layoutPage() {
-        int y = heading("plot_dimensions", 0);
+        edit(() -> tr("campus_preset"), editorX, 0, editorWidth, 30,
+                () -> { draft = PlotSettings.plannedCampus(); validatedPreview = draft; resetInputs(); rebuildWidgets(); }, draft::isCampus)
+                .setTooltip(Tooltip.create(tr("campus_preset_hint")));
+        if (draft.isCampus()) {
+            int y = hint(tr("campus_description", draft.campusPlotCount()), 39);
+            y = heading("campus_ae", y + 8);
+            y = hint(tr("campus_ae_hint"), y);
+            y = heading("campus_districts", y + 6);
+            y = hint(tr("campus_districts_hint"), y);
+            y = hint(tr("campus_controller_hint"), y + 6);
+            FlatButton frames = edit(() -> tr(draft.showMachineFrames() ? "campus_frames_on" : "campus_frames_off"),
+                    editorX, y + 6, editorWidth, 21,
+                    () -> { draft = draft.withMachineFrames(!draft.showMachineFrames()); validate(); rebuildWidgets(); },
+                    () -> draft.showMachineFrames());
+            frames.setTooltip(Tooltip.create(tr("campus_frames_hint")));
+            edit(() -> tr("campus_open_plan"), editorX, y + 34, editorWidth, 24,
+                    () -> minecraft.setScreen(new CampusPlanScreen(this, draft)), () -> false);
+            edit(() -> tr("campus_free_plots"), editorX, y + 61, editorWidth, 21,
+                    () -> { draft = PlotSettings.defaults(); validatedPreview = draft; resetInputs(); rebuildWidgets(); }, () -> false);
+            return y + 89;
+        }
+        int y = heading("plot_dimensions", 40);
         int w = (editorWidth - 12) / 5;
         for (int i = 1; i <= 10; i++) {
             int size = i;
@@ -106,7 +148,7 @@ public final class CreateWorldPlotScreen extends Screen {
         int half = (editorWidth - 6) / 2;
         number("plot_edge_width", editorX, y, half, 0, 8, true);
         FlatButton edgeColor = edit(() -> tr("edit_plot_edge_color"), editorX + half + 6, y + 13, half, 20,
-                () -> { pageScroll[page] = scroll; materialTarget = 1; page = 2; rebuildWidgets(); }, () -> false);
+                () -> { pageScroll[page] = scroll; materialTarget = 1; page = 3; rebuildWidgets(); }, () -> false);
         edgeColor.indicator = () -> colorOf(inputs.get("plot_edge_block"));
         y += 42;
         options("marker_mode", List.of(PlotSettings.MarkerMode.values()), () -> draft.markerMode(),
@@ -116,6 +158,7 @@ public final class CreateWorldPlotScreen extends Screen {
         return y + 8;
     }
     private int roadsPage() {
+        if (draft.isCampus()) return hint(tr("campus_authored"), 0) + 10;
         int y = heading("road_templates", 0);
         y = hint(tr("road_templates_hint"), y);
         int columns = editorWidth >= 380 ? 3 : 2, gap = 5, w = (editorWidth - (columns-1)*gap) / columns;
@@ -147,7 +190,7 @@ public final class CreateWorldPlotScreen extends Screen {
         number("dash_length", editorX, y, half, 1, 32, dashed);
         number("dash_gap", editorX+half+6, y, half, 1, 32, dashed); y += 43;
         FlatButton palette = edit(() -> tr("edit_lane_color"), editorX, y, editorWidth, 21,
-                () -> { pageScroll[page] = scroll; materialTarget = 3; page = 2; rebuildWidgets(); }, () -> false);
+                () -> { pageScroll[page] = scroll; materialTarget = 3; page = 3; rebuildWidgets(); }, () -> false);
         palette.active = lines && draft.lineStyle() != PlotSettings.LineStyle.NONE;
         return y + 29;
     }
@@ -164,6 +207,7 @@ public final class CreateWorldPlotScreen extends Screen {
     }
     private void applyRoadPreset(PlotSettings.RoadPreset preset) {
         draft = draft.withRoadPreset(preset);
+        if (preset == PlotSettings.RoadPreset.CAMPUS) { resetInputs(); validate(); rebuildWidgets(); return; }
         for (String key : List.of("road_block", "border_block", "line_block", "road_width", "border_width", "dash_length", "dash_gap"))
             inputs.put(key, switch (key) { case "road_block" -> draft.roadBlock(); case "border_block" -> draft.borderBlock();
                 case "line_block" -> draft.lineBlock(); case "road_width" -> ""+draft.roadWidth(); case "border_width" -> ""+draft.borderWidth();
@@ -171,6 +215,7 @@ public final class CreateWorldPlotScreen extends Screen {
         validate(); rebuildWidgets();
     }
     private int materialsPage() {
+        if (draft.isCampus()) return hint(tr("campus_materials"), 0) + 10;
         int y = heading("material_surface", 0), columns = editorWidth >= 280 ? 3 : 2, gap = 4;
         int w = (editorWidth - (columns-1)*gap) / columns;
         for (int i=0;i<MATERIAL_KEYS.length;i++) {
@@ -264,10 +309,11 @@ public final class CreateWorldPlotScreen extends Screen {
     }
     private int number(String key) { return Integer.parseInt(inputs.get(key)); }
     private PlotSettings candidate() {
+        if (draft.isCampus()) return draft.withLevels(number("bedrock_y"), number("surface_y"));
         return new PlotSettings(number("size"),inputs.get("ground"),inputs.get("road_block"),inputs.get("border_block"),
                 inputs.get("marker_block"),draft.roadStyle(),number("road_width"),draft.markerMode(),number("marker_size"),
                 number("bedrock_y"),number("surface_y"),inputs.get("line_block"),draft.lineStyle(),number("dash_length"),number("dash_gap"),number("border_width"),
-                inputs.get("plot_edge_block"),number("plot_edge_width"));
+                inputs.get("plot_edge_block"),number("plot_edge_width"),draft.showMachineFrames());
     }
     private void validate() {
         if(building) return; error=CommonComponents.EMPTY;
@@ -351,7 +397,7 @@ public final class CreateWorldPlotScreen extends Screen {
         g.drawString(font,title,left+12,top+10,INK,false);
         if(bodyWidth>510) g.drawString(font,tr("subtitle"),left+12+font.width(title)+16,top+10,MUTED,false);
         panel(g,editorX-4,editorY-4,editorWidth+8,editorBottom-editorY+8,0xff20252a);
-        panel(g,previewX-4,editorY-4,previewWidth+8,editorBottom-editorY+8,0xff181d22);
+        panel(g,previewX-4,previewY-4,previewWidth+8,editorBottom-previewY+8,0xff181d22);
         g.enableScissor(editorX,editorY,editorX+editorWidth,editorBottom);
         for(Label label:labels) {
             int y=editorY+label.y-scroll;
@@ -388,14 +434,20 @@ public final class CreateWorldPlotScreen extends Screen {
         }
         drawPreviews(g);
         int statusY=top+bodyHeight-40;
-        Component status=error.equals(CommonComponents.EMPTY) ? tr("live_status",validatedPreview.plotBlocks(),validatedPreview.surfaceY()) : error;
+        Component status=error.equals(CommonComponents.EMPTY) ? validatedPreview.isCampus()
+                ? tr("campus_status",validatedPreview.campusPlotCount(),validatedPreview.surfaceY())
+                : tr("live_status",validatedPreview.plotBlocks(),validatedPreview.surfaceY()) : error;
         g.drawString(font,font.plainSubstrByWidth(status.getString(),bodyWidth-24),left+12,statusY,error.equals(CommonComponents.EMPTY)?MUTED:0xffffa69c,false);
         for(var widget:fixedWidgets) widget.render(g,mx,my,partial);
         if(!error.equals(CommonComponents.EMPTY) && my>=statusY && my<statusY+10)
             g.renderTooltip(font,font.split(error,Math.min(280,bodyWidth-24)),mx,my);
     }
     private void drawPreviews(GuiGraphics g) {
-        int y=editorY+3, available=editorBottom-y;
+        if (validatedPreview.isCampus()) {
+            drawCampusPreviews(g);
+            return;
+        }
+        int y=previewY+3, available=editorBottom-y;
         boolean beside=previewWidth>=250;
         int pixels=beside ? Math.min((previewWidth-14)/2,available-120) : Math.min(previewWidth-8,(available-145)/2);
         pixels=Math.max(12,pixels);
@@ -423,6 +475,16 @@ public final class CreateWorldPlotScreen extends Screen {
         cache.draw(g,validatedPreview,x,y,size,plots,grid);
         String text=font.plainSubstrByWidth(tr(plots==1?"preview_single":"preview_four").getString(),size+4);
         g.drawString(font,text,x+(size-font.width(text))/2,y+size+4,MUTED,false);
+    }
+
+    private void drawCampusPreviews(GuiGraphics g) {
+        int available = editorBottom - previewY;
+        int size = Math.max(20, Math.min(previewWidth - 8, available - 32));
+        int x = previewX + (previewWidth - size) / 2, y = previewY + 2;
+        single.draw(g, validatedPreview, x, y, size, 1, false);
+        g.drawString(font, font.plainSubstrByWidth(tr("campus_core_preview").getString(), previewWidth - 6), previewX + 3, y + size + 4, INK, false);
+        g.drawString(font, font.plainSubstrByWidth(tr("campus_plan_count", validatedPreview.campusPlotCount()).getString(), previewWidth - 6),
+                previewX + 3, y + size + 17, MUTED, false);
     }
     private static void panel(GuiGraphics g,int x,int y,int w,int h,int fill) {
         g.fill(x,y,x+w,y+h,0xff101316); g.fill(x+1,y+1,x+w-1,y+h-1,fill);

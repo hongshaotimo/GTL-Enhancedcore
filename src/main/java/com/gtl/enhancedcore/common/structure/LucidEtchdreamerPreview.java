@@ -8,27 +8,34 @@ import com.gregtechceu.gtceu.api.pattern.predicates.SimplePredicate;
 import com.gtl.enhancedcore.mixin.gtceu.BlockPatternAccessor;
 import com.lowdragmc.lowdraglib.utils.BlockInfo;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 
-/** Builds the 233-cube preview with null cells for its unconstrained volume. */
+/** Builds the reviewed schematic preview with null cells for its unconstrained volume. */
 public final class LucidEtchdreamerPreview {
-    private static final int SIZE = 233;
-    private static final int PANEL_AISLE = 156;
-    private static final int PANEL_X = 82;
-    private static final int PANEL_Y = 102;
     private static final String RESOURCE = "/data/gtl_enhancedcore/structures/gtl/lucid_etchdreamer.pattern.gz";
 
     private LucidEtchdreamerPreview() {}
 
+    /** Preview coordinates after the LEFT/UP/FRONT transform. */
+    public static net.minecraft.core.BlockPos controllerPosition() {
+        int[] size = GtlMegastructurePatterns.lucidCoordinates("size");
+        int[] core = GtlMegastructurePatterns.lucidCoordinates("controllerPosition");
+        return new net.minecraft.core.BlockPos(size[0] - 1 - core[0], core[1], size[2] - 1 - core[2]);
+    }
+
     public static BlockInfo[][][] create(BlockPattern pattern) {
+        int[] size = GtlMegastructurePatterns.lucidCoordinates("size");
+        int[] core = GtlMegastructurePatterns.lucidCoordinates("controllerPosition");
+        int[] origin = GtlMegastructurePatterns.lucidPanel();
         TraceabilityPredicate[][][] matches = ((BlockPatternAccessor) pattern).gtlEnhancedcore$getBlockMatches();
-        if (matches.length != SIZE || matches[0].length != SIZE || matches[0][0].length != SIZE) {
+        if (matches.length != size[2] || matches[0].length != size[1] || matches[0][0].length != size[0]) {
             throw new IllegalStateException("Unexpected lucid_etchdreamer preview dimensions");
         }
 
-        BlockInfo[][][] result = new BlockInfo[SIZE][SIZE][SIZE];
+        BlockInfo[][][] result = new BlockInfo[size[0]][size[1]][size[2]];
         // GTLCore's preview widget skips null cells. BlockInfo.EMPTY is non-null and
-        // would turn the 12.3 million unconstrained cells into preview positions.
+        // would turn millions of unconstrained cells into preview positions.
         Map<Character, BlockInfo> choices = new HashMap<>();
         int[] aisle = {0};
         StructurePatterns.data(RESOURCE).forEachAisle(rows -> {
@@ -44,19 +51,19 @@ public final class LucidEtchdreamerPreview {
                         choices.put(symbol, info);
                     }
                     // Loaded patterns use LEFT / UP / FRONT. At NORTH, X and Z run negative.
-                    result[SIZE - 1 - x][y][SIZE - 1 - z] = info;
+                    result[size[0] - 1 - x][y][size[2] - 1 - z] = info;
                 }
             }
         });
 
-        // Reuse GTCEu's exact preview selection for the only ability panel. This 5x5x3
-        // probe preserves its required maintenance/energy hatches and chosen facing.
-        BlockInfo[][][] panel = previewPanel(matches);
-        BlockInfo controller = firstCandidate(matches[PANEL_AISLE][PANEL_Y + 2][PANEL_X + 2], 'C');
-        BlockInfo casing = firstCandidate(matches[PANEL_AISLE - 1][PANEL_Y][PANEL_X], 'J');
+        // Reuse GTCEu's quota-aware preview selection on the actual panel geometry.
+        BlockInfo[][][] panel = previewPanel(matches, origin);
+        BlockInfo controller = firstCandidate(matches[core[2]][core[1]][core[0]], 'C');
+        int controllerX = origin[3] - 1 - (core[0] - origin[0]);
+        int controllerY = core[1] - origin[1];
         int controllerLayer = -1;
-        for (int layer = 0; layer < panel[2][2].length; layer++) {
-            BlockInfo candidate = panel[2][2][layer];
+        for (int layer = 0; layer < panel[controllerX][controllerY].length; layer++) {
+            BlockInfo candidate = panel[controllerX][controllerY][layer];
             if (candidate != null && candidate.hasBlockEntity()
                     && candidate.getBlockState().is(controller.getBlockState().getBlock())) {
                 controllerLayer = layer;
@@ -64,28 +71,30 @@ public final class LucidEtchdreamerPreview {
             }
         }
         if (controllerLayer < 0) throw new IllegalStateException("Missing lucid_etchdreamer preview controller layer");
-        for (int x = 0; x < 5; x++) {
-            for (int y = 0; y < 5; y++) {
+        for (int x = 0; x < origin[3]; x++) {
+            for (int y = 0; y < origin[4]; y++) {
                 BlockInfo info = panel[x][y][controllerLayer];
-                if (x == 2 && y == 2) info = controller;
-                if ((x != 2 || y != 2) && info != null
-                        && info.getBlockState().is(controller.getBlockState().getBlock())) {
-                    // An unused X slot accepts either the old controller fallback or
-                    // the original iridium casing. Show the casing by default.
-                    info = casing;
-                }
-                result[SIZE - PANEL_X - 5 + x][PANEL_Y + y][SIZE - 1 - PANEL_AISLE] = info;
+                if (x == controllerX && y == controllerY) info = controller;
+                if (info != null && !info.getBlockState().isAir())
+                    result[size[0] - origin[0] - origin[3] + x][origin[1] + y][size[2] - 1 - origin[2]] = info;
             }
         }
         return result;
     }
 
-    private static BlockInfo[][][] previewPanel(TraceabilityPredicate[][][] matches) {
-        FactoryBlockPattern builder = StructurePatterns.start("/data/gtl_enhancedcore/structures/gtl/lucid_etchdreamer_preview_panel.pattern.gz")
-                .where('J', matches[PANEL_AISLE - 1][PANEL_Y][PANEL_X])
-                .where('X', matches[PANEL_AISLE][PANEL_Y][PANEL_X])
-                .where('C', matches[PANEL_AISLE][PANEL_Y + 2][PANEL_X + 2])
-                .where(' ', Predicates.any());
+    private static BlockInfo[][][] previewPanel(TraceabilityPredicate[][][] matches, int[] origin) {
+        String resource = "/data/gtl_enhancedcore/structures/gtl/lucid_etchdreamer_preview_panel.pattern.gz";
+        FactoryBlockPattern builder = StructurePatterns.start(resource).where(' ', Predicates.any());
+        var bound = new HashSet<Character>();
+        int[] aisle = {0};
+        StructurePatterns.data(resource).forEachAisle(rows -> {
+            int z = origin[2] - 1 + aisle[0]++;
+            for (int y = 0; y < rows.length; y++) for (int x = 0; x < rows[y].length(); x++) {
+                char symbol = rows[y].charAt(x);
+                if (symbol != ' ' && bound.add(symbol))
+                    builder.where(symbol, matches[z][origin[1] + y][origin[0] + x]);
+            }
+        });
         return builder.build().getPreview(new int[]{1, 1, 1});
     }
 

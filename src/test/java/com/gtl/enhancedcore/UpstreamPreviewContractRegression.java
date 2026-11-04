@@ -35,10 +35,19 @@ public final class UpstreamPreviewContractRegression {
     static int run() throws Exception {
         assertions = 0;
         localOwnership();
+        nativePreviewVariants();
         upstreamPackaging();
         lazyPostApply();
         previewStateCleanup();
         return assertions;
+    }
+
+    private static void nativePreviewVariants() throws Exception {
+        String source = Files.readString(MAIN.resolve("mixin/gtceu/GtlMegastructurePatternMixin.java"));
+        String preview = source.substring(source.indexOf("private Supplier<List<MultiblockShapeInfo>>"));
+        check(preview.contains("replace && GtlMegastructurePatterns.targets(definition.getId())"),
+                "Only blueprint replacements regenerate previews, preserving native tier/length variants");
+        check(preview.contains("return original;"), "Unchanged geometry retains its native shape supplier");
     }
 
     private static void previewStateCleanup() throws Exception {
@@ -81,7 +90,8 @@ public final class UpstreamPreviewContractRegression {
         try (var files = Files.list(MAIN.resolve("client/preview"))) {
             var names = files.filter(Files::isRegularFile).map(path -> path.getFileName().toString()).toList();
             check(Set.copyOf(names).equals(Set.of("PreviewEffectAnchors.java",
-                            "LazyMultiblockPreviewWidget.java", "PreviewPatternMemory.java", "ChamberPreviewOverlay.java")),
+                            "LazyMultiblockPreviewWidget.java", "PreviewPatternMemory.java", "ChamberPreviewOverlay.java",
+                            "PreviewPageAccess.java", "PreviewPreparation.java")),
                     "Local preview helpers provide effect anchors, lazy lifecycle and requested chamber positions");
         }
         var local = JsonParser.parseString(Files.readString(RESOURCES.resolve("gtl_enhancedcore.mixins.json"))).getAsJsonObject();

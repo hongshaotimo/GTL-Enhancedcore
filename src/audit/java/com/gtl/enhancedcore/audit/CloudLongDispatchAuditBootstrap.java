@@ -19,10 +19,18 @@ public final class CloudLongDispatchAuditBootstrap {
                 .toAbsolutePath().normalize().getParent();
         var expected = Path.of(System.getProperty("gtl.cloudLongDispatchFixture", task.resolve("forge-instance").toString())).toAbsolutePath().normalize();
         var world = event.getServer().getWorldPath(LevelResource.ROOT).toAbsolutePath().normalize();
-        if (!(task.equals(previousTask) || task.equals(currentTask)) || !expected.getParent().equals(task)
+        var repairTask = Path.of("C:/IDEA/GTL-Enhancedcore/_audit/cloud-crash-inputs-20261028").toAbsolutePath().normalize();
+        var instantTask = Path.of("C:/IDEA/GTL-Enhancedcore/_audit/cloud-instant-upload-20261028").toAbsolutePath().normalize();
+        var latencyTask = Path.of("C:/IDEA/GTL-Enhancedcore/_audit/cloud-upload-latency-20261029").toAbsolutePath().normalize();
+        var refundTask = Path.of("C:/IDEA/GTL-Enhancedcore/_audit/cloud-refund-dissolution-20261029").toAbsolutePath().normalize();
+        var integrationTask = Path.of("C:/Users/Administrator/.codex/worktrees/pr4-cloud-integration/GTL-Enhancedcore/_audit/pr4-integration-20261028").toAbsolutePath().normalize();
+        if (!(task.equals(refundTask) || task.equals(latencyTask) || task.equals(integrationTask) || task.equals(previousTask) || task.equals(currentTask) || task.equals(repairTask) || task.equals(instantTask)) || !expected.getParent().equals(task)
                 || !world.getParent().equals(expected) || !world.getFileName().toString().equals("cloud-long-world")
                 || !Files.isRegularFile(expected.resolve("cloud-long.marker")))
             throw new IllegalStateException("Long dispatch audit refuses an unmarked or unrelated world: " + world);
-        CloudPatternFlowRuntimeChecks.begin(event.getServer().overworld());
+        if (Boolean.getBoolean("gtl.cloudInstantReload")) CloudInstantRuntimeChecks.reload(event.getServer());
+        else if (Boolean.getBoolean("gtl.cloudUploadLatencyReload")) CloudUploadLatencyRuntimeChecks.reload(event.getServer());
+        else if (Boolean.getBoolean("gtl.cloudRefundDissolutionReload")) CloudRefundDissolutionRuntimeChecks.reload(event.getServer());
+        else CloudPatternFlowRuntimeChecks.begin(event.getServer().overworld());
     }
 }
