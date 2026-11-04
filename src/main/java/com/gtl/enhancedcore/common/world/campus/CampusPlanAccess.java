@@ -10,6 +10,12 @@ import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.function.ToIntFunction;
+import java.io.ByteArrayOutputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.HexFormat;
 
 /** The five frozen campus layouts, adapted without changing their authored order or geometry. */
 public final class CampusPlanAccess {
@@ -30,11 +36,50 @@ public final class CampusPlanAccess {
         }
     }
     private static final EnumMap<PlotSettings.RoadStyle, Plan> PLANS = new EnumMap<>(PlotSettings.RoadStyle.class);
+    private static final EnumMap<PlotSettings.RoadStyle, String> IDENTITIES = new EnumMap<>(PlotSettings.RoadStyle.class);
     private CampusPlanAccess() {}
 
     public static synchronized Plan of(PlotSettings settings) {
         if (!settings.isCampus()) throw new IllegalArgumentException("Not a campus preset");
         return PLANS.computeIfAbsent(settings.roadStyle(), CampusPlanAccess::build);
+    }
+    /** One cached identity per explicit preset; never translated or rebuilt for travel requests. */
+    public static synchronized String layoutIdentity(PlotSettings settings) {
+        Plan plan = of(settings);
+        return IDENTITIES.computeIfAbsent(settings.roadStyle(), style -> fingerprint(style, plan));
+    }
+    /** Stable binary geometry contract, also used by the frozen-preset regression fixtures. */
+    public static String fingerprint(PlotSettings.RoadStyle style, Plan plan) {
+        try {
+            var bytes = new ByteArrayOutputStream();
+            try (var out = new DataOutputStream(bytes)) {
+                out.writeUTF("campus-plan-v1"); out.writeUTF(style.name());
+                writeBounds(out, plan.bounds); writeBounds(out, plan.aeBounds);
+                out.writeInt(plan.plots.size()); for (var plot : plan.plots) writePlot(out, plot);
+                out.writeInt(plan.workshops.size());
+                for (var workshop : plan.workshops) {
+                    out.writeUTF(workshop.stage()); out.writeInt(workshop.x()); out.writeInt(workshop.z());
+                    out.writeInt(workshop.width()); out.writeInt(workshop.depth());
+                }
+                out.writeInt(plan.tiers.size()); for (int tier : plan.tiers) out.writeInt(tier);
+                out.writeInt(plan.targets.size());
+                for (var target : plan.targets) {
+                    out.writeInt(target.index); out.writeUTF(target.kind.name()); writeBounds(out, target.bounds);
+                    out.writeBoolean(target.plot != null); if (target.plot != null) writePlot(out, target.plot);
+                    out.writeUTF(target.stage); out.writeInt(target.ordinal); out.writeInt(target.arrivalX); out.writeInt(target.arrivalZ);
+                }
+            }
+            return "campus-plan-v1:" + style.name() + ":" + HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256").digest(bytes.toByteArray()));
+        } catch (IOException | NoSuchAlgorithmException impossible) { throw new IllegalStateException("Cannot fingerprint campus layout", impossible); }
+    }
+    private static void writeBounds(DataOutputStream out, PlannedCampus.Bounds bounds) throws IOException {
+        out.writeInt(bounds.minX()); out.writeInt(bounds.minZ()); out.writeInt(bounds.maxX()); out.writeInt(bounds.maxZ());
+    }
+    private static void writePlot(DataOutputStream out, PlannedCampus.Plot plot) throws IOException {
+        out.writeUTF(plot.id()); out.writeUTF(plot.stage()); out.writeInt(plot.x()); out.writeInt(plot.z());
+        out.writeInt(plot.width()); out.writeInt(plot.height()); out.writeInt(plot.depth());
+        out.writeInt(plot.controllerX()); out.writeInt(plot.controllerY()); out.writeInt(plot.controllerZ());
+        out.writeUTF(plot.patternResource()); out.writeInt(plot.slotIndex()); out.writeUTF(plot.theme()); out.writeUTF(plot.displayNameKey());
     }
     private static Plan build(PlotSettings.RoadStyle style) {
         return switch (style) {

@@ -2575,6 +2575,7 @@
   "gtl_enhancedcore.campus.teleport.result.expired": "地图会话已过期，请重新使用中央传送器。",
   "gtl_enhancedcore.campus.teleport.result.invalid_device": "请在绑定当前园区的中央传送器8格内重新打开地图。",
   "gtl_enhancedcore.campus.teleport.result.blocked": "乘坐或睡眠时无法使用园区传送。",
+  "gtl_enhancedcore.campus.teleport.result.layout_mismatch": "客户端与服务端的园区预设不一致，请同步更新模组。",
   "gtl_enhancedcore.campus.teleport.result.invalid_target": "目标不在服务器的真实园区规划内，请重新打开地图。",
   "gtl_enhancedcore.campus.teleport.result.cooldown": "传送操作过快，请稍候再试。",
   "gtl_enhancedcore.campus.teleport.result.unsafe": "目标前庭区块没有安全落点，请清理阻挡或危险地面后重试。",

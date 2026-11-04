@@ -45,7 +45,7 @@ import net.minecraftforge.network.simple.SimpleChannel;
 /** Server-owned destination indexes; this channel cannot select a world or arbitrary coordinates. */
 @Mod.EventBusSubscriber(modid = GTLEnhancedcore.MOD_ID)
 public final class CampusTeleportNetwork {
-    private static final String PROTOCOL = "1";
+    private static final String PROTOCOL = "4";
     private static final long SESSION_TICKS = 20 * 120, REQUEST_COOLDOWN = 20, OPEN_COOLDOWN = 10;
     private static final int SAFE_RADIUS = 8;
     private static final SimpleChannel CHANNEL = NetworkRegistry.newSimpleChannel(
@@ -54,13 +54,14 @@ public final class CampusTeleportNetwork {
     private static boolean initialized;
     public enum Result { SUCCESS, EXPIRED, INVALID_DEVICE, BLOCKED, INVALID_TARGET, COOLDOWN, UNSAFE, CANCELLED }
     private record Session(UUID id, ResourceKey<Level> dimension, BlockPos origin,
-                           CentralTeleporterBlockEntity device, PlotChunkGenerator generator, long expiresAt) {}
+                           CentralTeleporterBlockEntity device, PlotChunkGenerator generator,
+                           CampusPlanAccess.Plan plan, String layoutIdentity, long expiresAt) {}
     private static final class ServerSessions {
         final Map<UUID, Session> sessions = new HashMap<>();
         final Map<UUID, Long> attempts = new HashMap<>(), opens = new HashMap<>();
         void remove(UUID player) { sessions.remove(player); attempts.remove(player); opens.remove(player); }
     }
-    private record Open(UUID id, BlockPos origin, ResourceLocation dimension, PlotSettings settings) {}
+    private record Open(UUID id, BlockPos origin, ResourceLocation dimension, PlotSettings settings, String layoutIdentity) {}
     private record Travel(UUID id, int index) {}
     private record Close(UUID id) {}
     private record Reply(UUID id, Result result) {}
@@ -71,11 +72,20 @@ public final class CampusTeleportNetwork {
         CHANNEL.registerMessage(0, Open.class, (p, b) -> {
             b.writeUUID(p.id); b.writeBlockPos(p.origin); b.writeResourceLocation(p.dimension);
             b.writeUtf(PlotPresetShare.encode(p.settings), PlotPresetShare.MAX_TEXT_LENGTH);
+            b.writeUtf(p.layoutIdentity, 128);
         }, b -> new Open(b.readUUID(), b.readBlockPos(), b.readResourceLocation(),
-                PlotPresetShare.decode(b.readUtf(PlotPresetShare.MAX_TEXT_LENGTH))), (p, supplier) -> {
+                PlotPresetShare.decode(b.readUtf(PlotPresetShare.MAX_TEXT_LENGTH)), b.readUtf(128)), (p, supplier) -> {
             var ctx = supplier.get();
             ctx.enqueueWork(() -> DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () ->
-                    com.gtl.enhancedcore.client.plot.CampusPlanScreen.openTeleporter(p.settings, p.origin, p.dimension, p.id)));
+                    {
+                        if (!CampusPlanAccess.layoutIdentity(p.settings).equals(p.layoutIdentity)) {
+                            close(p.id);
+                            var player = net.minecraft.client.Minecraft.getInstance().player;
+                            if (player != null) player.displayClientMessage(Component.translatable("gtl_enhancedcore.campus.teleport.result.layout_mismatch"), true);
+                            return;
+                        }
+                        com.gtl.enhancedcore.client.plot.CampusPlanScreen.openTeleporter(p.settings, p.origin, p.dimension, p.id);
+                    }));
             ctx.setPacketHandled(true);
         }, Optional.of(NetworkDirection.PLAY_TO_CLIENT));
         CHANNEL.registerMessage(1, Travel.class, (p, b) -> { b.writeUUID(p.id); b.writeVarInt(p.index); },
@@ -102,9 +112,11 @@ public final class CampusTeleportNetwork {
         if (now - state.opens.getOrDefault(player.getUUID(), -OPEN_COOLDOWN) < OPEN_COOLDOWN) return;
         state.opens.put(player.getUUID(), now);
         var device = (CentralTeleporterBlockEntity) player.serverLevel().getBlockEntity(origin);
-        Session session = new Session(UUID.randomUUID(), player.level().dimension(), origin.immutable(), device, generator, now + SESSION_TICKS);
+        var plan = CampusPlanAccess.of(generator.settings());
+        Session session = new Session(UUID.randomUUID(), player.level().dimension(), origin.immutable(), device, generator,
+                plan, CampusPlanAccess.layoutIdentity(generator.settings()), now + SESSION_TICKS);
         state.sessions.put(player.getUUID(), session);
-        CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), new Open(session.id, session.origin, session.dimension.location(), generator.settings()));
+        CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), new Open(session.id, session.origin, session.dimension.location(), generator.settings(), session.layoutIdentity));
     }
     public static void requestTeleport(UUID session, int targetIndex) { CHANNEL.sendToServer(new Travel(session, targetIndex)); }
     public static void close(UUID session) { CHANNEL.sendToServer(new Close(session)); }
@@ -157,7 +169,7 @@ public final class CampusTeleportNetwork {
         PlotChunkGenerator generator = validateDevice(player, session.origin, session);
         if (generator == null) { state.sessions.remove(player.getUUID()); reply(player, packet.id, Result.INVALID_DEVICE); return; }
         if (blocked(player)) { reply(player, packet.id, Result.BLOCKED); return; }
-        CampusPlanAccess.Plan plan = CampusPlanAccess.of(generator.settings());
+        CampusPlanAccess.Plan plan = session.plan;
         if (packet.index < 0 || packet.index >= plan.targets().size()) { reply(player, packet.id, Result.INVALID_TARGET); return; }
         CampusPlanAccess.Target target = plan.targets().get(packet.index);
         ServerLevel level = player.serverLevel();

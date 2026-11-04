@@ -27,6 +27,8 @@ public final class RegressionSuite {
         configParsing();
         assertions += CampusPlotSearchRegression.run();
         assertions += CampusMapImageRegression.run();
+        assertions += CampusPresetIsolationRegression.run();
+        assertions += CampusPlanIdentityRegression.run();
         assertions += CloudLedgerRegression.run();
         assertions += CloudTeamPermissionRegression.run();
         assertions += com.gtl.enhancedcore.common.cloud.CloudPerformanceRegression.run();

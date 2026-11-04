@@ -2575,6 +2575,7 @@
   "gtl_enhancedcore.campus.teleport.result.expired": "The map session expired. Use the central teleporter again.",
   "gtl_enhancedcore.campus.teleport.result.invalid_device": "Reopen the map within 8 blocks of a central teleporter bound to this campus.",
   "gtl_enhancedcore.campus.teleport.result.blocked": "Campus teleportation is unavailable while riding or sleeping.",
+  "gtl_enhancedcore.campus.teleport.result.layout_mismatch": "Campus presets differ between client and server. Please update both sides together.",
   "gtl_enhancedcore.campus.teleport.result.invalid_target": "The destination is not in the server's campus plan. Reopen the map.",
   "gtl_enhancedcore.campus.teleport.result.cooldown": "Please wait briefly before trying to teleport again.",
   "gtl_enhancedcore.campus.teleport.result.unsafe": "No safe arrival was found in the destination forecourt chunk. Clear obstructions or hazardous ground, then retry.",

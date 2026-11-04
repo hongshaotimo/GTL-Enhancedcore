@@ -3,6 +3,10 @@ package com.gtl.enhancedcore.client.plot;
 import com.gtl.enhancedcore.common.gui.GuiStyle;
 import com.gtl.enhancedcore.common.world.campus.CampusPlanAccess;
 import com.gtl.enhancedcore.common.world.campus.CampusTeleportNetwork;
+import com.gtl.enhancedcore.common.world.plot.CompactPlannedCampus;
+import com.gtl.enhancedcore.common.world.plot.DensePlannedCampus;
+import com.gtl.enhancedcore.common.world.plot.LegacyPlannedCampus;
+import com.gtl.enhancedcore.common.world.plot.ParkPlannedCampus;
 import com.gtl.enhancedcore.common.world.plot.PlannedCampus;
 import com.gtl.enhancedcore.common.world.plot.PlotSettings;
 import com.gtl.enhancedcore.common.world.plot.PlotPreviewRaster;
@@ -111,8 +115,17 @@ public final class CampusPlanScreen extends Screen {
     private void initSearch(int y) {
         searchAliases.clear();
         Map<String, List<String>> members = new HashMap<>();
-        try (var reader = new InputStreamReader(CampusPlanScreen.class.getResourceAsStream(PlannedCampus.CATALOG), StandardCharsets.UTF_8)) {
-            for (var entry : JsonParser.parseReader(reader).getAsJsonObject().getAsJsonArray("reservations")) {
+        String catalogPath = switch (settings.roadStyle()) {
+            case CAMPUS -> LegacyPlannedCampus.CATALOG;
+            case CAMPUS_PARK -> ParkPlannedCampus.CATALOG;
+            case CAMPUS_COMPACT -> CompactPlannedCampus.CATALOG;
+            case CAMPUS_DENSE -> DensePlannedCampus.CATALOG;
+            case CAMPUS_WOODLAND -> PlannedCampus.CATALOG;
+            default -> throw new IllegalArgumentException("Not a campus preset");
+        };
+        try (var reader = new InputStreamReader(CampusPlanScreen.class.getResourceAsStream(catalogPath), StandardCharsets.UTF_8)) {
+            var catalog = JsonParser.parseReader(reader).getAsJsonObject();
+            for (var entry : catalog.getAsJsonArray(catalog.has("reservations") ? "reservations" : "machines")) {
                 var reservation = entry.getAsJsonObject();
                 if (!reservation.has("memberIds")) continue;
                 members.put(reservation.get("id").getAsString(), reservation.getAsJsonArray("memberIds").asList().stream()

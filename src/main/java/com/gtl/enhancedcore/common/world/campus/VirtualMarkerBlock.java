@@ -39,4 +39,5 @@ public final class VirtualMarkerBlock extends BaseEntityBlock {
     public BlockEntity newBlockEntity(BlockPos position, BlockState state) {
         return CampusDeviceBlocks.VIRTUAL_MARKER_BLOCK_ENTITY.create(position, state);
     }
+
 }
