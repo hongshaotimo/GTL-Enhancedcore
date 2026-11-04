@@ -35,7 +35,7 @@ public final class TooltipPolicy {
             Map.entry("cloud_library", page(List.of("cloud.library.flavor", "cloud.library.intro", "cloud.library.usage",
                     "cloud.library.catalyst", "cloud.library.terminal", "cloud.library.isolation"), List.of())),
             Map.entry("cloud_buffer", page(List.of("cloud.buffer.intro", "cloud.buffer.modes", "cloud.buffer.multiple",
-                    "cloud.buffer.catalyst"), List.of())),
+                    "cloud.buffer.catalyst", "cloud.buffer.native_inputs", "cloud.buffer.auxiliary"), List.of())),
             Map.entry("large_furnace", page(
                     List.of("large_furnace.efficient", "large_furnace.base_parallel", "large_furnace.base_threads",
                             "large_furnace.cross_recipe_parallel", "large_furnace.voltage_scaling",
@@ -106,6 +106,10 @@ public final class TooltipPolicy {
                             "extreme_reactor.hatches"), List.of())),
             Map.entry("platinum_refining_matrix", page(
                     List.of("platinum_refining_matrix.tips", "platinum_refining_matrix.parallel", "no_laser_input"),
+                    List.of())),
+            Map.entry("lanthanide_refining_hub", page(
+                    List.of("lanthanide_refining_hub.intro", "lanthanide_refining_hub.batch",
+                            "lanthanide_refining_hub.parallel", "lanthanide_refining_hub.hatches", "no_laser_input"),
                     List.of())),
             Map.entry("void_constrained_mining_field", page(
                     List.of("void_constrained_mining_field.tips", "void_constrained_mining_field.parallel",

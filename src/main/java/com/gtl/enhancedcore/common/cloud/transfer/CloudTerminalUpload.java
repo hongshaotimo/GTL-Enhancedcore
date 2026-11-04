@@ -79,7 +79,7 @@ public final class CloudTerminalUpload {
         InternalInventory inventory = logic.getEncodedPatternInv(); ItemStack expected = inventory.getStackInSlot(0).copy();
         if (!processingOriginal(expected, player.level())) throw new IllegalArgumentException("Processing pattern required");
         var target = CloudPatternStore.get(player.serverLevel()).library(library);
-        if (!target.healthy() || !target.authorized(player.getUUID()) || !CloudLibraryService.sameTeam(target.owner(), player.getUUID()))
+        if (!target.healthy() || !target.authorized(player.getUUID()))
             throw new SecurityException("Library denied");
         target.requireUniqueOriginal(expected);
         CompoundTag state = state(logic);

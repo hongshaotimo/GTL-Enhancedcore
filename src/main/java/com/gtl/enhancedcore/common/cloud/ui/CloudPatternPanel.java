@@ -35,7 +35,8 @@ public abstract class CloudPatternPanel extends WidgetGroup {
     private String aliasModes = "";
     private TextFieldWidget searchInput;
     private WidgetGroup searchGroup;
-    private ButtonWidget catalystMode, catalystPrevious, catalystNext;
+    private ButtonWidget catalystMode, catalystPrevious, catalystNext, machineCatalysts, machineSelector;
+    private WidgetGroup catalystPatternDetail;
     private SlotWidget catalystCircuit;
     private final ImageWidget network;
 
@@ -44,7 +45,7 @@ public abstract class CloudPatternPanel extends WidgetGroup {
         this.host = host;
         network = new ImageWidget(8, 7, 8, 8, new ResourceTexture("gtlcore:textures/gui/wireless/status_offline.png"));
         network.setClientSideWidget(); network.setId("cloud.me.status"); addWidget(network);
-        text(this, 20, 7, title.equals("library") ? 108 : 148, 10,
+        text(this, 20, 7, title.equals("library") ? 87 : 105, 10,
                 () -> tr(snapshot.getBoolean("networkConnected") ? "me_connected" : "me_disconnected"), INK);
         setId("cloud." + title);
     }
@@ -76,14 +77,14 @@ public abstract class CloudPatternPanel extends WidgetGroup {
     }
     static void text(WidgetGroup parent, int x, int y, int w, int h, Supplier<String> value, int color) {
         parent.addWidget(new ImageWidget(x, y, w, h,
-                new TextTexture(value).setColor(color).setDropShadow(false).setWidth(w).setType(TextTexture.TextType.LEFT_HIDE)).setClientSideWidget());
+                new TextTexture(() -> value.get().replace("%", "%%")).setColor(color).setDropShadow(false).setWidth(w).setType(TextTexture.TextType.LEFT_HIDE)).setClientSideWidget());
     }
     ButtonWidget button(WidgetGroup parent, int x, int y, int w, int h, Supplier<String> title, Runnable action) {
         var button = new ButtonWidget(x, y, w, h,
                 new GuiTextureGroup(CloudPatternTextures.BUTTON,
-                        new TextTexture(title).setColor(INK).setDropShadow(false).setWidth(w - 6).setType(TextTexture.TextType.HIDE)), click -> { if (isRemote()) action.run(); });
+                        new TextTexture(() -> title.get().replace("%", "%%")).setColor(INK).setDropShadow(false).setWidth(w - 6).setType(TextTexture.TextType.HIDE)), click -> { if (isRemote()) action.run(); });
         button.setHoverTexture(new GuiTextureGroup(CloudPatternTextures.BUTTON_HOVER,
-                new TextTexture(title).setColor(INK).setDropShadow(false).setWidth(w - 6).setType(TextTexture.TextType.HIDE)));
+                new TextTexture(() -> title.get().replace("%", "%%")).setColor(INK).setDropShadow(false).setWidth(w - 6).setType(TextTexture.TextType.HIDE)));
         parent.addWidget(button);
         return button;
     }
@@ -91,6 +92,22 @@ public abstract class CloudPatternPanel extends WidgetGroup {
         var button = new ButtonWidget(x, y, 18, 18, new GuiTextureGroup(CloudPatternTextures.BUTTON, image), click -> { if (isRemote()) action.run(); });
         button.setHoverTexture(new GuiTextureGroup(CloudPatternTextures.BUTTON_HOVER, image));
         button.setHoverTooltips(PREFIX + hint); parent.addWidget(button); return button;
+    }
+    ButtonWidget cycleButton(WidgetGroup parent, int x, int y, int w, int h, Supplier<String> title,
+                             java.util.function.IntConsumer cycle) {
+        var button = new ButtonWidget(x, y, w, h,
+                new GuiTextureGroup(CloudPatternTextures.BUTTON,
+                        new TextTexture(() -> title.get().replace("%", "%%")).setColor(INK).setDropShadow(false).setWidth(w - 6).setType(TextTexture.TextType.HIDE)), null) {
+            @Override public boolean mouseClicked(double mouseX, double mouseY, int mouseButton) {
+                if (!isMouseOverElement(mouseX, mouseY) || (mouseButton != 0 && mouseButton != 1)) return false;
+                if (isRemote()) { cycle.accept(mouseButton == 0 ? -1 : 1); playButtonClickSound(); }
+                return true;
+            }
+        };
+        button.setClientSideWidget();
+        button.setHoverTexture(new GuiTextureGroup(CloudPatternTextures.BUTTON_HOVER,
+                new TextTexture(() -> title.get().replace("%", "%%")).setColor(INK).setDropShadow(false).setWidth(w - 6).setType(TextTexture.TextType.HIDE)));
+        parent.addWidget(button); return button;
     }
     public void fillSearch(String value) {
         if (!isRemote() || value == null || !canFillSearch()) return;
@@ -159,19 +176,29 @@ public abstract class CloudPatternPanel extends WidgetGroup {
         if (!pendingCatalyst.isEmpty() || !visibleCatalyst.isEmpty()) action("close_pattern_config");
         pendingCatalyst = ""; visibleCatalyst = "";
     }
+    void machineCatalystsButton(int x, Runnable beforeOpen) {
+        machineCatalysts = glyphButton(this, x, 3, 18, 18, CloudPatternTextures.SETTINGS, () -> {
+            beforeOpen.run(); pendingCatalyst = "@machine"; action("machine_config");
+        });
+        machineCatalysts.setId("cloud.machine.catalysts");
+        machineCatalysts.setHoverTooltips(PREFIX + "machine_catalysts", PREFIX + "machine_catalysts_hint");
+    }
     void catalystPage(WidgetGroup parent, Runnable back) {
         parent.setId("cloud.pattern.catalysts");
         text(parent, 9, 1, 63, 10, () -> tr("item_catalysts"), INK);
         text(parent, 99, 1, 63, 10, () -> tr("fluid_catalysts"), INK);
         catalystMode = button(parent, 65, 0, 30, 14,
-                () -> tr(snapshot.getBoolean("patternCatalystsShared") ? "catalysts_shared_short" : "catalysts_private_short"),
+                () -> tr(snapshot.getBoolean("patternCatalystsMachine") ? "catalysts_machine_short"
+                        : snapshot.getBoolean("patternCatalystsShared") ? "catalysts_shared_short" : "catalysts_private_short"),
                 () -> action(snapshot.getBoolean("patternCatalystsShared") ? "pattern_catalysts_private" : "pattern_catalysts_shared"));
         catalystMode.setId("cloud.catalyst.mode"); catalystMode.setVisible(false);
         catalystPrevious = glyphButton(parent, 65, 58, 14, 14, CloudPatternGlyphTexture.PREVIOUS, () -> action("pattern_catalysts_previous"));
         catalystPrevious.setId("cloud.catalyst.previous"); catalystPrevious.setVisible(false);
         catalystNext = glyphButton(parent, 82, 58, 14, 14, CloudPatternGlyphTexture.NEXT, () -> action("pattern_catalysts_next"));
         catalystNext.setId("cloud.catalyst.next"); catalystNext.setVisible(false);
-        parent.addWidget(new ImageWidget(1, 75, 16, 16, new IGuiTexture() {
+        catalystPatternDetail = new WidgetGroup(0, 75, 162, 16);
+        parent.addWidget(catalystPatternDetail);
+        catalystPatternDetail.addWidget(new ImageWidget(1, 0, 16, 16, new IGuiTexture() {
             private CompoundTag previous = new CompoundTag();
             private IGuiTexture image = IGuiTexture.EMPTY;
             @net.minecraftforge.api.distmarker.OnlyIn(net.minecraftforge.api.distmarker.Dist.CLIENT)
@@ -181,7 +208,11 @@ public abstract class CloudPatternPanel extends WidgetGroup {
                 image.draw(g, mx, my, x, y, w, h);
             }
         }).setClientSideWidget());
-        text(parent, 22, 78, 136, 10, () -> display(snapshot.getCompound("detail"), "name"), INK);
+        text(catalystPatternDetail, 22, 3, 136, 10, () -> display(snapshot.getCompound("detail"), "name"), INK);
+        machineSelector = cycleButton(parent, 0, 75, 162, 16,
+                () -> display(snapshot.getCompound("detail"), "name"),
+                direction -> action(direction < 0 ? "machine_catalysts_previous" : "machine_catalysts_next"));
+        machineSelector.setId("cloud.catalyst.machine"); machineSelector.setVisible(false);
         glyphButton(parent, 0, 94, 18, 14, CloudPatternGlyphTexture.BACK, back).setId("cloud.pattern.back");
         text(parent, 24, 96, 138, 10, () -> tr("back_patterns"), MUTED);
         parent.setVisible(false);
@@ -206,16 +237,28 @@ public abstract class CloudPatternPanel extends WidgetGroup {
     void updateCatalystPage(WidgetGroup patterns, WidgetGroup catalysts) {
         String confirmed = snapshot.getString("catalystEntry");
         boolean allowed = snapshot.getBoolean("patternCatalystsAllowed") && !confirmed.isEmpty();
-        if (!pendingCatalyst.isEmpty() && allowed && pendingCatalyst.equals(confirmed)) {
+        if (!pendingCatalyst.isEmpty() && allowed && (pendingCatalyst.equals(confirmed)
+                || pendingCatalyst.equals("@machine") && snapshot.getBoolean("patternCatalystsMachine"))) {
             visibleCatalyst = confirmed; pendingCatalyst = "";
         }
+        if (!visibleCatalyst.isEmpty() && allowed && snapshot.getBoolean("patternCatalystsMachine")) visibleCatalyst = confirmed;
         if (!visibleCatalyst.isEmpty() && (!allowed || !visibleCatalyst.equals(confirmed))) visibleCatalyst = "";
         catalysts.setVisible(!visibleCatalyst.isEmpty()); patterns.setVisible(visibleCatalyst.isEmpty());
         boolean shown = !visibleCatalyst.isEmpty();
         boolean shared = snapshot.getBoolean("patternCatalystsShared");
+        boolean machine = snapshot.getBoolean("patternCatalystsMachine");
+        if (machineCatalysts != null) machineCatalysts.setActive(snapshot.getBoolean("machineCatalystsAvailable"));
+        if (machineSelector != null) {
+            machineSelector.setVisible(shown && machine); machineSelector.setActive(shown && machine);
+            machineSelector.setHoverTooltips(Component.literal(display(snapshot.getCompound("detail"), "name")),
+                    Component.translatable(PREFIX + "machine_catalysts_hint"), Component.translatable(PREFIX + "machine_catalysts_cycle"));
+            catalystPatternDetail.setVisible(shown && !machine);
+        }
         if (catalystMode != null) {
-            catalystMode.setVisible(shown && snapshot.getBoolean("patternImportedSharedAvailable"));
-            catalystMode.setHoverTooltips(Component.translatable(PREFIX + (shared ? "catalysts_shared" : "catalysts_private")),
+            catalystMode.setVisible(shown && (machine || snapshot.getBoolean("patternImportedSharedAvailable")));
+            catalystMode.setActive(!machine);
+            if (machine) catalystMode.setHoverTooltips(Component.translatable(PREFIX + "machine_catalysts"), Component.translatable(PREFIX + "machine_catalysts_hint"));
+            else catalystMode.setHoverTooltips(Component.translatable(PREFIX + (shared ? "catalysts_shared" : "catalysts_private")),
                     Component.translatable(PREFIX + "catalysts_switch_hint"), Component.translatable(PREFIX + "catalysts_shared_hint"));
             int selectedPage = snapshot.getInt("patternCatalystsPage"), pages = Math.max(1, snapshot.getInt("patternCatalystsPages"));
             catalystPrevious.setVisible(shown && shared && pages > 1); catalystNext.setVisible(shown && shared && pages > 1);
@@ -260,7 +303,7 @@ public abstract class CloudPatternPanel extends WidgetGroup {
         if (!isRemote()) return;
         var payload = new CompoundTag();
         payload.putLong("revision", snapshot.getLong("revision"));
-        payload.putString("selected", name.startsWith("pattern_catalysts_") ? snapshot.getString("catalystEntry") : selected);
+        payload.putString("selected", name.startsWith("pattern_catalysts_") || name.startsWith("machine_catalysts_") ? snapshot.getString("catalystEntry") : selected);
         payload.putLong("catalystAccessEpoch", snapshot.getLong("catalystAccessEpoch"));
         payload.putString("type", type);
         payload.putString("recoveryId", recoveryId);
@@ -353,6 +396,7 @@ public abstract class CloudPatternPanel extends WidgetGroup {
     }
     private void snapshotUpdated() {
         // ImageWidget suppliers refresh on client ticks, after the first frame. Apply the server flag now.
+        network.setHoverTooltips(PREFIX + (snapshot.getBoolean("networkConnected") ? "me_connected" : "me_disconnected"));
         network.setImage(new ResourceTexture("gtlcore:textures/gui/wireless/status_"
                 + (snapshot.getBoolean("networkConnected") ? "online" : "offline") + ".png"));
         updated();

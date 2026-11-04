@@ -149,13 +149,15 @@ public final class TooltipPolicyRegression {
         require(!batch.contains("huge_incubator"), "huge incubator does not inherit a 64-thread batching baseline");
         require(TooltipPolicy.nativePages("huge_incubator").equals(List.of("native_isolation")),
                 "huge incubator reuses the native cross-recipe and thread tooltip page");
-        require(com.gtl.enhancedcore.common.structure.NativeIsolationPatterns.targets(
+        require(com.gtl.enhancedcore.common.structure.GtlMegastructurePatterns.targets(
+                        net.minecraft.resources.ResourceLocation.tryParse("gtceu:huge_incubator"))
+                        && !com.gtl.enhancedcore.common.structure.NativeIsolationPatterns.targets(
                         net.minecraft.resources.ResourceLocation.tryParse("gtceu:huge_incubator"))
                         && !com.gtl.enhancedcore.common.structure.NativeIsolationPatterns.targets(
                         net.minecraft.resources.ResourceLocation.tryParse("other:huge_incubator"))
                         && !com.gtl.enhancedcore.common.structure.NativeIsolationPatterns.targets(
                         net.minecraft.resources.ResourceLocation.tryParse("gtceu:holy_separator")),
-                "the original-geometry hatch wrapper is limited to gtceu:huge_incubator");
+                "huge incubator uses its requested blueprint while the original-geometry wrapper excludes custom layouts");
         require(com.gtl.enhancedcore.common.recipe.iv.IvMachineScope.baseThreadsFor(null) == 128,
                 "unknown ids fall back to the 128 baseline");
         for (String id : batch) {

@@ -17,6 +17,7 @@ import java.io.InputStreamReader;
 import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
+import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.WeakHashMap;
 import java.util.function.Supplier;
@@ -40,7 +41,8 @@ public final class GtlMegastructurePatterns {
     private static JsonObject readManifest() {
         var manifest = new JsonObject();
         for (String name : new String[]{"manifest.json", "upgrades.json", "upgrades_20260927.json",
-                "lucid_etchdreamer.json", "super_particle_collider.json", "upgrades_20261013.json"}) {
+                "lucid_etchdreamer.json", "super_particle_collider.json", "upgrades_20261013.json",
+                "upgrades_20261102.json"}) {
             try (var input = GtlMegastructurePatterns.class.getResourceAsStream(ROOT + name)) {
                 if (input == null) throw new IOException("Missing GTL structure manifest: " + name);
                 var entries = JsonParser.parseReader(new InputStreamReader(input, StandardCharsets.UTF_8)).getAsJsonObject();
@@ -69,6 +71,19 @@ public final class GtlMegastructurePatterns {
         var binding = MANIFEST.getAsJsonObject("lucid_etchdreamer")
                 .getAsJsonObject("bindings").getAsJsonObject("P");
         return BlockInfo.fromBlockState(block(binding, "preview").defaultBlockState());
+    }
+
+    static int[] lucidCoordinates(String key) {
+        var values = MANIFEST.getAsJsonObject("lucid_etchdreamer").getAsJsonArray(key);
+        return new int[]{values.get(0).getAsInt(), values.get(1).getAsInt(), values.get(2).getAsInt()};
+    }
+
+    static int[] lucidPanel() {
+        var panel = MANIFEST.getAsJsonObject("lucid_etchdreamer").getAsJsonObject("previewPanel");
+        var origin = panel.getAsJsonArray("origin");
+        var size = panel.getAsJsonArray("size");
+        return new int[]{origin.get(0).getAsInt(), origin.get(1).getAsInt(), origin.get(2).getAsInt(),
+                size.get(0).getAsInt(), size.get(1).getAsInt()};
     }
 
     public static Supplier<BlockPattern> wrapFactory(ResourceLocation id, Supplier<BlockPattern> source) {
@@ -114,6 +129,7 @@ public final class GtlMegastructurePatterns {
         // Imported schematics are already rotated to LEFT/UP/FRONT, independently
         // of the old machine's aisle axes (some originals were built vertically).
         FactoryBlockPattern builder = StructurePatterns.start(ROOT + id.getPath() + ".pattern.gz");
+        var casingCopies = new IdentityHashMap<SimplePredicate, SimplePredicate>();
         var isolatedHatches = MachineOverrideConfig.current().enhanceOriginalMachines()
                 && com.gtl.enhancedcore.common.recipe.iv.IvMachineScope.nativeTarget(id)
                 ? new com.gtl.enhancedcore.common.recipe.iv.IvNativeHatches() : null;
@@ -132,6 +148,14 @@ public final class GtlMegastructurePatterns {
             } else {
                 var point = binding.getAsJsonArray("sample");
                 var source = matches[point.get(0).getAsInt()][point.get(1).getAsInt()][point.get(2).getAsInt()];
+                if (spec.has("minimumCasing") && (mode.equals("casing") || mode.equals("hatch"))) {
+                    var originalCasing = casing(source, block(binding, "block"));
+                    var replacement = casingCopies.computeIfAbsent(originalCasing,
+                            value -> withMinimum(value, spec.get("minimumCasing").getAsInt()));
+                    source = new TraceabilityPredicate(source);
+                    source.common.replaceAll(value -> value == originalCasing ? replacement : value);
+                    source.limited.replaceAll(value -> value == originalCasing ? replacement : value);
+                }
                 predicate = switch (mode) {
                     case "original" -> source;
                     case "casing" -> new TraceabilityPredicate(casing(source, block(binding, "block")));
@@ -225,6 +249,22 @@ public final class GtlMegastructurePatterns {
             throw new IllegalStateException("GTL casing predicate changed for " + ForgeRegistries.BLOCKS.getKey(block));
         }
         return candidates.getFirst();
+    }
+
+    /** Geometry-specific casing minimum; ability counters keep their original identity. */
+    private static SimplePredicate withMinimum(SimplePredicate source, int minimum) {
+        var copy = new SimplePredicate(source.type, source.predicate, source.candidates);
+        copy.minCount = minimum;
+        copy.maxCount = source.maxCount;
+        copy.minLayerCount = source.minLayerCount;
+        copy.maxLayerCount = source.maxLayerCount;
+        copy.previewCount = source.previewCount;
+        copy.disableRenderFormed = source.disableRenderFormed;
+        copy.io = source.io;
+        copy.slotName = source.slotName;
+        copy.nbtParser = source.nbtParser;
+        copy.toolTips = source.toolTips;
+        return copy;
     }
 
     private static TraceabilityPredicate hatch(TraceabilityPredicate source, Block casingBlock, Block fallback,

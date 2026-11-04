@@ -5,6 +5,7 @@ import com.gtl.enhancedcore.common.machine.IntegratedUniversalFactoryMachine;
 import com.gtl.enhancedcore.common.recipe.iv.FairBudget;
 import com.gtl.enhancedcore.common.recipe.iv.SuperBufferAutoName;
 import com.gtl.enhancedcore.common.structure.StructureData;
+import com.gtl.enhancedcore.common.structure.IntegratedFactoryStructure;
 import com.gtl.enhancedcore.common.util.FairRecipeSelector;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -71,8 +72,9 @@ final class IntegratedFactoryRegression {
         check(counts.get("J") == 4 && !counts.containsKey("L"), "all four lamps retained as lamps only");
         String source = source("common/structure/IntegratedFactoryStructure.java");
         for (String ability : Set.of("MAINTENANCE", "INPUT_ENERGY")) check(source.contains("PartAbility." + ability), "allowed hatch " + ability);
-        check(source.contains("IvBufferRegistry.materialPorts(1)"),
-                "ordinary material ports or one pattern buffer can form the structure");
+        check(IntegratedFactoryStructure.MAX_SUPER_BUFFERS == 30
+                        && source.contains("IvBufferRegistry.materialPorts(MAX_SUPER_BUFFERS)"),
+                "ordinary material ports or up to thirty pattern buffers can form the structure");
         for (String excluded : Set.of("PARALLEL_HATCH", "INPUT_LASER", "THREAD_MODIFIER", "IMPORT_ITEMS", "EXPORT_ITEMS",
                 "IMPORT_FLUIDS", "EXPORT_FLUIDS")) {
             check(!source.contains(excluded), "no hatch outside the isolated-order contract: " + excluded);

@@ -14,13 +14,9 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-/** The hatch fallbacks use the controller block, so the last matching block is not the anchor. */
+/** Anchor the sparse page at the controller coordinates of the current schematic. */
 @Mixin(value = SparsePreviewShape.class, remap = false)
 public abstract class LucidSparsePreviewShapeMixin {
-    private static final int CONTROLLER_X = 148;
-    private static final int CONTROLLER_Y = 104;
-    private static final int CONTROLLER_Z = 76;
-
     @Shadow @Final @Mutable public BlockPos controller;
 
     @Inject(method = "<init>", at = @At("RETURN"), remap = false)
@@ -28,13 +24,14 @@ public abstract class LucidSparsePreviewShapeMixin {
             CallbackInfo ci) {
         if (!definition.getId().getNamespace().equals("gtladditions")
                 || !definition.getId().getPath().equals("lucid_etchdreamer")) return;
+        BlockPos anchor = com.gtl.enhancedcore.common.structure.LucidEtchdreamerPreview.controllerPosition();
+        int x = anchor.getX(), y = anchor.getY(), z = anchor.getZ();
         BlockInfo[][][] blocks = shape.getBlocks();
-        if (blocks.length <= CONTROLLER_X || blocks[CONTROLLER_X].length <= CONTROLLER_Y
-                || blocks[CONTROLLER_X][CONTROLLER_Y].length <= CONTROLLER_Z) return;
-        BlockInfo info = blocks[CONTROLLER_X][CONTROLLER_Y][CONTROLLER_Z];
+        if (blocks.length <= x || blocks[x].length <= y || blocks[x][y].length <= z) return;
+        BlockInfo info = blocks[x][y][z];
         if (info != null && info.getBlockState().getBlock() instanceof IMachineBlock block
                 && block.getDefinition() == definition) {
-            controller = new BlockPos(CONTROLLER_X, CONTROLLER_Y, CONTROLLER_Z);
+            controller = anchor;
         }
     }
 }

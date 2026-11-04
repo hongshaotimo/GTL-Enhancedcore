@@ -1,0 +1,25 @@
+{
+  "type": "minecraft:overworld",
+  "generator": {
+    "type": "gtl_enhancedcore:plot",
+    "biome": "minecraft:plains",
+    "settings": {
+      "plot_chunks": 5,
+      "ground_block": "minecraft:light_gray_concrete",
+      "road_block": "minecraft:black_concrete",
+      "border_block": "minecraft:light_gray_concrete",
+      "marker_block": "minecraft:sea_lantern",
+      "road_style": "BOULEVARD",
+      "road_width": 4,
+      "marker_mode": "PLOT",
+      "marker_size": 0,
+      "bedrock_y": -64,
+      "surface_y": -53,
+      "line_block": "minecraft:white_concrete",
+      "line_style": "CROSSWALK",
+      "dash_length": 3,
+      "dash_gap": 3,
+      "border_width": 2
+    }
+  }
+}

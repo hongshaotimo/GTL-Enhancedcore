@@ -14,13 +14,14 @@ import java.util.Set;
 /** Bounded, strict text interchange. It never accesses a world, registry, path or network. */
 public final class PlotPresetShare {
     public static final int MAX_TEXT_LENGTH = 8192;
-    public static final int SHARE_VERSION = 2;
+    public static final int SHARE_VERSION = 3;
     private static final String FORMAT = "gtl_enhancedcore:plot_preset";
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().disableHtmlEscaping().create();
     private static final Set<String> NUMBERS = Set.of("plot_chunks", "road_width", "marker_size", "bedrock_y",
             "surface_y", "dash_length", "dash_gap", "border_width", "plot_edge_width");
     private static final Set<String> STRINGS = Set.of("ground_block", "road_block", "border_block", "marker_block",
             "road_style", "marker_mode", "line_block", "line_style", "plot_edge_block");
+    private static final Set<String> BOOLEANS = Set.of("show_machine_frames");
     private PlotPresetShare() {}
 
     public static String encode(PlotSettings settings) {
@@ -46,11 +47,21 @@ public final class PlotPresetShare {
         values.addProperty("border_width", settings.borderWidth());
         values.addProperty("plot_edge_block", settings.plotEdgeBlock());
         values.addProperty("plot_edge_width", settings.plotEdgeWidth());
+        values.addProperty("show_machine_frames", settings.showMachineFrames());
         root.add("settings", values);
         return GSON.toJson(root);
     }
 
     public static PlotSettings decode(String text) {
+        return decode(text, false);
+    }
+
+    /** Persisted v1 owner/template recipes predate plot edges; never rewrite their immutable ZIPs. */
+    public static PlotSettings decodeStored(String text) {
+        return decode(text, true);
+    }
+
+    private static PlotSettings decode(String text, boolean allowLegacy) {
         if (text == null || text.isBlank()) throw failure("empty");
         if (text.length() > MAX_TEXT_LENGTH) throw failure("too_long");
         try (JsonReader reader = new JsonReader(new StringReader(text))) {
@@ -73,7 +84,17 @@ public final class PlotPresetShare {
             reader.endObject();
             if (reader.peek() != JsonToken.END_DOCUMENT) throw failure("malformed");
             if (seen.size() != 3 || !FORMAT.equals(format) || values == null) throw failure("schema");
-            if (version != SHARE_VERSION) throw failure("version");
+            if (allowLegacy && version == 1) {
+                if (values.containsKey("plot_edge_block") || values.containsKey("plot_edge_width")
+                        || values.containsKey("show_machine_frames")) throw failure("schema");
+                values.put("plot_edge_block", "minecraft:white_concrete");
+                values.put("plot_edge_width", "0");
+                values.put("show_machine_frames", "false");
+            } else if (allowLegacy && version == 2) {
+                if (values.containsKey("show_machine_frames")) throw failure("schema");
+                values.put("show_machine_frames", "false");
+            } else if (version != SHARE_VERSION) throw failure("version");
+            if (values.size() != NUMBERS.size() + STRINGS.size() + BOOLEANS.size()) throw failure("schema");
             validateMaterials(values.get("ground_block"), values.get("plot_edge_block"), values.get("road_block"), values.get("border_block"),
                     values.get("line_block"), values.get("marker_block"));
             PlotSettings result = new PlotSettings(number(values, "plot_chunks"), values.get("ground_block"),
@@ -83,7 +104,8 @@ public final class PlotPresetShare {
                     number(values, "bedrock_y"), number(values, "surface_y"), values.get("line_block"),
                     enumValue(PlotSettings.LineStyle.class, values.get("line_style")), number(values, "dash_length"),
                     number(values, "dash_gap"), number(values, "border_width"),
-                    values.get("plot_edge_block"), number(values, "plot_edge_width"));
+                    values.get("plot_edge_block"), number(values, "plot_edge_width"),
+                    Boolean.parseBoolean(values.get("show_machine_frames")));
             validateMaterials(result);
             return result;
         } catch (ShareException invalid) {
@@ -103,10 +125,10 @@ public final class PlotPresetShare {
             if (values.containsKey(key)) throw failure("schema");
             if (NUMBERS.contains(key)) values.put(key, Integer.toString(integer(reader)));
             else if (STRINGS.contains(key)) values.put(key, string(reader));
+            else if (BOOLEANS.contains(key)) values.put(key, Boolean.toString(bool(reader)));
             else throw failure("schema");
         }
         reader.endObject();
-        if (values.size() != NUMBERS.size() + STRINGS.size()) throw failure("schema");
         return values;
     }
     private static String string(JsonReader reader) throws IOException {
@@ -119,6 +141,10 @@ public final class PlotPresetShare {
         if (!value.matches("-?(0|[1-9][0-9]*)")) throw failure("schema");
         try { return Integer.parseInt(value); }
         catch (NumberFormatException invalid) { throw failure("settings"); }
+    }
+    private static boolean bool(JsonReader reader) throws IOException {
+        if (reader.peek() != JsonToken.BOOLEAN) throw failure("schema");
+        return reader.nextBoolean();
     }
     private static int number(Map<String, String> values, String key) { return Integer.parseInt(values.get(key)); }
     private static <T extends Enum<T>> T enumValue(Class<T> type, String value) {

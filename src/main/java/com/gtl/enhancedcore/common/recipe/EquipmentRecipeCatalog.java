@@ -17,12 +17,19 @@ public final class EquipmentRecipeCatalog {
     /** 无限资源仓室只通过创造模式或命令获取，不生成生存配方。 */
     public static final Set<String> CREATIVE_MODE_ONLY_OUTPUTS = Set.of(
             "creative_computation_receiver_hatch", "plot_world_controller");
+    /** 园区预设生成的专属设备；可在生存中使用，但不提供合成配方。 */
+    public static final Set<String> CAMPUS_PRESET_ONLY_OUTPUTS = Set.of("virtual_marker", "central_teleporter");
     public record Ingredient(String id, boolean tag, int count) {}
     public record Fluid(String id, int amount) {}
     public record Recipe(String output, int tier, String method, int duration, List<Ingredient> ingredients,
                          List<Fluid> fluids, List<String> pattern, Map<Character, Ingredient> key) {}
 
     private EquipmentRecipeCatalog() {}
+
+    /** Receives an item path in this mod's namespace; every unlisted item still requires a recipe. */
+    public static boolean requiresEquipmentRecipe(String output) {
+        return !CREATIVE_MODE_ONLY_OUTPUTS.contains(output) && !CAMPUS_PRESET_ONLY_OUTPUTS.contains(output);
+    }
 
     public static List<Recipe> read(Reader reader) {
         JsonObject root = JsonParser.parseReader(reader).getAsJsonObject();

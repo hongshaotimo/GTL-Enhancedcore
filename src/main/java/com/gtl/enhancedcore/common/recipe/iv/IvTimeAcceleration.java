@@ -12,6 +12,7 @@ public final class IvTimeAcceleration {
 
     public static boolean accelerate(RecipeLogic logic, UUID player) {
         if (logic.getMachine().isRemote() || !IvMachineScope.crossRecipeEnabled(logic.getMachine())
+                || logic instanceof IvNativeAccess nativeAccess && nativeAccess.iv$nativeInputsActive()
                 || !logic.isWorkingEnabled() || !logic.isWorking()) return false;
         int steps = IvTimeAccelerationBudget.steps(logic.getDuration(), logic.getProgress());
         return IvTimeAccelerationBudget.run(steps, () -> cost(logic),

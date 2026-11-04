@@ -20,11 +20,14 @@ public final class IvOrderInfoProvider implements IBlockComponentProvider, IServ
         if(!(accessor.getBlockEntity() instanceof MetaMachineBlockEntity entity))return;
         var machine = entity.getMetaMachine();
         if(machine instanceof TieredParallelMachine owned && IvMachineScope.crossRecipeEnabled(owned)){
+            if (((IvNativeAccess)owned.getRecipeLogic()).iv$nativeInputsActive()) return;
             data.put(KEY,((IvRecipeLogic)owned.getRecipeLogic()).getOrderSummary());
             return;
         }
         if(machine instanceof WorkableElectricMultiblockMachine electric
-                && IvMachineScope.nativeTarget(electric) && IvMachineScope.crossRecipeEnabled(electric)){
+                && (IvMachineScope.nativeTarget(electric) || IvBuffers.genericCloudTarget(electric))
+                && IvMachineScope.crossRecipeEnabled(electric)
+                && !((IvNativeAccess)electric.getRecipeLogic()).iv$nativeInputsActive()){
             data.put(KEY, ((IvNativeAccess)electric.getRecipeLogic()).iv$summary());
         }
     }

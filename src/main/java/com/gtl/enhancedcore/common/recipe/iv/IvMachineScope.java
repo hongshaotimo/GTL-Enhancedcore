@@ -106,8 +106,14 @@ public final class IvMachineScope {
                 && nativeTarget(electric.getDefinition().getId()));
     }
     public static boolean crossRecipeEnabled(WorkableElectricMultiblockMachine machine) {
-        return machine != null && IvBuffers.targetController(machine)
+        if (machine == null) return false;
+        var access = (IvNativeAccess) machine.getRecipeLogic();
+        if (machine.isRemote()) return access.iv$crossRecipeEnabled();
+        boolean cloud = IvBuffers.genericCloudTarget(machine);
+        boolean enabled = (IvBuffers.legacyTargetController(machine) || cloud)
                 && IvBuffers.collect(machine).stream().anyMatch(IvBuffers::isolated);
+        access.iv$syncMode(enabled, cloud);
+        return enabled;
     }
     public static boolean crossRecipeEnabled(Object machine) {
         return machine instanceof WorkableElectricMultiblockMachine electric && crossRecipeEnabled(electric);

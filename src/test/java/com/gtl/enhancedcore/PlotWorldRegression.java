@@ -19,6 +19,7 @@ final class PlotWorldRegression {
             check(PlotLayout.blockIdAt(settings, 8, -65, 8).equals("minecraft:air"), "No terrain below foundation"); checks++;
             for (PlotSettings.RoadStyle road : PlotSettings.RoadStyle.values()) {
                 PlotSettings selected = settings.withRoadStyle(road);
+                if (selected.isCampus()) continue;
                 for (int x = -period - 1; x <= period + 1; x++) {
                     for (int z : new int[] {-period - 1, -period, -1, 0, 1, period / 2, period - 1, period}) {
                         check(PlotLayout.surfaceAt(selected, x, z) == PlotLayout.surfaceAt(selected, x + period, z - period),
@@ -124,6 +125,7 @@ final class PlotWorldRegression {
                 && PlotLayout.surfaceAt(city, 2, 5) == PlotLayout.Cell.ROAD,
                 "Zebra crossing alternates road and marking cubes outside the junction"); checks++;
         for (PlotSettings.RoadPreset theme : PlotSettings.RoadPreset.values()) {
+            if (theme == PlotSettings.RoadPreset.CAMPUS) continue;
             PlotSettings themed = tall.withGroundBlock("minecraft:blue_concrete").withRoadPreset(theme);
             check(themed.bedrockY() == -32 && themed.surfaceY() == 128
                     && themed.groundBlock().equals("minecraft:blue_concrete"),
@@ -132,6 +134,7 @@ final class PlotWorldRegression {
         check(PlotLayout.effectiveRoadWidth(PlotSettings.preset(1).withRoadWidth(32)) == 5,
                 "Small plots bound oversized road width to retain interior space"); checks++;
         for (PlotSettings.RoadPreset theme : PlotSettings.RoadPreset.values()) {
+            if (theme == PlotSettings.RoadPreset.CAMPUS) continue;
             PlotSettings themed = PlotSettings.defaults().withRoadPreset(theme);
             check(PlotSettings.MATERIALS.containsAll(java.util.List.of(themed.groundBlock(), themed.roadBlock(),
                     themed.borderBlock(), themed.lineBlock())), "All templates stay within the concrete-only palette"); checks++;

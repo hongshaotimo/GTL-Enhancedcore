@@ -25,7 +25,10 @@ public final class RegressionSuite {
 
     public static void main(String[] args) throws Exception {
         configParsing();
+        assertions += CampusPlotSearchRegression.run();
+        assertions += CampusMapImageRegression.run();
         assertions += CloudLedgerRegression.run();
+        assertions += CloudTeamPermissionRegression.run();
         assertions += com.gtl.enhancedcore.common.cloud.CloudPerformanceRegression.run();
         assertions += CloudStoreNbtRegression.run();
         assertions += com.gtl.enhancedcore.common.cloud.transfer.CloudTransferRegression.run();
@@ -37,10 +40,18 @@ public final class RegressionSuite {
         assertions += GalaxyConnectionCapacityRegression.run();
         assertions += GalaxyWirelessHandlerRegression.run();
         assertions += com.gtl.enhancedcore.client.renderer.StellarVortexSpinRegression.run();
+        assertions += CelestialEffectAnchorRegression.run();
         assertions += MapImagePacingRegression.run();
         assertions += FtbClaimMapRegression.run();
         assertions += BloomPacingRegression.run();
+        assertions += PreciseAmountSortCacheRegression.run();
+        assertions += CloudViewCacheRegression.run();
+        assertions += StructurePerformanceRegression.run();
+        assertions += EventBusHandlerRegression.run();
+        assertions += StagedPreviewContractRegression.run();
         assertions += PlotWorldRegression.run();
+        assertions += CampusRegression.run();
+        assertions += CampusPresetPersistenceRegression.run();
         assertions += PlotRoadAlignmentRegression.run();
         assertions += PlotPreviewRegression.run();
         assertions += PlotPresetShareRegression.run();
@@ -57,6 +68,7 @@ public final class RegressionSuite {
         assertions += CreativeComputationPolicyRegression.run();
         assertions += EquipmentRecipesRegression.run();
         assertions += StarCoreStripperRegression.run();
+        assertions += LanthanideRefiningRegression.run();
         assertions += HighFluxBreederReactorRegression.run();
         assertions += HydrothermalStructuresRegression.run();
         assertions += CopyKeysRegression.run();

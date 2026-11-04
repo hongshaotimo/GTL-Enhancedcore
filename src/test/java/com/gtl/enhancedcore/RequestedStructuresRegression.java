@@ -27,7 +27,7 @@ final class RequestedStructuresRegression {
         var manifests = JsonParser.parseString(Files.readString(root.resolve("gtl/manifest.json"))).getAsJsonObject();
         var upgrades = JsonParser.parseString(Files.readString(root.resolve("gtl/upgrades.json"))).getAsJsonObject();
         for (var target : Map.of("mega_extractor", 174, "advanced_vacuum_drying_furnace", 58,
-                "antientropy_condensation_center", 196).entrySet()) {
+                "antientropy_condensation_center", 30).entrySet()) {
             String name = target.getKey();
             var spec = (name.equals("antientropy_condensation_center") ? upgrades : manifests).getAsJsonObject(name);
             check(spec.get("diamondOreMarkers").getAsInt() == target.getValue(), name + " exact reviewed hatch count");
@@ -70,6 +70,7 @@ final class RequestedStructuresRegression {
             check(counts.keySet().equals(spec.getAsJsonObject("bindings").keySet()), name + " complete used palette");
             for (var count : counts.entrySet()) check(spec.getAsJsonObject("counts").get(count.getKey()).getAsInt()==count.getValue(), name + " exact palette counts");
         }
+        checks += RequestedStructureBatchRegression.run();
         return checks;
     }
     private static String method(String source, String name) {

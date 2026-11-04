@@ -268,21 +268,16 @@
     "/data/gtl_enhancedcore/structures/gtl/advanced_sps_crafting.pattern.gz": {
       "resource": "/data/gtl_enhancedcore/structures/gtl/advanced_sps_crafting.pattern.gz",
       "size": [
-        91,
-        97,
-        91
+        73,
+        77,
+        73
       ],
-      "sourceSha256": "f07a2532c16e6c6fbbaeab7bb7b1835da5aaf1eaf0ced6c2512c9efd42d3df90",
-      "removed": 602,
-      "removedBySymbol": {
-        "H": 114,
-        "K": 88,
-        "O": 400
-      },
-      "opaqueSymbols": "AFGHKO",
-      "remaining": 48021,
-      "optimizedResource": "/data/gtl_enhancedcore/structures/hollow/gtl/advanced_sps_crafting.pattern.gz",
-      "optimizedSha256": "d7add96875f66b2e64db09e9659b393f3b40ab7e9af0fdb4b4b701190c5e67ea"
+      "sourceSha256": "b40efb281245594fa077c9f4cdc8bf3297a1cd5c4a2ac022dcd033bdd1c5c607",
+      "removed": 0,
+      "removedBySymbol": {},
+      "opaqueSymbols": "",
+      "remaining": 64516,
+      "review": "2026-11-02 import already removes 3069 certified hidden fixed blocks; no secondary deletion mask"
     },
     "/data/gtl_enhancedcore/structures/gtl/dimensionally_transcendent_mixer.pattern.gz": {
       "resource": "/data/gtl_enhancedcore/structures/gtl/dimensionally_transcendent_mixer.pattern.gz",
@@ -421,43 +416,30 @@
     "/data/gtl_enhancedcore/structures/gtl/dimensionally_transcendent_chemical_plant.pattern.gz": {
       "resource": "/data/gtl_enhancedcore/structures/gtl/dimensionally_transcendent_chemical_plant.pattern.gz",
       "size": [
-        139,
-        110,
-        139
+        111,
+        88,
+        111
       ],
-      "sourceSha256": "7c10f2b54fe1c75d967c92bc426f832eb82e91ecb5aaa524c5825800de660bee",
-      "removed": 78811,
-      "removedBySymbol": {
-        "A": 57,
-        "B": 72,
-        "C": 5658,
-        "D": 26230,
-        "F": 3821,
-        "J": 60,
-        "K": 132,
-        "M": 17371,
-        "N": 1884,
-        "O": 1764,
-        "Q": 21762
-      },
-      "opaqueSymbols": "ACDFJKMNPQ",
-      "remaining": 327756,
-      "optimizedResource": "/data/gtl_enhancedcore/structures/hollow/gtl/dimensionally_transcendent_chemical_plant.pattern.gz",
-      "optimizedSha256": "266b61fc71dfc180764eb180e059336874092f68aec8487e6acaa9c2c3af0452"
+      "sourceSha256": "1728f334ea60eb64c12e41a8c5bd2284a89fcc3cba1092775de9d80360083674",
+      "removed": 0,
+      "removedBySymbol": {},
+      "opaqueSymbols": "",
+      "remaining": 193879,
+      "review": "2026-11-02 import already removes 1524 certified hidden fixed blocks; no secondary deletion mask"
     },
     "/data/gtl_enhancedcore/structures/gtl/antientropy_condensation_center.pattern.gz": {
       "resource": "/data/gtl_enhancedcore/structures/gtl/antientropy_condensation_center.pattern.gz",
       "size": [
-        93,
-        75,
-        84
+        121,
+        87,
+        97
       ],
-      "sourceSha256": "d4e0a66e49fa70831a3d19f4b3cfae76caff7881c93453c83c1e7b6604b06cd4",
+      "sourceSha256": "9e61a65f2d983044a046ed51cb3b02afc82889135373c4dd0b8f078b7bec9ebc",
       "removed": 0,
       "removedBySymbol": {},
       "opaqueSymbols": "",
-      "remaining": 66857,
-      "review": "2026-10-27 source replacement; no hidden deletion applied"
+      "remaining": 96303,
+      "review": "2026-11-02 import already removes 0 certified hidden fixed blocks; no secondary deletion mask"
     },
     "/data/gtl_enhancedcore/structures/gtl/advanced_integrated_ore_processor.pattern.gz": {
       "resource": "/data/gtl_enhancedcore/structures/gtl/advanced_integrated_ore_processor.pattern.gz",
@@ -621,49 +603,30 @@
     "/data/gtl_enhancedcore/structures/gtl/lucid_etchdreamer.pattern.gz": {
       "resource": "/data/gtl_enhancedcore/structures/gtl/lucid_etchdreamer.pattern.gz",
       "size": [
-        233,
-        233,
-        233
+        175,
+        175,
+        175
       ],
-      "sourceSha256": "fc4e8eea31dc7737d3120f6fe0fa3580f310152b9013b0af21d14d47e492cf17",
-      "removed": 50693,
-      "removedBySymbol": {
-        "A": 23316,
-        "D": 7614,
-        "E": 3444,
-        "I": 120,
-        "J": 14147,
-        "K": 2004,
-        "Q": 24,
-        "R": 24
-      },
-      "opaqueSymbols": "ADEFIJKNO",
-      "remaining": 254006,
-      "optimizedResource": "/data/gtl_enhancedcore/structures/hollow/gtl/lucid_etchdreamer.pattern.gz",
-      "optimizedSha256": "e792b10af6b4ceb3db956667198f7014ae6590f9e233c93ee617aa02bac5d94c"
+      "sourceSha256": "31cdaa0a8b4bf97b1d6943e25a6889a0bf8743da2514b6fbb331bb4c64427ca3",
+      "removed": 0,
+      "removedBySymbol": {},
+      "opaqueSymbols": "",
+      "remaining": 160603,
+      "review": "2026-11-02 import already removes 13840 certified hidden fixed blocks; no secondary deletion mask"
     },
     "/data/gtl_enhancedcore/structures/gtl/super_particle_collider.pattern.gz": {
       "resource": "/data/gtl_enhancedcore/structures/gtl/super_particle_collider.pattern.gz",
       "size": [
-        197,
-        83,
-        209
+        131,
+        55,
+        139
       ],
-      "sourceSha256": "ef014750dfb3491ef3de9449ee83c194a4e1e476f8d7165c23283166318a9229",
-      "removed": 48150,
-      "removedBySymbol": {
-        "A": 37909,
-        "B": 1853,
-        "D": 4700,
-        "E": 3157,
-        "J": 117,
-        "L": 100,
-        "N": 314
-      },
-      "opaqueSymbols": "ADJLN",
-      "remaining": 302625,
-      "optimizedResource": "/data/gtl_enhancedcore/structures/hollow/gtl/super_particle_collider.pattern.gz",
-      "optimizedSha256": "01023570c9f99f8d7ac6c106347ff0b8d3066cf089371ec65a134c1aa6e37b96"
+      "sourceSha256": "9432c9dedf55b5d7201e3a1250b0a3fd7777ef684423d8bc5bb7e65274ea8cee",
+      "removed": 0,
+      "removedBySymbol": {},
+      "opaqueSymbols": "",
+      "remaining": 131012,
+      "review": "2026-11-02 import already removes 453 certified hidden fixed blocks; no secondary deletion mask"
     },
     "/data/gtl_enhancedcore/structures/gtl/wood_distillation.pattern.gz": {
       "resource": "/data/gtl_enhancedcore/structures/gtl/wood_distillation.pattern.gz",
@@ -882,27 +845,16 @@
     "/data/gtl_enhancedcore/structures/hyperstructuralchemicaldistorterstructure.pattern.gz": {
       "resource": "/data/gtl_enhancedcore/structures/hyperstructuralchemicaldistorterstructure.pattern.gz",
       "size": [
+        87,
         109,
-        137,
-        111
+        89
       ],
-      "sourceSha256": "7e8133dd1dc4997fa3960947cb4e59392cf3848df6d38980facf37c7679a4021",
-      "removed": 11012,
-      "removedBySymbol": {
-        "A": 6618,
-        "B": 1601,
-        "E": 170,
-        "F": 68,
-        "G": 3,
-        "I": 2,
-        "K": 1060,
-        "P": 1271,
-        "Q": 219
-      },
-      "opaqueSymbols": "ABEFIKPQ",
-      "remaining": 118556,
-      "optimizedResource": "/data/gtl_enhancedcore/structures/hollow/hyperstructuralchemicaldistorterstructure.pattern.gz",
-      "optimizedSha256": "5395b8106ae073af47153e4a253caf27e823c4d255e165785ba2780022891681"
+      "sourceSha256": "73fd9207a10134f009c9333bd3d1dcacb18b9302d345603a4cf2e113f4c46b82",
+      "removed": 0,
+      "removedBySymbol": {},
+      "opaqueSymbols": "",
+      "remaining": 69521,
+      "review": "2026-11-02 import already removes 508 certified hidden fixed blocks; no secondary deletion mask"
     },
     "/data/gtl_enhancedcore/structures/integrated_universal_factory.pattern.gz": {
       "resource": "/data/gtl_enhancedcore/structures/integrated_universal_factory.pattern.gz",
@@ -1095,28 +1047,16 @@
     "/data/gtl_enhancedcore/structures/stellarconfinementfusionreactorstructure.pattern.gz": {
       "resource": "/data/gtl_enhancedcore/structures/stellarconfinementfusionreactorstructure.pattern.gz",
       "size": [
-        209,
-        119,
-        209
+        167,
+        95,
+        167
       ],
-      "sourceSha256": "861de9345c339fb7bc10f4a9e3d0f97ec13103db14d946998fe6067b3ef88ab3",
-      "removed": 54539,
-      "removedBySymbol": {
-        "B": 6552,
-        "D": 25845,
-        "E": 1436,
-        "F": 3262,
-        "G": 10534,
-        "I": 1458,
-        "J": 944,
-        "K": 2158,
-        "N": 2206,
-        "O": 144
-      },
-      "opaqueSymbols": "BDGJKNO",
-      "remaining": 287107,
-      "optimizedResource": "/data/gtl_enhancedcore/structures/hollow/stellarconfinementfusionreactorstructure.pattern.gz",
-      "optimizedSha256": "a31064c31b10a696309c4a85c369ab517a2576e41b0e7f30dc559f8a108020ae"
+      "sourceSha256": "119a313b65e7c30132f2e76e1fcb5397a8768d5150ad4f2fa85886473cd08264",
+      "removed": 0,
+      "removedBySymbol": {},
+      "opaqueSymbols": "",
+      "remaining": 142927,
+      "review": "2026-11-02 import already removes 2384 certified hidden fixed blocks; no secondary deletion mask"
     },
     "/data/gtl_enhancedcore/structures/superconducting_fusion_assembler.pattern.gz": {
       "resource": "/data/gtl_enhancedcore/structures/superconducting_fusion_assembler.pattern.gz",
@@ -1193,15 +1133,16 @@
     "/data/gtl_enhancedcore/structures/gtl/lucid_etchdreamer_preview_panel.pattern.gz": {
       "resource": "/data/gtl_enhancedcore/structures/gtl/lucid_etchdreamer_preview_panel.pattern.gz",
       "size": [
-        5,
-        5,
+        11,
+        11,
         3
       ],
-      "sourceSha256": "2bdd0352efa62b6f73f982688ab747571ebcfd93e817cd0f86d346893fb6f9a9",
+      "sourceSha256": "40b7fa7799c0d90eb787e3425729fed08a05c0f322d0b6947856ce68d75210c2",
       "removed": 0,
       "removedBySymbol": {},
-      "opaqueSymbols": "J",
-      "remaining": 50
+      "opaqueSymbols": "",
+      "remaining": 218,
+      "review": "2026-11-02 panel from cleaned blueprint"
     }
   },
   "opacity": {

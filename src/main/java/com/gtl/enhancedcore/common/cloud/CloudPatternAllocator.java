@@ -23,7 +23,9 @@ public final class CloudPatternAllocator {
     private CloudPatternAllocator() {}
     private record Group(UUID library, ResourceLocation mode) {}
     private record Membership(Group group, long sequence) {}
-    private record SelectionKey(Group group, UUID entry, long revision, CloudPatternMatching.RecipeIndex index, CloudPatternMatching.Probe probe) {}
+    private record SelectionKey(Group group, UUID entry, long revision, CloudPatternMatching.RecipeIndex index) {}
+    private record DiagnosticKey(UUID library, UUID entry, UUID node) {}
+    private record Ambiguity(List<String> candidates, int total) {}
     private static final class Queue {
         final Deque<CloudPatternBufferMachine> order = new ArrayDeque<>();
         final Map<CloudPatternBufferMachine, Scan> scans = new IdentityHashMap<>();
@@ -31,10 +33,26 @@ public final class CloudPatternAllocator {
         final Map<Group, NavigableMap<Long, CloudPatternBufferMachine>> groups = new HashMap<>();
         final Map<CloudPatternBufferMachine, Membership> memberships = new IdentityHashMap<>();
         final Map<SelectionKey, Selection> selections = new LinkedHashMap<>(32, .75f, true);
+        final Map<DiagnosticKey, Ambiguity> ambiguities = new LinkedHashMap<>(16, .75f, true);
         long sequence;
+        void ambiguity(CloudPatternBufferMachine buffer, CloudPatternStore.Entry entry, CloudPatternMatching.MatchSet matches) {
+            var key = new DiagnosticKey(buffer.cloudLibraryId(), entry.id(), buffer.cloudNodeId());
+            var evidence = new Ambiguity(matches.candidateIds(), matches.candidateCount());
+            if (!evidence.equals(ambiguities.put(key, evidence))) {
+                var machine = IvBuffers.controller(buffer);
+                com.gtl.enhancedcore.common.recipe.iv.IvTaskLog.event(buffer, null, "CLOUD_CLASSIFY", "cloud_ambiguous",
+                        "library", key.library, "entry", key.entry, "node", key.node, "mode", buffer.cloudMode().toString(),
+                        "machine", machine.getDefinition().getId().toString(), "machinePos", machine.getPos().toShortString(),
+                        "candidates", evidence.candidates, "candidateCount", evidence.total);
+            }
+            while (ambiguities.size() > 4096) ambiguities.remove(ambiguities.keySet().iterator().next());
+        }
+        void clearAmbiguity(CloudPatternBufferMachine buffer, CloudPatternStore.Entry entry) {
+            ambiguities.remove(new DiagnosticKey(buffer.cloudLibraryId(), entry.id(), buffer.cloudNodeId()));
+        }
         void invalidateSelections(UUID library) { selections.keySet().removeIf(key -> Objects.equals(key.group.library, library)); }
-        Selection selection(SelectionKey key, List<GTRecipe> recipes) {
-            var result = selections.computeIfAbsent(key, ignored -> new Selection(key, recipes));
+        Selection selection(SelectionKey key) {
+            var result = selections.computeIfAbsent(key, Selection::new);
             while (selections.size() > 4096) selections.remove(selections.keySet().iterator().next());
             return result;
         }
@@ -56,48 +74,59 @@ public final class CloudPatternAllocator {
             group.remove(old.sequence); if (group.isEmpty()) groups.remove(old.group);
         }
     }
-    /** Every equal probe shares one bounded contender walk, instead of N scans each
-     * repeating the same N-machine election. Each step still tests at most one recipe. */
+    /** One bounded election per original. Every contender uses its own executor's
+     * physical stock; a machine must never borrow the initiating scan's catalysts. */
     private static final class Selection {
         final SelectionKey key;
-        final List<GTRecipe> recipes;
+        List<GTRecipe> recipes = List.of();
+        List<WorkableElectricMultiblockMachine> candidateControllers = List.of();
+        CloudPatternMatching.Probe probe;
         long cursor = -1;
         CloudPatternBufferMachine candidate, preferred;
         WorkableElectricMultiblockMachine candidateMachine, preferredMachine;
         UUID candidateNode, preferredNode;
         long candidateEpoch, preferredEpoch;
-        int recipeCursor, matches;
+        int recipeCursor, machineCursor;
+        CloudPatternMatching.MatchSet matches;
         boolean complete;
-        Selection(SelectionKey key, List<GTRecipe> recipes) { this.key = key; this.recipes = recipes; }
+        Selection(SelectionKey key) { this.key = key; }
         void step(Queue queue, net.minecraft.server.level.ServerLevel level) {
             if (complete) return;
             if (candidate != null) {
-                if (IvBuffers.controller(candidate) != candidateMachine || !Objects.equals(candidateNode, candidate.cloudNodeId())
+                if (!IvBuffers.cloudControllers(candidate).equals(candidateControllers) || !Objects.equals(candidateNode, candidate.cloudNodeId())
                         || candidateEpoch != candidate.cloudAllocationEpoch()
                         || !key.group.library.equals(candidate.cloudLibraryId()) || !key.group.mode.equals(candidate.cloudMode())
                         || !candidate.cloudReady(false) || !candidate.iv$getState().accepting) { candidate = null; return; }
-                if (recipeCursor < recipes.size()
-                        && CloudPatternMatching.matches(recipes.get(recipeCursor++), candidateMachine, key.probe)) matches++;
-                if (matches > 1) { candidate = null; return; }
-                if (recipeCursor < recipes.size()) return;
-                if (matches == 1 && (preferred == null || compare(candidate, preferred, level) < 0)) {
-                    preferred = candidate; preferredMachine = candidateMachine; preferredNode = candidateNode;
-                    preferredEpoch = candidateEpoch;
+                if (candidateMachine == null) {
+                    if (machineCursor >= candidateControllers.size()) { candidate = null; return; }
+                    candidateMachine = candidateControllers.get(machineCursor++);
+                    probe = candidate.cloudProbe(candidate.cloudStore().library(key.group.library).entry(key.entry), candidateMachine);
+                    if (probe == null) { candidate = null; return; }
+                    recipes = key.index.candidates(probe); recipeCursor = 0; matches = new CloudPatternMatching.MatchSet(key.index);
                 }
-                candidate = null; return;
+                if (recipeCursor < recipes.size()) matches.add(recipes.get(recipeCursor++), candidateMachine, probe);
+                if (recipeCursor < recipes.size()) return;
+                if (matches.unique() != null) {
+                    if (preferred == null || compare(candidate, preferred, level) < 0) {
+                        preferred = candidate; preferredMachine = candidateMachine; preferredNode = candidateNode;
+                        preferredEpoch = candidateEpoch;
+                    }
+                    candidate = null;
+                }
+                candidateMachine = null; return;
             }
             var group = queue.groups.get(key.group);
             var next = group == null ? null : group.higherEntry(cursor);
             if (next == null) { complete = true; return; }
             cursor = next.getKey(); var endpoint = next.getValue();
             if (endpoint.cloudReady(true) && endpoint.iv$getState().accepting) {
-                candidate = endpoint; candidateMachine = IvBuffers.controller(endpoint); candidateNode = endpoint.cloudNodeId();
+                candidate = endpoint; candidateMachine = null; candidateNode = endpoint.cloudNodeId();
+                candidateControllers = IvBuffers.cloudControllers(endpoint); machineCursor = 0;
                 candidateEpoch = endpoint.cloudAllocationEpoch();
-                recipeCursor = 0; matches = 0;
             }
         }
         boolean preferredValid() {
-            return preferred == null || (IvBuffers.controller(preferred) == preferredMachine
+            return preferred == null || (IvBuffers.cloudControllers(preferred).contains(preferredMachine)
                     && Objects.equals(preferredNode, preferred.cloudNodeId())
                     && preferredEpoch == preferred.cloudAllocationEpoch()
                     && key.group.library.equals(preferred.cloudLibraryId()) && key.group.mode.equals(preferred.cloudMode())
@@ -105,7 +134,8 @@ public final class CloudPatternAllocator {
         }
     }
     private static final class Scan {
-        final WorkableElectricMultiblockMachine machine;
+        final List<WorkableElectricMultiblockMachine> controllers;
+        WorkableElectricMultiblockMachine machine;
         final CloudPatternStore.Library library;
         final UUID nodeId, libraryId;
         final ResourceLocation mode;
@@ -119,24 +149,25 @@ public final class CloudPatternAllocator {
         final CloudPatternMatching.RecipeIndex index;
         List<GTRecipe> recipes = List.of();
         long observedRevision;
-        int cursor, recipeCursor, matches;
+        int cursor, recipeCursor, machineCursor;
+        CloudPatternMatching.MatchSet matches;
+        CloudPatternMatching.MatchSet ambiguousMatches;
         CloudPatternStore.Entry entry;
-        GTRecipe matchedRecipe;
         CloudPatternMatching.Probe probe;
         Scan(CloudPatternBufferMachine buffer) {
-            machine = IvBuffers.controller(buffer); library = buffer.cloudStore().library(buffer.cloudLibraryId());
+            controllers = IvBuffers.cloudControllers(buffer); library = buffer.cloudStore().library(buffer.cloudLibraryId());
             nodeId = buffer.cloudNodeId(); libraryId = buffer.cloudLibraryId(); mode = buffer.cloudMode();
             allocationEpoch = buffer.cloudAllocationEpoch();
             observedRevision = library.allocationRevision(); entryCount = library.entryCount();
             var changes = library.allocationChangesSince(buffer.cloudScannedRevision());
             incremental = changes != null;
             priorityEntries = incremental ? changes : library.recentAllocationChanges();
-            var type = Arrays.stream(machine.getDefinition().getRecipeTypes()).filter(t -> buffer.cloudAcceptsMode(t.registryName)).findFirst().orElseThrow();
+            var type = Arrays.stream(controllers.getFirst().getDefinition().getRecipeTypes()).filter(t -> buffer.cloudAcceptsMode(t.registryName)).findFirst().orElseThrow();
             var level = (net.minecraft.server.level.ServerLevel)buffer.getLevel();
             index = CloudPatternMatching.index(level, type);
         }
         boolean step(CloudPatternBufferMachine buffer) {
-            if (IvBuffers.controller(buffer) != machine || !buffer.cloudReady(false)) return false;
+            if (!IvBuffers.cloudControllers(buffer).equals(controllers) || !buffer.cloudReady(false)) return false;
             if (!nodeId.equals(buffer.cloudNodeId()) || !libraryId.equals(buffer.cloudLibraryId()) || !mode.equals(buffer.cloudMode())) return false;
             if (allocationEpoch != buffer.cloudAllocationEpoch()) return false;
             // Pages are stable only for the observed catalogue. Successful leases do not
@@ -151,27 +182,44 @@ public final class CloudPatternAllocator {
                     if (page.isEmpty() || cursor >= pageOffset + page.size()) { pageOffset = cursor; page = library.entryIdPage(cursor, 64); }
                     entryId = page.get(cursor++ - pageOffset);
                 }
-                entry = library.entry(entryId); recipeCursor = 0; matches = 0; matchedRecipe = null;
+                entry = library.entry(entryId); machineCursor = 0; machine = null; ambiguousMatches = null;
                 boolean owned = entry.lease() != null && entry.lease().nodeId().equals(buffer.cloudNodeId());
                 if (entry.status() != CloudLedger.Status.AVAILABLE && !owned) { entry = null; return true; }
                 var types = PatternQuickUploadMetadata.readRecipeTypeIds(entry.original());
                 if (!types.isEmpty() && !types.contains(buffer.cloudMode())) { reject(buffer, "cloud_type"); return true; }
-                probe = buffer.cloudProbe(entry);
+            }
+            if (machine == null) {
+                if (machineCursor >= controllers.size()) {
+                    if (ambiguousMatches != null) {
+                        QUEUES.get(buffer.getLevel().getServer()).ambiguity(buffer, entry, ambiguousMatches);
+                        reject(buffer, "cloud_ambiguous");
+                    } else {
+                        QUEUES.get(buffer.getLevel().getServer()).clearAmbiguity(buffer, entry);
+                        reject(buffer, "iv_match");
+                    }
+                    return true;
+                }
+                machine = controllers.get(machineCursor++); recipeCursor = 0; matches = new CloudPatternMatching.MatchSet(index);
+                probe = buffer.cloudProbe(entry, machine);
                 if (probe == null) { reject(buffer, "cloud_decode"); return true; }
                 recipes = index.candidates(probe);
             }
             if (recipeCursor < recipes.size()) {
                 GTRecipe recipe = recipes.get(recipeCursor++);
-                if (CloudPatternMatching.matches(recipe, machine, probe)) { matches++; matchedRecipe = recipe; }
-                if (matches > 1) { reject(buffer, "cloud_ambiguous"); return true; }
+                matches.add(recipe, machine, probe);
             }
             if (recipeCursor == recipes.size()) {
-                if (matches == 1 && entry.status() == CloudLedger.Status.AVAILABLE && buffer.iv$getState().accepting) {
-                    // Same library/mode/original/probe shares one election across scans.
+                if (matches.unique() == null) {
+                    if (matches.ambiguous() && ambiguousMatches == null) ambiguousMatches = matches;
+                    machine = null; return true;
+                }
+                QUEUES.get(buffer.getLevel().getServer()).clearAmbiguity(buffer, entry);
+                if (matches.unique() != null && entry.status() == CloudLedger.Status.AVAILABLE && buffer.iv$getState().accepting) {
+                    // Every endpoint validates its own machines before sharing this election.
                     var level = (net.minecraft.server.level.ServerLevel)buffer.getLevel();
                     var queue = QUEUES.get(level.getServer());
-                    var key = new SelectionKey(new Group(libraryId, mode), entry.id(), observedRevision, index, probe);
-                    var selection = queue.selection(key, recipes);
+                    var key = new SelectionKey(new Group(libraryId, mode), entry.id(), observedRevision, index);
+                    var selection = queue.selection(key);
                     selection.step(queue, level);
                     // Readiness checks can re-enter membership notifications. Never use
                     // a detached election or authority/endpoint epoch after that callback.
@@ -185,8 +233,7 @@ public final class CloudPatternAllocator {
                         buffer.cloudLeased(entry); CloudPatternDiagnostics.clear(library, entry.id());
                     }
                 }
-                if (matches == 1) { buffer.cloudValidateLease(entry); CloudPatternDiagnostics.clear(library, entry.id(), buffer.cloudNodeId()); }
-                if (matches != 1) { reject(buffer, "iv_match"); return true; }
+                if (matches.unique() != null) { buffer.cloudValidateLease(entry); CloudPatternDiagnostics.clear(library, entry.id(), buffer.cloudNodeId()); }
                 entry = null;
             }
             return true;

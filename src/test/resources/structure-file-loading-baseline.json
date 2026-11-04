@@ -115,10 +115,10 @@
     ]
   },
   "gtl/lucid_etchdreamer_preview_panel.pattern.gz": {
-    "width": 5,
-    "height": 5,
+    "width": 11,
+    "height": 11,
     "depth": 3,
-    "sha256": "65bb3f0caccbc1b2cec005dfbd74404090773dd661e7ce0bf8c43ef3e912eca9",
+    "sha256": "1873b10c8d7e4a7f84ffc404c66e6c73f3cc0b9ebe669051636fa69347267549",
     "characters": [
       " ",
       "C",

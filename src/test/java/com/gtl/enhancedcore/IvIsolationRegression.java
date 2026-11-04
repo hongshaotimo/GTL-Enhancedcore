@@ -384,8 +384,9 @@ public final class IvIsolationRegression {
                 "Fuxi isolated-order baseline is 128 threads");
         check(com.gtl.enhancedcore.common.recipe.iv.IvMachineScope.KEEP_NATIVE_THREADS_WITHOUT_BUFFER.contains(path),
                 "ordinary Fuxi mode retains upstream ADD thread behavior");
-        check(com.gtl.enhancedcore.common.structure.NativeIsolationPatterns.targets(id),
-                "Fuxi keeps upstream geometry while its material ports receive IV mutual-exclusion rules");
+        check(com.gtl.enhancedcore.common.structure.GtlMegastructurePatterns.targets(id)
+                        && !com.gtl.enhancedcore.common.structure.NativeIsolationPatterns.targets(id),
+                "Fuxi uses the requested blueprint through the replacement path that retains IV material-port restrictions");
         check(com.gtl.enhancedcore.common.util.TooltipPolicy.nativePages(path).contains("native_isolation"),
                 "Fuxi reuses localized native isolation restrictions, thread count and recipe catalog");
         try {
@@ -397,6 +398,12 @@ public final class IvIsolationRegression {
                     "src/main/java/com/gtl/enhancedcore/mixin/gtlcore/IvNativeAddMultipleAccessor.java"));
             check(accessor.contains("GTLAddMultipleRecipesLogic.class") && accessor.contains("@Invoker(\"getRecipeCheck\")"),
                     "ADD protected recipe-check callback is accessed through a precise invoker");
+            String replacements = java.nio.file.Files.readString(java.nio.file.Path.of(
+                    "src/main/java/com/gtl/enhancedcore/common/structure/GtlMegastructurePatterns.java"));
+            check(replacements.contains("IvMachineScope.nativeTarget(id)")
+                            && replacements.contains("new com.gtl.enhancedcore.common.recipe.iv.IvNativeHatches()")
+                            && replacements.contains("isolatedHatches.restrict(predicate)"),
+                    "the custom-geometry path still applies the shared IV port mutual-exclusion predicate");
         } catch (java.io.IOException failure) {
             throw new AssertionError(failure);
         }

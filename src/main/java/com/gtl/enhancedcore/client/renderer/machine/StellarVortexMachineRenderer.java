@@ -33,7 +33,7 @@ public final class StellarVortexMachineRenderer extends WorkableCasingMachineRen
         float fade = old + (target-old)*step;
         if (fade < .001F && target == 0) { visibility.remove(entity); return; }
         visibility.put(entity,new Fade(fade,now));
-        // Source C=(98,58,60), center block-index=(98.5,107.5,98.5).
+        // Source C=(99,58,61); imported C=(100,58,138), effect index=(99.5,107.5,99.5).
         // MIN_Z import maps source +X to pattern -X and source +Z to pattern -Z.
         var center=offset(station,-.5,49.5,-38.5);
         var world=Vec3.atCenterOf(entity.getBlockPos()).add(center[0],center[1],center[2]);

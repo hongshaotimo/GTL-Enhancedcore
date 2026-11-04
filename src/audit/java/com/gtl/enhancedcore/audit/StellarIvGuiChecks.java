@@ -268,6 +268,13 @@ public final class StellarIvGuiChecks {
         }
         set(machine, "parts", parts);
         set(machine, "partPositions", parts.stream().map(p -> p.self().getPos()).toArray(BlockPos[]::new));
+        if (client) {
+            // This fixture installs a real super-buffer on both sides. In game,
+            // mode arrives through RecipeLogic's DescSynced fields, never by a
+            // renderer scanning the client-side structure list.
+            ((com.gtl.enhancedcore.common.recipe.iv.IvNativeAccess) machine.getRecipeLogic())
+                    .iv$syncMode(IvMachineScope.nativeTarget(machine), false);
+        }
         // Real supplier/controller/recipe logic retained; only loaded part membership is seeded.
         var player = (AuditPlayer) unsafe.allocateInstance(AuditPlayer.class);
         player.inventory = new net.minecraft.world.entity.player.Inventory(player);

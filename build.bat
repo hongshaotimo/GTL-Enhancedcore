@@ -15,6 +15,10 @@ if /I "%~1"=="--deploy" (
     set "BUILD_ARGS=%BUILD_ARGS% -Deploy"
     goto next
 )
+if /I "%~1"=="--skip-tests" (
+    set "BUILD_ARGS=%BUILD_ARGS% -SkipTests"
+    goto next
+)
 if /I "%~1"=="--sync-dependencies" (
     set "BUILD_ARGS=%BUILD_ARGS% -SyncDependencies"
     goto next

@@ -7,19 +7,19 @@
       47
     ],
     "sourceSize": [
-      197,
-      83,
-      209
+      131,
+      55,
+      139
     ],
     "size": [
-      197,
-      83,
-      209
+      131,
+      55,
+      139
     ],
     "sourceController": [
-      93,
-      41,
-      208
+      62,
+      27,
+      138
     ],
     "sourceNormal": [
       0,
@@ -27,9 +27,9 @@
       1
     ],
     "controllerPosition": [
-      93,
-      41,
-      208
+      62,
+      27,
+      138
     ],
     "bindings": {
       " ": {
@@ -53,43 +53,6 @@
         "block": "gtlcore:lafium_mechanical_casing",
         "fallback": "gtlcore:lafium_mechanical_casing"
       },
-      "A": {
-        "mode": "casing",
-        "sample": [
-          46,
-          2,
-          21
-        ],
-        "block": "gtlcore:lafium_mechanical_casing"
-      },
-      "B": {
-        "mode": "original",
-        "sample": [
-          0,
-          2,
-          20
-        ],
-        "block": "gtceu:enriched_naquadah_frame"
-      },
-      "D": {
-        "mode": "literal",
-        "block": "gtlcore:naquadah_alloy_casing",
-        "properties": {}
-      },
-      "E": {
-        "mode": "original",
-        "sample": [
-          1,
-          2,
-          21
-        ],
-        "block": "gtceu:superconducting_coil"
-      },
-      "F": {
-        "mode": "literal",
-        "block": "gtceu:laminated_glass",
-        "properties": {}
-      },
       "G": {
         "mode": "literal",
         "block": "gtceu:cyan_lamp",
@@ -99,6 +62,16 @@
           "lit": "true",
           "powered": "false"
         }
+      },
+      "B": {
+        "mode": "literal",
+        "block": "gtceu:frostproof_machine_casing",
+        "properties": {}
+      },
+      "F": {
+        "mode": "literal",
+        "block": "gtceu:laminated_glass",
+        "properties": {}
       },
       "I": {
         "mode": "literal",
@@ -110,6 +83,34 @@
           "powered": "false"
         }
       },
+      "K": {
+        "mode": "literal",
+        "block": "gtceu:stable_machine_casing",
+        "properties": {}
+      },
+      "E": {
+        "mode": "original",
+        "sample": [
+          1,
+          2,
+          21
+        ],
+        "block": "gtceu:superconducting_coil"
+      },
+      "A": {
+        "mode": "casing",
+        "sample": [
+          46,
+          2,
+          21
+        ],
+        "block": "gtlcore:lafium_mechanical_casing"
+      },
+      "D": {
+        "mode": "literal",
+        "block": "gtlcore:naquadah_alloy_casing",
+        "properties": {}
+      },
       "J": {
         "mode": "original",
         "sample": [
@@ -118,48 +119,65 @@
           19
         ],
         "block": "kubejs:accelerated_pipeline"
-      },
-      "K": {
-        "mode": "literal",
-        "block": "gtceu:fusion_casing_mk2",
-        "properties": {
-          "active": "false"
-        }
-      },
-      "L": {
-        "mode": "literal",
-        "block": "gtceu:zpm_machine_casing",
-        "properties": {}
-      },
-      "N": {
-        "mode": "literal",
-        "block": "gtceu:tungstensteel_pipe_casing",
-        "properties": {}
       }
     },
     "counts": {
-      " ": 3066584,
-      "D": 47695,
-      "A": 211392,
-      "E": 48791,
-      "B": 9409,
-      "J": 19367,
-      "L": 2092,
-      "N": 968,
-      "G": 14,
-      "K": 3244,
-      "F": 7774,
-      "I": 4,
-      "#": 24,
-      "@": 1
+      " ": 870483,
+      "#": 174,
+      "@": 1,
+      "A": 57476,
+      "B": 10416,
+      "D": 32293,
+      "E": 11838,
+      "F": 3916,
+      "G": 127,
+      "I": 191,
+      "J": 6845,
+      "K": 7735
     },
     "hatches": [
       "#"
     ],
     "controller": "@",
-    "diamondOreMarkers": 24,
+    "diamondOreMarkers": 174,
     "hatchFallback": "gtlcore:lafium_mechanical_casing",
-    "sourceSha256": "bafdbf03ea404fd36afe547d640f8a53cb6e0ea67ea8dd74dd82d9d2338dac3d",
-    "sha256": "ef014750dfb3491ef3de9449ee83c194a4e1e476f8d7165c23283166318a9229"
+    "sourceSha256": "fc23f172d6feb319fd2e972037326100ffbe58cd4621107600d5b310e31b1b88",
+    "sha256": "9432c9dedf55b5d7201e3a1250b0a3fd7777ef684423d8bc5bb7e65274ea8cee",
+    "sourceRevision": "user-request-20261102",
+    "sourceSchematic": "SchemTool/input/super_particle_collider.schem",
+    "sourceCounts": {
+      " ": 870030,
+      "#": 174,
+      "@": 1,
+      "A": 57476,
+      "B": 10665,
+      "D": 32413,
+      "E": 11838,
+      "F": 3916,
+      "G": 127,
+      "I": 191,
+      "J": 6845,
+      "K": 7819
+    },
+    "rawPatternSha256": "bf237ccc01e1ea828d05a4df802364de0facf035d22bf3a329636e18c0b6af11",
+    "hiddenRemoval": {
+      "algorithm": "exterior-26-once; opaque-model-and-texture-evidence; removed-to-any",
+      "removed": 453,
+      "removedBySymbol": {
+        "B": 249,
+        "D": 120,
+        "K": 84
+      },
+      "opaqueSymbols": "BKD",
+      "protectedModes": [
+        "controller",
+        "hatch",
+        "original",
+        "casing",
+        "heating_coils",
+        "distorter_coils"
+      ],
+      "protectedLiteralCoilsAndStates": true
+    }
   }
 }

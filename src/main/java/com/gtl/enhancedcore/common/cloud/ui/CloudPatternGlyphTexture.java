@@ -3,13 +3,14 @@ package com.gtl.enhancedcore.common.cloud.ui;
 import com.lowdragmc.lowdraglib.gui.texture.IGuiTexture;
 
 /** Small unscaled terminal glyphs, kept on the same pixel grid as AE's 18px slots. */
-final class CloudPatternGlyphTexture implements IGuiTexture {
-    static final IGuiTexture SEARCH = new CloudPatternGlyphTexture("011100000", "100010000", "100010000", "100010000", "011100000", "000011000", "000001100", "000000000", "000000000");
-    static final IGuiTexture PREVIOUS = new CloudPatternGlyphTexture(1);
-    static final IGuiTexture NEXT = new CloudPatternGlyphTexture(2);
-    static final IGuiTexture UPLOAD = new CloudPatternGlyphTexture(3);
-    static final IGuiTexture UNDO = new CloudPatternGlyphTexture(4);
-    static final IGuiTexture BACK = PREVIOUS;
+public final class CloudPatternGlyphTexture implements IGuiTexture {
+    public static final IGuiTexture SEARCH = new CloudPatternGlyphTexture("011100000", "100010000", "100010000", "100010000", "011100000", "000011000", "000001100", "000000000", "000000000");
+    public static final IGuiTexture PREVIOUS = new CloudPatternGlyphTexture(1);
+    public static final IGuiTexture NEXT = new CloudPatternGlyphTexture(2);
+    public static final IGuiTexture UPLOAD = new CloudPatternGlyphTexture(3);
+    public static final IGuiTexture UNDO = new CloudPatternGlyphTexture(4);
+    public static final IGuiTexture ORDERS = new CloudPatternGlyphTexture(5);
+    public static final IGuiTexture BACK = PREVIOUS;
     private final String[] pixels;
     private final int nativeIcon;
     private CloudPatternGlyphTexture(String... pixels) { this.pixels = pixels; nativeIcon = 0; }
@@ -21,6 +22,7 @@ final class CloudPatternGlyphTexture implements IGuiTexture {
                 case 1 -> appeng.client.gui.Icon.ARROW_LEFT;
                 case 2 -> appeng.client.gui.Icon.ARROW_RIGHT;
                 case 4 -> appeng.client.gui.Icon.ARROW_DOWN;
+                case 5 -> appeng.client.gui.Icon.VIEW_MODE_CRAFTING;
                 default -> appeng.client.gui.Icon.ARROW_UP;
             };
             int size = Math.min(16, Math.min(width - 2, height - 2));

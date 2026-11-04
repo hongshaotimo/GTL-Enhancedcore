@@ -158,8 +158,17 @@ public final class CloudPatternLibraryMachine extends MultiblockControllerMachin
                 && menu.getModularUI().holder == this;
     }
     private boolean openingAuthorized(ServerPlayer player) {
-        return isFormed() && player.serverLevel() == getLevel() && CloudLibraryService.authorized(player, libraryId, this)
+        return isFormed() && player.serverLevel() == getLevel()
+                && (CloudLibraryService.authorized(player, libraryId, this) || recoveryAuthorized(player))
                 && player.distanceToSqr(getPos().getX()+.5, getPos().getY()+.5,getPos().getZ()+.5) <= 64;
+    }
+    private boolean recoveryAuthorized(ServerPlayer player) {
+        if (!cloud$importQuarantined() || libraryId == null) return false;
+        var chunk = serverLevel().getChunkSource().getChunkNow(getPos().getX() >> 4, getPos().getZ() >> 4);
+        if (chunk == null || chunk.getBlockEntity(getPos()) != getHolder().getSelf()
+                || !serverLevel().mayInteract(player, getPos()) || !CloudLibraryService.claimAllows(player, serverLevel(), getPos())) return false;
+        try { return CloudPatternStore.get(serverLevel()).libraryForReview(libraryId).authorized(player.getUUID()); }
+        catch (RuntimeException unavailable) { return false; }
     }
     @Override public InteractionResult onUse(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
         ItemStack held = player.getItemInHand(hand);
@@ -204,11 +213,10 @@ public final class CloudPatternLibraryMachine extends MultiblockControllerMachin
         if (!(opening ? openingAuthorized(player) : viewAuthorized(player))) { result.putString("status", "gtl_enhancedcore.cloud.status.denied"); return result; }
         try {
             result = CloudLibraryService.page(serverLevel(), libraryId, search, type, page, selected, localized);
-            result.merge(CloudImportJournal.reviewPage(serverLevel(), libraryId, recoveryPage));
             result.putString("status", cloud$importQuarantined() ? "gtl_enhancedcore.cloud.status.review" : !isFormed() ? "gtl_enhancedcore.cloud.status.unformed" : "gtl_enhancedcore.cloud.status.ready");
             result.putString("diagnostic", diagnostic); result.putString("diagnosticDetail", diagnosticDetail); result.putString("library", libraryId.toString());
             var network = CloudLibraryNetwork.resolve(serviceGrid(), player);
-            result.putBoolean("networkConnected", network.available()); result.putString("networkStatus", network.translationKey());
+            result.putBoolean("networkConnected", meNetworkConnected()); result.putString("networkStatus", network.translationKey());
             result.put("terminalReviewDiagnostics", CloudTerminalUpload.reviewDiagnostics(libraryId));
             result.putBoolean("importResult", hasImportResult); result.putBoolean("importPreview", lastImportPreview);
             result.putInt("importCount", importCount); result.putInt("importScanned", importScanned); result.putInt("importTotalSlots", importTotalSlots);
@@ -219,6 +227,16 @@ public final class CloudPatternLibraryMachine extends MultiblockControllerMachin
             result.putString("status", "gtl_enhancedcore.cloud.status.review"); result.putString("diagnostic", "gtl_enhancedcore.cloud.status.review");
             result.putString("diagnosticDetail", failure.getMessage() == null ? failure.getClass().getSimpleName() : failure.getMessage());
         }
+        result.putBoolean("importQuarantined", cloud$importQuarantined());
+        result.putString("quarantineReason", importMarkers.getString("quarantine"));
+        result.putBoolean("recoveryBusy", inboxUpload != null);
+        result.putBoolean("networkConnected", meNetworkConnected());
+        try {
+            result.putBoolean("recoveryOwner", CloudPatternStore.get(serverLevel()).libraryForReview(libraryId).authorized(player.getUUID()));
+            result.merge(CloudImportJournal.reviewPage(serverLevel(), libraryId, recoveryPage, this));
+        } catch (RuntimeException unavailable) {
+            result.putString("diagnosticDetail", unavailable.getMessage() == null ? unavailable.getClass().getSimpleName() : unavailable.getMessage());
+        }
         CloudNetworkPatternImport.snapshot(this, result);
         CloudPatternInventories.decorate(this, player, result);
         return result;
@@ -227,6 +245,13 @@ public final class CloudPatternLibraryMachine extends MultiblockControllerMachin
         if (!menuAuthorized(player)) return;
         try {
             diagnosticDetail = "";
+            if (action.equals("recover") || action.equals("review_transfer")) {
+                if (inboxUpload != null) throw new IllegalStateException("Upload is still committing");
+                CloudImportJournal.retry(serverLevel(), libraryId, player, UUID.fromString(payload.getString("recoveryId")));
+                diagnostic = "gtl_enhancedcore.cloud.status.ready"; uploadUiChange++;
+                return;
+            }
+            if (cloud$importQuarantined()) throw new IllegalStateException(importMarkers.getString("quarantine"));
             if (CloudPatternInventories.action(this, player, libraryId, action, payload)) return;
             var store = CloudPatternStore.get(serverLevel()); var library = store.library(libraryId);
             switch (action) {
@@ -250,7 +275,6 @@ public final class CloudPatternLibraryMachine extends MultiblockControllerMachin
                 }
                 case "grant", "revoke" -> {
                     UUID delegate = UUID.fromString(payload.getString("delegate"));
-                    if (action.equals("grant") && !CloudLibraryService.sameTeam(owner, delegate)) throw new SecurityException("Delegate must remain on the owner team");
                     library.grant(player.getUUID(), delegate, action.equals("grant")); store.checkpoint();
                 }
                 case "preview_import", "bulk_import" -> {
@@ -325,13 +349,22 @@ public final class CloudPatternLibraryMachine extends MultiblockControllerMachin
                     if (!uploadSourceLoaded || uploadSourceRemoved || MetaMachine.getMachine(getLevel(), getPos()) != this) return;
                     diagnostic = "gtl_enhancedcore.cloud.status.ready";
                 } catch (RuntimeException completionFailure) {
+                    try { CloudImportJournal.reviewUpload(uploadLevel, operation, completionFailure); }
+                    catch (RuntimeException journalFailure) { completionFailure.addSuppressed(journalFailure); }
                     if (!uploadSourceLoaded || uploadSourceRemoved || MetaMachine.getMachine(getLevel(), getPos()) != this) return;
+                    importMarkers.putUUID("reviewOperation", operation);
                     cloud$quarantineImport("Upload " + operation + " requires review");
                     recordFailure(completionFailure);
                 }
                 uploadUiChange++; markDirty();
             }));
-        } catch (RuntimeException failure) { cloud$quarantineImport("Upload " + operation + " requires review"); sink.uncertain(operation, failure); throw failure; }
+        } catch (RuntimeException failure) { quarantineUpload(serverLevel(), operation, failure); throw failure; }
+    }
+    private void quarantineUpload(ServerLevel level, UUID operation, RuntimeException failure) {
+        importMarkers.putUUID("reviewOperation", operation);
+        cloud$quarantineImport("Upload " + operation + " requires review");
+        try { CloudImportJournal.reviewUpload(level, operation, failure); }
+        catch (RuntimeException journalFailure) { failure.addSuppressed(journalFailure); }
     }
     /** Defer until the native slot click has finished its temporary clear/restore probes. */
     void scheduleInboxUpload(ServerPlayer player) {
@@ -458,7 +491,7 @@ public final class CloudPatternLibraryMachine extends MultiblockControllerMachin
     @Override public boolean cloud$processed(UUID tx) { return importMarkers.getCompound("processed").getBoolean(tx.toString()); }
     @Override public void cloud$markProcessed(UUID tx) { CompoundTag processed = importMarkers.getCompound("processed"); processed.putBoolean(tx.toString(), true); importMarkers.put("processed", processed); markDirty(); }
     @Override public boolean cloud$importQuarantined() { return importMarkers.contains("quarantine"); }
-    @Override public void cloud$quarantineImport(String reason) { importMarkers.putString("quarantine", reason == null ? "Uncertain import" : reason); markDirty(); }
+    @Override public void cloud$quarantineImport(String reason) { importMarkers.putString("quarantine", reason == null ? "Uncertain import" : reason); uploadUiChange++; markDirty(); }
     @Override public CompoundTag cloud$saveImportMarkers() { return importMarkers.copy(); }
     @Override public void cloud$loadImportMarkers(CompoundTag tag) { importMarkers = tag.copy(); }
 }

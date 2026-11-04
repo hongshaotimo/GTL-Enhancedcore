@@ -358,7 +358,7 @@ public final class SpecialMachineRegistration {
      * 正面同样因 {@code gtladditions:nexus_satellite_factory_mk1} 无贴图资源，
      * 改用本包真实存在的聚变族正面 overlay {@code gtceu:block/multiblock/fusion_reactor}。
      * <p>
-     * 仓室：维护仓、并行控制仓、输入输出仓、Ω-天球分歧引擎；不接受能源仓或激光靶仓。
+     * 仓室：仅物品/流体输入输出；不接受维护、并行、Ω、能源仓或激光靶仓。
      */
     public static MultiblockMachineDefinition registerStellarConfinementFusionReactor() {
         return GTLEnhancedcore.REGISTRATE

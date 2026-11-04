@@ -18,7 +18,10 @@ public final class GalaxyEngineSupport {
     }
     private static boolean inspect(MultiblockMachineDefinition definition) {
         if (definition.getPatternFactory() == null) return false;
-        var matches = ((BlockPatternAccessor)definition.getPatternFactory().get()).gtlEnhancedcore$getBlockMatches();
+        return hasEngine(definition.getPatternFactory().get());
+    }
+    private static boolean hasEngine(BlockPattern pattern) {
+        var matches = ((BlockPatternAccessor)pattern).gtlEnhancedcore$getBlockMatches();
         var seen = java.util.Collections.newSetFromMap(new IdentityHashMap<TraceabilityPredicate, Boolean>());
         for (var aisle : matches) for (var row : aisle) for (var predicate : row)
             if (seen.add(predicate) && Stream.concat(predicate.common.stream(), predicate.limited.stream()).anyMatch(simple -> {
@@ -32,6 +35,9 @@ public final class GalaxyEngineSupport {
         return false;
     }
     public static BlockPattern addMageEngine(BlockPattern pattern) {
+        // Factory wrappers can compose this extension more than once. Reuse the existing native
+        // predicate and its shared quota; another previewCount(1) would place a second engine.
+        if (hasEngine(pattern)) return pattern;
         var access = (BlockPatternAccessor)pattern;
         var matches = access.gtlEnhancedcore$getBlockMatches().clone();
         var replacements = new IdentityHashMap<TraceabilityPredicate, TraceabilityPredicate>();

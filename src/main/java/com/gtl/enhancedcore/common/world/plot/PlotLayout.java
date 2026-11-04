@@ -6,6 +6,16 @@ public final class PlotLayout {
     private PlotLayout() {}
 
     public static Cell surfaceAt(PlotSettings settings, int worldX, int worldZ) {
+        if (settings.isCampus()) {
+            return switch (surfaceBlock(settings, worldX, worldZ)) {
+                case "minecraft:black_concrete" -> Cell.ROAD;
+                case "minecraft:white_concrete", "minecraft:smooth_quartz" -> Cell.PLOT_EDGE;
+                case "minecraft:sea_lantern" -> Cell.MARKER;
+                case "minecraft:yellow_concrete" -> Cell.LINE;
+                case "minecraft:gray_concrete" -> Cell.BORDER;
+                default -> Cell.GROUND;
+            };
+        }
         int period = settings.plotBlocks();
         int markerPeriod = settings.markerMode() == PlotSettings.MarkerMode.CHUNK ? 16 : period;
         if (settings.markerMode() != PlotSettings.MarkerMode.NONE
@@ -30,6 +40,7 @@ public final class PlotLayout {
             case GARDEN -> edge < border || (edge >= border + width && edge < border * 2 + width)
                     ? Cell.BORDER : edge < border + width ? Cell.ROAD : Cell.GROUND;
             case AVENUE -> edge < width ? Cell.ROAD : edge < width + border ? Cell.BORDER : Cell.GROUND;
+            case CAMPUS, CAMPUS_PARK, CAMPUS_COMPACT, CAMPUS_DENSE, CAMPUS_WOODLAND -> Cell.GROUND;
         };
         if (base != Cell.ROAD || settings.lineStyle() == PlotSettings.LineStyle.NONE) return base;
         int inset = settings.roadStyle() == PlotSettings.RoadStyle.GARDEN ? border : 0;
@@ -104,6 +115,14 @@ public final class PlotLayout {
     }
 
     public static String surfaceBlock(PlotSettings settings, int worldX, int worldZ) {
+        if (settings.isCampus()) return switch (settings.roadStyle()) {
+            case CAMPUS -> LegacyPlannedCampus.surfaceBlock(settings, worldX, worldZ);
+            case CAMPUS_PARK -> ParkPlannedCampus.surfaceBlock(settings, worldX, worldZ);
+            case CAMPUS_COMPACT -> CompactPlannedCampus.surfaceBlock(settings, worldX, worldZ);
+            case CAMPUS_DENSE -> DensePlannedCampus.surfaceBlock(settings, worldX, worldZ);
+            case CAMPUS_WOODLAND -> PlannedCampus.surfaceBlock(settings, worldX, worldZ);
+            default -> throw new IllegalStateException("Not a campus preset");
+        };
         return switch (surfaceAt(settings, worldX, worldZ)) {
             case GROUND -> settings.groundBlock();
             case PLOT_EDGE -> settings.plotEdgeBlock();
@@ -115,10 +134,58 @@ public final class PlotLayout {
     }
 
     public static String blockIdAt(PlotSettings settings, int worldX, int y, int worldZ) {
-        if (y < settings.bedrockY() || y > settings.surfaceY()) return "minecraft:air";
+        if (settings.isCampus() && !campusTerrain(settings, worldX, worldZ)) return "minecraft:air";
+        if (y < settings.bedrockY()) return "minecraft:air";
+        if (y > settings.surfaceY()) {
+            if (!settings.isCampus()) return "minecraft:air";
+            String above = switch (settings.roadStyle()) {
+                case CAMPUS -> LegacyPlannedCampus.blockAboveAt(settings, worldX, y - settings.surfaceY(), worldZ);
+                case CAMPUS_PARK -> ParkPlannedCampus.blockAboveAt(settings, worldX, y - settings.surfaceY(), worldZ);
+                case CAMPUS_COMPACT -> CompactPlannedCampus.blockAboveAt(settings, worldX, y - settings.surfaceY(), worldZ);
+                case CAMPUS_DENSE -> DensePlannedCampus.blockAboveAt(settings, worldX, y - settings.surfaceY(), worldZ);
+                case CAMPUS_WOODLAND -> PlannedCampus.blockAboveAt(settings, worldX, y - settings.surfaceY(), worldZ);
+                default -> throw new IllegalStateException("Not a campus preset");
+            };
+            return above == null ? "minecraft:air" : above;
+        }
         if (y == settings.bedrockY()) return "minecraft:bedrock";
         if (y == settings.surfaceY()) return surfaceBlock(settings, worldX, worldZ);
+        if (settings.isCampus()) {
+            String service = campusFoundationAt(worldX, y - settings.surfaceY(), worldZ);
+            if (service != null) return service;
+            String facing = switch (settings.roadStyle()) {
+                case CAMPUS -> LegacyPlannedCampus.foundationBlockAt(worldX, y - settings.surfaceY(), worldZ);
+                case CAMPUS_PARK -> ParkPlannedCampus.foundationBlockAt(worldX, y - settings.surfaceY(), worldZ);
+                case CAMPUS_COMPACT -> CompactPlannedCampus.foundationBlockAt(worldX, y - settings.surfaceY(), worldZ);
+                case CAMPUS_DENSE -> DensePlannedCampus.foundationBlockAt(worldX, y - settings.surfaceY(), worldZ);
+                case CAMPUS_WOODLAND -> PlannedCampus.foundationBlockAt(worldX, y - settings.surfaceY(), worldZ);
+                default -> throw new IllegalStateException("Not a campus preset");
+            };
+            if (facing != null) return facing;
+        }
         return settings.groundBlock();
+    }
+
+    private static boolean campusTerrain(PlotSettings settings, int x, int z) {
+        return switch (settings.roadStyle()) {
+            case CAMPUS -> LegacyPlannedCampus.hasTerrain(x, z);
+            case CAMPUS_PARK -> ParkPlannedCampus.hasTerrain(x, z);
+            case CAMPUS_COMPACT -> CompactPlannedCampus.hasTerrain(x, z);
+            case CAMPUS_DENSE -> DensePlannedCampus.hasTerrain(x, z);
+            case CAMPUS_WOODLAND -> PlannedCampus.hasTerrain(x, z);
+            default -> false;
+        };
+    }
+
+    /** Empty decorative cable galleries below the AE promenade; players fit their own network. */
+    private static String campusFoundationAt(int x, int y, int z) {
+        if (Math.abs(x) > 80 || Math.abs(z) > 80 || y < -7 || y > -2) return null;
+        int cross = Math.min(Math.abs(x), Math.abs(z));
+        if (cross > 3) return null;
+        if (y == -7 || cross == 3) return "minecraft:smooth_quartz";
+        if (y == -2) return Math.floorMod(Math.max(Math.abs(x), Math.abs(z)), 12) == 0
+                ? "minecraft:sea_lantern" : "minecraft:smooth_quartz";
+        return "minecraft:air";
     }
 
     public static int plotCoordinate(PlotSettings settings, int worldCoordinate) {

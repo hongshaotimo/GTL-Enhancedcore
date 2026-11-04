@@ -26,7 +26,9 @@ public abstract class IvMachineModeProviderMixin {
         // GTCEu's appendTooltip translates each ResourceLocation as namespace.path.
         // A single synthetic entry lets its compact and expanded views use the same mode.
         ListTag modes = new ListTag();
-        modes.add(StringTag.valueOf(com.gtl.enhancedcore.common.recipe.iv.IvMachineDisplay.MODE_ID));
+        var access = (com.gtl.enhancedcore.common.recipe.iv.IvNativeAccess) machine.getRecipeLogic();
+        modes.add(StringTag.valueOf(access.iv$nativeInputsActive() ? "gtl_enhancedcore:gui.cloud_native_mode"
+                : com.gtl.enhancedcore.common.recipe.iv.IvMachineDisplay.MODE_ID));
         data.put("RecipeTypes", modes);
         data.putInt("CurrentRecipeType", 0);
         ci.cancel();

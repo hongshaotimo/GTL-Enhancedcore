@@ -6,6 +6,7 @@ import com.gregtechceu.gtceu.api.registry.registrate.GTRegistrate;
 import com.gtl.enhancedcore.common.data.machine.InfinitySingularityRecipeLoader;
 import com.gtl.enhancedcore.common.data.machine.EquipmentRecipeLoader;
 import com.gtl.enhancedcore.common.data.machine.PlatinumRefiningRecipeLoader;
+import com.gtl.enhancedcore.common.data.machine.LanthanideRefiningRecipeLoader;
 import com.gtl.enhancedcore.common.data.machine.ExoticProliferationRecipeLoader;
 import com.gtl.enhancedcore.common.data.machine.ExtremeReactionRecipeLoader;
 
@@ -49,6 +50,7 @@ public class GTLEnhancedcoreGTAddon implements IGTAddon {
         EquipmentRecipeLoader.registerRecipes(provider);
         InfinitySingularityRecipeLoader.registerRecipes(provider);
         PlatinumRefiningRecipeLoader.registerRecipes(provider);
+        LanthanideRefiningRecipeLoader.registerRecipes(provider);
         ExoticProliferationRecipeLoader.registerRecipes(provider);
         ExtremeReactionRecipeLoader.registerRecipes(provider);
         com.gtl.enhancedcore.common.data.machine.BrilliantStarsRecipeLoader.registerRecipes(provider);

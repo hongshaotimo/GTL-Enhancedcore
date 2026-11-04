@@ -106,9 +106,27 @@ public final class PersonalPlotStore {
             JsonObject manifest = JsonParser.parseString(readEntry(zip, MANIFEST)).getAsJsonObject();
             if (manifest.get("version").getAsInt() != 1 || !owner.toString().equals(manifest.get("owner").getAsString())) throw new IOException("Personal plot owner mismatch");
             PlotSettings settings = decodePreset(manifest.get("settings").getAsString());
-            if (!JsonParser.parseString(readEntry(zip, dimensionEntry(owner))).equals(dimensionJson(settings))) throw new IOException("Personal plot definition mismatch");
+            if (!matchesDefinition(JsonParser.parseString(readEntry(zip, dimensionEntry(owner))), settings)) throw new IOException("Personal plot definition mismatch");
             return settings;
         } catch (RuntimeException invalid) { throw new IOException("Invalid personal plot pack; preserving owner identity", invalid); }
+    }
+    private static boolean matchesDefinition(com.google.gson.JsonElement stored, PlotSettings settings) {
+        JsonObject expected = dimensionJson(settings);
+        if (stored.equals(expected)) return true;
+        // Older definitions omit the optional campus frame flag; its default is off.
+        if (!settings.showMachineFrames()) {
+            JsonObject values = expected.getAsJsonObject("generator").getAsJsonObject("settings");
+            JsonObject geometry = values.getAsJsonObject("geometry_extras");
+            geometry.remove("show_machine_frames");
+            if (stored.equals(expected)) return true;
+        }
+        // V1 used a flat border_width and had no plot edge. Keep every other definition field exact.
+        if (settings.showMachineFrames() || settings.plotEdgeWidth() != 0
+                || !settings.plotEdgeBlock().equals("minecraft:white_concrete")) return false;
+        JsonObject values = expected.getAsJsonObject("generator").getAsJsonObject("settings");
+        JsonObject geometry = values.remove("geometry_extras").getAsJsonObject();
+        values.add("border_width", geometry.get("border_width"));
+        return stored.equals(expected);
     }
     private static String readEntry(ZipFile zip, String name) throws IOException {
         ZipEntry entry = zip.getEntry(name);
@@ -126,7 +144,7 @@ public final class PersonalPlotStore {
         }
     }
     private static PlotSettings decodePreset(String text) throws IOException {
-        try { return PlotPresetShare.decode(text); } catch (RuntimeException invalid) { throw new IOException("Invalid personal plot settings", invalid); }
+        try { return PlotPresetShare.decodeStored(text); } catch (RuntimeException invalid) { throw new IOException("Invalid personal plot settings", invalid); }
     }
     private static void force(Path path) throws IOException { try (FileChannel file = FileChannel.open(path, StandardOpenOption.WRITE)) { file.force(true); } }
     private static void cleanupTemporary(Path temporary, boolean committed, IOException failure) throws IOException {
@@ -150,6 +168,7 @@ public final class PersonalPlotStore {
         geometry.add("border_width", encoded.remove("border_width"));
         geometry.add("plot_edge_block", encoded.remove("plot_edge_block"));
         geometry.add("plot_edge_width", encoded.remove("plot_edge_width"));
+        geometry.add("show_machine_frames", encoded.remove("show_machine_frames"));
         encoded.add("geometry_extras", geometry);
         generator.add("settings", encoded);
         root.add("generator", generator); return root;

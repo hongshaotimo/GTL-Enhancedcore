@@ -190,6 +190,16 @@ public final class CloudPatternStore {
             Library value = new Library(id, owner); value.readChecked(tag); return value;
         }, () -> { Library missing = new Library(id, owner); missing.quarantine("Missing library shard"); return missing; }, libraryName(id)));
     }
+    /** Read-only recovery access to retained data after I/O failure, never corrupt partitions. */
+    public Library libraryForReview(UUID id) {
+        if (!server.isSameThread()) throw new IllegalStateException("Cloud review outside server thread");
+        if (!index.readable()) throw new IllegalStateException(index.diagnostic());
+        Library library = libraries.get(id);
+        if (library == null) library = library(id);
+        if (!library.readable() || !library.owner().equals(index.owners.get(id)))
+            throw new IllegalStateException("Library review authority is unavailable");
+        return library;
+    }
     public Node createNode(UUID owner, UUID libraryId, ResourceLocation dimension, long position) {
         check(); Library library = library(libraryId); library.requireActor(owner);
         UUID id = UUID.randomUUID(); library.ledger.addNode(id, owner, libraryId);
@@ -302,7 +312,6 @@ public final class CloudPatternStore {
     }
     public void resolveExternal(UUID libraryId, UUID actor, UUID operation, boolean externallyCommitted) {
         Library library = library(libraryId); library.requireActor(actor);
-        if (!library.owner.equals(actor)) throw new SecurityException("External reconciliation requires owner");
         library.ledger.reconcile(operation, externallyCommitted);
         var entry = library.entry(library.ledger.receipt(operation).subject());
         if (entry.status() == CloudLedger.Status.EXPORTED) library.unindexOriginal(entry); else library.indexOriginal(entry);
@@ -490,6 +499,7 @@ public final class CloudPatternStore {
         private final Map<UUID, Recovery> recoveries = new LinkedHashMap<>();
         private CloudLedger ledger = new CloudLedger();
         private CompoundTag catalysts = new CompoundTag();
+        private CompoundTag machineCatalysts = new CompoundTag();
         private CompoundTag importedCatalystGroups = new CompoundTag();
         private UUID importBatchActor;
         private int importBatchDepth, importBatchTick;
@@ -595,14 +605,37 @@ public final class CloudPatternStore {
             return List.copyOf(orderedEntries.subList(from, to));
         }
         public Set<UUID> delegates() { return Set.copyOf(delegates); }
-        public boolean authorized(UUID actor) { return owner.equals(actor) || delegates.contains(actor); }
+        /** Current FTB membership is authoritative, including offline owners and ordinary members.
+         * Saved delegate entries never keep a former teammate authorized after leaving. */
+        public boolean authorized(UUID actor) {
+            return com.gtl.enhancedcore.common.cloud.CloudLibraryService.sameTeam(owner, actor);
+        }
         public void grant(UUID actor, UUID delegate, boolean allowed) {
-            check(); requireHealthy(); if (!owner.equals(actor)) throw new SecurityException("Library owner required");
+            requireActor(actor);
+            if (allowed && !com.gtl.enhancedcore.common.cloud.CloudLibraryService.sameTeam(owner, delegate))
+                throw new SecurityException("Delegate must remain on the library team");
             boolean updated = allowed ? delegates.add(delegate) : delegates.remove(delegate);
             if (updated) changed();
         }
         private void requireActor(UUID actor) { check(); requireHealthy(); if (!authorized(actor)) throw new SecurityException("Cloud library denied"); }
         public CompoundTag catalysts() { requireHealthy(); return catalysts.copy(); }
+        /** Physical stock is owned once per library and machine definition, never per lease or controller. */
+        public CompoundTag machineCatalysts(String definition) {
+            requireHealthy(); requireMachineDefinition(definition);
+            return machineCatalysts.getCompound(definition).copy();
+        }
+        public Set<String> machineCatalystDefinitions() { requireHealthy(); return Set.copyOf(machineCatalysts.getAllKeys()); }
+        public void setMachineCatalysts(UUID actor, String definition, CompoundTag contents) {
+            requireActor(actor); requireMachineDefinition(definition); Objects.requireNonNull(contents);
+            if (machineCatalysts.getCompound(definition).equals(contents)) return;
+            if (contents.isEmpty()) machineCatalysts.remove(definition); else machineCatalysts.put(definition, contents.copy());
+            // Every pattern on this machine type can change classification, including other endpoints.
+            allocationChanged();
+        }
+        private static void requireMachineDefinition(String definition) {
+            ResourceLocation id = ResourceLocation.tryParse(Objects.requireNonNull(definition));
+            if (id == null || !id.toString().equals(definition)) throw new IllegalArgumentException("Invalid machine catalyst definition");
+        }
         /** Imported source groups own physical stock once; entries contain only a group UUID reference. */
         public CompoundTag importedCatalystGroups(UUID actor) { requireActor(actor); return importedCatalystGroups.copy(); }
         public CompoundTag getImportedCatalysts(UUID actor, UUID group) {
@@ -664,6 +697,7 @@ public final class CloudPatternStore {
             if (!meAnchor.isEmpty()) tag.put("meAnchor", meAnchor.copy());
             if (!openingCatalog.isEmpty()) tag.put("openingCatalog", openingCatalog.copy());
             tag.putInt("nextOrdinal", nextOrdinal); tag.put("catalysts", catalysts.copy());
+            tag.put("machineCatalysts", machineCatalysts.copy());
             tag.put("importedCatalystGroups", importedCatalystGroups.copy());
             tag.put("delegates", uuidList(delegates)); ListTag directory = new ListTag();
             entryPages.forEach((entry, page) -> {
@@ -692,6 +726,11 @@ public final class CloudPatternStore {
                     || !meAnchor.contains("position", Tag.TAG_LONG) || !meAnchor.contains("blockEntity", Tag.TAG_STRING)
                     || !meAnchor.contains("side", Tag.TAG_INT))) throw new IllegalArgumentException("Invalid ME network anchor");
             nextOrdinal = tag.getInt("nextOrdinal"); catalysts = tag.getCompound("catalysts").copy();
+            machineCatalysts = tag.getCompound("machineCatalysts").copy();
+            for (String definition : machineCatalysts.getAllKeys()) {
+                requireMachineDefinition(definition);
+                if (!machineCatalysts.contains(definition, Tag.TAG_COMPOUND)) throw new IllegalArgumentException("Invalid machine catalyst inventory");
+            }
             importedCatalystGroups = tag.getCompound("importedCatalystGroups").copy();
             for (String group : importedCatalystGroups.getAllKeys()) {
                 UUID.fromString(group);
@@ -934,6 +973,7 @@ public final class CloudPatternStore {
             super.setDirty(dirty);
         }
         public final boolean healthy() { return quarantined == null && !ioFailed; }
+        public final boolean readable() { return quarantined == null; }
         public final String diagnostic() { return diagnostic; }
         public final CompoundTag quarantinedData() { return quarantined == null ? new CompoundTag() : quarantined.copy(); }
         protected final void requireHealthy() { if (!healthy()) throw new IllegalStateException(diagnostic); }

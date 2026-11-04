@@ -21,14 +21,37 @@ final class PlotPresetShareRegression {
                 PlotSettings.LineStyle.DOUBLE, 31, 32, 8);
         String encoded = PlotPresetShare.encode(custom);
         check(PlotPresetShare.decode(encoded).equals(custom), "All sixteen custom fields survive interchange");
+        check(PlotPresetShare.decodeStored(encoded).equals(custom), "Current stored presets use the same complete schema as current interchange");
         check(PlotPresetShare.encode(PlotPresetShare.decode(encoded)).equals(encoded), "Export is deterministic");
         check(encoded.length() < PlotPresetShare.MAX_TEXT_LENGTH, "Complete presets fit the bounded editor");
         check(PlotPresetShare.decode("  \n" + encoded + "\r\n").equals(custom), "Pasted whitespace is harmless");
         PlotSettings edgeCustom = custom.withPlotEdgeBlock("minecraft:cyan_concrete").withPlotEdgeWidth(7);
         check(PlotPresetShare.decode(PlotPresetShare.encode(edgeCustom)).equals(edgeCustom),
                 "Plot edge material and width survive share roundtrip");
+        for (boolean frames : new boolean[] {false, true}) {
+            PlotSettings campus = PlotSettings.plannedCampus().withMachineFrames(frames);
+            String share = PlotPresetShare.encode(campus);
+            JsonObject root = JsonParser.parseString(share).getAsJsonObject();
+            check(root.get("version").getAsInt() == 3, "Campus frame choice uses v3 interchange");
+            check(root.getAsJsonObject("settings").get("show_machine_frames").getAsBoolean() == frames,
+                    "The frame choice is an explicit boolean in both share states");
+            check(PlotPresetShare.decode(share).equals(campus) && PlotPresetShare.decodeStored(share).equals(campus),
+                    "Share and stored decoders preserve the frame choice");
+            check(PlotPresetShare.encode(PlotPresetShare.decode(share)).equals(share),
+                    "Campus frame share is canonical in both states");
+        }
+        check(!PlotSettings.plannedCampus().showMachineFrames() && !PlotSettings.defaults().showMachineFrames(),
+                "New presets default support frames off");
+        PlotSettings framed = PlotSettings.plannedCampus().withMachineFrames(true);
+        check(framed.withSurfaceY(framed.surfaceY()).withGroundBlock("minecraft:cyan_concrete")
+                        .withPlotEdgeWidth(2).showMachineFrames(),
+                "Editing terrain fields preserves the selected frame choice");
+        check(framed.withRoadPreset(PlotSettings.RoadPreset.CITY).showMachineFrames(),
+                "Changing a road theme preserves the selected frame choice");
         for (var road : PlotSettings.RoadStyle.values()) for (var line : PlotSettings.LineStyle.values()) {
-            var settings = custom.withRoadStyle(road).withLineStyle(line);
+            var campus = PlotSettings.plannedCampus().withRoadStyle(road);
+            // Every fixed campus needs foundation and height headroom, including woodland.
+            var settings = (campus.isCampus() ? campus : custom.withRoadStyle(road)).withLineStyle(line);
             check(PlotPresetShare.decode(PlotPresetShare.encode(settings)).equals(settings), "All supported road and lane enums roundtrip");
         }
         for (String color : PlotSettings.CONCRETE_COLORS) {
@@ -48,8 +71,13 @@ final class PlotPresetShareRegression {
         mutateSettings(encoded, values -> values.addProperty("road_style", "INVALID"), "enum");
         mutateSettings(encoded, values -> values.addProperty("marker_mode", "plot"), "enum");
         mutateSettings(encoded, values -> values.addProperty("line_style", "INVALID"), "enum");
-        reject(encoded.replace("\"version\": 2", "\"version\": 2, \"version\": 2"), "schema");
+        reject(encoded.replace("\"version\": 3", "\"version\": 3, \"version\": 3"), "schema");
         reject(encoded.replace("\"plot_chunks\": 11", "\"plot_chunks\": 11, \"plot_chunks\": 11"), "schema");
+        reject(encoded.replace("\"show_machine_frames\": false", "\"show_machine_frames\": false, \"show_machine_frames\": true"), "schema");
+        mutateSettings(encoded, values -> values.remove("show_machine_frames"), "schema");
+        mutateSettings(encoded, values -> values.addProperty("show_machine_frames", "true"), "schema");
+        mutateSettings(encoded, values -> values.addProperty("show_machine_frames", 1), "schema");
+        mutateSettings(encoded, values -> values.add("show_machine_frames", com.google.gson.JsonNull.INSTANCE), "schema");
         for (String number : new String[] {"11.0", "1e1", "2147483648"})
             reject(encoded.replace("\"plot_chunks\": 11", "\"plot_chunks\": " + number), number.equals("2147483648") ? "settings" : "schema");
         for (String key : new String[] {"plot_chunks", "road_width", "marker_size", "dash_length", "dash_gap", "border_width", "bedrock_y", "surface_y"}) {
@@ -75,9 +103,13 @@ final class PlotPresetShareRegression {
         mutate(text, root -> mutation.accept(root.getAsJsonObject("settings")), expected);
     }
     private static void reject(String text, String expected) {
-        try { PlotPresetShare.decode(text); throw new AssertionError("Invalid shared text must be rejected"); }
-        catch (PlotPresetShare.ShareException failure) {
-            check(expected == null || expected.equals(failure.errorKey()), "Expected import error " + expected + ", got " + failure.errorKey());
+        for (boolean stored : new boolean[] {false, true}) {
+            try {
+                if (stored) PlotPresetShare.decodeStored(text); else PlotPresetShare.decode(text);
+                throw new AssertionError("Invalid shared or stored text must be rejected");
+            } catch (PlotPresetShare.ShareException failure) {
+                check(expected == null || expected.equals(failure.errorKey()), "Expected import error " + expected + ", got " + failure.errorKey());
+            }
         }
     }
     private static void check(boolean condition, String message) { if (!condition) throw new AssertionError(message); checks++; }

@@ -84,7 +84,10 @@ final class StructureUpgradeRegression {
             });
             check(aisles[0] == d, name + " depth");
             check(HexFormat.of().formatHex(hash.digest()).equals(spec.get("sha256").getAsString()), name + " payload hash");
-            check(counts['@'] == 1 && counts['#'] == (name.equals("antientropy_condensation_center") ? 196
+            check(counts['@'] == 1 && counts['#'] == (name.equals("antientropy_condensation_center") ? 30
+                    : name.equals("advanced_sps_crafting") ? 68
+                    : name.equals("dimensionally_transcendent_chemical_plant") ? 58
+                    : name.equals("super_particle_collider") ? 174
                     : name.equals("skeleton_shift_rift_engine") ? 80 : 24),
                     name + " source marker count");
             if (name.equals("superconducting_electromagnetism")) {

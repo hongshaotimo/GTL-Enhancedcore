@@ -23,6 +23,10 @@ public final class MultiblockPreviewLaziness {
     private MultiblockPreviewLaziness() {}
 
     public static void postApply(String target, ClassNode node, String mixin) {
+        if ("com.gtl.enhancedcore.mixin.jei.StagedMultiblockPreviewMixin".equals(mixin)) {
+            PreviewPageTransformer.apply(node);
+            return;
+        }
         if (!MARKER_MIXIN.equals(mixin)) return;
         if ("com.gregtechceu.gtceu.integration.jei.multipage.MultiblockInfoWrapper".equals(target)
                 ) {

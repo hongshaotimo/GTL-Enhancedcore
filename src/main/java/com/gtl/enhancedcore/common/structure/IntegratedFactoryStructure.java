@@ -15,13 +15,15 @@ import static com.gtl.enhancedcore.common.registration.MachineRegistrationSuppor
 
 /** WorldEdit import: 49 x 31 x 49; only the central 11 x 13 front panel accepts hatches. */
 public final class IntegratedFactoryStructure {
+    public static final int MAX_SUPER_BUFFERS = 30;
+
     private IntegratedFactoryStructure() {}
 
     public static BlockPattern create(MultiblockMachineDefinition definition) {
         var abilities = Predicates.abilities(PartAbility.MAINTENANCE).setMaxGlobalLimited(1).setPreviewCount(1)
                 .or(Predicates.abilities(PartAbility.INPUT_ENERGY).setMinGlobalLimited(1)
                         .setMaxGlobalLimited(2).setPreviewCount(1))
-                .or(IvBufferRegistry.materialPorts(1));
+                .or(IvBufferRegistry.materialPorts(MAX_SUPER_BUFFERS));
         var hatches = requiredBlock("gtlcore:multi_functional_casing").or(abilities);
         return StructurePatterns.start("/data/gtl_enhancedcore/structures/integrated_universal_factory.pattern.gz")
                 .where('C', Predicates.controller(Predicates.blocks(definition.get())))

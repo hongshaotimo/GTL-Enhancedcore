@@ -22,11 +22,13 @@ public final class CloudPatternBufferWidget extends CloudPatternPanel {
         addWidget(patterns); addWidget(catalysts); addWidget(orders); addWidget(cancellation);
         state = new ImageWidget(8, 132, 99, 8, new TextTexture(this::connectionState).setColor(MUTED)
                 .setDropShadow(false).setWidth(99).setType(TextTexture.TextType.LEFT_HIDE));
-        state.setClientSideWidget(); addWidget(state);
+        state.setId("cloud.state"); state.setClientSideWidget(); addWidget(state);
         orderButton = button(this, 111, 130, 58, 10, () -> tr("orders_open"), this::showOrders);
-        orderButton.setId("cloud.orders.open").setHoverTooltips(PREFIX + "orders_cpu_hint");
+        orderButton.setId("cloud.orders.open").setHoverTooltips(PREFIX + "orders_open", PREFIX + "orders_cpu_hint", PREFIX + "orders_origin_hint");
+        machineCatalystsButton(131, this::showPatterns);
         searchField(patterns, 98);
-        mode = button(patterns, 102, 0, 60, 14, () -> type.isEmpty() ? tr("none") : recipeType(type), () -> { cycleMode(); action("set_mode"); });
+        mode = cycleButton(patterns, 102, 0, 60, 14, () -> type.isEmpty() ? tr("none") : recipeType(type),
+                direction -> { cycleMode(direction); action("set_mode"); });
         mode.setId("cloud.mode").setHoverTooltips(PREFIX + "mode_hint");
         for (int i = 0; i < entries.length; i++) {
             final int index = i; int x = i % 9 * 18, y = 18 + i / 9 * 18;
@@ -44,7 +46,7 @@ public final class CloudPatternBufferWidget extends CloudPatternPanel {
         cancelOrders = button(orders, 0, 53, 162, 14, () -> tr("orders_stop_refund"), this::showCancelConfirmation);
         cancelOrders.setId("cloud.orders.cancel").setHoverTooltips(PREFIX + "orders_cpu_hint", PREFIX + "orders_running_loss");
         resumeOrders = button(orders, 0, 71, 79, 14, () -> tr("orders_resume"), () -> action("resume"));
-        resumeOrders.setId("cloud.orders.resume");
+        resumeOrders.setId("cloud.orders.resume").setHoverTooltips(PREFIX + "orders_resume");
         reconnect = button(orders, 83, 71, 79, 14, () -> tr("orders_reconnect"), () -> action("reconnect"));
         reconnect.setId("cloud.orders.reconnect").setHoverTooltips(PREFIX + "orders_origin_hint");
         glyphButton(orders, 0, 94, 18, 14, CloudPatternGlyphTexture.BACK, this::showPatterns).setId("cloud.orders.back");
@@ -56,7 +58,7 @@ public final class CloudPatternBufferWidget extends CloudPatternPanel {
         text(cancellation, 0, 49, 162, 10, () -> tr("orders_energy_loss"), MUTED);
         text(cancellation, 0, 60, 162, 10, () -> tr("orders_cpu_cancel"), MUTED);
         confirmCancel = button(cancellation, 0, 78, 162, 14, () -> tr("orders_confirm_refund"), this::cancelConfirmed);
-        confirmCancel.setId("cloud.orders.confirm");
+        confirmCancel.setId("cloud.orders.confirm").setHoverTooltips(PREFIX + "orders_running_loss", PREFIX + "orders_energy_loss");
         button(cancellation, 0, 96, 162, 14, () -> tr("orders_keep"), this::showOrders).setId("cloud.orders.keep");
         catalystPage(catalysts, this::showPatterns); showPatterns();
     }
@@ -101,17 +103,19 @@ public final class CloudPatternBufferWidget extends CloudPatternPanel {
         for (Tag raw : snapshot.getList("modes", Tag.TAG_COMPOUND)) { var mode = (CompoundTag) raw; if (mode.getBoolean("current") || mode.getBoolean("available")) modes.add(mode); }
         return modes;
     }
-    private void cycleMode() {
-        var modes = selectableModes(); if (modes.isEmpty()) return; int current = -1;
+    private void cycleMode(int direction) {
+        var modes = selectableModes(); if (modes.isEmpty()) return; int current = 0;
         for (int i = 0; i < modes.size(); i++) if (modes.get(i).getString("id").equals(type)) current = i;
-        type = modes.get((current + 1) % modes.size()).getString("id");
+        type = modes.get(Math.floorMod(current + direction, modes.size())).getString("id");
     }
     @Override void updated() {
         page = Math.max(0, snapshot.getInt("page"));
         var modes = selectableModes();
         if (modes.stream().noneMatch(mode -> mode.getString("id").equals(type))) type = modes.stream().filter(mode -> mode.getBoolean("current")).findFirst().orElse(modes.isEmpty() ? new CompoundTag() : modes.get(0)).getString("id");
         state.setHoverTooltips(net.minecraft.network.chat.Component.literal(status()), net.minecraft.network.chat.Component.literal(diagnostic()),
-                net.minecraft.network.chat.Component.translatable(PREFIX + "active", snapshot.getInt("active")), net.minecraft.network.chat.Component.translatable(PREFIX + "queued", snapshot.getInt("queued")));
+                net.minecraft.network.chat.Component.translatable(PREFIX + "active", snapshot.getInt("active")), net.minecraft.network.chat.Component.translatable(PREFIX + "queued", snapshot.getInt("queued")),
+                net.minecraft.network.chat.Component.translatable(PREFIX + "native_inputs"),
+                net.minecraft.network.chat.Component.translatable(PREFIX + "auxiliary_inputs"));
         mode.setHoverTooltips(net.minecraft.network.chat.Component.literal(type.isEmpty() ? tr("none") : recipeType(type)),
                 net.minecraft.network.chat.Component.translatable(PREFIX + "mode_hint"));
         updateCatalystPage(patterns, catalysts);

@@ -7,15 +7,22 @@ public final class ForeignMachineMixinPolicy {
     private static final String PREFIX = "com.gtl.enhancedcore.mixin.";
     private static final Set<String> STRUCTURE_MIXINS = Set.of(
             "gtceu.GtlMegastructurePatternMixin", "gtceu.LucidEtchdreamerPreviewMixin",
-            "gtlcore.client.LucidSparsePreviewShapeMixin");
+            "gtlcore.client.LucidSparsePreviewShapeMixin",
+            "gtlcore.client.EyeOfHarmonyEffectAnchorMixin",
+            "gtlcore.client.CelestialEffectViewDistanceMixin",
+            "gtladditions.client.ArcanicAstrographEffectAnchorMixin",
+            "gtladditions.client.HeartOfTheUniverseEffectSizeMixin",
+            "gtladditions.client.HeartOfTheUniverseEffectBoundsMixin",
+            "gtladditions.ArcanicAstrographCollectionAnchorMixin");
     private static final Set<String> ENHANCEMENT_MIXINS = Set.of(
             "gtladditions.SuperBufferWideInventoryMixin",
             "gtladditions.SuperBufferWideLimitInventoryMixin",
-            "gtceu.IvNativeRecipeLogicMixin", "gtceu.IvNativeModifierMixin",
+            "gtceu.IvNativeModifierMixin",
             "gtceu.IvNativeMutableAccessor",
             "gtlcore.IvNativeMultipleAccessor", "gtlcore.IvComputationRecipesMixin", "gtlcore.IvComputationScopeMixin",
             "gtlcore.IvNativeAddMultipleAccessor",
-            "gtlcore.IvNativeBatchMixin", "gtlcore.IvNativeMultipleGuardMixin", "gtlcore.IvDissolvingTankMixin",
+            "gtlcore.IvNativeBatchMixin", "gtlcore.IvDissolvingTankMixin",
+            "gtladditions.IvNativeBiologicalInputGuardMixin", "gtladditions.IvNativeAstrographInputGuardMixin",
             "gtlcore.IvNativeRecipeThreadLimitMixin", "gtlcore.IvNativeGtlAddThreadLimitMixin",
             "gtceu.IvNativeMachineUiMixin", "gtceu.IvNativeTooltipMixin",
             "gtladditions.SuprachronalModuleHostRemovalMixin",

@@ -2,6 +2,7 @@ package com.gtl.enhancedcore.mixin.jei;
 
 import com.gregtechceu.gtceu.integration.jei.multipage.MultiblockInfoCategory;
 import com.gtl.enhancedcore.client.preview.LazyMultiblockPreviewWidget;
+import com.gtl.enhancedcore.client.preview.PreviewPreparation;
 import com.llamalad7.mixinextras.sugar.Local;
 import java.util.ArrayList;
 import java.util.List;
@@ -40,6 +41,7 @@ public abstract class LazyMultiblockRecipeLayoutMixin<T> {
     @Unique private int enhanced$first = -1;
     @Unique private int enhanced$end = -1;
     @Unique private int enhanced$generation = -1;
+    @Unique private int enhanced$layoutRevision = -1;
 
     @Invoker("createRecipeLayoutWithButtons")
     protected abstract IRecipeLayoutWithButtons<T> enhanced$createLayout(T recipe, RecipeBookmark<?, ?> bookmark);
@@ -79,16 +81,21 @@ public abstract class LazyMultiblockRecipeLayoutMixin<T> {
     private void enhanced$firstPreview(AbstractContainerMenu menu,
             CallbackInfoReturnable<Optional<IRecipeLayoutWithButtons<?>>> callback) {
         if (enhanced$recipes == null) return;
-        List<IRecipeLayoutWithButtons<?>> page = enhanced$page(0, Math.min(1, enhanced$recipes.size()));
+        // JEI measures a layout before requesting the visible subList on every
+        // refresh. Reuse the current page for that measurement: switching to
+        // recipe zero here cancels the visible preview as soon as it is ready.
+        List<IRecipeLayoutWithButtons<?>> page = enhanced$page != null ? enhanced$page
+                : enhanced$page(0, Math.min(1, enhanced$recipes.size()));
         callback.setReturnValue(page.isEmpty() ? Optional.empty() : Optional.of(page.getFirst()));
     }
 
     @Unique
     private List<IRecipeLayoutWithButtons<?>> enhanced$page(int first, int end) {
         Objects.checkFromToIndex(first, end, enhanced$recipes.size());
-        if (enhanced$page != null && first == enhanced$first && end == enhanced$end
-                && enhanced$generation == LazyMultiblockPreviewWidget.generation()) return enhanced$page;
-        LazyMultiblockPreviewWidget.clearShared();
+        boolean samePage = enhanced$page != null && first == enhanced$first && end == enhanced$end
+                && enhanced$generation == LazyMultiblockPreviewWidget.generation();
+        if (samePage && enhanced$layoutRevision == PreviewPreparation.layoutRevision()) return enhanced$page;
+        if (!samePage) LazyMultiblockPreviewWidget.clearShared();
         List<IRecipeLayoutWithButtons<?>> page = new ArrayList<>(Math.max(0, end - first));
         for (int index = first; index < end; index++) {
             T recipe = enhanced$recipes.get(index);
@@ -101,6 +108,7 @@ public abstract class LazyMultiblockRecipeLayoutMixin<T> {
         enhanced$first = first;
         enhanced$end = end;
         enhanced$generation = LazyMultiblockPreviewWidget.generation();
+        enhanced$layoutRevision = PreviewPreparation.layoutRevision();
         enhanced$page = List.copyOf(page);
         return enhanced$page;
     }

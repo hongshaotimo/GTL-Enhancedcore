@@ -13,16 +13,65 @@ import com.lowdragmc.lowdraglib.side.fluid.*;
 import java.util.*;
 import java.util.function.BooleanSupplier;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 
-/** Per-menu, per-original physical inventories. Closing or changing the selection revokes old handles. */
+/** Menu-scoped physical inventories. Closing or changing the scope revokes old handles. */
 public final class CloudPatternInventories {
     private CloudPatternInventories() {}
-    private record Selection(MetaMachine machine, UUID library, UUID entry, UUID group, int page, long epoch) {}
+    private record Selection(MetaMachine machine, UUID library, UUID entry, UUID group, int page, long epoch,
+                             String definition, List<String> definitions) {
+        Selection(MetaMachine machine, UUID library, UUID entry, UUID group, int page, long epoch) {
+            this(machine, library, entry, group, page, epoch, "", List.of());
+        }
+        boolean machineScope() { return !definition.isEmpty(); }
+    }
     private static final Map<ModularUIContainer, Selection> OPEN = new WeakHashMap<>();
     private static long nextEpoch;
+    public static void invalidate(MetaMachine machine) {
+        OPEN.entrySet().removeIf(entry -> entry.getValue().machine == machine);
+    }
+    private static UUID currentLibrary(MetaMachine machine) {
+        return machine instanceof CloudPatternLibraryMachine main ? main.libraryId()
+                : machine instanceof CloudPatternBufferMachine child ? child.cloudLibraryId() : null;
+    }
+    private static boolean machinePermitted(MetaMachine machine, ServerPlayer player, UUID library) {
+        if (library == null || !library.equals(currentLibrary(machine)) || !(player.containerMenu instanceof ModularUIContainer menu)
+                || menu.getModularUI().holder != machine || !CloudLibraryService.authorized(player, library, machine)) return false;
+        if (machine instanceof CloudPatternLibraryMachine main) return main.menuAuthorized(player) && !main.cloud$importQuarantined();
+        return machine instanceof CloudPatternBufferMachine child && child.cloudMayEditMachineCatalysts(player);
+    }
+    private static List<String> machineDefinitions(MetaMachine machine, CloudPatternStore.Library library, String type) {
+        var definitions = new LinkedHashSet<String>();
+        if (machine instanceof CloudPatternBufferMachine child) definitions.addAll(child.cloudMachineDefinitions());
+        else {
+            for (var entry : com.gregtechceu.gtceu.api.registry.GTRegistries.MACHINES.entries()) {
+                if (!(entry.getValue() instanceof com.gregtechceu.gtceu.api.machine.MultiblockMachineDefinition definition)) continue;
+                var recipeTypes = definition.getRecipeTypes();
+                if (recipeTypes != null && Arrays.stream(recipeTypes).anyMatch(recipeType -> type.isEmpty() || recipeType.registryName.toString().equals(type)))
+                    definitions.add(entry.getKey().toString());
+            }
+        }
+        if (machine instanceof CloudPatternLibraryMachine) definitions.addAll(library.machineCatalystDefinitions());
+        return definitions.stream().sorted().toList();
+    }
+    private static Component machineName(String definition) {
+        var id = ResourceLocation.tryParse(definition);
+        var registered = id == null ? null : com.gregtechceu.gtceu.api.registry.GTRegistries.MACHINES.get(id);
+        return registered == null ? Component.literal(definition) : registered.asStack().getHoverName();
+    }
+    private static UUID machineHandle(String definition) {
+        return UUID.nameUUIDFromBytes(("machine:" + definition).getBytes(java.nio.charset.StandardCharsets.UTF_8));
+    }
+    private static boolean permitted(Selection selection, ServerPlayer player) {
+        return selection.machineScope() ? machinePermitted(selection.machine, player, selection.library)
+                && (!(selection.machine instanceof CloudPatternBufferMachine child) || child.cloudMachineDefinitions().contains(selection.definition))
+                : permitted(selection.machine, player, selection.library, selection.entry);
+    }
     private static UUID sharedGroup(CloudPatternStore.Entry entry) {
         var config = entry.configuration();
         return config.hasUUID("importCatalystGroup") && !entry.importedSharedCatalysts().isEmpty()
@@ -33,7 +82,7 @@ public final class CloudPatternInventories {
                 Math.max((state.getInt("fluidTanks") + 8) / 9, state.getInt("circuitSlots"))));
     }
     private static boolean permitted(MetaMachine machine, ServerPlayer player, UUID library, UUID entry) {
-        if (library == null || !(player.containerMenu instanceof ModularUIContainer menu)
+        if (library == null || !library.equals(currentLibrary(machine)) || !(player.containerMenu instanceof ModularUIContainer menu)
                 || menu.getModularUI().holder != machine || !CloudLibraryService.authorized(player, library, machine)) return false;
         if (CloudNetworkPatternImport.entryLocked(library, entry)) return false;
         var status = CloudPatternStore.get(player.serverLevel()).library(library).entry(entry).status();
@@ -42,12 +91,31 @@ public final class CloudPatternInventories {
         return machine instanceof CloudPatternBufferMachine child && child.cloudMayEditPattern(player, entry);
     }
     public static boolean action(MetaMachine machine, ServerPlayer player, UUID library, String action, CompoundTag payload) {
+        boolean machineConfig = action.equals("machine_config");
+        boolean machineCycle = action.equals("machine_catalysts_previous") || action.equals("machine_catalysts_next");
         boolean mode = action.equals("pattern_catalysts_shared") || action.equals("pattern_catalysts_private");
         boolean paging = action.equals("pattern_catalysts_previous") || action.equals("pattern_catalysts_next");
-        if (!action.equals("pattern_config") && !action.equals("close_pattern_config") && !mode && !paging) return false;
+        if (!action.equals("pattern_config") && !action.equals("close_pattern_config") && !mode && !paging && !machineConfig && !machineCycle) return false;
         if (!(player.containerMenu instanceof ModularUIContainer menu) || menu.getModularUI().holder != machine) return true;
         if (action.equals("close_pattern_config")) { OPEN.remove(menu); return true; }
         Selection previous = OPEN.get(menu);
+        if (machineConfig || machineCycle) {
+            if (!machinePermitted(machine, player, library)) return true;
+            var authority = CloudPatternStore.get(player.serverLevel()).library(library);
+            List<String> definitions;
+            int index = 0;
+            if (machineCycle) {
+                if (previous == null || !previous.machineScope() || previous.machine != machine || !previous.library.equals(library)
+                        || previous.epoch != payload.getLong("catalystAccessEpoch")) return true;
+                definitions = previous.definitions;
+                index = Math.floorMod(definitions.indexOf(previous.definition) + (action.endsWith("previous") ? -1 : 1), definitions.size());
+            } else definitions = machineDefinitions(machine, authority, payload.getString("type"));
+            if (definitions.isEmpty()) { OPEN.remove(menu); return true; }
+            String definition = definitions.get(index);
+            OPEN.put(menu, new Selection(machine, library, machineHandle(definition), null, 0,
+                    nextEpoch = Math.incrementExact(nextEpoch), definition, definitions));
+            return true;
+        }
         if (!mode && !paging) OPEN.remove(menu);
         try {
             UUID entryId = UUID.fromString(payload.getString("selected"));
@@ -77,15 +145,37 @@ public final class CloudPatternInventories {
     public static void decorate(MetaMachine machine, ServerPlayer player, CompoundTag snapshot) {
         snapshot.putBoolean("patternCatalystsAllowed", false); snapshot.putString("catalystEntry", "");
         snapshot.putBoolean("patternImportedSharedAvailable", false); snapshot.putBoolean("patternCatalystsShared", false);
+        snapshot.putBoolean("patternCatalystsMachine", false); snapshot.putString("catalystMachineDefinition", "");
+        snapshot.putBoolean("machineCatalystsAvailable", false); snapshot.put("machineCatalystDefinitions", new ListTag());
         snapshot.putLong("catalystAccessEpoch", 0); snapshot.putInt("patternCatalystsPage", 0); snapshot.putInt("patternCatalystsPages", 1);
         snapshot.putInt("patternSharedItemSlots", 0); snapshot.putInt("patternSharedFluidTanks", 0); snapshot.putInt("patternSharedCircuitSlots", 0);
         snapshot.putIntArray("patternCatalystItemLimits", new int[0]); snapshot.putLongArray("patternCatalystFluidCapacities", new long[0]);
         snapshot.putInt("patternCatalystCircuitLimit", 0);
+        UUID libraryId = currentLibrary(machine);
+        snapshot.putBoolean("machineCatalystsAvailable", libraryId != null && CloudLibraryService.authorized(player, libraryId, machine)
+                && (machine instanceof CloudPatternLibraryMachine main ? main.isFormed() && !main.cloud$importQuarantined()
+                : machine instanceof CloudPatternBufferMachine child && !child.cloudMachineDefinitions().isEmpty()));
         if (!(player.containerMenu instanceof ModularUIContainer menu)) return;
         Selection selected = OPEN.get(menu);
         if (selected == null || selected.machine != machine) return;
         try {
-            if (!permitted(machine, player, selected.library, selected.entry)) { OPEN.remove(menu); return; }
+            if (!permitted(selected, player)) { OPEN.remove(menu); return; }
+            if (selected.machineScope()) {
+                snapshot.putString("catalystEntry", selected.entry.toString()); snapshot.putBoolean("patternCatalystsAllowed", true);
+                snapshot.putBoolean("patternCatalystsMachine", true); snapshot.putString("catalystMachineDefinition", selected.definition);
+                snapshot.putLong("catalystAccessEpoch", selected.epoch);
+                var definitions = new ListTag();
+                for (String id : selected.definitions) {
+                    var row = new CompoundTag(); row.putString("id", id); row.putString("nameJson", Component.Serializer.toJson(machineName(id))); definitions.add(row);
+                }
+                snapshot.put("machineCatalystDefinitions", definitions);
+                var detail = new CompoundTag(); detail.putString("nameJson", Component.Serializer.toJson(machineName(selected.definition)));
+                snapshot.put("detail", detail);
+                int[] limits = new int[9]; Arrays.fill(limits, 64); snapshot.putIntArray("patternCatalystItemLimits", limits);
+                long[] capacities = new long[9]; Arrays.fill(capacities, CloudLibraryService.FLUID_CAPACITY);
+                snapshot.putLongArray("patternCatalystFluidCapacities", capacities);
+                return;
+            }
             var entry = CloudPatternStore.get(player.serverLevel()).library(selected.library).entry(selected.entry);
             UUID group = sharedGroup(entry);
             if (selected.group != null && !selected.group.equals(group)) { OPEN.remove(menu); return; }
@@ -143,13 +233,15 @@ public final class CloudPatternInventories {
             boolean allowed = selected != null && selected.machine == machine && selected.library.equals(library) && selected.entry.equals(entry)
                     && (requestedEpoch < 0 || requestedEpoch == selected.epoch) && (owningSelection == null || owningSelection == selected)
                     && (!circuit || selected.group != null)
-                    && permitted(machine, player, library, entry);
+                    && permitted(selected, player);
             if (allowed && selected.group != null && !selected.group.equals(sharedGroup(entry()))) allowed = false;
             if (allowed && owningMenu == null) { owningMenu = menu; owningSelection = selected; }
             return allowed;
         }
         CloudPatternStore.Entry entry() { return CloudPatternStore.get(((ServerPlayer)viewer).serverLevel()).library(library).entry(entry); }
         CompoundTag state() {
+            if (owningSelection != null && owningSelection.machineScope())
+                return CloudPatternStore.get(((ServerPlayer)viewer).serverLevel()).library(library).machineCatalysts(owningSelection.definition);
             return owningSelection != null && owningSelection.group != null
                     ? CloudPatternStore.get(((ServerPlayer)viewer).serverLevel()).library(library).getImportedCatalysts(viewer.getUUID(), owningSelection.group)
                     : entry().catalysts();
@@ -166,9 +258,15 @@ public final class CloudPatternInventories {
             var state = state(); int[] limits = state.getIntArray(circuit ? "circuitLimits" : "itemLimits");
             return shaped(state) ? (slot >= 0 && slot < limits.length ? limits[slot] : 0) : 64;
         }
-        long revision() { return entry().catalystRevision(); }
+        long revision() { return owningSelection != null && owningSelection.machineScope()
+                ? CloudPatternStore.get(((ServerPlayer)viewer).serverLevel()).library(library).revision() : entry().catalystRevision(); }
         void persist(String part, CompoundTag value) {
             CompoundTag state = state(); state.put(part, value.copy());
+            if (owningSelection.machineScope()) {
+                CloudPatternStore.get(((ServerPlayer)viewer).serverLevel()).library(library)
+                        .setMachineCatalysts(viewer.getUUID(), owningSelection.definition, state);
+                return;
+            }
             if (owningSelection.group != null) CloudPatternStore.get(((ServerPlayer)viewer).serverLevel()).library(library)
                     .setImportedCatalysts(viewer.getUUID(), owningSelection.group, state);
             else entry().setCatalysts(viewer.getUUID(), state);

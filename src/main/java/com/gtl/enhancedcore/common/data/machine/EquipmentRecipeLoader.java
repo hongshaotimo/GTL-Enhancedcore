@@ -42,8 +42,8 @@ public final class EquipmentRecipeLoader {
         validateItems(recipes);
         Set<String> covered = new HashSet<>();
         for (var recipe : recipes) {
-            if (EquipmentRecipeCatalog.CREATIVE_MODE_ONLY_OUTPUTS.contains(recipe.output())) {
-                throw new IllegalStateException("Creative-only item must not have an equipment recipe: " + recipe.output());
+            if (!EquipmentRecipeCatalog.requiresEquipmentRecipe(recipe.output())) {
+                throw new IllegalStateException("Recipe-exempt item must not have an equipment recipe: " + recipe.output());
             }
             Item output = requiredItem(GTLEnhancedcore.MOD_ID + ":" + recipe.output());
             covered.add(recipe.output());
@@ -75,7 +75,7 @@ public final class EquipmentRecipeLoader {
         for (ResourceLocation id : ForgeRegistries.ITEMS.getKeys()) {
             if (id.getNamespace().equals(GTLEnhancedcore.MOD_ID)
                     && !covered.contains(id.getPath())
-                    && !EquipmentRecipeCatalog.CREATIVE_MODE_ONLY_OUTPUTS.contains(id.getPath())) {
+                    && EquipmentRecipeCatalog.requiresEquipmentRecipe(id.getPath())) {
                 throw new IllegalStateException("Registered item has no equipment recipe: " + id);
             }
         }

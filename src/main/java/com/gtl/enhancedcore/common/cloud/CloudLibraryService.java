@@ -43,7 +43,7 @@ public final class CloudLibraryService {
         if (actor == null || libraryId == null || !level.getServer().isSameThread()) return false;
         try {
             var library = CloudPatternStore.get(level).library(libraryId);
-            if (!library.authorized(actor) || !sameTeam(library.owner(), actor)) return false;
+            if (!library.authorized(actor)) return false;
             if (!FTBChunksAPI.api().isManagerLoaded()) return false;
             var claim = FTBChunksAPI.api().getManager().getChunk(new ChunkDimPos(level.dimension(), pos.getX() >> 4, pos.getZ() >> 4));
             if (claim == null) return true;
@@ -67,6 +67,7 @@ public final class CloudLibraryService {
     }
 
     public static boolean sameTeam(UUID owner, UUID player) {
+        if (owner == null || player == null) return false;
         if (owner.equals(player)) return true;
         var manager = FTBTeamsAPI.api().getManager();
         var a = manager.getTeamForPlayerID(owner);
@@ -97,6 +98,10 @@ public final class CloudLibraryService {
     }
     public static Map<AEKey, Long> catalysts(ServerLevel level, UUID libraryId) {
         CompoundTag saved = CloudPatternStore.get(level).library(libraryId).catalysts();
+        return CloudCatalystSource.snapshot(itemContents(saved), fluidContents(saved));
+    }
+    public static Map<AEKey, Long> machineCatalysts(ServerLevel level, UUID libraryId, String definition) {
+        CompoundTag saved = CloudPatternStore.get(level).library(libraryId).machineCatalysts(definition);
         return CloudCatalystSource.snapshot(itemContents(saved), fluidContents(saved));
     }
     public static Map<AEKey, Long> catalysts(CloudPatternStore.Entry entry) {

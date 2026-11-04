@@ -21,13 +21,13 @@ final class LucidDragonStructureRegression {
                 .getAsJsonObject().getAsJsonObject("lucid_etchdreamer");
         check(spec.get("namespace").getAsString().equals("gtladditions"), "lucid exact upstream ID");
         check(spec.getAsJsonArray("originalSize").toString().equals("[21,21,22]"), "lucid upstream shape guard");
-        check(spec.get("hatchFallback").getAsString().equals("gtladditions:lucid_etchdreamer"),
+        check(spec.get("hatchFallback").getAsString().equals("gtlcore:iridium_casing"),
                 "lucid controller hatch replacement");
         check(spec.getAsJsonObject("bindings").getAsJsonObject("X").get("mode").getAsString().equals("hatch"),
                 "lucid retains upstream hatch abilities");
         check(spec.getAsJsonObject("bindings").getAsJsonObject("X").get("fallback").getAsString()
-                        .equals("gtladditions:lucid_etchdreamer"), "lucid hatch fallback binding");
-        check(spec.getAsJsonObject("bindings").getAsJsonObject("X").get("retainCasing").getAsBoolean()
+                        .equals("gtlcore:iridium_casing"), "lucid hatch fallback binding");
+        check(!spec.getAsJsonObject("bindings").getAsJsonObject("X").has("retainCasing")
                         && spec.getAsJsonObject("bindings").getAsJsonObject("X").get("block").getAsString()
                         .equals("gtlcore:iridium_casing"), "lucid empty hatch slots accept original casing");
         check(spec.getAsJsonObject("bindings").getAsJsonObject("P").get("mode").getAsString()
@@ -42,8 +42,8 @@ final class LucidDragonStructureRegression {
         }
         check(spec.get("sha256").getAsString().equals(sha256(payload)), "lucid generated geometry hash");
         List<String[]> aisles = read(root.resolve("lucid_etchdreamer.pattern.gz"));
-        check(aisles.size() == 233 && aisles.getFirst().length == 233 && aisles.getFirst()[0].length() == 233,
-                "lucid 233-cube dimensions");
+        check(aisles.size() == 175 && aisles.getFirst().length == 175 && aisles.getFirst()[0].length() == 175,
+                "lucid 175-cube dimensions");
         int[] counts = new int[128];
         for (int z = 0; z < aisles.size(); z++) {
             for (int y = 0; y < aisles.get(z).length; y++) {
@@ -51,13 +51,13 @@ final class LucidDragonStructureRegression {
                 for (int x = 0; x < row.length(); x++) {
                     char symbol = row.charAt(x);
                     counts[symbol]++;
-                    if (symbol == 'C') check(x == 84 && y == 104 && z == 156, "lucid controller anchor");
-                    if (symbol == 'X') check(z == 156 && x >= 82 && x <= 86 && y >= 102 && y <= 106
-                            && !(x == 84 && y == 104), "lucid hatch face is the 5x5 ring");
+                    if (symbol == 'C') check(x == 87 && y == 87 && z == 174, "lucid controller anchor");
+                    if (symbol == 'X') check(z == 174 && x >= 82 && x <= 92 && y >= 82 && y <= 92
+                            && !(x == 87 && y == 87), "lucid hatch face is the 5x5 ring");
                 }
             }
         }
-        check(counts['C'] == 1 && counts['X'] == 24 && counts['P'] == 8488,
+        check(counts['C'] == 1 && counts['X'] == 108 && counts['P'] == 5536,
                 "lucid controller, hatch panel and coil positions retained");
         for (int c = 0; c < counts.length; c++) if (counts[c] > 0)
             check(spec.getAsJsonObject("bindings").has(String.valueOf((char) c)),

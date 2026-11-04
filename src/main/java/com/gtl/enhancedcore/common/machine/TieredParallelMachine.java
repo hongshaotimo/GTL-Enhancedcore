@@ -92,7 +92,9 @@ public class TieredParallelMachine extends GTLAddWorkableElectricParallelHatchMu
     @Override
     protected void addMachineModeDisplay(java.util.List<net.minecraft.network.chat.Component> text) {
         if (com.gtl.enhancedcore.common.recipe.iv.IvMachineScope.crossRecipeEnabled(this)) {
-            text.add(com.gtl.enhancedcore.common.recipe.iv.IvMachineDisplay.modeLine());
+            text.add(((com.gtl.enhancedcore.common.recipe.iv.IvNativeAccess)getRecipeLogic()).iv$nativeInputsActive()
+                    ? com.gtl.enhancedcore.common.recipe.iv.IvMachineDisplay.nativeModeLine()
+                    : com.gtl.enhancedcore.common.recipe.iv.IvMachineDisplay.modeLine());
         } else {
             super.addMachineModeDisplay(text);
         }
@@ -107,6 +109,7 @@ public class TieredParallelMachine extends GTLAddWorkableElectricParallelHatchMu
                     .withStyle(net.minecraft.ChatFormatting.YELLOW));
             return;
         }
+        if (((com.gtl.enhancedcore.common.recipe.iv.IvNativeAccess)getRecipeLogic()).iv$nativeInputsActive()) return;
         IvRecipeLogic logic = (IvRecipeLogic)getRecipeLogic();
         com.gtl.enhancedcore.common.recipe.MachineDiagnostics.append(this, text);
         com.gtl.enhancedcore.common.recipe.iv.IvPresentation.append(text,logic.getOrderSummary(),true);

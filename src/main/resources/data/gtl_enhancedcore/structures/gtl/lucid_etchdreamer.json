@@ -7,19 +7,19 @@
       22
     ],
     "sourceSize": [
-      233,
-      233,
-      233
+      175,
+      175,
+      175
     ],
     "size": [
-      233,
-      233,
-      233
+      175,
+      175,
+      175
     ],
     "sourceController": [
-      148,
-      104,
-      76
+      87,
+      87,
+      0
     ],
     "sourceNormal": [
       0,
@@ -27,9 +27,9 @@
       -1
     ],
     "controllerPosition": [
-      84,
-      104,
-      156
+      87,
+      87,
+      174
     ],
     "bindings": {
       " ": {
@@ -51,71 +51,12 @@
           10
         ],
         "block": "gtlcore:iridium_casing",
-        "fallback": "gtladditions:lucid_etchdreamer",
-        "retainCasing": true
-      },
-      "J": {
-        "mode": "casing",
-        "sample": [
-          0,
-          10,
-          10
-        ],
-        "block": "gtlcore:iridium_casing"
-      },
-      "A": {
-        "mode": "literal",
-        "block": "gtlcore:dimensionally_transcendent_casing",
-        "properties": {}
-      },
-      "D": {
-        "mode": "literal",
-        "block": "gtlcore:graviton_field_constraint_casing",
-        "properties": {}
-      },
-      "E": {
-        "mode": "literal",
-        "block": "kubejs:neutronium_pipe_casing",
-        "properties": {}
-      },
-      "F": {
-        "mode": "literal",
-        "block": "kubejs:annihilate_core",
-        "properties": {}
+        "fallback": "gtlcore:iridium_casing"
       },
       "G": {
         "mode": "literal",
         "block": "gtceu:cleanroom_glass",
         "properties": {}
-      },
-      "I": {
-        "mode": "literal",
-        "block": "kubejs:laser_cooling_casing",
-        "properties": {}
-      },
-      "K": {
-        "mode": "literal",
-        "block": "gtceu:opv_machine_casing",
-        "properties": {}
-      },
-      "L": {
-        "mode": "literal",
-        "block": "gtlcore:rhenium_reinforced_energy_glass",
-        "properties": {}
-      },
-      "N": {
-        "mode": "literal",
-        "block": "kubejs:dimensional_bridge_casing",
-        "properties": {}
-      },
-      "O": {
-        "mode": "literal",
-        "block": "gtlcore:hyper_mechanical_casing",
-        "properties": {}
-      },
-      "P": {
-        "mode": "heating_coils",
-        "preview": "kubejs:starmetal_coil_block"
       },
       "Q": {
         "mode": "literal",
@@ -127,6 +68,11 @@
           "powered": "false"
         }
       },
+      "K": {
+        "mode": "literal",
+        "block": "gtceu:opv_machine_casing",
+        "properties": {}
+      },
       "R": {
         "mode": "literal",
         "block": "gtceu:white_lamp",
@@ -137,44 +83,134 @@
           "powered": "false"
         }
       },
-      "S": {
+      "B": {
         "mode": "literal",
-        "block": "gtceu:purple_lamp",
-        "properties": {
-          "bloom": "true",
-          "inverted": "true",
-          "lit": "true",
-          "powered": "false"
-        }
+        "block": "gtlcore:dimension_injection_casing",
+        "properties": {}
+      },
+      "A": {
+        "mode": "literal",
+        "block": "gtlcore:dimensionally_transcendent_casing",
+        "properties": {}
+      },
+      "O": {
+        "mode": "literal",
+        "block": "gtlcore:hyper_mechanical_casing",
+        "properties": {}
+      },
+      "J": {
+        "mode": "casing",
+        "sample": [
+          0,
+          10,
+          10
+        ],
+        "block": "gtlcore:iridium_casing"
+      },
+      "L": {
+        "mode": "literal",
+        "block": "gtlcore:rhenium_reinforced_energy_glass",
+        "properties": {}
+      },
+      "F": {
+        "mode": "literal",
+        "block": "kubejs:annihilate_core",
+        "properties": {}
+      },
+      "N": {
+        "mode": "literal",
+        "block": "kubejs:dimensional_bridge_casing",
+        "properties": {}
+      },
+      "I": {
+        "mode": "literal",
+        "block": "kubejs:laser_cooling_casing",
+        "properties": {}
+      },
+      "P": {
+        "mode": "heating_coils",
+        "preview": "kubejs:starmetal_coil_block"
       }
     },
     "counts": {
-      " ": 12344638,
-      "A": 111792,
+      " ": 5198772,
+      "A": 64162,
+      "B": 15893,
       "C": 1,
-      "D": 30111,
-      "E": 17880,
       "F": 1,
-      "G": 16768,
-      "I": 8608,
-      "J": 74204,
-      "K": 3980,
-      "L": 27375,
-      "N": 680,
-      "O": 3863,
-      "P": 8488,
-      "Q": 480,
-      "R": 348,
-      "S": 96,
-      "X": 24
+      "G": 2834,
+      "I": 4142,
+      "J": 42946,
+      "K": 580,
+      "L": 8600,
+      "N": 410,
+      "O": 14490,
+      "P": 5536,
+      "Q": 264,
+      "R": 636,
+      "X": 108
     },
     "hatches": [
       "X"
     ],
     "controller": "C",
-    "diamondOreMarkers": 24,
-    "hatchFallback": "gtladditions:lucid_etchdreamer",
-    "sourceSha256": "0b44dc5c5423bc130a879e9dfe77f221580fa6bcaece227bca05d9f3273ccbc5",
-    "sha256": "fc4e8eea31dc7737d3120f6fe0fa3580f310152b9013b0af21d14d47e492cf17"
+    "diamondOreMarkers": 108,
+    "hatchFallback": "gtlcore:iridium_casing",
+    "sourceSha256": "17e5ce4748db5afe4c497b54fdd224f626ed6c033641f2073b101381b37ec936",
+    "sha256": "31cdaa0a8b4bf97b1d6943e25a6889a0bf8743da2514b6fbb331bb4c64427ca3",
+    "sourceRevision": "user-request-20261102",
+    "sourceSchematic": "SchemTool/input/lucid_etchdreamer.schem",
+    "previewPanel": {
+      "origin": [
+        82,
+        82,
+        174
+      ],
+      "size": [
+        11,
+        11,
+        1
+      ],
+      "sha256": "40b7fa7799c0d90eb787e3425729fed08a05c0f322d0b6947856ce68d75210c2"
+    },
+    "sourceCounts": {
+      " ": 5184932,
+      "A": 74382,
+      "B": 18261,
+      "C": 1,
+      "F": 1,
+      "G": 2834,
+      "I": 4142,
+      "J": 42946,
+      "K": 580,
+      "L": 8600,
+      "N": 414,
+      "O": 15738,
+      "P": 5536,
+      "Q": 264,
+      "R": 636,
+      "X": 108
+    },
+    "rawPatternSha256": "f4baaf91bce55b21953c45e8b922302dcc4b7be83bcee7a993e6de2e14df5a10",
+    "hiddenRemoval": {
+      "algorithm": "exterior-26-once; opaque-model-and-texture-evidence; removed-to-any",
+      "removed": 13840,
+      "removedBySymbol": {
+        "A": 10220,
+        "B": 2368,
+        "N": 4,
+        "O": 1248
+      },
+      "opaqueSymbols": "KBAOFNI",
+      "protectedModes": [
+        "controller",
+        "hatch",
+        "original",
+        "casing",
+        "heating_coils",
+        "distorter_coils"
+      ],
+      "protectedLiteralCoilsAndStates": true
+    }
   }
 }

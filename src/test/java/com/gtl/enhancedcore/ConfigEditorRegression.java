@@ -52,7 +52,7 @@ public final class ConfigEditorRegression {
         fails(() -> TooltipOverrides.parseEntry(TooltipOverrides.serialize(tooMany)), "Line limit enforced before write");
         fileEdits();
         String menu = Files.readString(Path.of("src/main/java/com/gtl/enhancedcore/client/config/EnhancedConfigScreen.java"));
-        var buttons = java.util.regex.Pattern.compile("button\\(\"([^\"]+)\"").matcher(menu);
+        var buttons = java.util.regex.Pattern.compile("(?:button|row)\\(\"([^\"]+)\"").matcher(menu);
         var actions = new ArrayList<String>();
         while (buttons.find()) actions.add(buttons.group(1));
         // 2026-10-12 用户要求「复制 ID / 复制配方」按键功能可在配置里开关，因此

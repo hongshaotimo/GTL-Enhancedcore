@@ -71,6 +71,7 @@ public class GTLEnhancedcore {
 
         // 物品注册（Registrate）：样板生成工具（gtlcore debug_pattern_test 移植，删冲突分析、加玩家绑定）。
         GTLEnhancedcoreItems.init();
+        com.gtl.enhancedcore.common.world.campus.CampusDeviceBlocks.init();
 
         // 配方类型必须在 GTCEu 配方类型注册事件里注册——等到机器注册事件时
         // gtceu:recipe_type 注册表已冻结，直接注册会崩（2026-07-28 崩溃实证）。
@@ -94,6 +95,8 @@ public class GTLEnhancedcore {
             Item patternGenerator = GTLEnhancedcoreItems.getPatternGenerator();
             if (patternGenerator != null) event.accept(patternGenerator.getDefaultInstance());
             event.accept(GTLEnhancedcoreItems.PLOT_WORLD_CONTROLLER.get().getDefaultInstance());
+            event.accept(com.gtl.enhancedcore.common.world.campus.CampusDeviceBlocks.VIRTUAL_MARKER.asStack());
+            event.accept(com.gtl.enhancedcore.common.world.campus.CampusDeviceBlocks.CENTRAL_TELEPORTER.asStack());
         });
         // Filter every tab (including search) after upstream machine contributors.
         bus.addListener(net.minecraftforge.eventbus.api.EventPriority.LOWEST,
