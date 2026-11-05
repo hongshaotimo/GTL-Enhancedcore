@@ -1,4 +1,5 @@
 {
+  "gtl_enhancedcore.preview.expand_material": "Left-click to show or hide available blocks (view only)",
   "message.gtl_enhancedcore.structure_detect.normal_only": "Structure detection only checks the normal orientation",
   "item.gtlcore.structure_detect.tooltip.1": "This tool checks multiblock structures in the normal orientation only",
   "item.gtlcore.structure_detect.error.3": "Normal Mode",

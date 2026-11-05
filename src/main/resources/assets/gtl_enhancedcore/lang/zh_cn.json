@@ -1,4 +1,5 @@
 {
+  "gtl_enhancedcore.preview.expand_material": "左键展开或收起可用方块（仅查看）",
   "message.gtl_enhancedcore.structure_detect.normal_only": "结构检测工具仅支持正常方向检测",
   "item.gtlcore.structure_detect.tooltip.1": "该工具只会按正常方向检测多方块结构",
   "item.gtlcore.structure_detect.error.3": "正常模式",

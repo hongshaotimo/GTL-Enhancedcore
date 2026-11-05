@@ -197,6 +197,7 @@
     "jei.LazyMultiblockGuiCloseMixin",
     "gtlcore.client.PreviewSharedMemoryMixin",
     "gtlcore.client.PreviewPatternMemoryMixin",
+    "gtlcore.client.PreviewMaterialRowsMixin",
     "gtlcore.client.LucidSparsePreviewShapeMixin",
     "ae2.client.MEStorageScreenAccessor",
     "ae2.client.PinnedKeysMixin",
