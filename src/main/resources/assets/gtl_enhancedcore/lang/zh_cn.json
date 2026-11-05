@@ -2,7 +2,7 @@
   "gtl_enhancedcore.preview.visibility_all": "全部",
   "gtl_enhancedcore.preview.visibility_controller": "主控",
   "gtl_enhancedcore.preview.visibility_replaceable": "可替换",
-  "gtl_enhancedcore.preview.visibility_hint": "切换显示：全部 → 仅主方块 → 主方块与可替换方块；其余方块不渲染",
+  "gtl_enhancedcore.preview.visibility_hint": "全部 → 主方块 → 可替换",
   "gtl_enhancedcore.preview.expand_material": "左键展开或收起可用方块（仅查看）",
   "message.gtl_enhancedcore.structure_detect.normal_only": "结构检测工具仅支持正常方向检测",
   "item.gtlcore.structure_detect.tooltip.1": "该工具只会按正常方向检测多方块结构",

@@ -198,6 +198,7 @@
     "gtlcore.client.PreviewSharedMemoryMixin",
     "gtlcore.client.PreviewPatternMemoryMixin",
     "gtlcore.client.PreviewMaterialRowsMixin",
+    "gtlcore.client.PreviewMaterialLayoutMixin",
     "gtlcore.client.PreviewVisibilityMixin",
     "gtlcore.client.LucidSparsePreviewShapeMixin",
     "ae2.client.MEStorageScreenAccessor",

@@ -75,6 +75,31 @@ public final class PreviewMaterialRowsRegression {
         check(visibility.contains("if (enhanced$pattern != access) enhanced$materialSelection().clear()"),
                 "Page changes reset stale selections");
         check(source.contains("item.equals(selected) ? null : item"), "Clicking the same material clears selection");
+        check(source.contains("countLabel(simple.minCount, simple.maxCount)"), "Badges use GTL global count limits");
+        check(source.contains("lower == maximum ? String.valueOf(lower)"), "Exact counts use a single number");
+        check(source.contains("simple.minLayerCount") && source.contains("simple.maxLayerCount"), "Layer limits remain in tooltips");
+        var scene = Files.readString(Path.of("src/main/java/com/gtl/enhancedcore/mixin/ldlib/client/SceneWidgetRenderFilterMixin.java"));
+        check(scene.contains("button != 1") && scene.contains(".position(null)") && scene.contains("selectedPosFace = null"),
+                "Right-click clears scene selection without toggling the material selection");
+        var layout = Files.readString(Path.of("src/main/java/com/gtl/enhancedcore/mixin/gtlcore/client/PreviewMaterialLayoutMixin.java"));
+        var rows = Files.readString(Path.of("src/main/java/com/gtl/enhancedcore/mixin/gtlcore/client/PreviewMaterialRowsMixin.java"));
+        check(rows.contains("setSelfPosition(4, height - 50)") && rows.contains("setSelfPosition(4, height - 26)"),
+                "Fullscreen material and candidate rows occupy separate tracks");
+        check(layout.contains("screenHeight - scene.getSelfPosition().y - 54"),
+                "Fullscreen scene reserves space for both material rows");
+        check(layout.contains("if (!fullscreen") && !layout.contains("setVisible"),
+                "Fullscreen layout preserves candidate expansion state");
+        check(config.getAsJsonArray("client").asList().stream().anyMatch(entry -> entry.getAsString().equals(
+                "gtlcore.client.PreviewMaterialLayoutMixin")), "Fullscreen layout Mixin is client-only");
+        try (var jar = new ZipFile("libs/gtlcore-1.2.3.2-fix4.jar")) {
+            var controls = read(jar, "org/gtlcore/gtlcore/client/preview/PreviewControls");
+            check(controls.methods.stream().anyMatch(method -> method.name.equals("layout") && method.desc.equals("()V")),
+                    "Installed fullscreen layout hook exists");
+            for (var field : new String[]{"widget", "scene", "fullscreen", "width", "screenHeight"}) {
+                check(controls.fields.stream().anyMatch(candidate -> candidate.name.equals(field)),
+                        "Installed controls expose " + field);
+            }
+        }
         return assertions;
     }
 

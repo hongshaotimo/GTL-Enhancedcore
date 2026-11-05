@@ -114,6 +114,7 @@ final class MachineOverrideConfigRegression {
                         || name.equals("gtlcore.client.PreviewSharedMemoryMixin")
                         || name.equals("gtlcore.client.PreviewPatternMemoryMixin")
                         || name.equals("gtlcore.client.PreviewMaterialRowsMixin")
+                        || name.equals("gtlcore.client.PreviewMaterialLayoutMixin")
                         || name.equals("gtlcore.client.PreviewVisibilityMixin")
                         || name.startsWith("gtlcore.IvBuffer") || name.startsWith("gtlcore.IvPatternBuffer")
                         || name.equals("gtlcore.IvSuperBufferMixin") || name.equals("gtlcore.IvCompatibleBufferUiMixin")

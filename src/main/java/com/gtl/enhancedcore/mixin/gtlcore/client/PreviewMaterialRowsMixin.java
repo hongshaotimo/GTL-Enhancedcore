@@ -21,7 +21,16 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(value = PatternPreviewWidget.class, remap = false)
-public abstract class PreviewMaterialRowsMixin {
+public abstract class PreviewMaterialRowsMixin implements PreviewMaterialAccess.Rows {
+    @Override
+    public void enhanced$layoutRows(int width, int height) {
+        if (enhanced$candidateRow == null) return;
+        scrollableWidgetGroup.setSelfPosition(4, height - 50);
+        scrollableWidgetGroup.setSize(Math.max(18, width - 8), 22);
+        enhanced$candidateRow.setSelfPosition(4, height - 26);
+        enhanced$candidateRow.setSize(Math.max(18, width - 8), 22);
+    }
+
     @Shadow private DraggableScrollableWidgetGroup scrollableWidgetGroup;
     @Shadow @Final private List<SlotWidget> slotWidgets;
     @Unique private PreviewMaterialAccess enhanced$materialPattern;

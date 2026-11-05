@@ -10,6 +10,10 @@ public interface PreviewMaterialAccess {
     Map<BlockPos, TraceabilityPredicate> enhanced$predicates();
     BlockPos enhanced$controllerPosition();
 
+    interface Rows {
+        void enhanced$layoutRows(int width, int height);
+    }
+
     interface Interaction {
         PreviewMaterialRows.Selection enhanced$materialSelection();
         void enhanced$refreshVisibility();
