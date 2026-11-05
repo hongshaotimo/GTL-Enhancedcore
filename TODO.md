@@ -1,5 +1,13 @@
 # 本機建置待辦
 
+## 山海：PR #6 JEI 預覽修補
+
+- [x] 修正全螢幕切頁後退出的兩列重疊，以及材料篩選重設鏡頭。
+- [x] 材料與 predicate 候選按頁面快取，接入既有分幀準備及取消／登出清理。
+- [x] 主程式編譯與 205 項定向斷言通過（42 + 119 + 25 + 19），包含鏡頭、排版、候選復用與清理界線。
+- [ ] 補齊 SHA-256 為 `aeb22dbc5ffcb25986c82c4536ee336b7d303f5559fe24894b24e9ceb9d85f41` 的原始 `SchemTool/input/star_core_stripper.schem`，再跑完整 `regressionTest`；目前因缺檔中止，不代表全套通過。
+- [ ] 遊戲內驗證全螢幕切頁、退出後展開候選、縮放／平移後切換篩選，以及大型結構開啟／換層／材料點擊的幀耗時。未部署、未重啟。
+
 - [x] 補齊回歸測試所需的原版本 FTB Library、FTB Quests、FTB Chunks 與 JEI JAR。
 - [ ] 找回 `tools/hidden_structure_bindings.json` 原始審核檔案，須符合結構 manifest 中的 SHA-256。
 - [ ] 審核檔案補齊後重新執行完整 `regressionTest`，並驗證目前編譯依賴與遊戲的相容性；缺檔時 `build.bat` 已允許跳過整個回歸測試任務。
