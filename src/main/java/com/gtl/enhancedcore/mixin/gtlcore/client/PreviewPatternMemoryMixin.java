@@ -4,6 +4,7 @@ import appeng.api.stacks.AEItemKey;
 import com.gregtechceu.gtceu.api.machine.feature.multiblock.IMultiController;
 import com.gregtechceu.gtceu.api.pattern.TraceabilityPredicate;
 import com.gtl.enhancedcore.client.preview.PreviewMaterialAccess;
+import com.gtl.enhancedcore.client.preview.PreviewMaterialRows;
 import com.gtl.enhancedcore.client.preview.PreviewPatternMemory;
 import com.gtl.enhancedcore.common.structure.ChamberPositions;
 import com.lowdragmc.lowdraglib.utils.BlockInfo;
@@ -12,12 +13,13 @@ import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.IdentityHashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.material.Fluid;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -32,21 +34,43 @@ public abstract class PreviewPatternMemoryMixin implements PreviewPatternMemory,
     @Shadow @Final Set<BlockPos> moduleOnlyBlocks;
     @Shadow @Final IMultiController controllerBase;
     @Unique private List<BlockPos> enhanced$chambers;
+    @Unique private Map<BlockPos, AEItemKey> enhanced$materials;
+    @Unique private Map<TraceabilityPredicate, Set<AEItemKey>> enhanced$candidateCache;
+    @Unique private Set<BlockPos> enhanced$replaceable;
 
     @Override public Map<BlockPos, AEItemKey> enhanced$materials() {
+        if (enhanced$materials != null) return enhanced$materials;
         var materials = new LinkedHashMap<BlockPos, AEItemKey>();
         var level = controllerBase.self().getLevel();
         blockMap.forEach((pos, info) -> {
             if (moduleOnlyBlocks.contains(pos)) return;
-            var state = info.getBlockState();
-            var stack = state.getBlock().getCloneItemStack(level, pos, state);
-            if (stack.isEmpty() && !state.getFluidState().isEmpty()) {
-                Fluid fluid = state.getFluidState().getType();
-                stack = fluid.getBucket().getDefaultInstance();
-            }
-            if (!stack.isEmpty()) materials.put(pos, AEItemKey.of(stack));
+            var item = PreviewMaterialRows.material(level, pos, info);
+            if (item != null) materials.put(pos, item);
         });
-        return materials;
+        return enhanced$materials = materials;
+    }
+
+    @Override public Set<AEItemKey> enhanced$candidates(TraceabilityPredicate predicate) {
+        if (predicate == null) return Set.of();
+        if (enhanced$candidateCache == null) enhanced$candidateCache = new IdentityHashMap<>();
+        return enhanced$candidateCache.computeIfAbsent(predicate, PreviewMaterialRows::candidates);
+    }
+
+    @Override public Set<BlockPos> enhanced$replaceablePositions() {
+        if (enhanced$replaceable == null) {
+            enhanced$replaceable = new HashSet<>();
+            predicateMap.forEach((pos, predicate) -> {
+                if (enhanced$candidates(predicate).size() > 1) enhanced$replaceable.add(pos);
+            });
+        }
+        return enhanced$replaceable;
+    }
+
+    @Override public void enhanced$cacheMaterials(Map<BlockPos, AEItemKey> materials,
+            Map<TraceabilityPredicate, Set<AEItemKey>> candidates, Set<BlockPos> replaceable) {
+        enhanced$materials = materials;
+        enhanced$candidateCache = candidates;
+        enhanced$replaceable = replaceable;
     }
 
     @Override public Map<BlockPos, TraceabilityPredicate> enhanced$predicates() { return predicateMap; }
@@ -68,6 +92,12 @@ public abstract class PreviewPatternMemoryMixin implements PreviewPatternMemory,
         if (!(controllerBase.self().getLevel() instanceof TrackedDummyWorld)) return;
         parts.clear();
         enhanced$chambers = null;
+        if (enhanced$materials != null) enhanced$materials.clear();
+        if (enhanced$candidateCache != null) enhanced$candidateCache.clear();
+        if (enhanced$replaceable != null) enhanced$replaceable.clear();
+        enhanced$materials = null;
+        enhanced$candidateCache = null;
+        enhanced$replaceable = null;
         predicateMap.clear();
         blockMap.clear();
         moduleOnlyBlocks.clear();

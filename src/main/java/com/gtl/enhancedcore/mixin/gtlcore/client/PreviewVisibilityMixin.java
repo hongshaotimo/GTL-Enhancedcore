@@ -1,6 +1,5 @@
 package com.gtl.enhancedcore.mixin.gtlcore.client;
 
-import appeng.api.stacks.AEItemKey;
 import com.gregtechceu.gtceu.api.gui.GuiTextures;
 import com.gtl.enhancedcore.client.preview.PreviewMaterialAccess;
 import com.gtl.enhancedcore.client.preview.PreviewMaterialRows;
@@ -13,7 +12,6 @@ import com.lowdragmc.lowdraglib.gui.widget.SceneWidget;
 import java.util.List;
 import java.util.Set;
 import java.util.HashSet;
-import java.util.stream.Stream;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import org.gtlcore.gtlcore.api.gui.PatternPreviewWidget;
@@ -44,7 +42,7 @@ public abstract class PreviewVisibilityMixin implements PreviewMaterialAccess.In
         var positions = new HashSet<BlockPos>();
         if (selected != null && enhanced$pattern != null) {
             enhanced$pattern.enhanced$predicates().forEach((pos, predicate) -> {
-                if (PreviewMaterialRows.candidates(predicate).contains(selected)) positions.add(pos);
+                if (enhanced$pattern.enhanced$candidates(predicate).contains(selected)) positions.add(pos);
             });
         }
         enhanced$selectedPositions = positions;
@@ -94,16 +92,7 @@ public abstract class PreviewVisibilityMixin implements PreviewMaterialAccess.In
         if (enhanced$pattern != access) enhanced$materialSelection().clear();
         enhanced$pattern = access;
         enhanced$controller = access.enhanced$controllerPosition();
-        var replaceable = new HashSet<BlockPos>();
-        access.enhanced$predicates().forEach((pos, predicate) -> {
-            var choices = Stream.concat(predicate.common.stream(), predicate.limited.stream())
-                    .filter(simple -> simple != null && simple.candidates != null)
-                    .flatMap(simple -> simple.getCandidates().stream())
-                    .filter(stack -> !stack.isEmpty())
-                    .map(AEItemKey::of).distinct().limit(2).toList();
-            if (choices.size() > 1) replaceable.add(pos);
-        });
-        enhanced$replaceable = replaceable;
+        enhanced$replaceable = access.enhanced$replaceablePositions();
         enhanced$unfilteredCore = List.copyOf(sceneWidget.getCore());
         enhanced$refreshVisibility();
     }
@@ -123,7 +112,13 @@ public abstract class PreviewVisibilityMixin implements PreviewMaterialAccess.In
                 || pos.equals(enhanced$controller)
                 || enhanced$visibilityMode == 2 && (enhanced$materialSelection().selected() == null
                         ? enhanced$replaceable.contains(pos) : enhanced$selectedPositions.contains(pos))).toList();
+        var core = sceneWidget.getCore();
+        if (core.size() == visible.size() && core.containsAll(visible)) return;
+        // 山海：native setRenderedCore also reframes the camera and invalidates its mesh.
+        var center = sceneWidget.getCenter();
+        float zoom = sceneWidget.getZoom();
         sceneWidget.setRenderedCore(visible, null);
-        sceneWidget.needCompileCache();
+        sceneWidget.setCenter(center);
+        sceneWidget.setZoom(zoom);
     }
 }

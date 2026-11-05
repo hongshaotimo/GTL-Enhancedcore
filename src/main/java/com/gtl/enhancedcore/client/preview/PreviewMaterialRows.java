@@ -9,6 +9,7 @@ import com.lowdragmc.lowdraglib.gui.widget.ImageWidget;
 import com.lowdragmc.lowdraglib.gui.widget.SlotWidget;
 import com.lowdragmc.lowdraglib.jei.IngredientIO;
 import com.lowdragmc.lowdraglib.utils.CycleItemStackHandler;
+import com.lowdragmc.lowdraglib.utils.BlockInfo;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
@@ -18,6 +19,8 @@ import java.util.Set;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.Level;
 
 public final class PreviewMaterialRows {
     private PreviewMaterialRows() {}
@@ -50,6 +53,16 @@ public final class PreviewMaterialRows {
             simple.getCandidates().stream().filter(stack -> !stack.isEmpty()).map(AEItemKey::of).forEach(result::add);
         }
         return result;
+    }
+
+    /** 山海：shared by the budgeted preparation phase and the native fallback. */
+    public static AEItemKey material(Level level, BlockPos pos, BlockInfo info) {
+        var state = info.getBlockState();
+        var stack = state.getBlock().getCloneItemStack(level, pos, state);
+        if (stack.isEmpty() && !state.getFluidState().isEmpty()) {
+            stack = state.getFluidState().getType().getBucket().getDefaultInstance();
+        }
+        return stack.isEmpty() ? null : AEItemKey.of(stack);
     }
 
     public static String countLabel(int minimum, int maximum) {

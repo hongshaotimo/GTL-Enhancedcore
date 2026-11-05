@@ -25,4 +25,13 @@ public abstract class PreviewMaterialLayoutMixin {
         rows.enhanced$layoutRows(width, screenHeight);
         scene.setSize(Math.max(1, width - 8), Math.max(1, screenHeight - scene.getSelfPosition().y - 54));
     }
+
+    // 山海：a page created in fullscreen may have a stale native compact-geometry snapshot.
+    @Inject(method = "exit", at = @At("TAIL"), require = 1)
+    private void enhanced$restoreMaterialRows(CallbackInfo ci) {
+        if (widget instanceof PreviewMaterialAccess.Rows rows) {
+            rows.enhanced$restoreRows();
+            scene.setSize(150, 104);
+        }
+    }
 }

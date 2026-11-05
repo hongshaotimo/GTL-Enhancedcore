@@ -31,6 +31,15 @@ public abstract class PreviewMaterialRowsMixin implements PreviewMaterialAccess.
         enhanced$candidateRow.setSize(Math.max(18, width - 8), 22);
     }
 
+    @Override
+    public void enhanced$restoreRows() {
+        if (enhanced$candidateRow == null) return;
+        scrollableWidgetGroup.setSelfPosition(3, 110);
+        scrollableWidgetGroup.setSize(154, 22);
+        enhanced$candidateRow.setSelfPosition(3, 134);
+        enhanced$candidateRow.setSize(154, 22);
+    }
+
     @Shadow private DraggableScrollableWidgetGroup scrollableWidgetGroup;
     @Shadow @Final private List<SlotWidget> slotWidgets;
     @Unique private PreviewMaterialAccess enhanced$materialPattern;

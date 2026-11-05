@@ -14,6 +14,7 @@ public final class PreviewMaterialRowsRegression {
         System.out.println("Preview material contracts passed: " + run() + " assertions");
         UpstreamPreviewContractRegression.main(args);
         StagedPreviewContractRegression.main(args);
+        ShanhaiPreviewReviewRegression.main(args);
     }
 
     static int run() throws Exception {
@@ -61,7 +62,8 @@ public final class PreviewMaterialRowsRegression {
         check(visibility.contains("new ButtonWidget(138, 70, 18, 18"), "Visibility button is below the layer button");
         check(visibility.contains("List.copyOf(sceneWidget.getCore())"), "Visibility preserves native layer and render-mask filtering");
         check(visibility.contains("sceneWidget.setRenderedCore(visible, null)"), "Rendering and picking share the filtered core");
-        check(visibility.contains("sceneWidget.needCompileCache()"), "Visibility changes invalidate cached scene geometry");
+        check(visibility.contains("sceneWidget.setCenter(center)") && visibility.contains("sceneWidget.setZoom(zoom)"),
+                "Visibility restores pan and zoom after native mesh invalidation");
         check(!visibility.contains("setPage(") && !visibility.contains("setCameraYawAndPitch"),
                 "Visibility changes do not reset the page, layer or camera");
         check(visibility.contains("method = \"onPosSelected\"") && visibility.contains(".position(enhanced$pattern.enhanced$predicates().get(pos))"),
