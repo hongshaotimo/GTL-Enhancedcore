@@ -14,6 +14,7 @@ import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
 
@@ -21,6 +22,34 @@ public final class PreviewMaterialRows {
     private PreviewMaterialRows() {}
 
     public record Material(AEItemKey item, List<AEItemKey> alternatives, int section) {}
+
+    public static final class Selection {
+        private AEItemKey selected;
+        private Set<AEItemKey> allowed = Set.of();
+
+        public void toggle(AEItemKey item) { selected = item.equals(selected) ? null : item; }
+        public AEItemKey selected() { return selected; }
+        public int borderColor(AEItemKey item) {
+            if (allowed.contains(item)) return 0xffff4040;
+            return item.equals(selected) ? 0xff80ff80 : 0;
+        }
+        public void position(TraceabilityPredicate predicate) {
+            allowed = candidates(predicate);
+        }
+        public void clear() { selected = null; allowed = Set.of(); }
+    }
+
+    public static Set<AEItemKey> candidates(TraceabilityPredicate predicate) {
+        if (predicate == null) return Set.of();
+        var result = new LinkedHashSet<AEItemKey>();
+        var predicates = new LinkedHashSet<>(predicate.common);
+        predicates.addAll(predicate.limited);
+        for (var simple : predicates) {
+            if (simple == null || simple.candidates == null) continue;
+            simple.getCandidates().stream().filter(stack -> !stack.isEmpty()).map(AEItemKey::of).forEach(result::add);
+        }
+        return result;
+    }
 
     public static List<AEItemKey> alternatives(TraceabilityPredicate predicate, AEItemKey item) {
         if (predicate == null) return List.of();
@@ -37,7 +66,8 @@ public final class PreviewMaterialRows {
     }
 
     public static void populate(PreviewMaterialAccess pattern, DraggableScrollableWidgetGroup row,
-                                DraggableScrollableWidgetGroup candidates, List<SlotWidget> slots) {
+                                DraggableScrollableWidgetGroup candidates, List<SlotWidget> slots,
+                                PreviewMaterialAccess.Interaction interaction) {
         row.clearAllWidgets();
         candidates.clearAllWidgets();
         candidates.setVisible(false);
@@ -75,20 +105,14 @@ public final class PreviewMaterialRows {
 
                 @Override
                 public Object getXEIIngredientOverMouse(double mouseX, double mouseY) {
-                    return material.section() == 1 ? null : super.getXEIIngredientOverMouse(mouseX, mouseY);
+                    return super.getXEIIngredientOverMouse(mouseX, mouseY);
                 }
 
                 @Override
                 public void drawInBackground(GuiGraphics graphics, int mouseX, int mouseY, float partialTicks) {
                     super.drawInBackground(graphics, mouseX, mouseY, partialTicks);
-                    if (material.equals(selected[0])) {
-                        int left = getPositionX();
-                        int top = getPositionY();
-                        graphics.fill(left, top, left + 18, top + 1, 0xff80ff80);
-                        graphics.fill(left, top + 17, left + 18, top + 18, 0xff80ff80);
-                        graphics.fill(left, top, left + 1, top + 18, 0xff80ff80);
-                        graphics.fill(left + 17, top, left + 18, top + 18, 0xff80ff80);
-                    }
+                    drawBorder(graphics, getPositionX(), getPositionY(),
+                            interaction.enhanced$materialSelection().borderColor(material.item()));
                 }
 
                 @Override
@@ -100,7 +124,9 @@ public final class PreviewMaterialRows {
                         candidates.setScrollXOffset(0);
                         candidates.setVisible(show);
                         candidates.setActive(show);
-                        if (show) populateCandidates(candidates, material.alternatives());
+                        interaction.enhanced$materialSelection().toggle(material.item());
+                        interaction.enhanced$refreshVisibility();
+                        if (show) populateCandidates(candidates, material.alternatives(), interaction);
                         return true;
                     }
                     return super.mouseClicked(mouseX, mouseY, button);
@@ -119,11 +145,35 @@ public final class PreviewMaterialRows {
         }
     }
 
-    private static void populateCandidates(DraggableScrollableWidgetGroup row, List<AEItemKey> alternatives) {
+    private static void drawBorder(GuiGraphics graphics, int x, int y, int color) {
+        if (color == 0) return;
+        graphics.fill(x, y, x + 18, y + 1, color);
+        graphics.fill(x, y + 17, x + 18, y + 18, color);
+        graphics.fill(x, y, x + 1, y + 18, color);
+        graphics.fill(x + 17, y, x + 18, y + 18, color);
+    }
+
+    private static void populateCandidates(DraggableScrollableWidgetGroup row, List<AEItemKey> alternatives,
+                                           PreviewMaterialAccess.Interaction interaction) {
         var handler = new CycleItemStackHandler(alternatives.stream().map(item -> List.of(item.toStack())).toList());
         for (int i = 0; i < alternatives.size(); i++) {
-            row.addWidget(new SlotWidget(handler, i, 4 + i * 18, 0, false, false)
-                    .setBackgroundTexture(GuiTextures.SLOT).setIngredientIO(IngredientIO.RENDER_ONLY));
+            var item = alternatives.get(i);
+            row.addWidget(new SlotWidget(handler, i, 4 + i * 18, 0, false, false) {
+                @Override public List<Object> getXEIIngredients() { return List.of(); }
+                @Override public boolean mouseClicked(double mouseX, double mouseY, int button) {
+                    if (button == 0 && isMouseOverElement(mouseX, mouseY)) {
+                        interaction.enhanced$materialSelection().toggle(item);
+                        interaction.enhanced$refreshVisibility();
+                        return true;
+                    }
+                    return super.mouseClicked(mouseX, mouseY, button);
+                }
+                @Override public void drawInBackground(GuiGraphics graphics, int mouseX, int mouseY, float partialTicks) {
+                    super.drawInBackground(graphics, mouseX, mouseY, partialTicks);
+                    drawBorder(graphics, getPositionX(), getPositionY(),
+                            interaction.enhanced$materialSelection().borderColor(item));
+                }
+            }.setBackgroundTexture(GuiTextures.SLOT).setIngredientIO(IngredientIO.RENDER_ONLY));
         }
     }
 }

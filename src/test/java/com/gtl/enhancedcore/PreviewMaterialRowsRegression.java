@@ -47,6 +47,10 @@ public final class PreviewMaterialRowsRegression {
                 "Equal items with different alternatives are not merged");
         check(source.contains("material.section() == 1 ? List.of() : super.getXEIIngredients()"),
                 "JEI native recipe lookup cannot steal the expand click");
+        check(source.contains("return super.getXEIIngredientOverMouse(mouseX, mouseY);")
+                        && !source.contains("return material.section() == 1 ? null")
+                        && !source.contains("getXEIIngredientOverMouse(double mouseX, double mouseY) { return null; }"),
+                "Material and candidate hover ingredients remain available to JEI bookmark keys");
         check(!source.contains("replacePatternMaterial") && !source.contains("materialReplacements"),
                 "Candidate expansion does not replace the preview");
         check(config.getAsJsonArray("client").asList().stream().anyMatch(entry -> entry.getAsString().equals(
@@ -60,6 +64,17 @@ public final class PreviewMaterialRowsRegression {
         check(visibility.contains("sceneWidget.needCompileCache()"), "Visibility changes invalidate cached scene geometry");
         check(!visibility.contains("setPage(") && !visibility.contains("setCameraYawAndPitch"),
                 "Visibility changes do not reset the page, layer or camera");
+        check(visibility.contains("method = \"onPosSelected\"") && visibility.contains(".position(enhanced$pattern.enhanced$predicates().get(pos))"),
+                "Scene selection supplies the exact position predicate to material highlighting");
+        check(source.contains("borderColor(material.item())") && source.contains("borderColor(item)"),
+                "Both material rows share the highlight color policy");
+        check(source.contains("if (allowed.contains(item)) return 0xffff4040;")
+                        && source.contains("return item.equals(selected) ? 0xff80ff80 : 0;"),
+                "Position candidates are red before falling back to green material selection");
+        check(visibility.contains("enhanced$selectedPositions.contains(pos)"), "Selected material filters placeable positions");
+        check(visibility.contains("if (enhanced$pattern != access) enhanced$materialSelection().clear()"),
+                "Page changes reset stale selections");
+        check(source.contains("item.equals(selected) ? null : item"), "Clicking the same material clears selection");
         return assertions;
     }
 

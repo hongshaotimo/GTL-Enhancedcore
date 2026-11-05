@@ -3,6 +3,8 @@ package com.gtl.enhancedcore.mixin.gtlcore.client;
 import appeng.api.stacks.AEItemKey;
 import com.gregtechceu.gtceu.api.gui.GuiTextures;
 import com.gtl.enhancedcore.client.preview.PreviewMaterialAccess;
+import com.gtl.enhancedcore.client.preview.PreviewMaterialRows;
+import net.minecraft.core.Direction;
 import com.lowdragmc.lowdraglib.gui.editor.ColorPattern;
 import com.lowdragmc.lowdraglib.gui.texture.GuiTextureGroup;
 import com.lowdragmc.lowdraglib.gui.texture.TextTexture;
@@ -25,7 +27,36 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(value = PatternPreviewWidget.class, remap = false)
-public abstract class PreviewVisibilityMixin {
+public abstract class PreviewVisibilityMixin implements PreviewMaterialAccess.Interaction {
+    @Unique private PreviewMaterialRows.Selection enhanced$selection;
+    @Unique private PreviewMaterialAccess enhanced$pattern;
+    @Unique private Set<BlockPos> enhanced$selectedPositions = Set.of();
+
+    @Override
+    public PreviewMaterialRows.Selection enhanced$materialSelection() {
+        if (enhanced$selection == null) enhanced$selection = new PreviewMaterialRows.Selection();
+        return enhanced$selection;
+    }
+
+    @Override
+    public void enhanced$refreshVisibility() {
+        var selected = enhanced$materialSelection().selected();
+        var positions = new HashSet<BlockPos>();
+        if (selected != null && enhanced$pattern != null) {
+            enhanced$pattern.enhanced$predicates().forEach((pos, predicate) -> {
+                if (PreviewMaterialRows.candidates(predicate).contains(selected)) positions.add(pos);
+            });
+        }
+        enhanced$selectedPositions = positions;
+        enhanced$applyVisibility();
+    }
+
+    @Inject(method = "onPosSelected", at = @At("TAIL"), require = 1)
+    private void enhanced$highlightAllowed(BlockPos pos, Direction facing, CallbackInfo ci) {
+        if (enhanced$pattern != null) {
+            enhanced$materialSelection().position(enhanced$pattern.enhanced$predicates().get(pos));
+        }
+    }
     @Shadow @Final private SceneWidget sceneWidget;
     @Unique private int enhanced$visibilityMode;
     @Unique private List<BlockPos> enhanced$unfilteredCore = List.of();
@@ -60,6 +91,8 @@ public abstract class PreviewVisibilityMixin {
     @Inject(method = "setupScene", at = @At("TAIL"), require = 1)
     private void enhanced$filterScene(@Coerce Object pattern, CallbackInfo ci) {
         var access = (PreviewMaterialAccess) pattern;
+        if (enhanced$pattern != access) enhanced$materialSelection().clear();
+        enhanced$pattern = access;
         enhanced$controller = access.enhanced$controllerPosition();
         var replaceable = new HashSet<BlockPos>();
         access.enhanced$predicates().forEach((pos, predicate) -> {
@@ -72,7 +105,7 @@ public abstract class PreviewVisibilityMixin {
         });
         enhanced$replaceable = replaceable;
         enhanced$unfilteredCore = List.copyOf(sceneWidget.getCore());
-        enhanced$applyVisibility();
+        enhanced$refreshVisibility();
     }
 
     @Unique
@@ -88,7 +121,8 @@ public abstract class PreviewVisibilityMixin {
     private void enhanced$applyVisibility() {
         var visible = enhanced$unfilteredCore.stream().filter(pos -> enhanced$visibilityMode == 0
                 || pos.equals(enhanced$controller)
-                || enhanced$visibilityMode == 2 && enhanced$replaceable.contains(pos)).toList();
+                || enhanced$visibilityMode == 2 && (enhanced$materialSelection().selected() == null
+                        ? enhanced$replaceable.contains(pos) : enhanced$selectedPositions.contains(pos))).toList();
         sceneWidget.setRenderedCore(visible, null);
         sceneWidget.needCompileCache();
     }

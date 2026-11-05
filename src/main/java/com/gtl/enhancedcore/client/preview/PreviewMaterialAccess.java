@@ -9,4 +9,9 @@ public interface PreviewMaterialAccess {
     Map<BlockPos, AEItemKey> enhanced$materials();
     Map<BlockPos, TraceabilityPredicate> enhanced$predicates();
     BlockPos enhanced$controllerPosition();
+
+    interface Interaction {
+        PreviewMaterialRows.Selection enhanced$materialSelection();
+        void enhanced$refreshVisibility();
+    }
 }

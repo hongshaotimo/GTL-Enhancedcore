@@ -46,7 +46,8 @@ public abstract class PreviewMaterialRowsMixin {
         widget.addWidget(enhanced$candidateRow);
         scrollableWidgetGroup.setSelfPosition(3, 110);
         scrollableWidgetGroup.setDraggable(false);
-        PreviewMaterialRows.populate(enhanced$materialPattern, scrollableWidgetGroup, enhanced$candidateRow, slotWidgets);
+        PreviewMaterialRows.populate(enhanced$materialPattern, scrollableWidgetGroup, enhanced$candidateRow, slotWidgets,
+                (PreviewMaterialAccess.Interaction) this);
         var preview = (PatternPreviewWidget) (Object) this;
         var controls = preview.getPreviewControls();
         if (controls == null || !controls.fullscreen()) {
