@@ -49,6 +49,17 @@ public final class PreviewMaterialRowsRegression {
                 "JEI native recipe lookup cannot steal the expand click");
         check(!source.contains("replacePatternMaterial") && !source.contains("materialReplacements"),
                 "Candidate expansion does not replace the preview");
+        check(config.getAsJsonArray("client").asList().stream().anyMatch(entry -> entry.getAsString().equals(
+                "gtlcore.client.PreviewVisibilityMixin")), "Visibility Mixin is client-only");
+        var visibility = Files.readString(Path.of(
+                "src/main/java/com/gtl/enhancedcore/mixin/gtlcore/client/PreviewVisibilityMixin.java"));
+        check(visibility.contains("(enhanced$visibilityMode + 1) % 3"), "Visibility cycles through three modes");
+        check(visibility.contains("new ButtonWidget(138, 70, 18, 18"), "Visibility button is below the layer button");
+        check(visibility.contains("List.copyOf(sceneWidget.getCore())"), "Visibility preserves native layer and render-mask filtering");
+        check(visibility.contains("sceneWidget.setRenderedCore(visible, null)"), "Rendering and picking share the filtered core");
+        check(visibility.contains("sceneWidget.needCompileCache()"), "Visibility changes invalidate cached scene geometry");
+        check(!visibility.contains("setPage(") && !visibility.contains("setCameraYawAndPitch"),
+                "Visibility changes do not reset the page, layer or camera");
         return assertions;
     }
 

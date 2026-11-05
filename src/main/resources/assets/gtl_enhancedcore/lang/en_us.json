@@ -1,4 +1,8 @@
 {
+  "gtl_enhancedcore.preview.visibility_all": "All",
+  "gtl_enhancedcore.preview.visibility_controller": "Main",
+  "gtl_enhancedcore.preview.visibility_replaceable": "Parts",
+  "gtl_enhancedcore.preview.visibility_hint": "Cycle visibility: all → controller only → controller and replaceable blocks; other blocks are not rendered",
   "gtl_enhancedcore.preview.expand_material": "Left-click to show or hide available blocks (view only)",
   "message.gtl_enhancedcore.structure_detect.normal_only": "Structure detection only checks the normal orientation",
   "item.gtlcore.structure_detect.tooltip.1": "This tool checks multiblock structures in the normal orientation only",
