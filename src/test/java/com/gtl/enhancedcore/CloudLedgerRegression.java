@@ -15,6 +15,7 @@ public final class CloudLedgerRegression {
         assertions += CloudPatternAccessRegression.run();
         assertions += CloudUploadSequenceRegression.run();
         assertions += CloudAllocationChangesRegression.run();
+        assertions += CloudDispatchSharesRegression.run();
         assertions += IvWideEnergyRegression.run();
         var furnaceModes = List.of("furnace", "alloy_smelter");
         var smelterLedger = new CloudLedger();
@@ -26,27 +27,30 @@ public final class CloudLedgerRegression {
                 com.gtl.enhancedcore.common.cloud.CloudEndpointPolicy.preferredModes(furnaceModes, "alloy_smelter")).equals("alloy_smelter"),
                 "Single industrial alloy endpoint does not silently claim furnace first");
         check(smelterLedger.claimMode(electricEndpoint, smelterInstance,
-                com.gtl.enhancedcore.common.cloud.CloudEndpointPolicy.preferredModes(furnaceModes, "alloy_smelter")).equals("furnace"),
-                "Second industrial endpoint fills the unoccupied electric furnace mode");
+                com.gtl.enhancedcore.common.cloud.CloudEndpointPolicy.preferredModes(furnaceModes, "alloy_smelter")).equals("alloy_smelter"),
+                "Second industrial endpoint may share the selected alloy mode");
         check(smelterLedger.claimMode(alloyEndpoint, smelterInstance, furnaceModes).equals("alloy_smelter"),
                 "Controller mode toggle never reassigns existing cloud lease ownership");
         coreAuthorityExports();
+        sharedLeases();
         UUID owner = UUID.randomUUID(), library = UUID.randomUUID(), machine = UUID.randomUUID();
         UUID a = UUID.randomUUID(), b = UUID.randomUUID(), c = UUID.randomUUID(), d = UUID.randomUUID();
         CloudLedger ledger = new CloudLedger();
         for (UUID node : List.of(a, b, c, d)) ledger.addNode(node, owner, library);
         List<String> types = List.of("assembler", "assembler", "circuit", "arc");
         check(ledger.claimMode(a, machine, types).equals("assembler"), "First mode follows definition order with ID deduplication");
-        check(ledger.claimMode(b, machine, types).equals("circuit"), "Second node never duplicates first mode");
-        check(ledger.claimMode(c, machine, types).equals("arc"), "Third node claims third unique mode");
-        check(ledger.claimMode(d, machine, types).isEmpty(), "Fourth node waits when every mode is occupied");
-        check(ledger.claimMode(c, machine, List.of("arc", "assembler", "circuit")).equals("arc"), "Reordering never moves existing node");
+        check(ledger.claimMode(b, machine, types).equals("assembler"), "Second node may share the first compatible mode");
+        check(ledger.claimMode(c, machine, types).equals("assembler"), "Third node independently claims the selected mode");
+        check(ledger.claimMode(d, machine, types).equals("assembler"), "Additional endpoints do not wait for a mode vacancy");
+        check(ledger.claimMode(c, machine, List.of("arc", "assembler", "circuit")).equals("assembler"), "Reordering never moves existing node");
         rejects(() -> ledger.claimMode(a, UUID.randomUUID(), types), "New machine cannot inherit old instance binding");
         UUID e = UUID.randomUUID(); ledger.addEntry(e); UUID leaseOperation = UUID.randomUUID();
         var lease = ledger.lease(b, e, 27, leaseOperation);
         check(lease.stableSlot() == 27, "Sparse stable slot is retained");
         check(ledger.lease(b, e, 27, leaseOperation).equals(lease), "Lease retry is idempotent");
-        rejects(() -> ledger.lease(a, e, 0, UUID.randomUUID()), "One original cannot have two consumers");
+        var companionLease = ledger.lease(a, e, 0, UUID.randomUUID());
+        check(ledger.entry(e).leases().size() == 2 && ledger.entry(e).lease(a).equals(companionLease),
+                "One physical original may have an independent lease at a second endpoint");
         rejects(() -> ledger.export(e, ledger.entry(e).revision(), UUID.randomUUID()), "Leased original cannot be extracted");
         Object endpoint = new Object(), copiedEndpoint = new Object();
         check(ledger.activate(b, endpoint), "First endpoint activates");
@@ -58,11 +62,14 @@ public final class CloudLedgerRegression {
         check(ledger.node(b).slots().get(27).equals(e), "Chunk unload preserves lease and stable mode");
         check(!ledger.active(b, null), "Missing endpoint never proves active ownership");
         UUID detach = UUID.randomUUID(); ledger.detach(b, detach); ledger.detach(b, detach);
-        check(ledger.entry(e).status() == CloudLedger.Status.AVAILABLE, "Detach releases original");
+        check(ledger.entry(e).status() == CloudLedger.Status.LEASED && ledger.entry(e).lease(a).equals(companionLease)
+                        && ledger.entry(e).lease(b) == null, "Detach releases only the removed endpoint's publication");
         check(ledger.node(b).generation() == 2, "Detach increments generation once despite replay");
         check(!ledger.activate(b, endpoint), "Old detached endpoint cannot resume");
-        check(ledger.node(a).mode().equals("assembler") && ledger.node(c).mode().equals("arc"), "Removing middle node never shuffles others");
-        check(ledger.claimMode(d, machine, types).equals("circuit"), "Replacement fills the middle gap");
+        check(ledger.node(a).mode().equals("assembler") && ledger.node(c).mode().equals("assembler"), "Removing middle node never shuffles others");
+        check(ledger.claimMode(d, machine, types).equals("assembler"), "Other nodes retain their independent selected mode");
+        ledger.releaseLease(a, e, UUID.randomUUID());
+        check(ledger.entry(e).status() == CloudLedger.Status.AVAILABLE, "Final endpoint release makes the original available");
         long revision = ledger.entry(e).revision(); ledger.archive(e, revision, true);
         rejects(() -> ledger.export(e, revision, UUID.randomUUID()), "Stale and archived extraction rejected");
         ledger.archive(e, ledger.entry(e).revision(), false);
@@ -77,13 +84,14 @@ public final class CloudLedgerRegression {
         ledger.reconcile(exportOperation, true);
         rejects(() -> ledger.record(exportOperation, "UPLOAD", e, "COMMITTED"), "Reusing operation for another action is rejected");
         CloudLedger restored = new CloudLedger(); restored.restore(ledger.entries(), ledger.nodes(), ledger.receipts());
-        check(restored.node(d).mode().equals("circuit"), "Restart preserves replacement mode");
+        check(restored.node(d).mode().equals("assembler"), "Restart preserves every endpoint's mode");
         check(restored.entry(e).status() == CloudLedger.Status.EXPORTED, "Restart never recreates exported original");
         restored.validate();
         CloudLedger corrupt = new CloudLedger();
         var duplicateNodes = new ArrayList<>(ledger.nodes());
         duplicateNodes.add(new CloudLedger.NodeState(UUID.randomUUID(), owner, library, machine, "arc", 1, false, Map.of()));
-        rejects(() -> corrupt.restore(ledger.entries(), duplicateNodes, ledger.receipts()), "Persisted duplicate mode is rejected, not silently reassigned");
+        corrupt.restore(ledger.entries(), duplicateNodes, ledger.receipts());
+        check(corrupt.nodes().size() == duplicateNodes.size(), "Persisted independent nodes may share a machine and recipe mode");
         UUID pending = UUID.randomUUID(), upload = UUID.randomUUID(); ledger.addPendingEntry(pending);
         ledger.record(upload, "UPLOAD", pending, "EXTERNAL_PENDING");
         rejects(() -> ledger.lease(a, pending, 90, UUID.randomUUID()), "Unacknowledged import cannot be published or leased");
@@ -120,14 +128,80 @@ public final class CloudLedgerRegression {
             for (int i = 0; i < 24; i++) { UUID id = UUID.randomUUID(); random.addNode(id, owner, library); ids.add(id); }
             Collections.shuffle(ids, rng);
             for (UUID id : ids) random.claimMode(id, machine, List.of("one", "two", "three"));
-            check(random.nodes().stream().filter(n -> !n.mode().isEmpty()).count() == 3, "Only three ordered modes can ever be claimed");
-            UUID middle = random.nodes().stream().filter(n -> n.mode().equals("two")).findFirst().orElseThrow().id();
+            check(random.nodes().stream().filter(n -> n.mode().equals("one")).count() == 24, "All arrivals may claim the same first compatible mode");
+            UUID middle = ids.get(12);
             random.detach(middle, UUID.randomUUID()); random.validate();
-            UUID replacement = ids.stream().filter(id -> random.node(id).machineInstance() == null).findFirst().orElseThrow();
-            check(random.claimMode(replacement, machine, List.of("one", "two", "three")).equals("two"), "Every arrival permutation fills only released middle mode");
+            UUID replacement = UUID.randomUUID(); random.addNode(replacement, owner, library);
+            check(random.claimMode(replacement, machine, List.of("one", "two", "three")).equals("one"), "Replacement mode does not depend on other endpoint arrival order");
             random.validate();
         }
         return assertions;
+    }
+    private static void sharedLeases() {
+        var ledger = new CloudLedger();
+        UUID owner = UUID.randomUUID(), library = UUID.randomUUID(), machine = UUID.randomUUID();
+        UUID a = UUID.randomUUID(), b = UUID.randomUUID(), c = UUID.randomUUID(), original = UUID.randomUUID();
+        for (UUID node : List.of(a, b, c)) { ledger.addNode(node, owner, library); ledger.claimMode(node, machine, List.of("assembler")); }
+        ledger.addEntry(original);
+        UUID firstOperation = UUID.randomUUID(), secondOperation = UUID.randomUUID();
+        var first = ledger.lease(a, original, 17, firstOperation);
+        var second = ledger.lease(b, original, 17, secondOperation);
+        var third = ledger.lease(c, original, 1048576, UUID.randomUUID());
+        check(ledger.entry(original).leases().equals(List.of(first, second, third)), "One original keeps all independent endpoint lease identities");
+        check(!first.id().equals(second.id()) && first.stableSlot() == second.stableSlot(),
+                "Different endpoints may reuse a local stable slot without sharing a lease ID");
+        check(ledger.lease(b, original, 17, secondOperation).equals(second), "Secondary lease replay resolves its own node rather than primary lease");
+        check(ledger.lease(b, original, 18, secondOperation) == null, "Lease replay cannot silently change its stable slot");
+        rejects(() -> ledger.lease(a, original, 18, UUID.randomUUID()), "A node cannot publish the same original at two slots");
+        UUID sibling = UUID.randomUUID(); ledger.addEntry(sibling);
+        rejects(() -> ledger.lease(a, sibling, 17, UUID.randomUUID()), "One endpoint stable slot cannot own two originals");
+        ledger.validate();
+        var restored = new CloudLedger(); restored.restore(ledger.entries(), ledger.nodes(), ledger.receipts());
+        check(restored.entry(original).leases().equals(List.of(first, second, third)), "Authority restore preserves every shared lease and its order");
+        UUID release = UUID.randomUUID(); ledger.releaseLease(a, original, release);
+        check(ledger.entry(original).lease().equals(second) && ledger.entry(original).sharedLeases().equals(List.of(third)),
+                "Releasing primary lease promotes a surviving consumer without changing its identity");
+        long revision = ledger.entry(original).revision(); ledger.releaseLease(a, original, release);
+        check(ledger.entry(original).revision() == revision && ledger.entry(original).leases().size() == 2,
+                "Old release replay never removes surviving shared consumers");
+        ledger.detach(b, UUID.randomUUID());
+        check(ledger.entry(original).leases().equals(List.of(third)) && ledger.node(c).slots().get(1048576).equals(original),
+                "Detaching a second endpoint retains the third endpoint's sparse publication");
+        UUID export = UUID.randomUUID(); ledger.exportFromCore(original, export);
+        check(ledger.entry(original).leases().isEmpty() && ledger.entry(original).status() == CloudLedger.Status.EXPORTED
+                        && ledger.node(a).slots().isEmpty() && ledger.node(b).slots().isEmpty() && ledger.node(c).slots().isEmpty(),
+                "Core export revokes all surviving shared publications exactly once");
+        ledger.exportFromCore(original, export); ledger.acknowledge(export); ledger.validate();
+        restored.exportFromCore(original, UUID.randomUUID());
+        check(restored.nodes().stream().allMatch(node -> node.slots().isEmpty()), "Core export also revokes every consumer after a three-lease restore");
+
+        var entry = new CloudLedger.EntryState(original, 4, CloudLedger.Status.LEASED, first, List.of(second, third));
+        var nodes = List.of(
+                new CloudLedger.NodeState(a, owner, library, machine, "assembler", 1, false, Map.of(17, original)),
+                new CloudLedger.NodeState(b, owner, library, machine, "assembler", 1, false, Map.of(17, original)),
+                new CloudLedger.NodeState(c, owner, library, machine, "assembler", 1, false, Map.of(1048576, original)));
+        rejectsRestore(new CloudLedger.EntryState(original, 4, CloudLedger.Status.LEASED, first, List.of(second, second)), nodes,
+                "Repeated shared node or lease identity is rejected on restore");
+        rejectsRestore(new CloudLedger.EntryState(original, 4, CloudLedger.Status.LEASED, first,
+                List.of(new CloudLedger.Lease(first.id(), original, b, 17, 1), third)), nodes,
+                "Duplicated lease UUID across distinct consumers is rejected");
+        rejectsRestore(new CloudLedger.EntryState(original, 4, CloudLedger.Status.LEASED, first,
+                List.of(new CloudLedger.Lease(second.id(), original, b, 18, 1), third)), nodes,
+                "Shared stable slot disagreement with its node is rejected");
+        rejectsRestore(new CloudLedger.EntryState(original, 4, CloudLedger.Status.LEASED, first,
+                List.of(new CloudLedger.Lease(second.id(), original, b, 17, 2), third)), nodes,
+                "Shared generation disagreement with its live node is rejected");
+        rejectsRestore(new CloudLedger.EntryState(original, 4, CloudLedger.Status.LEASED, first,
+                List.of(new CloudLedger.Lease(second.id(), UUID.randomUUID(), b, 17, 1), third)), nodes,
+                "Shared lease cannot refer to a different central original");
+        rejectsRestore(new CloudLedger.EntryState(original, 4, CloudLedger.Status.AVAILABLE, null, List.of(second)), nodes,
+                "Shared leases cannot hide behind an available original status");
+        var detached = new ArrayList<>(nodes);
+        detached.set(1, new CloudLedger.NodeState(b, owner, library, machine, "assembler", 1, true, Map.of()));
+        rejectsRestore(entry, detached, "Shared lease cannot point at a detached node");
+    }
+    private static void rejectsRestore(CloudLedger.EntryState entry, List<CloudLedger.NodeState> nodes, String message) {
+        rejects(() -> new CloudLedger().restore(List.of(entry), nodes, List.of()), message);
     }
     private static void coreAuthorityExports() {
         var ledger = new CloudLedger();

@@ -9,6 +9,7 @@ import appeng.api.stacks.AEKey;
 import appeng.crafting.inv.ListCraftingInventory;
 import appeng.me.service.CraftingService;
 import com.gtl.enhancedcore.common.recipe.iv.IvBuffers;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import org.gtlcore.gtlcore.common.data.GTLItems;
@@ -20,23 +21,33 @@ public final class CloudCpuRefill {
     public static void replenish(IPatternDetails pattern, long remaining, ListCraftingInventory inventory,
                                  CraftingService service, IGrid grid, IActionSource source, Runnable changed) {
         if (remaining < 1 || grid == null || source == null) return;
-        CloudPatternBufferMachine cloud = null;
-        for (var provider : service.getProviders(pattern)) {
-            if (provider instanceof CloudPatternBufferMachine candidate
-                    && candidate.getAvailablePatterns().contains(pattern)) {
-                cloud = candidate;
-                break;
-            }
-        }
-        if (cloud == null) return;
-
         Map<AEKey, Long> units = physicalUnits(pattern);
         if (units == null || units.isEmpty() || units.entrySet().stream()
                 .noneMatch(input -> inventory.list.get(input.getKey()) < input.getValue())) return;
 
-        long batch = cloud.cloudDispatchCapacity(pattern, remaining);
-        if (batch < 1) return;
+        var providers = new ArrayList<CloudPatternBufferMachine>();
+        for (var provider : service.getProviders(pattern))
+            if (provider instanceof CloudPatternBufferMachine cloud) providers.add(cloud);
+        if (providers.isEmpty()) return;
+
+        // Downstream tasks may wait for products absent from both CPU and ME.
+        // Keep partial refills: any available physical input enables the full original path.
         var storage = grid.getStorageService().getInventory();
+        boolean refillAvailable = false;
+        for (var key : units.keySet()) if (storage.extract(key, 1, Actionable.SIMULATE, source) > 0) {
+            refillAvailable = true;
+            break;
+        }
+        if (!refillAvailable) return;
+
+        long batch = 0;
+        for (var candidate : providers) {
+            if (candidate.getAvailablePatterns().contains(pattern)) {
+                batch = Math.max(batch, candidate.cloudDispatchCapacity(pattern, remaining));
+            }
+        }
+        if (batch < 1) return;
+
         for (var input : units.entrySet()) {
             AEKey key = input.getKey();
             long request = CloudOrderCapacity.refillAmount(inventory.list.get(key), input.getValue(), batch);

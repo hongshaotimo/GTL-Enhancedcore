@@ -1,0 +1,88 @@
+{
+  "schemaVersion": 1,
+  "design": "Quartz Works: chamfered, articulated industrial halls with four daylight roof families",
+  "clearance": {
+    "side": 12,
+    "front": 22,
+    "rear": 12,
+    "machineHeadroom": 10,
+    "roofMaximumRise": 18
+  },
+  "rhythm": {
+    "facadeBay": 20,
+    "windowStorey": 24,
+    "sawtoothBay": 14,
+    "roofRib": 16,
+    "roofVentX": 32,
+    "roofVentZ": 48
+  },
+  "industrial": {
+    "tankSpacing": 96,
+    "chimneySpacing": 72,
+    "fenceSpacing": 16,
+    "landscapePeriod": 192
+  },
+  "palette": {
+    "quartz": "minecraft:smooth_quartz",
+    "column": "minecraft:quartz_pillar[axis=y]",
+    "base": "minecraft:polished_deepslate",
+    "floor": "minecraft:polished_andesite",
+    "dark": "minecraft:polished_blackstone",
+    "steel": "minecraft:polished_basalt[axis=y]",
+    "cladding": "minecraft:smooth_quartz",
+    "yellow": "minecraft:yellow_concrete",
+    "dock": "minecraft:deepslate_tiles",
+    "tank": "minecraft:iron_block",
+    "tankBand": "minecraft:orange_concrete",
+    "chimney": "minecraft:cut_copper",
+    "fan": "minecraft:iron_trapdoor[open=false,half=top,facing=north]",
+    "grass": "minecraft:grass_block",
+    "trunk": "minecraft:oak_log[axis=y]",
+    "treeLeaves": "minecraft:oak_leaves[persistent=true]",
+    "flowers": "minecraft:flowering_azalea_leaves[persistent=true]",
+    "seat": "minecraft:spruce_slab[type=bottom]",
+    "glass": "minecraft:light_blue_stained_glass",
+    "clearGlass": "minecraft:glass",
+    "light": "minecraft:sea_lantern",
+    "pipe": "minecraft:polished_basalt[axis=y]",
+    "vent": "minecraft:oxidized_copper",
+    "slab": "minecraft:smooth_quartz_slab[type=bottom]",
+    "topSlab": "minecraft:smooth_quartz_slab[type=top]",
+    "darkSlab": "minecraft:polished_blackstone_slab[type=bottom]",
+    "floorSlab": "minecraft:polished_andesite_slab[type=top]",
+    "barsX": "minecraft:iron_bars[east=true,west=true,north=false,south=false]",
+    "barsZ": "minecraft:iron_bars[east=false,west=false,north=true,south=true]",
+    "grate": "minecraft:iron_trapdoor[open=false,half=top,facing=north]",
+    "louvreEast": "minecraft:iron_trapdoor[open=true,half=bottom,facing=east]",
+    "louvreWest": "minecraft:iron_trapdoor[open=true,half=bottom,facing=west]",
+    "stairNorth": "minecraft:quartz_stairs[facing=north,half=bottom,shape=straight]",
+    "stairSouth": "minecraft:quartz_stairs[facing=south,half=bottom,shape=straight]",
+    "stairEast": "minecraft:quartz_stairs[facing=east,half=bottom,shape=straight]",
+    "stairWest": "minecraft:quartz_stairs[facing=west,half=bottom,shape=straight]",
+    "accessStair": "minecraft:polished_andesite_stairs[facing=south,half=bottom,shape=straight]",
+    "hedge": "minecraft:azalea_leaves[persistent=true]"
+  },
+  "accents": {
+    "steam": "minecraft:orange_terracotta",
+    "ore": "minecraft:yellow_terracotta",
+    "metallurgy": "minecraft:red_terracotta",
+    "chemistry": "minecraft:cyan_terracotta",
+    "precision": "minecraft:blue_terracotta",
+    "biology": "minecraft:green_terracotta",
+    "energy": "minecraft:yellow_terracotta",
+    "computation": "minecraft:light_blue_terracotta",
+    "space": "minecraft:purple_terracotta",
+    "shared": "minecraft:gray_terracotta",
+    "default": "minecraft:cyan_terracotta"
+  },
+  "outdoorCourts": {
+    "maximumDecorationHeight": 8,
+    "description": "Open megastructure works apron with flush hazard-marked paving, interrupted safety fencing, low pipe galleries, sparse planted rest nodes and service platforms; no roof or tall enclosure"
+  },
+  "roofFamilies": [
+    {"variant": 0, "name": "northlight sawtooth", "maximumRise": 11},
+    {"variant": 1, "name": "stepped barrel vault", "maximumRise": 17},
+    {"variant": 2, "name": "twin clerestory monitor", "maximumRise": 15},
+    {"variant": 3, "name": "repeated gabled bays", "maximumRise": 15}
+  ]
+}

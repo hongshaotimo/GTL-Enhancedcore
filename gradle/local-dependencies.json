@@ -13,6 +13,7 @@
     "architectury-9.2.14-forge.jar"
   ],
   "compileOnly": [
+    "kotlinforforge-4.11.0-all.jar",
     "ae2ct-1.20.1-1.1.1.jar",
     "mixinextras-forge-0.5.0.jar",
     "MixinExtras-0.5.0.jar",

@@ -1,0 +1,58 @@
+{
+  "schemaVersion": 1,
+  "presets": [
+    {
+      "id": "quartz_works",
+      "nameKey": "gtl_enhancedcore.create_world_plot.factory_preset",
+      "descriptionKey": "gtl_enhancedcore.create_world_plot.factory_preset_hint",
+      "catalogResource": "/data/gtl_enhancedcore/worldgen/factory_campus_machines.json",
+      "layoutResource": "/data/gtl_enhancedcore/worldgen/factory_campus_layout.json",
+      "architectureResource": "/data/gtl_enhancedcore/worldgen/factory_campus_architecture.json",
+      "engine": "quartz_factory",
+      "terrain": {
+        "materials": {
+          "quartz": "minecraft:smooth_quartz",
+          "dark": "minecraft:polished_deepslate",
+          "floor": "minecraft:polished_andesite",
+          "road": "minecraft:gray_concrete",
+          "light": "minecraft:sea_lantern",
+          "yellow": "minecraft:yellow_concrete",
+          "green": "minecraft:grass_block",
+          "leaves": "minecraft:azalea_leaves[persistent=true]",
+          "slab": "minecraft:smooth_quartz_slab",
+          "iron": "minecraft:iron_block",
+          "column": "minecraft:quartz_pillar[axis=y]",
+          "accent": "minecraft:cyan_concrete"
+        },
+        "dimensions": {
+          "mainRoadHalfWidth": 16,
+          "outerRoadInset": 40,
+          "boundaryWalkWidth": 12,
+          "gridPeriod": 64,
+          "serviceRingWidth": 10,
+          "defaultBedrockY": -64,
+          "defaultSurfaceY": -53
+        },
+        "previewColors": {
+          "background": 1120029,
+          "facade": 13358551,
+          "quartz": 14738652,
+          "dark": 3752265,
+          "floor": 10331300,
+          "road": 5462883,
+          "green": 6913632,
+          "yellow": 14269796,
+          "steam": 11372649,
+          "ore": 9214341,
+          "metallurgy": 13210992,
+          "chemistry": 7715005,
+          "biology": 10272134,
+          "energy": 13744748,
+          "computation": 8888257,
+          "space": 10721223,
+          "precision": 10795201
+        }
+      }
+    }
+  ]
+}

@@ -2,6 +2,7 @@ package com.gtl.enhancedcore.integration.jade;
 
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.machine.multiblock.WorkableElectricMultiblockMachine;
+import com.gregtechceu.gtceu.api.machine.multiblock.WorkableMultiblockMachine;
 import com.gtl.enhancedcore.common.machine.TieredParallelMachine;
 import com.gtl.enhancedcore.common.recipe.iv.*;
 import java.util.ArrayList;
@@ -24,7 +25,7 @@ public final class IvOrderInfoProvider implements IBlockComponentProvider, IServ
             data.put(KEY,((IvRecipeLogic)owned.getRecipeLogic()).getOrderSummary());
             return;
         }
-        if(machine instanceof WorkableElectricMultiblockMachine electric
+        if(machine instanceof WorkableMultiblockMachine electric
                 && (IvMachineScope.nativeTarget(electric) || IvBuffers.genericCloudTarget(electric))
                 && IvMachineScope.crossRecipeEnabled(electric)
                 && !((IvNativeAccess)electric.getRecipeLogic()).iv$nativeInputsActive()){

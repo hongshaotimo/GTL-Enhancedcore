@@ -1,234 +1,288 @@
 package com.gtl.enhancedcore.audit;
 
 import com.google.gson.GsonBuilder;
+import com.gtl.enhancedcore.client.cloud.CloudSearchMatcher;
+import com.gtl.enhancedcore.client.gui.ChangelogScreen;
 import com.gtl.enhancedcore.client.plot.CampusPlanScreen;
+import com.gtl.enhancedcore.client.plot.CreateWorldPlotScreen;
+import com.gtl.enhancedcore.client.plotinfo.PersonalPlotWorldScreen;
+import com.gtl.enhancedcore.common.world.campus.CampusPlanAccess;
+import com.gtl.enhancedcore.common.world.personalplot.PersonalPlotNetwork;
+import com.gtl.enhancedcore.common.world.personalplot.PersonalPlotWorlds;
+import com.gtl.enhancedcore.common.world.plot.CampusPresetRegistry;
 import com.gtl.enhancedcore.common.world.plot.PlotSettings;
 import java.lang.reflect.Field;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.security.MessageDigest;
 import java.util.ArrayList;
+import java.util.HexFormat;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.Screenshot;
-import net.minecraft.client.MouseHandler;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.TitleScreen;
 import net.minecraft.core.BlockPos;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.level.Level;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.util.ObfuscationReflectionHelper;
 import org.lwjgl.glfw.GLFW;
 
-/** Search interaction audit on synthetic preview/session screens; never opens or connects to a world. */
+/** Real rendered search events with explicitly synthetic permission/session fixtures. */
 @Mod("enhancedcore_audit")
 public final class CampusSearchClientChecks {
-    private static final Path ROOT = Path.of("C:/IDEA/GTL-Enhancedcore/_audit/campus-search-20261104").toAbsolutePath().normalize();
-    private static final int[][] SIZES = {{960, 600, 2}, {1280, 720, 3}, {640, 480, 2}};
-    private final List<String> checks = new ArrayList<>(), failures = new ArrayList<>();
-    private final List<Map<String, Object>> screenshots = new ArrayList<>();
+    private static final Path ROOT = Path.of("C:/IDEA/GTL-Enhancedcore/_audit/campus-pinyin-remove-20261105").toAbsolutePath().normalize();
+    private static final int[][] SIZES = {{960,600,2},{1280,720,3},{640,480,2}};
+    private static final String KEY = "gtl_enhancedcore.create_world_plot.";
+    private record Query(String category,String text,String expectedId,int count) {}
+    private static final List<Query> QUERIES = List.of(
+            new Query("full-pinyin","zhuangpeixian","gtceu:assembly_line",-1),
+            new Query("initials","zpx","gtceu:assembly_line",-1),
+            new Query("pinyin-uppercase","ZHUANGPEIXIAN","gtceu:assembly_line",-1),
+            new Query("initials-uppercase","ZPX","gtceu:assembly_line",-1),
+            new Query("pinyin-terms","zhuangpei xian","gtceu:assembly_line",-1),
+            new Query("initials-terms","DL GL","gtceu:electric_blast_furnace",-1),
+            new Query("chinese","装配线","gtceu:assembly_line",-1),
+            new Query("resource-id","GTCEU:ASSEMBLY_LINE","gtceu:assembly_line",1),
+            new Query("english-terms","advanced assembly","gtceu:assembly_line",-1),
+            new Query("upgrade-id-alias","nano_forge_2","gtceu:nano_forge_1",1),
+            new Query("upgrade-chinese-alias","2阶纳米锻炉","gtceu:nano_forge_1",1),
+            new Query("upgrade-pinyin","namiduanlu","gtceu:nano_forge_1",1),
+            new Query("repeated-slot","gtceu:electric_blast_furnace","gtceu:electric_blast_furnace",12),
+            new Query("no-result","no-such-machine-827419","",0));
+    private final List<String> checks=new ArrayList<>(),failures=new ArrayList<>();
+    private final List<Map<String,Object>> screenshots=new ArrayList<>(),queries=new ArrayList<>(),creators=new ArrayList<>(),navigationEvents=new ArrayList<>();
+    private final Map<String,Object> dictionary=new LinkedHashMap<>();
     private Path directory;
-    private CampusPlanScreen screen;
+    // Screen is deliberate: inherited MC method owners must reobfuscate to Screen.
+    private Screen screen,dashboard,editor;
     private EditBox search;
-    private int sizeIndex, mode, stage, frames, ticks;
-    private boolean done;
-    private int movementTicks, uploadsBeforeMovement;
-    private String immediateFile;
+    private int sizeIndex,group,stage,frames,ticks,startupTicks,queryIndex,navigationStep,focusedSearchIndex;
+    private boolean initialized,done,atlasObservedReady;
 
     public CampusSearchClientChecks() {
         MinecraftForge.EVENT_BUS.addListener(this::tick);
         MinecraftForge.EVENT_BUS.addListener(this::render);
     }
     private void render(TickEvent.RenderTickEvent event) {
-        if (!done && directory != null && event.phase == TickEvent.Phase.END
-                && Minecraft.getInstance().getOverlay() == null) frames++;
+        if(!done&&initialized&&event.phase==TickEvent.Phase.END&&Minecraft.getInstance().getOverlay()==null) frames++;
     }
     private void tick(TickEvent.ClientTickEvent event) {
-        if (done || event.phase != TickEvent.Phase.END || !Boolean.getBoolean("gtl.enhancedcore.campusSearchAudit")) return;
-        Minecraft mc = Minecraft.getInstance();
+        if(done||event.phase!=TickEvent.Phase.END||!Boolean.getBoolean("gtl.enhancedcore.campusSearchAudit")) return;
+        Minecraft mc=Minecraft.getInstance();
         try {
-            if (directory == null) {
-                if (mc.getOverlay() != null || !(mc.screen instanceof TitleScreen)) return;
-                directory = mc.gameDirectory.toPath().toAbsolutePath().normalize();
-                require(directory.startsWith(ROOT) && !directory.equals(ROOT)
-                        && Files.isRegularFile(directory.resolve("campus-search.marker")), "Explicit isolated title-screen fixture");
-                require(mc.level == null && mc.getSingleplayerServer() == null && mc.getConnection() == null,
-                        "No world, integrated server or network connection is open");
-                Files.createDirectories(directory.resolve("screenshots"));
-                open(mc, false); return;
+            if(!initialized) {
+                if(mc.getOverlay()!=null) return;
+                Path proposed=mc.gameDirectory.toPath().toAbsolutePath().normalize();
+                if(!proposed.startsWith(ROOT)||proposed.equals(ROOT)||!Files.isRegularFile(proposed.resolve("campus-search.marker")))
+                    throw new IllegalStateException("Requires explicitly marked isolated search fixture");
+                if(mc.screen instanceof ChangelogScreen) {mc.screen.onClose();return;}
+                if(!(mc.screen instanceof TitleScreen)) {if(++startupTicks>1200) throw new AssertionError("Unexpected startup screen");return;}
+                directory=proposed;
+                require(mc.level==null&&mc.getSingleplayerServer()==null&&mc.getConnection()==null,"No world/server/network opened");
+                require("zh_cn".equals(mc.options.languageCode),"Pinyin audit uses actual Chinese machine names");
+                Files.createDirectories(directory.resolve("screenshots"));checkDictionary();initialized=true;openDashboard(mc);return;
             }
-            if (++ticks > 6000) throw new AssertionError("Campus search audit timed out");
-            if (mc.getOverlay() != null || frames < (stage == 5 ? 1 : stage == 4 ? 0 : 16) || !atlasReady()) return;
-            if (stage == 0) {
-                bounds(); capture("overview");
-                testQuery(mc, "GTCEU:ASSEMBLY_LINE", 1, true);
-                testQuery(mc, "advanced assembly", -1, true);
-                String localized = net.minecraft.core.registries.BuiltInRegistries.BLOCK.get(new ResourceLocation("gtceu:assembly_line")).getName().getString();
-                testQuery(mc, localized, -1, true);
-                testQuery(mc, "nano_forge_2", 1, true);
-                testQuery(mc, "gtceu:electric_blast_furnace", 12, true);
-                var matches = (List<?>)field("searchMatches").get(screen);
-                clickNext();
-                require(field("selected").get(screen).equals(matches.get(1)), "Next mouse click cycles repeated slots");
-                key(257); require(field("selected").get(screen).equals(matches.get(2)), "Enter cycles forward");
-                keyShiftEnter(); require(field("selected").get(screen).equals(matches.get(1)), "Shift+Enter cycles backward");
-                for (int i = 1; i < matches.size(); i++) clickNext();
-                require(field("selected").get(screen).equals(matches.get(0)), "Match navigation wraps");
-                require(!(boolean)field("pending").get(screen), "Search never starts a teleport request");
-                screen.resize(mc, screen.width, screen.height);
-                search = (EditBox)field("searchBox").get(screen);
-                require(search.getValue().equals("gtceu:electric_blast_furnace"), "Search text survives resize");
-                require(field("selected").get(screen).equals(matches.get(0)), "Resize preserves selected match");
-                stage = 1; frames = 0;
-            } else if (stage == 1) {
-                capture("matches");
-                testQuery(mc, "no-such-machine", 0, false);
-                stage = 2; frames = 0;
-            } else if (stage == 2) {
-                capture("no-results");
-                search.setValue(""); require(((List<?>)field("searchMatches").get(screen)).isEmpty(), "Clear removes results");
-                require(!(boolean)field("pending").get(screen), "No search path sends a teleport request");
-                screen.mouseScrolled(mapCenterX(), mapCenterY(), -6); stage = 3; frames = 0;
-            } else if (stage == 3) {
-                require(atlasCount("sourceBuilds") == 1, "Atlas samples its world plan once per screen including resize");
-                uploadsBeforeMovement = atlasCount("textureUploads"); movementTicks = 0;
-                screen.mouseClicked(mapCenterX(), mapCenterY(), 0);
-                screen.mouseDragged(mapCenterX() + 6, mapCenterY(), 0, 6, 0);
-                stage = 4; frames = 0;
-            } else if (stage == 4) {
-                double dx = movementTicks % 2 == 0 ? 6 : -6;
-                screen.mouseDragged(mapCenterX() + 6 + dx, mapCenterY(), 0, dx, 0);
-                screen.mouseScrolled(mapCenterX(), mapCenterY(), movementTicks % 2 == 0 ? .02 : -.02);
-                require(atlasCount("sourceBuilds") == 1 && atlasCount("textureUploads") == uploadsBeforeMovement,
-                        "Continuous drag/wheel within one level reuses source and texture");
-                if (++movementTicks >= 24) {
-                    screen.mouseReleased(mapCenterX(), mapCenterY(), 0);
-                    pointer(0, 0); screen.mouseScrolled(mapCenterX(), mapCenterY(), .02);
-                    stage = 5; frames = 0;
+            if(++ticks>6000) throw new AssertionError("Targeted pinyin audit timed out");
+            if(mc.getOverlay()!=null||frames<6) return;
+            switch(stage) {
+                case 0 -> {
+                    click(dashboard,"screen.gtl_enhancedcore.personal_plot.edit_template");
+                    require(mc.screen instanceof CreateWorldPlotScreen,"OP root click opens production preset editor");
+                    editor=mc.screen;stage=1;frames=0;
                 }
-            } else if (stage == 5) {
-                immediateFile = capture("wheel-immediate"); stage = 6; frames = 0;
-            } else if (stage == 6) {
-                String idleFile = capture("wheel-idle");
-                compareMap(immediateFile, idleFile);
-                require(atlasCount("sourceBuilds") == 1, "Idle time never regenerates the atlas source");
-                if (mode == 1) {
-                    testQuery(mc, "gtceu:assembly_line", 1, true); pointer(mapCenterX(), mapCenterY());
-                    stage = 7; frames = 0;
-                } else advance(mc);
-            } else if (stage == 7) {
-                capture("hover-name-only"); advance(mc);
+                case 1 -> {
+                    var ids=CampusPresetRegistry.definitions().stream().map(CampusPresetRegistry.Definition::id).toList();
+                    require(ids.contains("quartz_works")&&!ids.contains("celestial_megastructure"),"Registry retains factory and removes celestial");
+                    var labels=editor.children().stream().filter(AbstractWidget.class::isInstance).map(AbstractWidget.class::cast).map(w->w.getMessage().getString()).toList();
+                    require(labels.contains(Component.translatable(KEY+"campus_preset").getString()),"Natural woodland card remains");
+                    require(labels.contains(Component.translatable(KEY+"factory_preset").getString()),"Factory card remains");
+                    require(labels.stream().noneMatch(s->s.contains("神域")||s.contains("巨物神殿")||s.toLowerCase(java.util.Locale.ROOT).contains("celestial")),"Complete widget tree has no celestial card");
+                    click(editor,KEY+"campus_preset");require(draft().equals(PlotSettings.plannedCampus()),"Natural card selects unchanged settings");
+                    click(editor,KEY+"page_presets");scrollTo(KEY+"factory_preset");
+                    creators.add(Map.of("framebuffer",sizeName(),"registryIds",ids,"cardLabels",labels,"opRootClicked",true,"naturalCardSelected",true,"celestialAbsent",true));
+                    stage=2;frames=0;
+                }
+                case 2 -> {
+                    capture("creator",editor);click(editor,KEY+"factory_preset");
+                    require(draft().equals(PlotSettings.fileCampus("quartz_works")),"Factory card selects unchanged file settings");
+                    scrollTo(KEY+"campus_open_plan");click(editor,KEY+"campus_open_plan");
+                    require(mc.screen instanceof CampusPlanScreen,"Creator mouse path opens actual factory Atlas");
+                    screen=mc.screen;group=0;prepareSearch();stage=3;frames=0;
+                }
+                case 3 -> {
+                    if(group%2==0) {
+                        if(!atlasReady()) {frames=0;return;}
+                        if(!atlasObservedReady) {atlasObservedReady=true;frames=0;return;}
+                    }
+                    bounds();capture(groupName()+"-overview",screen);queryIndex=0;typeQuery(QUERIES.get(0));stage=4;frames=0;
+                }
+                case 4 -> {
+                    Query query=QUERIES.get(queryIndex);verifyQuery(query);
+                    if(queryIndex<2||queryIndex==QUERIES.size()-1) capture(groupName()+"-"+query.category(),screen);
+                    if(++queryIndex<QUERIES.size()) {typeQuery(QUERIES.get(queryIndex));frames=0;}
+                    else {typeQuery(new Query("navigation","gtceu:electric_blast_furnace","gtceu:electric_blast_furnace",12));navigationStep=0;stage=5;frames=0;}
+                }
+                case 5 -> {
+                    if(!navigation(mc)) {frames=0;return;}
+                    int groups=sizeIndex==0?4:2;
+                    if(++group<groups) {openSearch(mc);stage=3;frames=0;}
+                    else if(++sizeIndex<SIZES.length) openDashboard(mc);else finish(mc);
+                }
+                default -> throw new IllegalStateException("Unknown stage");
             }
-        } catch (Throwable failure) { failures.add(failure.toString()); failure.printStackTrace(); finish(mc); }
+        } catch(Throwable failure) {failures.add(failure.toString());failure.printStackTrace();finish(mc);}
     }
-    private void open(Minecraft mc, boolean resize) throws Exception {
-        int[] size = SIZES[sizeIndex];
-        mc.options.guiScale().set(size[2]); GLFW.glfwSetWindowSize(mc.getWindow().getWindow(), size[0], size[1]); mc.resizeDisplay();
-        Screen parent = new TitleScreen();
-        if (mode == 0) screen = new CampusPlanScreen(parent, PlotSettings.plannedCampus());
+    private void checkDictionary() throws Exception {
+        String resource="me/towdium/pinin/data.txt";
+        try(var stream=CloudSearchMatcher.class.getClassLoader().getResourceAsStream(resource)) {
+            require(stream!=null,"PinIn dictionary visible to production CloudSearchMatcher loader");
+            byte[] bytes=stream.readAllBytes();require(bytes.length>1000,"PinIn dictionary is populated");
+            dictionary.put("resource",resource);dictionary.put("bytes",bytes.length);dictionary.put("visible",true);
+            dictionary.put("owner",CloudSearchMatcher.class.getName());dictionary.put("sha256",HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256").digest(bytes)));
+        }
+    }
+    private void openDashboard(Minecraft mc) throws Exception {
+        int[] size=SIZES[sizeIndex];mc.options.guiScale().set(size[2]);
+        GLFW.glfwSetWindowSize(mc.getWindow().getWindow(),size[0],size[1]);mc.resizeDisplay();
+        var snapshot=new PersonalPlotNetwork.Snapshot(true,true,false,false,false,false,null,null,PersonalPlotWorlds.State.NONE,null,false,false,"");
+        var constructor=PersonalPlotWorldScreen.class.getDeclaredConstructor(PersonalPlotNetwork.Snapshot.class);
+        constructor.setAccessible(true);dashboard=constructor.newInstance(snapshot);mc.setScreen(dashboard);stage=0;frames=0;
+        GLFW.glfwSetCursorPos(mc.getWindow().getWindow(),0,0);
+    }
+    private void openSearch(Minecraft mc) throws Exception {
+        PlotSettings settings=group<2?PlotSettings.fileCampus("quartz_works"):PlotSettings.plannedCampus();Screen parent=new TitleScreen();
+        if(group%2==0) screen=new CampusPlanScreen(parent,settings);
         else {
-            Class<?> sessionType = Class.forName(CampusPlanScreen.class.getName() + "$TeleportSession");
-            var sessionConstructor = sessionType.getDeclaredConstructor(BlockPos.class, ResourceLocation.class, UUID.class);
-            sessionConstructor.setAccessible(true);
-            Object session = sessionConstructor.newInstance(new BlockPos(0, 80, 0), Level.OVERWORLD.location(), UUID.randomUUID());
-            var constructor = CampusPlanScreen.class.getDeclaredConstructor(Screen.class, PlotSettings.class, sessionType);
-            constructor.setAccessible(true);
-            screen = (CampusPlanScreen)constructor.newInstance(null, PlotSettings.plannedCampus(), session);
+            Class<?> type=Class.forName(CampusPlanScreen.class.getName()+"$TeleportSession");
+            var sessionConstructor=type.getDeclaredConstructor(BlockPos.class,ResourceLocation.class,UUID.class);sessionConstructor.setAccessible(true);
+            Object session=sessionConstructor.newInstance(new BlockPos(0,settings.surfaceY()+1,0),new ResourceLocation("gtl_enhancedcore","audit_pinyin_synthetic"),UUID.randomUUID());
+            var constructor=CampusPlanScreen.class.getDeclaredConstructor(Screen.class,PlotSettings.class,type);constructor.setAccessible(true);
+            screen=constructor.newInstance(parent,settings,session);
         }
-        mc.setScreen(screen); search = (EditBox)field("searchBox").get(screen);
-        if (resize) { type("assembly"); }
-        stage = resize ? 1 : 0; frames = 0;
-        GLFW.glfwSetCursorPos(mc.getWindow().getWindow(), 0, 0);
+        mc.setScreen(screen);prepareSearch();
     }
-    private void testQuery(Minecraft mc, String query, int count, boolean focus) {
-        search.setValue("");
-        screen.mouseClicked(search.getX() + 5, search.getY() + 5, 0);
-        for (int index = 0; index < query.length(); index++) {
-            char value = query.charAt(index);
-            require(screen.charTyped(value, 0), "EditBox accepts typed search character");
+    private void prepareSearch() throws Exception {search=(EditBox)field(CampusPlanScreen.class,"searchBox").get(screen);atlasObservedReady=false;}
+    private void typeQuery(Query query) {
+        search.setValue("");require(screen.mouseClicked(search.getX()+4,search.getY()+4,0),"Real mouse focuses search");screen.mouseReleased(search.getX()+4,search.getY()+4,0);
+        for(char ch:query.text().toCharArray()) require(screen.charTyped(ch,0),"Real keyboard accepts query character");
+        require(search.getValue().equals(query.text()),"Real EditBox contains complete typed query");
+    }
+    @SuppressWarnings("unchecked") private List<CampusPlanAccess.Target> matches() {return (List<CampusPlanAccess.Target>)get("searchMatches");}
+    private void verifyQuery(Query query) {
+        var matches=matches();var ids=matches.stream().filter(t->t.plot()!=null).map(t->t.plot().id()).toList();
+        require(query.count()<0?!matches.isEmpty():matches.size()==query.count(),"Rendered query count: "+query.text()+" => "+matches.size());
+        require(query.expectedId().isEmpty()||ids.contains(query.expectedId()),"Query includes expected canonical reservation: "+query.text());
+        if(!matches.isEmpty()) require(((Number)get("searchIndex")).intValue()==0&&get("selected").equals(matches.getFirst()),"Typed query selects/focuses first result");
+        require(!(boolean)get("pending"),"Search sends no teleport request");
+        var result=new LinkedHashMap<String,Object>();result.put("framebuffer",sizeName());result.put("preset",group<2?"quartz_works":"natural_woodland");
+        result.put("mode",group%2==0?"preview":"synthetic-teleporter");result.put("category",query.category());result.put("query",query.text());
+        result.put("count",matches.size());result.put("targetIds",ids);result.put("targetIndices",matches.stream().map(CampusPlanAccess.Target::index).toList());
+        result.put("expectedId",query.expectedId());result.put("typedInput",true);result.put("renderFramesAfterInput",frames);result.put("passed",true);queries.add(result);
+    }
+    private boolean navigation(Minecraft mc) throws Exception {
+        var matches=matches();
+        switch(navigationStep++) {
+            case 0 -> {
+                require(matches.size()==12,"Navigation has twelve repeated blast-furnace slots");
+                var next=(AbstractWidget)get("nextMatch");require(screen.mouseClicked(next.getX()+4,next.getY()+4,0),"Next result actual click");
+                screen.mouseReleased(next.getX()+4,next.getY()+4,0);navigationEvent("next-click");
+            }
+            case 1 -> {
+                require(get("selected").equals(matches.get(1)),"Next advances slot");
+                require(screen.mouseClicked(search.getX()+4,search.getY()+4,0),"Real search click restores keyboard focus");
+                screen.mouseReleased(search.getX()+4,search.getY()+4,0);navigationEvent("search-focus-click");
+            }
+            case 2 -> {
+                require(search.isFocused(),"Search field actually focused before Enter");
+                focusedSearchIndex=((Number)get("searchIndex")).intValue();
+                require(focusedSearchIndex>=0&&get("selected").equals(matches.get(focusedSearchIndex)),"Focus click leaves a valid selected search result");
+                require(screen.keyPressed(GLFW.GLFW_KEY_ENTER,0,0),"Production screen handles actual Enter event");navigationEvent("enter");
+            }
+            case 3 -> {
+                require(get("selected").equals(matches.get((focusedSearchIndex+1)%matches.size())),"Enter advances from the actual post-click selection");
+                require(screen.keyPressed(GLFW.GLFW_KEY_ENTER,0,GLFW.GLFW_MOD_SHIFT),"Production screen handles actual Shift Enter event");navigationEvent("shift-enter");
+            }
+            case 4 -> {
+                require(get("selected").equals(matches.get(focusedSearchIndex)),"Shift Enter returns to actual focused selection");
+                screen.resize(mc,screen.width,screen.height);prepareSearch();navigationEvent("resize");
+            }
+            case 5 -> {
+                require(search.getValue().equals("gtceu:electric_blast_furnace")&&get("selected").equals(matches.get(focusedSearchIndex)),"Resize retains text and selection");
+                if(group%2==0) return true;
+                var clear=(AbstractWidget)get("clearSearch");require(screen.mouseClicked(clear.getX()+4,clear.getY()+4,0),"Clear actual click");
+                screen.mouseReleased(clear.getX()+4,clear.getY()+4,0);navigationEvent("clear-click");
+            }
+            case 6 -> {
+                require(search.getValue().isEmpty()&&search.isFocused(),"Clear restores empty focused search");
+                require(screen.charTyped('e',0),"E accepted as text");screen.keyPressed(GLFW.GLFW_KEY_E,0,0);navigationEvent("focused-e");
+            }
+            case 7 -> {
+                require(mc.screen==screen&&search.getValue().equals("e"),"Focused E does not close teleporter");
+                int x=((Number)get("mapLeftEdge")).intValue()+5,y=((Number)get("mapBottom")).intValue()-5;
+                screen.mouseClicked(x,y,0);screen.mouseReleased(x,y,0);navigationEvent("map-focus-click");
+            }
+            case 8 -> {
+                require(!search.isFocused(),"Map click clears search focus");
+                require(screen.keyPressed(GLFW.GLFW_KEY_E,0,0)&&mc.screen!=screen,"Unfocused E closes teleporter");navigationEvent("close-e");return true;
+            }
+            default -> throw new IllegalStateException("Unknown navigation step");
         }
-        List<?> matches = (List<?>)get("searchMatches");
-        require(count < 0 ? !matches.isEmpty() : matches.size() == count, "Query returns expected result count: " + query + " => " + (count < 0 ? ">=1" : count));
-        if (count < 0) require(matches.stream().anyMatch(value -> ((com.gtl.enhancedcore.common.world.campus.CampusPlanAccess.Target)value).plot().id().equals("gtceu:assembly_line")),
-                "Name query includes canonical assembly-line reservation");
-        if (count != 0) {
-            require(((Number)get("searchIndex")).intValue() == 0, "New query selects its first match");
-            require(get("selected").equals(matches.get(0)), "Search focuses and selects the first result");
-        } else require(Component.translatable("gtl_enhancedcore.campus.teleport.search_none").getString().length() > 0,
-                "No-result state has localized text");
+        return false;
     }
-    private void type(String value) { search.setValue(""); for (char ch : value.toCharArray()) search.charTyped(ch, 0); }
-    private void key(int code) throws Exception { screen.keyPressed(code, 0, 0); }
-    private void keyShiftEnter() throws Exception { screen.keyPressed(257, 0, 1); }
-    private void clickNext() throws Exception {
-        var widget = (AbstractWidget)field("nextMatch").get(screen);
-        require(widget.active && screen.mouseClicked(widget.getX() + 5, widget.getY() + 5, 0), "Real Next button mouse click");
-        screen.mouseReleased(widget.getX() + 5, widget.getY() + 5, 0);
-        screen.mouseClicked(search.getX() + 5, search.getY() + 5, 0);
+    private void navigationEvent(String event) {
+        navigationEvents.add(Map.of("framebuffer",sizeName(),"group",groupName(),"event",event,
+                "searchFocused",search.isFocused(),"searchIndex",((Number)get("searchIndex")).intValue(),
+                "query",search.getValue(),"renderFramesBeforeEvent",frames));
+    }
+    private PlotSettings draft() throws Exception {return (PlotSettings)field(CreateWorldPlotScreen.class,"draft").get(editor);}
+    private static AbstractWidget button(Screen owner,String key) {
+        String label=Component.translatable(key).getString();return owner.children().stream().filter(AbstractWidget.class::isInstance).map(AbstractWidget.class::cast)
+                .filter(w->w.getMessage().getString().equals(label)).findFirst().orElseThrow();
+    }
+    private void click(Screen owner,String key) {
+        var widget=button(owner,key);double x=widget.getX()+widget.getWidth()/2.0,y=widget.getY()+widget.getHeight()/2.0;
+        require(widget.active&&widget.visible&&owner.mouseClicked(x,y,0),"Production root/editor click: "+key);owner.mouseReleased(x,y,0);
+    }
+    @SuppressWarnings("unchecked") private void scrollTo(String key) throws Exception {
+        var positions=(Map<AbstractWidget,Integer>)field(CreateWorldPlotScreen.class,"contentY").get(editor);
+        var method=CreateWorldPlotScreen.class.getDeclaredMethod("updateScroll",int.class);method.setAccessible(true);method.invoke(editor,positions.get(button(editor,key)));
     }
     private void bounds() {
-        for (var child : screen.children()) if (child instanceof AbstractWidget widget && widget.visible)
-            require(widget.getX() >= 0 && widget.getY() >= 0 && widget.getX() + widget.getWidth() <= screen.width
-                    && widget.getY() + widget.getHeight() <= screen.height, "Visible search/map control fits viewport: " + widget.getMessage().getString());
+        for(var child:screen.children()) if(child instanceof AbstractWidget widget&&widget.visible)
+            require(widget.getX()>=0&&widget.getY()>=0&&widget.getX()+widget.getWidth()<=screen.width&&widget.getY()+widget.getHeight()<=screen.height,"Visible search/map control fits viewport");
     }
-    private String capture(String name) throws Exception {
-        var mc = Minecraft.getInstance(); int[] size = SIZES[sizeIndex];
-        require(mc.getWindow().getWidth() == size[0] && mc.getWindow().getHeight() == size[1], "Actual framebuffer has requested dimensions");
-        if (sizeIndex == 2) require(mc.getWindow().getGuiScaledWidth() == 320 && mc.getWindow().getGuiScaledHeight() == 240,
-                "Actual logical minimum is 320x240");
-        String file = "screenshots/" + (mode == 0 ? "preview-" : "session-") + name + "-" + size[0] + "x" + size[1] + ".png";
-        try (var image = Screenshot.takeScreenshot(mc.getMainRenderTarget())) { image.writeToFile(directory.resolve(file)); }
-        screenshots.add(Map.of("file", file, "frames", frames, "logicalWidth", mc.getWindow().getGuiScaledWidth(),
-                "logicalHeight", mc.getWindow().getGuiScaledHeight(), "guiScale", size[2]));
-        return file;
+    private boolean atlasReady() throws Exception {Object map=get("map");return (boolean)map.getClass().getMethod("ready").invoke(map);}
+    private String sizeName() {return SIZES[sizeIndex][0]+"x"+SIZES[sizeIndex][1];}
+    private String groupName() {return (group<2?"factory-":"woodland-")+(group%2==0?"preview":"session");}
+    private void capture(String name,Screen owner) throws Exception {
+        var mc=Minecraft.getInstance();int[] size=SIZES[sizeIndex];require(mc.getWindow().getWidth()==size[0]&&mc.getWindow().getHeight()==size[1],"Actual framebuffer dimensions match");
+        if(sizeIndex==2) require(owner.width==320&&owner.height==240,"Actual logical minimum is 320x240");
+        String file="screenshots/"+name+"-"+sizeName()+".png";
+        try(var image=Screenshot.takeScreenshot(mc.getMainRenderTarget())) {image.writeToFile(directory.resolve(file));}
+        screenshots.add(Map.of("file",file,"frames",frames,"logicalWidth",owner.width,"logicalHeight",owner.height));
     }
-    private void advance(Minecraft mc) throws Exception {
-        if (++mode < 2) open(mc, false);
-        else if (++sizeIndex < SIZES.length) { mode = 0; open(mc, false); }
-        else finish(mc);
-    }
-    private int mapCenterX() throws Exception { return (field("mapLeftEdge").getInt(screen) + field("mapRightEdge").getInt(screen)) / 2; }
-    private int mapCenterY() throws Exception { return (field("mapTop").getInt(screen) + field("mapBottom").getInt(screen)) / 2; }
-    private boolean atlasReady() throws Exception { Object map = field("map").get(screen); return (boolean)map.getClass().getMethod("ready").invoke(map); }
-    private int atlasCount(String getter) throws Exception { Object map = field("map").get(screen); return (int)map.getClass().getMethod(getter).invoke(map); }
-    private void pointer(int x, int y) throws Exception {
-        var mc = Minecraft.getInstance();
-        double px = (double)x * mc.getWindow().getScreenWidth() / mc.getWindow().getGuiScaledWidth();
-        double py = (double)y * mc.getWindow().getScreenHeight() / mc.getWindow().getGuiScaledHeight();
-        GLFW.glfwSetCursorPos(mc.getWindow().getWindow(), px, py);
-        ObfuscationReflectionHelper.findField(MouseHandler.class, "f_91507_").setDouble(mc.mouseHandler, px);
-        ObfuscationReflectionHelper.findField(MouseHandler.class, "f_91508_").setDouble(mc.mouseHandler, py);
-        screen.mouseMoved(x, y);
-    }
-    private void compareMap(String first, String second) throws Exception {
-        var mc = Minecraft.getInstance();
-        var a = javax.imageio.ImageIO.read(directory.resolve(first).toFile());
-        var b = javax.imageio.ImageIO.read(directory.resolve(second).toFile());
-        double sx = (double)a.getWidth() / screen.width, sy = (double)a.getHeight() / screen.height;
-        int left = (int)Math.ceil(field("mapLeftEdge").getInt(screen) * sx);
-        int right = (int)Math.floor(field("mapRightEdge").getInt(screen) * sx);
-        int top = (int)Math.ceil(field("mapTop").getInt(screen) * sy);
-        int bottom = (int)Math.floor(field("mapBottom").getInt(screen) * sy);
-        int changed = 0;
-        for (int y = top; y < bottom; y++) for (int x = left; x < right; x++) if (a.getRGB(x, y) != b.getRGB(x, y)) changed++;
-        require(changed == 0, "Immediate wheel frame and idle frame have identical map pixels: changed=" + changed);
-    }
-    private Object get(String name) { try { return field(name).get(screen); } catch (Exception error) { throw new IllegalStateException(error); } }
-    private Field field(String name) throws Exception { var field = CampusPlanScreen.class.getDeclaredField(name); field.setAccessible(true); return field; }
-    private void require(boolean value, String text) { if (!value) throw new AssertionError(text); checks.add(text); }
+    private Object get(String name) {try{return field(CampusPlanScreen.class,name).get(screen);}catch(Exception error){throw new IllegalStateException(error);}}
+    private static Field field(Class<?> owner,String name) throws Exception {var field=owner.getDeclaredField(name);field.setAccessible(true);return field;}
+    private void require(boolean value,String message) {if(!value) throw new AssertionError(message);checks.add(message);}
     private void finish(Minecraft mc) {
-        done = true;
-        try { Files.writeString(directory.resolve("campus-search-checks.json"), new GsonBuilder().setPrettyPrinting().create().toJson(
-                Map.of("status", failures.isEmpty() ? "PASS" : "FAIL", "checks", checks, "failures", failures, "screenshots", screenshots,
-                        "scope", "Production preview and reflective synthetic teleporter session. EditBox typing/buttons/keys, localization/ID/upgrade aliases, duplicate-slot cycling, no-results, clearing and resize retention. Search never calls teleport. No server connection or world opened."))); }
-        catch (Exception failure) { failure.printStackTrace(); }
-        mc.stop();
+        done=true;if(directory==null) directory=mc.gameDirectory.toPath().toAbsolutePath().normalize();
+        if(failures.isEmpty()&&(queries.size()!=8*QUERIES.size()||creators.size()!=3)) failures.add("Incomplete query or creator matrix");
+        try {
+            var result=new LinkedHashMap<String,Object>();result.put("schemaVersion",2);result.put("status",failures.isEmpty()?"PASS":"FAIL");
+            result.put("checks",checks);result.put("failures",failures);result.put("screenshots",screenshots);result.put("pinyinQueries",queries);
+            result.put("navigationEvents",navigationEvents);
+            result.put("presetRegistryChecks",creators);result.put("creatorChecked",creators.size()==3);result.put("pinyinDictionary",dictionary);
+            result.put("language",mc.options.languageCode);result.put("worldOpened",false);result.put("syntheticTeleporterSession",true);
+            result.put("scope","Actual Forge UI, GL screenshots and real mouse/keyboard input. Factory preview/synthetic central-teleporter session at three sizes; woodland at 960x600. OP permissions and teleporter sessions are reflection-created fixtures; root/card/search clicks use production paths. No world, network, server Open packet, real device right click, teleport travel or FTB texture refresh tested.");
+            Files.writeString(directory.resolve("campus-search-checks.json"),new GsonBuilder().setPrettyPrinting().create().toJson(result));
+        } catch(Throwable error) {error.printStackTrace();}mc.stop();
     }
 }

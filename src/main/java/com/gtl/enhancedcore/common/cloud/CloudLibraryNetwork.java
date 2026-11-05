@@ -1,23 +1,13 @@
 package com.gtl.enhancedcore.common.cloud;
 
 import appeng.api.networking.IGrid;
-import appeng.api.networking.IGridNode;
-import com.gregtechceu.gtceu.api.machine.IMachineBlockEntity;
-import com.gregtechceu.gtceu.integration.ae2.machine.feature.IGridConnectedMachine;
 import com.gtl.enhancedcore.common.cloud.store.CloudPatternStore;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
-import net.minecraft.core.BlockPos;
-import net.minecraft.core.registries.Registries;
-import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.level.block.entity.BlockEntity;
-import com.gregtechceu.gtceu.api.machine.MetaMachine;
-import net.minecraft.nbt.CompoundTag;
 
 /** Runtime bindings follow the controller's real loaded wired/wireless AE grid, never a player's default library. */
 public final class CloudLibraryNetwork {
@@ -37,61 +27,17 @@ public final class CloudLibraryNetwork {
         if (!(machine.getLevel() instanceof net.minecraft.server.level.ServerLevel level) || !level.getServer().isSameThread()) return;
         if (LOADED.removeIf(ref -> ref.get() == null || ref.get() == machine)) loadedSnapshot = List.copyOf(LOADED);
     }
-    /** Resolves association from the persisted physical AE machine anchor, never from the controller selector. */
+    /** The controller's current node is the wired endpoint; wireless membership adds an exact saved core constraint. */
     static IGrid serviceGrid(CloudPatternLibraryMachine main) {
         if (!(main.getLevel() instanceof ServerLevel level) || !level.getServer().isSameThread()
                 || main.libraryId() == null || main.owner() == null) return null;
         try {
             var library = CloudPatternStore.get(level).library(main.libraryId());
             if (!library.healthy()) return null;
-            IGrid wireless = CloudMeConnection.selectedGrid(main);
-            if (wireless != null) return main.getMainNode().isActive() && main.getMainNode().getGrid() == wireless ? wireless : null;
-            var anchor = library.meAnchor();
-            if (anchor.isEmpty()) {
-                IGrid candidate = main.getMainNode().isActive() ? main.getMainNode().getGrid() : null;
-                if (candidate == null) return null;
-                CompoundTag first = firstExternalMachineAnchor(candidate, main);
-                if (first.isEmpty() || !library.bindMeAnchor(first)) return null;
-                anchor = library.meAnchor();
-            }
-            IGrid anchorGrid = resolveAnchor(level, anchor);
-            return anchorGrid != null && main.getMainNode().isActive()
-                    && main.getMainNode().getGrid() == anchorGrid ? anchorGrid : null;
-        } catch (RuntimeException unavailable) { return null; }
-    }
-    private static CompoundTag firstExternalMachineAnchor(IGrid grid, CloudPatternLibraryMachine main) {
-        for (IGridNode node : grid.getNodes()) {
-            Object owner = node.getOwner();
-            if (!(owner instanceof MetaMachine machine) || machine == main || !(machine instanceof IGridConnectedMachine connected)
-                    || !node.isActive() || node.getGrid() != grid || connected.getMainNode().getNode() != node) continue;
-            var holder = machine.getHolder().getSelf();
-            if (holder == null || holder.isRemoved() || holder.getLevel() != main.getLevel()) continue;
-            CompoundTag address = new CompoundTag();
-            address.putString("dimension", main.getLevel().dimension().location().toString());
-            address.putLong("position", holder.getBlockPos().asLong());
-            address.putString("blockEntity", net.minecraft.core.registries.BuiltInRegistries.BLOCK_ENTITY_TYPE.getKey(holder.getType()).toString());
-            address.putString("machine", machine.getDefinition().getId().toString());
-            address.putInt("side", -1);
-            return address;
-        }
-        return new CompoundTag();
-    }
-    private static IGrid resolveAnchor(ServerLevel origin, CompoundTag address) {
-        try {
-            ResourceLocation dimension = ResourceLocation.tryParse(address.getString("dimension"));
-            if (dimension == null) return null;
-            ServerLevel level = origin.getServer().getLevel(ResourceKey.create(Registries.DIMENSION, dimension));
-            if (level == null) return null;
-            BlockPos pos = BlockPos.of(address.getLong("position"));
-            var chunk = level.getChunkSource().getChunkNow(pos.getX() >> 4, pos.getZ() >> 4);
-            BlockEntity holder = chunk == null ? null : chunk.getBlockEntity(pos);
-            if (!(holder instanceof IMachineBlockEntity machineHolder)
-                    || !net.minecraft.core.registries.BuiltInRegistries.BLOCK_ENTITY_TYPE.getKey(holder.getType()).toString().equals(address.getString("blockEntity"))) return null;
-            MetaMachine machine = machineHolder.getMetaMachine();
-            if (!(machine instanceof IGridConnectedMachine connected)
-                    || !machine.getDefinition().getId().toString().equals(address.getString("machine"))) return null;
-            var node = connected.getMainNode().getNode();
-            return node != null && node.isActive() ? node.getGrid() : null;
+            IGrid current = main.getMainNode().isActive() ? main.getMainNode().getGrid() : null;
+            if (current == null) return null;
+            var wireless = CloudMeConnection.selectedNetwork(main);
+            return !wireless.selected() || wireless.grid() == current ? current : null;
         } catch (RuntimeException unavailable) { return null; }
     }
     public static Binding resolve(IGrid grid, ServerPlayer player) {
@@ -104,7 +50,7 @@ public final class CloudLibraryNetwork {
         boolean authorized = false;
         for (var reference : loadedSnapshot) {
             var main = reference.get();
-            // The controller node must belong to this exact grid before resolving its durable anchor.
+            // Only the controller's own current grid may expose the library to this resolver.
             if (main == null || main.getMainNode().getGrid() != grid || !main.networkAvailable(grid)) continue;
             if (selected != null && !selected.libraryId().equals(main.libraryId()))
                 return new Binding(State.CONFLICT, null, null);

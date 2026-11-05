@@ -40,7 +40,8 @@ import org.gtlcore.gtlcore.api.gui.PatternPreviewWidget;
 /** Full RecipesGui event route, including measurement, layout refresh and outer recipe paging. */
 @Mod("enhancedcore_audit")
 public final class PreviewNavigationClientChecks {
-    private static final Path ROOT = Path.of("C:/IDEA/GTL-Enhancedcore/_audit/preview-navigation-20261104");
+    private static final Path ROOT = Path.of(System.getProperty("gtl.enhancedcore.previewNavigationRoot",
+            "C:/IDEA/GTL-Enhancedcore/_audit/preview-navigation-20261104")).toAbsolutePath().normalize();
     private static final int[][] SIZES = {{960, 600, 2}, {1280, 720, 3}, {960, 720, 3}};
     private final List<String> checks = new ArrayList<>();
     private final List<MultiblockInfoWrapper> wrappers = new ArrayList<>();
@@ -52,6 +53,7 @@ public final class PreviewNavigationClientChecks {
     private int stableGeneration;
     private int stage, size, step, index, ticks, readyTicks;
     private boolean done;
+    private PreviewMaterialRuntimeChecks materialChecks;
 
     public PreviewNavigationClientChecks() { MinecraftForge.EVENT_BUS.addListener(this::tick); }
 
@@ -98,6 +100,14 @@ public final class PreviewNavigationClientChecks {
             if (PreviewPreparation.failed(lazy)) throw new AssertionError("Preview preparation failed");
             if (!lazy.isReady() || ((Number) PreviewPreparation.snapshot(lazy).get("requested")).intValue() >= 0) return;
             var delegate = delegate(lazy);
+            if (step == 9 && Boolean.getBoolean("gtl.enhancedcore.previewMaterialAudit")
+                    && (materialChecks == null || !materialChecks.done())) {
+                if (materialChecks == null) materialChecks = new PreviewMaterialRuntimeChecks(checks, size, layout());
+                materialChecks.tick(delegate);
+                stable = null;
+                stablePattern = null;
+                return;
+            }
             if (stable == null) {
                 stable = delegate;
                 stablePattern = patterns(delegate)[page(delegate)];
@@ -186,6 +196,7 @@ public final class PreviewNavigationClientChecks {
                         + mc.getWindow().getGuiScaledHeight() + " from " + mc.getWindow().getWidth() + "x"
                         + mc.getWindow().getHeight() + " at GUI scale " + viewport[2]);
         step = 0;
+        materialChecks = null;
         show();
         reset(0);
     }
@@ -221,7 +232,9 @@ public final class PreviewNavigationClientChecks {
         require(layout.getRecipe() == wrappers.get(index), "Active JEI recipe identity matches outer page " + index);
         var materials = (List<SlotWidget>) field(PatternPreviewWidget.class, "slotWidgets").get(delegate);
         var inputs = layout.getRecipeSlotsView().getSlotViews(RecipeIngredientRole.INPUT);
-        require(!materials.isEmpty() && materials.size() == inputs.size(), "Ready outer page binds every native material slot");
+        long inputMaterials = materials.stream().filter(slot -> !slot.getXEIIngredients().isEmpty()).count();
+        require(!materials.isEmpty() && inputMaterials == inputs.size(),
+                "Ready outer page binds every input material; expandable candidates remain render-only");
         var slot = materials.getFirst();
         var hovered = layout.getIngredientUnderMouse(layout.getRect().getX() + slot.getPositionX() + 9,
                 layout.getRect().getY() + slot.getPositionY() + 9, mezz.jei.api.constants.VanillaTypes.ITEM_STACK);

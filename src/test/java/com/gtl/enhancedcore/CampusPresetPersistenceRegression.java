@@ -35,9 +35,8 @@ final class CampusPresetPersistenceRegression {
                 "Both campus selection paths choose the current woodland identity");
         check(PlotSettings.RoadStyle.CAMPUS.ordinal() == 7 && PlotSettings.RoadStyle.CAMPUS_PARK.ordinal() == 8
                         && PlotSettings.RoadStyle.CAMPUS_COMPACT.ordinal() == 9 && PlotSettings.RoadStyle.CAMPUS_DENSE.ordinal() == 10
-                        && PlotSettings.RoadStyle.CAMPUS_WOODLAND.ordinal() == 11
-                        && PlotSettings.RoadStyle.values()[PlotSettings.RoadStyle.values().length - 1] == PlotSettings.RoadStyle.CAMPUS_WOODLAND,
-                "Woodland campus is appended without moving the four saved campus ordinals");
+                        && PlotSettings.RoadStyle.CAMPUS_WOODLAND.ordinal() == 11,
+                "Appending new presets cannot move the five saved campus ordinals");
         for (var style : new PlotSettings.RoadStyle[] {PlotSettings.RoadStyle.CAMPUS, PlotSettings.RoadStyle.CAMPUS_PARK,
                 PlotSettings.RoadStyle.CAMPUS_COMPACT, PlotSettings.RoadStyle.CAMPUS_DENSE, PlotSettings.RoadStyle.CAMPUS_WOODLAND}) {
             PlotSettings campus = PlotSettings.plannedCampus().withRoadStyle(style);

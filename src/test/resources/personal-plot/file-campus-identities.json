@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "frozenDate": "2026-11-05",
+  "baseline": "Quartz Works 4.7.1 retains its FILE ID, resource bytes and ordered teleport contract. Add a new ID with independent files for a new layout; do not regenerate a released expectation to accept a layout edit.",
+  "presets": [
+    {
+      "id": "quartz_works",
+      "engine": "quartz_factory",
+      "catalogResource": "/data/gtl_enhancedcore/worldgen/factory_campus_machines.json",
+      "layoutResource": "/data/gtl_enhancedcore/worldgen/factory_campus_layout.json",
+      "architectureResource": "/data/gtl_enhancedcore/worldgen/factory_campus_architecture.json",
+      "resourceIdentity": "4036eb9797a38dbbb5943c7a917d2c0c945a6085b8843d560e88c2478d4bd3a1",
+      "layoutIdentity": "campus-file-v1:quartz_works:4036eb9797a38dbbb5943c7a917d2c0c945a6085b8843d560e88c2478d4bd3a1:campus-plan-v1:CAMPUS_FILE:35a46a1b99928eb6bf99a0fa36d8f7232f23ea74a2f53959c3b56d2e9e574611",
+      "machinePlots": 226,
+      "machineTypes": 156,
+      "targets": 231,
+      "workshops": 4,
+      "sharedMachines": 46,
+      "sites": 78,
+      "maxHeight": 301,
+      "worldBounds": [-1000, -1000, 999, 999],
+      "aeBounds": [-80, -80, 79, 79],
+      "resources": {
+        "/data/gtl_enhancedcore/worldgen/factory_campus_machines.json": "379abcd2bad4608db236632ba4ad2a747c998c3dc91c3d6faf6a6c4dcc39819b",
+        "/data/gtl_enhancedcore/worldgen/factory_campus_layout.json": "ceacf994705bd8864b3d6f5675ae9cf5bc0dff949010ba7bed8804f6a2d369d1",
+        "/data/gtl_enhancedcore/worldgen/factory_campus_architecture.json": "a69ff6c75471c3f07e84215143ed603409bae6a14e4624507f1f7eca818cd96b"
+      }
+    }
+  ]
+}

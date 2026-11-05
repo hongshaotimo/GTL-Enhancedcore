@@ -79,16 +79,34 @@ public final class PlotChunkGenerator extends ChunkGenerator {
                 addDevice(plot.controllerX(), plot.controllerY(), plot.controllerZ(), plot);
             }
             addDevice(0, 1, 0, null);
+            var fileCampus = settings.roadStyle() == PlotSettings.RoadStyle.CAMPUS_FACTORY
+                    || settings.roadStyle() == PlotSettings.RoadStyle.CAMPUS_FILE
+                    ? FileCampus.of(settings.roadStyle() == PlotSettings.RoadStyle.CAMPUS_FILE ? settings.campusPresetId() : "quartz_works") : null;
+            if (fileCampus == null || fileCampus.physicalSigns()) {
             addSign(0, 1, 18, Component.translatable("gtl_enhancedcore.campus.sign.ae"),
                     Component.translatable("gtl_enhancedcore.campus.sign.ae_space"),
                     Component.translatable("gtl_enhancedcore.campus.sign.gallery"),
                     Component.translatable("gtl_enhancedcore.campus.sign.freedom"));
-            for (var workshop : campusWorkshops())
+            for (var workshop : settings.roadStyle() == PlotSettings.RoadStyle.CAMPUS_FACTORY
+                    || settings.roadStyle() == PlotSettings.RoadStyle.CAMPUS_FILE ? List.<PlannedCampus.Workshop>of() : campusWorkshops())
                 addSign(workshop.x() + workshop.width() / 2, 1, workshop.z() - 3,
                         Component.translatable("gtl_enhancedcore.campus.sign.shared"),
                         Component.translatable("gtl_enhancedcore.campus.sign.shared_small"),
                         Component.translatable("gtl_enhancedcore.campus.sign.shared_passive"),
                         Component.translatable("gtl_enhancedcore.campus.sign.freedom"));
+            if (settings.roadStyle() == PlotSettings.RoadStyle.CAMPUS_FACTORY || settings.roadStyle() == PlotSettings.RoadStyle.CAMPUS_FILE) {
+                var halls = fileCampus.halls();
+                for (int i = 0; i < halls.size(); i++) {
+                    var hall = halls.get(i);
+                    addSign(hall.signX(), 1, hall.signZ(),
+                            Component.translatable(fileCampus.definition().nameKey()),
+                            Component.translatable("gtl_enhancedcore.factory.department." + hall.department()),
+                            Component.translatable("gtl_enhancedcore.factory.stage." + hall.stage()),
+                            Component.translatable(hall.outdoor() ? "gtl_enhancedcore.factory.sign.outdoor"
+                                    : "gtl_enhancedcore.factory.sign.hall", String.format(java.util.Locale.ROOT, "%02d", i + 1)));
+                }
+            }
+            }
         }
     }
 
@@ -113,6 +131,8 @@ public final class PlotChunkGenerator extends ChunkGenerator {
             case CAMPUS_COMPACT -> CompactPlannedCampus.materials();
             case CAMPUS_DENSE -> DensePlannedCampus.materials();
             case CAMPUS_WOODLAND -> PlannedCampus.materials();
+            case CAMPUS_FACTORY -> FactoryCampus.materials();
+            case CAMPUS_FILE -> FileCampus.of(settings.campusPresetId()).materials();
             default -> java.util.Set.of();
         };
     }
@@ -131,6 +151,8 @@ public final class PlotChunkGenerator extends ChunkGenerator {
                     p.id(), p.stage(), p.x(), p.z(), p.width(), p.height(), p.depth(), p.controllerX(), p.controllerY(),
                     p.controllerZ(), p.patternResource(), p.slotIndex(), p.theme())).toList();
             case CAMPUS_WOODLAND -> PlannedCampus.plots();
+            case CAMPUS_FACTORY -> FactoryCampus.plots();
+            case CAMPUS_FILE -> FileCampus.of(settings.campusPresetId()).plots();
             default -> List.of();
         };
     }
@@ -143,6 +165,8 @@ public final class PlotChunkGenerator extends ChunkGenerator {
             case CAMPUS_DENSE -> DensePlannedCampus.workshops().stream().map(w -> new PlannedCampus.Workshop(
                     w.stage(), w.x(), w.z(), w.width(), w.depth())).toList();
             case CAMPUS_WOODLAND -> PlannedCampus.workshops();
+            case CAMPUS_FACTORY -> FactoryCampus.workshops();
+            case CAMPUS_FILE -> FileCampus.of(settings.campusPresetId()).workshops();
             default -> List.of();
         };
     }
@@ -153,6 +177,8 @@ public final class PlotChunkGenerator extends ChunkGenerator {
             case CAMPUS_COMPACT -> CompactPlannedCampus.hasTerrain(x, z);
             case CAMPUS_DENSE -> DensePlannedCampus.hasTerrain(x, z);
             case CAMPUS_WOODLAND -> PlannedCampus.hasTerrain(x, z);
+            case CAMPUS_FACTORY -> FactoryCampus.hasTerrain(x, z);
+            case CAMPUS_FILE -> FileCampus.of(settings.campusPresetId()).hasTerrain(x, z);
             default -> false;
         };
     }
@@ -163,6 +189,8 @@ public final class PlotChunkGenerator extends ChunkGenerator {
             case CAMPUS_COMPACT -> CompactPlannedCampus.maxDecorationYAt(settings, x, z);
             case CAMPUS_DENSE -> DensePlannedCampus.maxDecorationYAt(settings, x, z);
             case CAMPUS_WOODLAND -> PlannedCampus.maxDecorationYAt(settings, x, z);
+            case CAMPUS_FACTORY -> FactoryCampus.maxDecorationYAt(settings, x, z);
+            case CAMPUS_FILE -> FileCampus.of(settings.campusPresetId()).maxDecorationYAt(settings, x, z);
             default -> 0;
         };
         CampusDevice device = devicesByColumn.get(net.minecraft.world.level.ChunkPos.asLong(x, z));

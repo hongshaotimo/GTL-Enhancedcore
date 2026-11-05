@@ -38,11 +38,12 @@ final class CloudNetworkPatternUndo {
         var store=CloudPatternStore.get(t.main.serverLevel());var entry=store.library(t.library).entry(row.getUUID("entry"));
         if(entry.status()!=CloudLedger.Status.AVAILABLE&&entry.status()!=CloudLedger.Status.LEASED&&entry.status()!=CloudLedger.Status.ARCHIVED)return false;
         if(!entry.catalysts().equals(row.getCompound("catalysts")))return false;
-        if(entry.lease()==null)return true;
-        var node=store.node(entry.lease().nodeId());var level=t.server.getLevel(net.minecraft.resources.ResourceKey.create(net.minecraft.core.registries.Registries.DIMENSION,node.dimension()));
+        for(var lease:entry.leases()){
+        var node=store.node(lease.nodeId());var level=t.server.getLevel(net.minecraft.resources.ResourceKey.create(net.minecraft.core.registries.Registries.DIMENSION,node.dimension()));
         BlockPos pos=BlockPos.of(node.position());var chunk=level==null?null:level.getChunkSource().getChunkNow(pos.getX()>>4,pos.getZ()>>4);
         if(chunk==null||!(MetaMachine.getMachine(level,pos) instanceof CloudPatternBufferMachine child)||!node.id().equals(child.cloudNodeId()))return false;
-        return child.iv$getState().jobs.stream().noneMatch(job->entry.id().equals(job.cloudPattern));
+        if(child.iv$getState().jobs.stream().anyMatch(job->entry.id().equals(job.cloudPattern)))return false;
+        }return true;
     }
     private static boolean canReturn(Task t,Batch b,ServerPlayer player){
         Source s=b.source;if(s==null||!CloudNetworkPatternImport.permitted(t,player)||!CloudNetworkPatternImport.sourceReason(t,player,s).isEmpty())return false;

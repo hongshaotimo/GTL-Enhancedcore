@@ -17,7 +17,8 @@ public final class CloudImportProtection {
     @SubscribeEvent public static void stopping(net.minecraftforge.event.server.ServerStoppingEvent event) { CloudImportIo.drain(); }
     @SubscribeEvent public static void stopped(net.minecraftforge.event.server.ServerStoppedEvent event) { CloudImportIo.drain(); CloudNetworkPatternImport.stopped(event.getServer()); CloudImportJournal.closeCatalogs(); }
     private static boolean quarantined(Object machine) {
-        return machine instanceof CloudImportSourceAccess source && (source.cloud$importQuarantined() || CloudNetworkPatternImport.sourceLocked(source));
+        return machine instanceof com.gtl.enhancedcore.common.cloud.CloudPatternLibraryMachine central && central.inboxUploadInProgress()
+                || machine instanceof CloudImportSourceAccess source && (source.cloud$importQuarantined() || CloudNetworkPatternImport.sourceLocked(source));
     }
     @SubscribeEvent(priority = EventPriority.HIGHEST)
     public static void selectSource(net.minecraftforge.event.entity.player.PlayerInteractEvent.RightClickBlock event) {
@@ -34,7 +35,10 @@ public final class CloudImportProtection {
     public static void breaking(BlockEvent.BreakEvent event) {
         if (!event.isCanceled() && quarantined(MetaMachine.getMachine(event.getLevel(), event.getPos()))) {
             event.setCanceled(true);
-            event.getPlayer().displayClientMessage(net.minecraft.network.chat.Component.translatable("gtl_enhancedcore.cloud.status.review"), true);
+            var machine = MetaMachine.getMachine(event.getLevel(), event.getPos());
+            String reason = machine instanceof com.gtl.enhancedcore.common.cloud.CloudPatternLibraryMachine central && central.inboxUploadInProgress()
+                    ? "gtl_enhancedcore.cloud.status.uploading" : "gtl_enhancedcore.cloud.status.review";
+            event.getPlayer().displayClientMessage(net.minecraft.network.chat.Component.translatable(reason), true);
         }
     }
     @SubscribeEvent public static void explosion(ExplosionEvent.Detonate event) {

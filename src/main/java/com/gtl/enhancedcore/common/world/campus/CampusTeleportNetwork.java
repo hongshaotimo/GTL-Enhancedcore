@@ -12,6 +12,7 @@ import java.util.WeakHashMap;
 import java.util.function.Supplier;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
@@ -45,9 +46,10 @@ import net.minecraftforge.network.simple.SimpleChannel;
 /** Server-owned destination indexes; this channel cannot select a world or arbitrary coordinates. */
 @Mod.EventBusSubscriber(modid = GTLEnhancedcore.MOD_ID)
 public final class CampusTeleportNetwork {
-    private static final String PROTOCOL = "4";
+    private static final String PROTOCOL = "5";
     private static final long SESSION_TICKS = 20 * 120, REQUEST_COOLDOWN = 20, OPEN_COOLDOWN = 10;
     private static final int SAFE_RADIUS = 8;
+    private static final int MAX_LAYOUT_IDENTITY_LENGTH = 1024;
     private static final SimpleChannel CHANNEL = NetworkRegistry.newSimpleChannel(
             new ResourceLocation(GTLEnhancedcore.MOD_ID, "campus_teleport"), () -> PROTOCOL, PROTOCOL::equals, PROTOCOL::equals);
     private static final Map<MinecraftServer, ServerSessions> SERVERS = new WeakHashMap<>();
@@ -61,7 +63,17 @@ public final class CampusTeleportNetwork {
         final Map<UUID, Long> attempts = new HashMap<>(), opens = new HashMap<>();
         void remove(UUID player) { sessions.remove(player); attempts.remove(player); opens.remove(player); }
     }
-    private record Open(UUID id, BlockPos origin, ResourceLocation dimension, PlotSettings settings, String layoutIdentity) {}
+    private record Open(UUID id, BlockPos origin, ResourceLocation dimension, PlotSettings settings, String layoutIdentity) {
+        static void encode(Open packet, FriendlyByteBuf buffer) {
+            buffer.writeUUID(packet.id); buffer.writeBlockPos(packet.origin); buffer.writeResourceLocation(packet.dimension);
+            buffer.writeUtf(PlotPresetShare.encode(packet.settings), PlotPresetShare.MAX_TEXT_LENGTH);
+            buffer.writeUtf(packet.layoutIdentity, MAX_LAYOUT_IDENTITY_LENGTH);
+        }
+        static Open decode(FriendlyByteBuf buffer) {
+            return new Open(buffer.readUUID(), buffer.readBlockPos(), buffer.readResourceLocation(),
+                    PlotPresetShare.decode(buffer.readUtf(PlotPresetShare.MAX_TEXT_LENGTH)), buffer.readUtf(MAX_LAYOUT_IDENTITY_LENGTH));
+        }
+    }
     private record Travel(UUID id, int index) {}
     private record Close(UUID id) {}
     private record Reply(UUID id, Result result) {}
@@ -69,12 +81,7 @@ public final class CampusTeleportNetwork {
 
     public static synchronized void register() {
         if (initialized) return;
-        CHANNEL.registerMessage(0, Open.class, (p, b) -> {
-            b.writeUUID(p.id); b.writeBlockPos(p.origin); b.writeResourceLocation(p.dimension);
-            b.writeUtf(PlotPresetShare.encode(p.settings), PlotPresetShare.MAX_TEXT_LENGTH);
-            b.writeUtf(p.layoutIdentity, 128);
-        }, b -> new Open(b.readUUID(), b.readBlockPos(), b.readResourceLocation(),
-                PlotPresetShare.decode(b.readUtf(PlotPresetShare.MAX_TEXT_LENGTH)), b.readUtf(128)), (p, supplier) -> {
+        CHANNEL.registerMessage(0, Open.class, Open::encode, Open::decode, (p, supplier) -> {
             var ctx = supplier.get();
             ctx.enqueueWork(() -> DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () ->
                     {

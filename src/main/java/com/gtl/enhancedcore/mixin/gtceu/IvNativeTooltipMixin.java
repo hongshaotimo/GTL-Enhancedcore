@@ -36,6 +36,12 @@ public abstract class IvNativeTooltipMixin {
                             new Object[]{com.gtl.enhancedcore.common.machine.WoodDistillationMutableMachine.CROSS_RECIPE_THREADS}));
             return upstream;
         }
+        if (id.getNamespace().equals("gtceu") && id.getPath().equals("eye_of_harmony")
+                || id.getNamespace().equals("gtladditions") && id.getPath().equals("arcanic_astrograph")) {
+            return MachineTooltips.modify(upstream, "harmony_add", java.util.Map.of(
+                    "tooltip.gtl_enhancedcore.harmony_add.threads",
+                    new Object[]{com.gtl.enhancedcore.common.recipe.HarmonyAddRecipes.THREADS}));
+        }
         // 2026-10-12：三台只加 ADD 跨配方线程（不进 IV 隔离）的机器，同样只追加 ADD 能力提示。
         if (IvMachineScope.addThreadOnly(id)) {
             upstream = MachineTooltips.modifyWithRecipes(upstream,

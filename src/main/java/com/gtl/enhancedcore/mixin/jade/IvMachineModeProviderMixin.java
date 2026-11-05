@@ -21,6 +21,7 @@ public abstract class IvMachineModeProviderMixin {
     private void gtle$crossRecipeMode(CompoundTag data, BlockAccessor accessor, CallbackInfo ci) {
         if (!(accessor.getBlockEntity() instanceof MetaMachineBlockEntity entity)
                 || !(entity.getMetaMachine() instanceof WorkableElectricMultiblockMachine machine)
+                || com.gtl.enhancedcore.common.recipe.iv.IvBuffers.genericCloudTarget(machine)
                 || !IvMachineScope.crossRecipeEnabled(machine)) return;
 
         // GTCEu's appendTooltip translates each ResourceLocation as namespace.path.

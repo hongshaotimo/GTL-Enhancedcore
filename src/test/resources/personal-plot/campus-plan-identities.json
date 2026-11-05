@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "frozenDate": "2026-11-04",
-  "baseline": "Published five campus layouts restored to the selected 4.6.3 source; future presets append a new RoadStyle and independent layout resources, never regenerate these expectations for a layout edit",
+  "baseline": "Five published campus layouts retain their 4.6.3 identities; Quartz Works appended in 4.6.9. Never regenerate a published expectation for a layout edit: append another RoadStyle and independent resources.",
   "fingerprintDefinition": "CampusPlanAccess.fingerprint: binary schema/style/world and AE bounds/full ordered plots/workshops/tiers/targets; IDs, XYZ controllers, target order and inclusive bounds are all covered",
   "presets": [
     {
@@ -103,6 +103,32 @@
         79,
         79
       ]
+    },
+    {
+      "roadStyle": "CAMPUS_FACTORY",
+      "roadStyleOrdinal": 12,
+      "layoutIdentity": "campus-plan-v1:CAMPUS_FACTORY:240d459025882e31276f4f49b9a9146810809613a3c404fd7726cfd1be2ef865",
+      "machinePlots": 226,
+      "targets": 231,
+      "workshops": 4,
+      "worldBounds": [
+        -1000,
+        -1000,
+        999,
+        999
+      ],
+      "aeBounds": [
+        -80,
+        -80,
+        79,
+        79
+      ],
+      "resources": {
+        "/data/gtl_enhancedcore/worldgen/factory_campus_machines.json": "379abcd2bad4608db236632ba4ad2a747c998c3dc91c3d6faf6a6c4dcc39819b",
+        "/data/gtl_enhancedcore/worldgen/factory_campus_program.json": "49ad3846adefa32e834b457a29304744e1f4d810feab70aecc399d4e3fb1f87c",
+        "/data/gtl_enhancedcore/worldgen/factory_campus_layout.json": "ceacf994705bd8864b3d6f5675ae9cf5bc0dff949010ba7bed8804f6a2d369d1",
+        "/data/gtl_enhancedcore/worldgen/factory_campus_architecture.json": "a69ff6c75471c3f07e84215143ed603409bae6a14e4624507f1f7eca818cd96b"
+      }
     }
   ]
 }

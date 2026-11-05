@@ -40,7 +40,7 @@ public final class PlotLayout {
             case GARDEN -> edge < border || (edge >= border + width && edge < border * 2 + width)
                     ? Cell.BORDER : edge < border + width ? Cell.ROAD : Cell.GROUND;
             case AVENUE -> edge < width ? Cell.ROAD : edge < width + border ? Cell.BORDER : Cell.GROUND;
-            case CAMPUS, CAMPUS_PARK, CAMPUS_COMPACT, CAMPUS_DENSE, CAMPUS_WOODLAND -> Cell.GROUND;
+            case CAMPUS, CAMPUS_PARK, CAMPUS_COMPACT, CAMPUS_DENSE, CAMPUS_WOODLAND, CAMPUS_FACTORY, CAMPUS_FILE -> Cell.GROUND;
         };
         if (base != Cell.ROAD || settings.lineStyle() == PlotSettings.LineStyle.NONE) return base;
         int inset = settings.roadStyle() == PlotSettings.RoadStyle.GARDEN ? border : 0;
@@ -121,6 +121,8 @@ public final class PlotLayout {
             case CAMPUS_COMPACT -> CompactPlannedCampus.surfaceBlock(settings, worldX, worldZ);
             case CAMPUS_DENSE -> DensePlannedCampus.surfaceBlock(settings, worldX, worldZ);
             case CAMPUS_WOODLAND -> PlannedCampus.surfaceBlock(settings, worldX, worldZ);
+            case CAMPUS_FACTORY -> FactoryCampus.surfaceBlock(settings, worldX, worldZ);
+            case CAMPUS_FILE -> FileCampus.of(settings.campusPresetId()).surfaceBlock(settings, worldX, worldZ);
             default -> throw new IllegalStateException("Not a campus preset");
         };
         return switch (surfaceAt(settings, worldX, worldZ)) {
@@ -144,6 +146,8 @@ public final class PlotLayout {
                 case CAMPUS_COMPACT -> CompactPlannedCampus.blockAboveAt(settings, worldX, y - settings.surfaceY(), worldZ);
                 case CAMPUS_DENSE -> DensePlannedCampus.blockAboveAt(settings, worldX, y - settings.surfaceY(), worldZ);
                 case CAMPUS_WOODLAND -> PlannedCampus.blockAboveAt(settings, worldX, y - settings.surfaceY(), worldZ);
+                case CAMPUS_FACTORY -> FactoryCampus.blockAboveAt(settings, worldX, y - settings.surfaceY(), worldZ);
+                case CAMPUS_FILE -> FileCampus.of(settings.campusPresetId()).blockAboveAt(settings, worldX, y - settings.surfaceY(), worldZ);
                 default -> throw new IllegalStateException("Not a campus preset");
             };
             return above == null ? "minecraft:air" : above;
@@ -159,6 +163,8 @@ public final class PlotLayout {
                 case CAMPUS_COMPACT -> CompactPlannedCampus.foundationBlockAt(worldX, y - settings.surfaceY(), worldZ);
                 case CAMPUS_DENSE -> DensePlannedCampus.foundationBlockAt(worldX, y - settings.surfaceY(), worldZ);
                 case CAMPUS_WOODLAND -> PlannedCampus.foundationBlockAt(worldX, y - settings.surfaceY(), worldZ);
+                case CAMPUS_FACTORY -> FactoryCampus.foundationBlockAt(worldX, y - settings.surfaceY(), worldZ);
+                case CAMPUS_FILE -> FileCampus.of(settings.campusPresetId()).foundationBlockAt(worldX, y - settings.surfaceY(), worldZ);
                 default -> throw new IllegalStateException("Not a campus preset");
             };
             if (facing != null) return facing;
@@ -173,6 +179,8 @@ public final class PlotLayout {
             case CAMPUS_COMPACT -> CompactPlannedCampus.hasTerrain(x, z);
             case CAMPUS_DENSE -> DensePlannedCampus.hasTerrain(x, z);
             case CAMPUS_WOODLAND -> PlannedCampus.hasTerrain(x, z);
+            case CAMPUS_FACTORY -> FactoryCampus.hasTerrain(x, z);
+            case CAMPUS_FILE -> FileCampus.of(settings.campusPresetId()).hasTerrain(x, z);
             default -> false;
         };
     }

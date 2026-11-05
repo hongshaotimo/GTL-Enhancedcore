@@ -52,7 +52,8 @@ public final class CloudPatternInventories {
             for (var entry : com.gregtechceu.gtceu.api.registry.GTRegistries.MACHINES.entries()) {
                 if (!(entry.getValue() instanceof com.gregtechceu.gtceu.api.machine.MultiblockMachineDefinition definition)) continue;
                 var recipeTypes = definition.getRecipeTypes();
-                if (recipeTypes != null && Arrays.stream(recipeTypes).anyMatch(recipeType -> type.isEmpty() || recipeType.registryName.toString().equals(type)))
+                if (recipeTypes != null && Arrays.stream(recipeTypes).anyMatch(recipeType -> type.isEmpty()
+                        || CloudChemicalModes.equivalent(recipeType.registryName.toString(), type)))
                     definitions.add(entry.getKey().toString());
             }
         }

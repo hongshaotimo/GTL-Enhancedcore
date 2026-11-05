@@ -11,10 +11,13 @@ public final class CloudPatternLibraryWidget extends CloudPatternPanel {
     private final WidgetGroup patterns = new WidgetGroup(28, 22, 162, 112);
     private final WidgetGroup catalysts = new WidgetGroup(28, 22, 162, 112);
     private final WidgetGroup recovery = new WidgetGroup(28, 22, 162, 112);
+    private final WidgetGroup recoveryDetails = new WidgetGroup(28, 22, 162, 112);
+    private final java.util.List<ImageWidget> recoveryDetailLines = new java.util.ArrayList<>();
     private final ImageWidget[] recoveryRows = new ImageWidget[4];
     private final ButtonWidget[] recoveryReviews = new ButtonWidget[4];
     private final ButtonWidget recoveryEntry, recoveryPrevious, recoveryNext;
-    private boolean recoveryShown, recoveryAutoOpened;
+    private boolean recoveryShown, recoveryAutoOpened, recoveryDetailsShown;
+    private String recoveryDetailId = "";
     private final ButtonWidget[] cards = new ButtonWidget[36];
     private final ImageWidget[] icons = new ImageWidget[36];
     private final ImageWidget state;
@@ -26,7 +29,7 @@ public final class CloudPatternLibraryWidget extends CloudPatternPanel {
     public CloudPatternLibraryWidget(CloudPatternUiHost host) {
         super(host, "library", "library");
         setSizeWidth(218);
-        addWidget(patterns); addWidget(catalysts); addWidget(recovery);
+        addWidget(patterns); addWidget(catalysts); addWidget(recovery); addWidget(recoveryDetails);
         recoveryEntry = glyphButton(this, 6, 108, 18, 18, CloudPatternGlyphTexture.ORDERS, () -> {
             if (recoveryShown) showPatterns(); else showRecovery();
         });
@@ -71,7 +74,7 @@ public final class CloudPatternLibraryWidget extends CloudPatternPanel {
                             .setWidth(102).setType(TextTexture.TextType.HIDE)));
             recoveryRows[i].setClientSideWidget(); recoveryRows[i].setId("cloud.recovery.row." + i); recovery.addWidget(recoveryRows[i]);
             recoveryReviews[i] = button(recovery, 110, y, 52, 16,
-                    () -> tr(isTransfer(recoveryEntry(index)) ? "recovery_review_short" : "recovery_visit_short"),
+                    () -> tr(isTransfer(recoveryEntry(index)) ? "recovery_review_short" : "recovery_order_details_short"),
                     () -> reviewRecovery(index));
             recoveryReviews[i].setId("cloud.recovery.review." + i);
         }
@@ -80,6 +83,22 @@ public final class CloudPatternLibraryWidget extends CloudPatternPanel {
         text(recovery, 20, 91, 122, 10, () -> tr("page_count", recoveryPage + 1, Math.max(1, snapshot.getInt("recoveryPages"))), MUTED);
         recoveryNext = glyphButton(recovery, 146, 88, 16, 16, CloudPatternGlyphTexture.NEXT, () -> changeRecoveryPage(1));
         recoveryNext.setId("cloud.recovery.next").setHoverTooltips(PREFIX + "next_page");
+        text(recoveryDetails, 0, 3, 140, 10, () -> tr("recovery_order_details_title"), INK);
+        glyphButton(recoveryDetails, 146, 0, 16, 16, CloudPatternGlyphTexture.BACK, this::showRecovery)
+                .setId("cloud.recovery.details.back");
+        recoveryDetailLines.add(CloudOrderRecoveryText.line(recoveryDetails, 0, 19, 162,
+                () -> tr("recovery_order_status", CloudOrderRecoveryText.status(detailEntry())), INK, "cloud.recovery.details.status"));
+        recoveryDetailLines.add(CloudOrderRecoveryText.line(recoveryDetails, 0, 32, 162,
+                () -> tr("recovery_order_machine", CloudOrderRecoveryText.machine(detailEntry())), INK, "cloud.recovery.details.machine"));
+        recoveryDetailLines.add(CloudOrderRecoveryText.line(recoveryDetails, 0, 45, 162,
+                () -> tr("recovery_order_mode", CloudOrderRecoveryText.mode(detailEntry())), INK, "cloud.recovery.details.mode"));
+        recoveryDetailLines.add(CloudOrderRecoveryText.line(recoveryDetails, 0, 58, 162,
+                () -> tr("recovery_order_location", CloudOrderRecoveryText.value(detailEntry(), "sourceDimension"),
+                        CloudOrderRecoveryText.value(detailEntry(), "sourcePos")), INK, "cloud.recovery.details.location"));
+        recoveryDetailLines.add(CloudOrderRecoveryText.line(recoveryDetails, 0, 71, 162,
+                () -> tr("recovery_order_jobs", detailEntry() == null ? 0 : detailEntry().getInt("jobCount")), INK, "cloud.recovery.details.jobs"));
+        text(recoveryDetails, 0, 87, 162, 10, () -> tr("recovery_order_hint_1"), MUTED);
+        text(recoveryDetails, 0, 100, 162, 10, () -> tr("recovery_order_hint_2"), MUTED);
         showPatterns();
     }
     private CompoundTag recoveryEntry(int index) {
@@ -91,11 +110,11 @@ public final class CloudPatternLibraryWidget extends CloudPatternPanel {
         var entry = recoveryEntry(index);
         if (entry == null) return index == 0 ? tr("no_recovery") : "";
         return tr(isTransfer(entry) ? "recovery_transfer_row" : "recovery_order_row",
-                recoveryPage * 4 + index + 1, entry.getString("status"));
+                recoveryPage * 4 + index + 1, isTransfer(entry) ? entry.getString("status") : CloudOrderRecoveryText.status(entry));
     }
     private void showRecovery() {
-        closeCatalysts(); recoveryShown = true;
-        patterns.setVisible(false); catalysts.setVisible(false); recovery.setVisible(true);
+        closeCatalysts(); recoveryShown = true; recoveryDetailsShown = false;
+        patterns.setVisible(false); catalysts.setVisible(false); recovery.setVisible(true); recoveryDetails.setVisible(false);
     }
     private void changeRecoveryPage(int direction) {
         int next = recoveryPage + direction;
@@ -103,17 +122,36 @@ public final class CloudPatternLibraryWidget extends CloudPatternPanel {
     }
     private void reviewRecovery(int index) {
         var entry = recoveryEntry(index);
-        if (!isTransfer(entry) || !snapshot.getBoolean("recoveryOwner") || snapshot.getBoolean("recoveryBusy")) return;
+        if (entry == null) return;
+        if (!isTransfer(entry)) {
+            recoveryDetailId = entry.getString("id"); recoveryDetailsShown = true;
+            recovery.setVisible(false); recoveryDetails.setVisible(true);
+            var tooltip = CloudOrderRecoveryText.tooltip(entry);
+            for (var line : recoveryDetailLines) line.setHoverTooltips(tooltip);
+            return;
+        }
+        if (!snapshot.getBoolean("recoveryOwner") || snapshot.getBoolean("recoveryBusy")) return;
         recoveryId = entry.getString("operation");
         if (recoveryId.isEmpty()) recoveryId = entry.getString("id");
         action("review_transfer");
+    }
+    private CompoundTag detailEntry() {
+        for (Tag value : snapshot.getList("recoveryEntries", Tag.TAG_COMPOUND)) {
+            var entry = (CompoundTag)value;
+            if (entry.getString("id").equals(recoveryDetailId) && !isTransfer(entry)) return entry;
+        }
+        return null;
     }
     private Component[] recoveryTooltip(CompoundTag entry) {
         var lines = new java.util.ArrayList<Component>();
         if (entry == null) {
             lines.add(Component.translatable(PREFIX + (snapshot.getBoolean("recoveryIndexing") ? "recovery_indexing" : "no_recovery")));
+        } else if (!isTransfer(entry)) {
+            lines.add(Component.translatable(PREFIX + "recovery_order_details_short"));
+            lines.addAll(java.util.Arrays.asList(CloudOrderRecoveryText.tooltip(entry)));
+            lines.add(Component.translatable(PREFIX + "recovery_original_node"));
         } else {
-            lines.add(Component.translatable(PREFIX + (isTransfer(entry) ? "review_transfer" : "recovery_visit_short")));
+            lines.add(Component.translatable(PREFIX + "review_transfer"));
             lines.add(Component.translatable(PREFIX + "recovery_operation", entry.getString("operation")));
             lines.add(Component.translatable(PREFIX + "recovery_record_status", entry.getString("status"), entry.getString("journalStatus")));
             if (!entry.getString("sourcePos").isEmpty()) lines.add(Component.translatable(PREFIX + "source",
@@ -124,11 +162,10 @@ public final class CloudPatternLibraryWidget extends CloudPatternPanel {
             String evidence = entry.getString("evidence");
             if (!evidence.isEmpty()) lines.add(Component.translatable(evidence));
             if (!entry.getString("failure").isEmpty()) lines.add(Component.translatable(PREFIX + "recovery_diagnostic_detail", entry.getString("failure")));
-            if (!isTransfer(entry)) lines.add(Component.translatable(PREFIX + "recovery_original_node"));
-            else if (!snapshot.getBoolean("recoveryOwner")) lines.add(Component.translatable(PREFIX + "recovery_owner_only"));
+            if (!snapshot.getBoolean("recoveryOwner")) lines.add(Component.translatable(PREFIX + "recovery_owner_only"));
             else if (snapshot.getBoolean("recoveryBusy")) lines.add(Component.translatable(PREFIX + "recovery_busy"));
         }
-        lines.add(Component.translatable(PREFIX + "recovery_safe_hint"));
+        if (entry == null || isTransfer(entry)) lines.add(Component.translatable(PREFIX + "recovery_safe_hint"));
         if (entry == null) addDiagnostics(lines);
         else {
             lines.add(Component.translatable(PREFIX + (snapshot.getBoolean("networkConnected") ? "me_connected" : "me_disconnected")));
@@ -283,7 +320,10 @@ public final class CloudPatternLibraryWidget extends CloudPatternPanel {
         type = next == 0 ? "" : types.getString(next - 1); page = 0; request();
     }
     private String typeLabel() { return type.isEmpty() ? tr("all_types_short") : recipeType(type); }
-    private void showPatterns() { closeCatalysts(); recoveryShown = false; recovery.setVisible(false); patterns.setVisible(true); catalysts.setVisible(false); }
+    private void showPatterns() {
+        closeCatalysts(); recoveryShown = false; recoveryDetailsShown = false;
+        recovery.setVisible(false); recoveryDetails.setVisible(false); patterns.setVisible(true); catalysts.setVisible(false);
+    }
     @Override void updated() {
         page = Math.max(0, snapshot.getInt("page"));
         recoveryPage = Math.max(0, snapshot.getInt("recoveryPage"));
@@ -315,7 +355,10 @@ public final class CloudPatternLibraryWidget extends CloudPatternPanel {
         if (!recoveryAutoOpened && (snapshot.getInt("recovery") > 0 || snapshot.getBoolean("importQuarantined"))) {
             recoveryAutoOpened = true; showRecovery();
         }
-        recovery.setVisible(recoveryShown);
+        if (recoveryDetailsShown && detailEntry() == null) recoveryDetailsShown = false;
+        recovery.setVisible(recoveryShown && !recoveryDetailsShown);
+        recoveryDetails.setVisible(recoveryShown && recoveryDetailsShown);
+        if (recoveryDetailsShown) for (var line : recoveryDetailLines) line.setHoverTooltips(CloudOrderRecoveryText.tooltip(detailEntry()));
         if (recoveryShown) { patterns.setVisible(false); catalysts.setVisible(false); }
         recoveryPrevious.setActive(recoveryPage > 0);
         recoveryNext.setActive(recoveryPage + 1 < snapshot.getInt("recoveryPages"));
@@ -324,7 +367,8 @@ public final class CloudPatternLibraryWidget extends CloudPatternPanel {
             recoveryRows[i].setVisible(entry != null || i == 0);
             recoveryRows[i].setHoverTooltips(recoveryTooltip(entry));
             recoveryReviews[i].setVisible(entry != null);
-            recoveryReviews[i].setActive(isTransfer(entry) && snapshot.getBoolean("recoveryOwner") && !snapshot.getBoolean("recoveryBusy"));
+            recoveryReviews[i].setActive(entry != null && (!isTransfer(entry)
+                    || snapshot.getBoolean("recoveryOwner") && !snapshot.getBoolean("recoveryBusy")));
             recoveryReviews[i].setHoverTooltips(recoveryTooltip(entry));
         }
         for (int i = 0; i < cards.length; i++) {

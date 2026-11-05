@@ -71,6 +71,14 @@ public final class PlotPreviewRaster {
                 var b = PlannedCampus.previewBounds(overview);
                 yield new CampusViewport(b.minX(), b.minZ(), b.width(), b.depth());
             }
+            case CAMPUS_FACTORY -> {
+                var b = FactoryCampus.previewBounds(overview);
+                yield new CampusViewport(b.minX(), b.minZ(), b.width(), b.depth());
+            }
+            case CAMPUS_FILE -> {
+                var b = FileCampus.of(settings.campusPresetId()).previewBounds(overview);
+                yield new CampusViewport(b.minX(), b.minZ(), b.width(), b.depth());
+            }
             default -> throw new IllegalArgumentException("Not a campus preset");
         };
         return renderCampus(settings, pixels, pixels, viewport, settings.roadStyle() == PlotSettings.RoadStyle.CAMPUS ? 1 : 4);
@@ -103,6 +111,8 @@ public final class PlotPreviewRaster {
                     case CAMPUS_COMPACT -> CompactPlannedCampus.previewColorAt(wx, wz);
                     case CAMPUS_DENSE -> DensePlannedCampus.previewColorAt(wx, wz);
                     case CAMPUS_WOODLAND -> PlannedCampus.previewColorAt(wx, wz);
+                    case CAMPUS_FACTORY -> FactoryCampus.previewColorAt(wx, wz);
+                    case CAMPUS_FILE -> FileCampus.of(settings.campusPresetId()).previewColorAt(wx, wz);
                     default -> throw new IllegalArgumentException("Not a campus preset");
                 };
                 red += (rgb >>> 16) & 255; green += (rgb >>> 8) & 255; blue += rgb & 255;

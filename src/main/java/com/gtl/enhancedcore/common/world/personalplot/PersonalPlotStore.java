@@ -26,6 +26,7 @@ public final class PersonalPlotStore {
     public static final int MAX_WORLDS = 2048;
     public static final String TEMPLATE_FILE = "gtl_personal_plot_template.json";
     public static final String PACK_PREFIX = "gtl_personal_plot_";
+    private static final String DELETIONS = "gtl_personal_plot_deletions";
     private static final String MANIFEST = "gtl_personal_plot_owner.json";
     private static final Gson GSON = new GsonBuilder().disableHtmlEscaping().create();
     public record Data(PlotSettings template, Map<UUID, PlotSettings> worlds) {
@@ -35,14 +36,56 @@ public final class PersonalPlotStore {
             if (worlds.containsKey(owner)) throw new IllegalStateException("Player already owns a world");
             Map<UUID, PlotSettings> copy = new LinkedHashMap<>(worlds); copy.put(owner, value); return new Data(template, copy);
         }
+        public Data without(UUID owner) {
+            Map<UUID, PlotSettings> copy = new LinkedHashMap<>(worlds); copy.remove(owner); return new Data(template, copy);
+        }
     }
     private PersonalPlotStore() {}
     private static String ownerName(UUID owner) { return owner.toString().replace("-", ""); }
     public static String dimensionPath(UUID owner) { return "personal_plot/" + ownerName(owner); }
     public static Path packPath(Path root, UUID owner) { return root.resolve("datapacks").resolve(PACK_PREFIX + ownerName(owner) + ".zip"); }
+    public static String packId(UUID owner) { return "file/" + PACK_PREFIX + ownerName(owner) + ".zip"; }
+    public static Path dimensionDirectory(Path root, UUID owner) {
+        return root.resolve("dimensions").resolve("gtl_enhancedcore").resolve(dimensionPath(owner));
+    }
+    private static Path deletionPath(Path root, UUID owner) { return root.resolve(DELETIONS).resolve(ownerName(owner) + ".json"); }
+    /** Durable tombstones remain after cleanup until an explicit new creation commits. */
+    public static java.util.Set<UUID> deletions(Path root) throws IOException {
+        java.util.Set<UUID> result = new java.util.HashSet<>(); Path directory = root.resolve(DELETIONS);
+        if (!Files.exists(directory)) return result;
+        try (var files = Files.newDirectoryStream(directory, "*.json")) {
+            for (Path file : files) {
+                String name = file.getFileName().toString();
+                if (!name.matches("[0-9a-f]{32}\\.json")) throw new IOException("Invalid personal deletion marker");
+                JsonObject value;
+                try { value = JsonParser.parseString(readBounded(file, 256)).getAsJsonObject(); }
+                catch (RuntimeException invalid) { throw new IOException("Invalid personal deletion marker", invalid); }
+                UUID owner;
+                try { owner = UUID.fromString(value.get("owner").getAsString()); }
+                catch (RuntimeException invalid) { throw new IOException("Invalid personal deletion owner", invalid); }
+                if (!name.equals(ownerName(owner) + ".json") || !value.has("version") || value.get("version").getAsInt() != 1)
+                    throw new IOException("Personal deletion identity mismatch");
+                result.add(owner);
+            }
+        }
+        return java.util.Set.copyOf(result);
+    }
+    public static void beginDeletion(Path root, UUID owner) throws IOException {
+        if (deletions(root).contains(owner)) return;
+        Path target = deletionPath(root, owner); Files.createDirectories(target.getParent());
+        Path temporary = Files.createTempFile(target.getParent(), ".deletion-", ".tmp");
+        boolean committed = false; IOException failure = null;
+        try {
+            JsonObject value = new JsonObject(); value.addProperty("version", 1); value.addProperty("owner", owner.toString());
+            Files.writeString(temporary, value.toString(), StandardCharsets.UTF_8); force(temporary);
+            Files.createLink(target, temporary); committed = true;
+        } catch (IOException error) { failure = error; throw error; }
+        finally { cleanupTemporary(temporary, committed, failure); }
+    }
     public static Data read(Path root) throws IOException {
         PlotSettings template = null; Path templatePath = root.resolve(TEMPLATE_FILE);
         if (Files.exists(templatePath)) template = decodePreset(readBounded(templatePath, PlotPresetShare.MAX_TEXT_LENGTH * 4));
+        var deleted = deletions(root);
         Map<UUID, PlotSettings> worlds = new LinkedHashMap<>(); Path packs = root.resolve("datapacks");
         if (Files.isDirectory(packs)) try (var files = Files.newDirectoryStream(packs, PACK_PREFIX + "*.zip")) {
             for (Path file : files) {
@@ -50,7 +93,7 @@ public final class PersonalPlotStore {
                 String name = file.getFileName().toString(), hex = name.substring(PACK_PREFIX.length(), name.length() - 4);
                 if (!hex.matches("[0-9a-f]{32}")) throw new IOException("Invalid personal plot pack filename: " + name);
                 UUID owner = UUID.fromString(hex.substring(0, 8) + "-" + hex.substring(8, 12) + "-" + hex.substring(12, 16) + "-" + hex.substring(16, 20) + "-" + hex.substring(20));
-                worlds.put(owner, readPack(file, owner));
+                if (!deleted.contains(owner)) worlds.put(owner, readPack(file, owner));
             }
         }
         return new Data(template, worlds);
@@ -97,6 +140,8 @@ public final class PersonalPlotStore {
             // Atomic publication with no overwrite. ATOMIC_MOVE alone does not guarantee no replacement.
             // Unsupported filesystems fail safely; no existing world's ZIP is ever reopened for writing.
             Files.createLink(target, temporary);
+            // A crash before this removal leaves a tombstone and safely retries cleanup, never resurrecting old chunks.
+            Files.deleteIfExists(deletionPath(root, owner));
             committed = true;
         } catch (IOException error) { failure = error; throw error; }
         finally { cleanupTemporary(temporary, committed, failure); }
@@ -169,6 +214,7 @@ public final class PersonalPlotStore {
         geometry.add("plot_edge_block", encoded.remove("plot_edge_block"));
         geometry.add("plot_edge_width", encoded.remove("plot_edge_width"));
         geometry.add("show_machine_frames", encoded.remove("show_machine_frames"));
+        if (encoded.has("campus_preset_id")) geometry.add("campus_preset_id", encoded.remove("campus_preset_id"));
         encoded.add("geometry_extras", geometry);
         generator.add("settings", encoded);
         root.add("generator", generator); return root;

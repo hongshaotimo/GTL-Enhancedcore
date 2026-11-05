@@ -539,6 +539,7 @@ public final class CloudNativeInputRuntimeChecks {
     private static final class ReadyCloud extends CloudPatternBufferMachine {
         ReadyCloud(IMachineBlockEntity holder) { super(holder); }
         @Override public boolean cloudReady(boolean checkController) { return true; }
+        @Override public String cloudReadyFailure(boolean checkController) { return ""; }
     }
     private static Field field(Object target, String name) throws Exception {
         for (Class<?> type = target.getClass(); type != null; type = type.getSuperclass()) {

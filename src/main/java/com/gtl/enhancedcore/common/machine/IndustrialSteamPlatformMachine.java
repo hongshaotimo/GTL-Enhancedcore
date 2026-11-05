@@ -127,6 +127,12 @@ public class IndustrialSteamPlatformMachine extends WorkableElectricMultiblockMa
         return this.steamInsufficient;
     }
 
+    /** Called once after a native or cloud batch has successfully committed its inputs. */
+    public void chargeSteamForSuccessfulBatch() {
+        this.steamStored -= steamPerRecipeMb();
+        this.markDirty();
+    }
+
     // ==================== 结构生命周期 ====================
 
     @Override
@@ -392,8 +398,7 @@ public class IndustrialSteamPlatformMachine extends WorkableElectricMultiblockMa
             this.setStatus(Status.IDLE);
             super.setupRecipe(recipe);
             if (this.getStatus() == Status.WORKING && this.getLastRecipe() == recipe) {
-                platform.steamStored -= steamPerRecipeMb();
-                platform.markDirty();
+                platform.chargeSteamForSuccessfulBatch();
             }
         }
     }

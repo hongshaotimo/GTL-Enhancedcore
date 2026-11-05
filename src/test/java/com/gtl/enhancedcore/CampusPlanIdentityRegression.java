@@ -7,6 +7,8 @@ import com.gtl.enhancedcore.common.world.plot.PlannedCampus;
 import com.gtl.enhancedcore.common.world.plot.PlotSettings;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.security.MessageDigest;
+import java.util.HexFormat;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -23,7 +25,7 @@ public final class CampusPlanIdentityRegression {
         checks = 0;
         var fixture = JsonParser.parseString(Files.readString(FIXTURE)).getAsJsonObject();
         check(fixture.get("schemaVersion").getAsInt() == 1, "Frozen campus identity fixture schema is explicit");
-        Set<String> expectedStyles = Set.of("CAMPUS", "CAMPUS_PARK", "CAMPUS_COMPACT", "CAMPUS_DENSE", "CAMPUS_WOODLAND");
+        Set<String> expectedStyles = Set.of("CAMPUS", "CAMPUS_PARK", "CAMPUS_COMPACT", "CAMPUS_DENSE", "CAMPUS_WOODLAND", "CAMPUS_FACTORY");
         Set<String> actualStyles = new HashSet<>(), identities = new HashSet<>();
         Set<CampusPlanAccess.Plan> distinctPlans = java.util.Collections.newSetFromMap(new java.util.IdentityHashMap<>());
         for (var element : fixture.getAsJsonArray("presets")) {
@@ -48,8 +50,13 @@ public final class CampusPlanIdentityRegression {
                     style + " frozen inclusive world and AE bounds remain unchanged");
             for (int index = 0; index < plan.targets().size(); index++)
                 check(plan.targets().get(index).index() == index, style + " numeric destination indexes remain aligned with frozen target order");
+            if (row.has("resources")) for (var resource : row.getAsJsonObject("resources").entrySet()) {
+                byte[] data = Files.readAllBytes(Path.of("src/main/resources" + resource.getKey()));
+                check(HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256").digest(data)).equals(resource.getValue().getAsString()),
+                        style + " published factory resources stay frozen: " + resource.getKey());
+            }
         }
-        check(actualStyles.equals(expectedStyles), "All five already-published campus identities have a fixed expectation");
+        check(actualStyles.equals(expectedStyles), "All six published campus identities have a fixed expectation");
         return checks;
     }
 

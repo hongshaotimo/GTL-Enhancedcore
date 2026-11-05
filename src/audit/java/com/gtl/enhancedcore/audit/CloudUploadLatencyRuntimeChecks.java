@@ -66,7 +66,7 @@ public final class CloudUploadLatencyRuntimeChecks {
         requestedEndpoints=Integer.getInteger("gtl.cloudUploadLatencyEndpoints",1);
         if(requestedEndpoints!=1&&requestedEndpoints!=48)throw new IllegalArgumentException("Only 1 or 48 real endpoints supported");
         endpoints.clear();controllers.clear();cells.clear();template.clear();endpoints.add(child);
-        var original=IvBuffers.controller(child);controllers.add(original);templateCore=original.getPos();childOffset=child.getPos().subtract(templateCore);
+        var original=(WorkableElectricMultiblockMachine)IvBuffers.controller(child);controllers.add(original);templateCore=original.getPos();childOffset=child.getPos().subtract(templateCore);
         for(var pos:original.getMultiblockState().getCache())template.put(pos.subtract(templateCore),level.getBlockState(pos));
         template.put(BlockPos.ZERO,original.getBlockState());
         if(requestedEndpoints>1)stage=-1;

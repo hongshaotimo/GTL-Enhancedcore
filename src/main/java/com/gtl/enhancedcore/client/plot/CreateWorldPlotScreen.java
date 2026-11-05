@@ -2,6 +2,7 @@ package com.gtl.enhancedcore.client.plot;
 
 import com.gtl.enhancedcore.common.world.plot.PlotLayout;
 import com.gtl.enhancedcore.common.world.plot.PlotSettings;
+import com.gtl.enhancedcore.common.world.plot.CampusPresetRegistry;
 import java.util.*;
 import java.util.function.*;
 import net.minecraft.client.gui.GuiGraphics;
@@ -106,6 +107,13 @@ public final class CreateWorldPlotScreen extends Screen {
                 () -> draft.roadStyle() == PlotSettings.plannedCampus().roadStyle())
                 .setTooltip(Tooltip.create(tr("campus_preset_hint")));
         int y = hint(tr("campus_preset_hint"), 39);
+        for (var definition : CampusPresetRegistry.definitions()) {
+            edit(() -> Component.translatable(definition.nameKey()), editorX, y + 8, editorWidth, 30,
+                    () -> selectTerrainPreset(settingsFor(definition)),
+                    () -> draft.campusKey().equals(settingsFor(definition).campusKey()))
+                    .setTooltip(Tooltip.create(Component.translatable(definition.descriptionKey())));
+            y = hint(Component.translatable(definition.descriptionKey()), y + 47);
+        }
         edit(() -> tr("campus_free_plots"), editorX, y + 8, editorWidth, 24,
                 () -> selectTerrainPreset(PlotSettings.defaults()), () -> !draft.isCampus());
         return y + 40;
@@ -115,26 +123,32 @@ public final class CreateWorldPlotScreen extends Screen {
         pageScroll[page] = scroll; page = 1; pageScroll[page] = 0; rebuildWidgets();
     }
     private int layoutPage() {
-        edit(() -> tr("campus_preset"), editorX, 0, editorWidth, 30,
-                () -> { draft = PlotSettings.plannedCampus(); validatedPreview = draft; resetInputs(); rebuildWidgets(); }, draft::isCampus)
-                .setTooltip(Tooltip.create(tr("campus_preset_hint")));
+        var definition = selectedDefinition();
+        boolean authored = definition != null;
+        edit(() -> authored ? Component.translatable(definition.nameKey()) : tr("campus_preset"), editorX, 0, editorWidth, 30,
+                () -> { draft = authored ? settingsFor(definition) : PlotSettings.plannedCampus(); validatedPreview = draft; resetInputs(); rebuildWidgets(); }, draft::isCampus)
+                .setTooltip(Tooltip.create(authored ? Component.translatable(definition.descriptionKey()) : tr("campus_preset_hint")));
         if (draft.isCampus()) {
-            int y = hint(tr("campus_description", draft.campusPlotCount()), 39);
+            int y = hint(authored ? Component.translatable(definition.descriptionKey())
+                    : tr("campus_description", draft.campusPlotCount()), 39);
             y = heading("campus_ae", y + 8);
-            y = hint(tr("campus_ae_hint"), y);
+            y = hint(presetHint(definition, "ae_hint"), y);
             y = heading("campus_districts", y + 6);
-            y = hint(tr("campus_districts_hint"), y);
-            y = hint(tr("campus_controller_hint"), y + 6);
-            FlatButton frames = edit(() -> tr(draft.showMachineFrames() ? "campus_frames_on" : "campus_frames_off"),
-                    editorX, y + 6, editorWidth, 21,
-                    () -> { draft = draft.withMachineFrames(!draft.showMachineFrames()); validate(); rebuildWidgets(); },
-                    () -> draft.showMachineFrames());
-            frames.setTooltip(Tooltip.create(tr("campus_frames_hint")));
-            edit(() -> tr("campus_open_plan"), editorX, y + 34, editorWidth, 24,
+            y = hint(presetHint(definition, "districts_hint"), y);
+            y = hint(presetHint(definition, "controller_hint"), y + 6);
+            if (!authored) {
+                FlatButton frames = edit(() -> tr(draft.showMachineFrames() ? "campus_frames_on" : "campus_frames_off"),
+                        editorX, y + 6, editorWidth, 21,
+                        () -> { draft = draft.withMachineFrames(!draft.showMachineFrames()); validate(); rebuildWidgets(); },
+                        () -> draft.showMachineFrames());
+                frames.setTooltip(Tooltip.create(tr("campus_frames_hint")));
+                y += 28;
+            }
+            edit(() -> tr("campus_open_plan"), editorX, y + 6, editorWidth, 24,
                     () -> minecraft.setScreen(new CampusPlanScreen(this, draft)), () -> false);
-            edit(() -> tr("campus_free_plots"), editorX, y + 61, editorWidth, 21,
+            edit(() -> tr("campus_free_plots"), editorX, y + 33, editorWidth, 21,
                     () -> { draft = PlotSettings.defaults(); validatedPreview = draft; resetInputs(); rebuildWidgets(); }, () -> false);
-            return y + 89;
+            return y + 61;
         }
         int y = heading("plot_dimensions", 40);
         int w = (editorWidth - 12) / 5;
@@ -157,8 +171,22 @@ public final class CreateWorldPlotScreen extends Screen {
         y = hint(tr("marker_auto_hint"), y);
         return y + 8;
     }
+    private static PlotSettings settingsFor(CampusPresetRegistry.Definition definition) {
+        return PlotSettings.fileCampus(definition.id());
+    }
+    private CampusPresetRegistry.Definition selectedDefinition() {
+        if (draft.roadStyle() == PlotSettings.RoadStyle.CAMPUS_FACTORY) return CampusPresetRegistry.get("quartz_works");
+        return draft.roadStyle() == PlotSettings.RoadStyle.CAMPUS_FILE ? CampusPresetRegistry.get(draft.campusPresetId()) : null;
+    }
+    private static Component presetHint(CampusPresetRegistry.Definition definition, String suffix) {
+        String prefix = definition == null ? "campus" : switch (definition.engine()) {
+            case "quartz_factory" -> "factory";
+            default -> "file";
+        };
+        return tr(prefix + "_" + suffix);
+    }
     private int roadsPage() {
-        if (draft.isCampus()) return hint(tr("campus_authored"), 0) + 10;
+        if (draft.isCampus()) return hint(presetHint(selectedDefinition(), "authored"), 0) + 10;
         int y = heading("road_templates", 0);
         y = hint(tr("road_templates_hint"), y);
         int columns = editorWidth >= 380 ? 3 : 2, gap = 5, w = (editorWidth - (columns-1)*gap) / columns;
@@ -207,7 +235,7 @@ public final class CreateWorldPlotScreen extends Screen {
     }
     private void applyRoadPreset(PlotSettings.RoadPreset preset) {
         draft = draft.withRoadPreset(preset);
-        if (preset == PlotSettings.RoadPreset.CAMPUS) { resetInputs(); validate(); rebuildWidgets(); return; }
+        if (draft.isCampus()) { resetInputs(); validate(); rebuildWidgets(); return; }
         for (String key : List.of("road_block", "border_block", "line_block", "road_width", "border_width", "dash_length", "dash_gap"))
             inputs.put(key, switch (key) { case "road_block" -> draft.roadBlock(); case "border_block" -> draft.borderBlock();
                 case "line_block" -> draft.lineBlock(); case "road_width" -> ""+draft.roadWidth(); case "border_width" -> ""+draft.borderWidth();
@@ -215,7 +243,7 @@ public final class CreateWorldPlotScreen extends Screen {
         validate(); rebuildWidgets();
     }
     private int materialsPage() {
-        if (draft.isCampus()) return hint(tr("campus_materials"), 0) + 10;
+        if (draft.isCampus()) return hint(presetHint(selectedDefinition(), "materials"), 0) + 10;
         int y = heading("material_surface", 0), columns = editorWidth >= 280 ? 3 : 2, gap = 4;
         int w = (editorWidth - (columns-1)*gap) / columns;
         for (int i=0;i<MATERIAL_KEYS.length;i++) {

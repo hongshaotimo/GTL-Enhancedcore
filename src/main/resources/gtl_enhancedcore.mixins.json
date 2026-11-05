@@ -13,6 +13,7 @@
     "gtceu.EmptyRecipeContentsMixin",
     "gtladditions.ArcanicAstrographCollectionAnchorMixin",
     "gtceu.CloudMachineIdentityMixin",
+    "gtceu.PrimitiveCloudPatternMixin",
     "gtceu.GalaxyConnectionPatternMixin",
     "gtlcore.CloudPatternBufferAccessor",
     "gtlcore.CloudPatternSlotAccessor",
@@ -149,7 +150,17 @@
     "gtceu.GalaxyPowerRecipeMixin",
     "jade.GalaxyPowerRecipeLogicProviderMixin",
     "gtceu.GalaxyControllerWirelessHandlerMixin",
-    "ae2.CloudPatternAccessMenuMixin"
+    "ae2.CloudPatternAccessMenuMixin",
+    "gtladditions.IvNativeForgeStateAccessor",
+    "gtladditions.IvNativeForgeRecipeAccessor",
+    "gtladditions.IvNativeAntientropyAccessor",
+    "gtladditions.IvNativeTaixuAccessor",
+    "gtladditions.IvNativeApocalypticAccessor",
+    "mc.PersonalPlotFilePackMixin",
+    "mc.PersonalPlotStorageMixin",
+    "gtlcore.HarmonyAddRecipesMixin",
+    "gtladditions.ArcanicAddRecipesMixin",
+    "jade.HarmonyAddParallelProviderMixin"
   ],
   "client": [
     "gtlcore.client.EyeOfHarmonyEffectAnchorMixin",

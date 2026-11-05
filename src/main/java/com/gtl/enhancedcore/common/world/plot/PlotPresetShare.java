@@ -14,7 +14,8 @@ import java.util.Set;
 /** Bounded, strict text interchange. It never accesses a world, registry, path or network. */
 public final class PlotPresetShare {
     public static final int MAX_TEXT_LENGTH = 8192;
-    public static final int SHARE_VERSION = 3;
+    public static final int SHARE_VERSION = 4;
+    public static final int LEGACY_SHARE_VERSION = 3;
     private static final String FORMAT = "gtl_enhancedcore:plot_preset";
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().disableHtmlEscaping().create();
     private static final Set<String> NUMBERS = Set.of("plot_chunks", "road_width", "marker_size", "bedrock_y",
@@ -27,7 +28,8 @@ public final class PlotPresetShare {
     public static String encode(PlotSettings settings) {
         validateMaterials(settings);
         JsonObject root = new JsonObject();
-        root.addProperty("format", FORMAT); root.addProperty("version", SHARE_VERSION);
+        boolean filePreset = settings.roadStyle() == PlotSettings.RoadStyle.CAMPUS_FILE;
+        root.addProperty("format", FORMAT); root.addProperty("version", filePreset ? SHARE_VERSION : LEGACY_SHARE_VERSION);
         JsonObject values = new JsonObject();
         values.addProperty("plot_chunks", settings.plotChunks());
         values.addProperty("ground_block", settings.groundBlock());
@@ -48,6 +50,7 @@ public final class PlotPresetShare {
         values.addProperty("plot_edge_block", settings.plotEdgeBlock());
         values.addProperty("plot_edge_width", settings.plotEdgeWidth());
         values.addProperty("show_machine_frames", settings.showMachineFrames());
+        if (filePreset) values.addProperty("campus_preset_id", settings.campusPresetId());
         root.add("settings", values);
         return GSON.toJson(root);
     }
@@ -93,8 +96,15 @@ public final class PlotPresetShare {
             } else if (allowLegacy && version == 2) {
                 if (values.containsKey("show_machine_frames")) throw failure("schema");
                 values.put("show_machine_frames", "false");
-            } else if (version != SHARE_VERSION) throw failure("version");
-            if (values.size() != NUMBERS.size() + STRINGS.size() + BOOLEANS.size()) throw failure("schema");
+            } else if (version != LEGACY_SHARE_VERSION && version != SHARE_VERSION) throw failure("version");
+            boolean filePreset = version == SHARE_VERSION;
+            int expectedFields = NUMBERS.size() + STRINGS.size() + BOOLEANS.size() + (filePreset ? 1 : 0);
+            if (values.size() != expectedFields || values.containsKey("campus_preset_id") != filePreset) throw failure("schema");
+            if (filePreset) {
+                String id = values.get("campus_preset_id");
+                if (!"CAMPUS_FILE".equals(values.get("road_style")) || id.isBlank() || !CampusPresetRegistry.contains(id))
+                    throw failure("settings");
+            } else if ("CAMPUS_FILE".equals(values.get("road_style"))) throw failure("settings");
             validateMaterials(values.get("ground_block"), values.get("plot_edge_block"), values.get("road_block"), values.get("border_block"),
                     values.get("line_block"), values.get("marker_block"));
             PlotSettings result = new PlotSettings(number(values, "plot_chunks"), values.get("ground_block"),
@@ -105,7 +115,7 @@ public final class PlotPresetShare {
                     enumValue(PlotSettings.LineStyle.class, values.get("line_style")), number(values, "dash_length"),
                     number(values, "dash_gap"), number(values, "border_width"),
                     values.get("plot_edge_block"), number(values, "plot_edge_width"),
-                    Boolean.parseBoolean(values.get("show_machine_frames")));
+                    Boolean.parseBoolean(values.get("show_machine_frames")), filePreset ? values.get("campus_preset_id") : "");
             validateMaterials(result);
             return result;
         } catch (ShareException invalid) {
@@ -124,7 +134,7 @@ public final class PlotPresetShare {
             String key = reader.nextName();
             if (values.containsKey(key)) throw failure("schema");
             if (NUMBERS.contains(key)) values.put(key, Integer.toString(integer(reader)));
-            else if (STRINGS.contains(key)) values.put(key, string(reader));
+            else if (STRINGS.contains(key) || key.equals("campus_preset_id")) values.put(key, string(reader));
             else if (BOOLEANS.contains(key)) values.put(key, Boolean.toString(bool(reader)));
             else throw failure("schema");
         }

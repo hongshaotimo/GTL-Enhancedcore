@@ -343,8 +343,8 @@ public final class PlannedCampusClientChecks {
         Class<?> type = PlotWorldInfoNetwork.Snapshot.class;
         var encode = type.getDeclaredMethod("encode", type, FriendlyByteBuf.class); encode.setAccessible(true);
         var decode = type.getDeclaredMethod("decode", FriendlyByteBuf.class); decode.setAccessible(true);
-        require("4".equals(field(PlotWorldInfoNetwork.class, "PROTOCOL").get(null)),
-                "Read-only plot snapshot uses protocol 4 for the frame flag");
+        require("5".equals(field(PlotWorldInfoNetwork.class, "PROTOCOL").get(null)),
+                "Read-only plot snapshot uses protocol 5 for the explicit file-preset identity");
         for (var settings : new PlotSettings[]{null, PlotSettings.plannedCampus().withMachineFrames(false),
                 PlotSettings.plannedCampus().withMachineFrames(true)}) {
             var buffer = new FriendlyByteBuf(Unpooled.buffer());

@@ -18,7 +18,8 @@ final class PlotWorldRegression {
             check(PlotLayout.blockIdAt(settings, 8, -52, 8).equals("minecraft:air"), "No raised road layer"); checks++;
             check(PlotLayout.blockIdAt(settings, 8, -65, 8).equals("minecraft:air"), "No terrain below foundation"); checks++;
             for (PlotSettings.RoadStyle road : PlotSettings.RoadStyle.values()) {
-                PlotSettings selected = settings.withRoadStyle(road);
+                PlotSettings selected = road == PlotSettings.RoadStyle.CAMPUS_FILE ? PlotSettings.fileCampus("quartz_works")
+                        : settings.withRoadStyle(road);
                 if (selected.isCampus()) continue;
                 for (int x = -period - 1; x <= period + 1; x++) {
                     for (int z : new int[] {-period - 1, -period, -1, 0, 1, period / 2, period - 1, period}) {
@@ -125,19 +126,26 @@ final class PlotWorldRegression {
                 && PlotLayout.surfaceAt(city, 2, 5) == PlotLayout.Cell.ROAD,
                 "Zebra crossing alternates road and marking cubes outside the junction"); checks++;
         for (PlotSettings.RoadPreset theme : PlotSettings.RoadPreset.values()) {
-            if (theme == PlotSettings.RoadPreset.CAMPUS) continue;
             PlotSettings themed = tall.withGroundBlock("minecraft:blue_concrete").withRoadPreset(theme);
-            check(themed.bedrockY() == -32 && themed.surfaceY() == 128
-                    && themed.groundBlock().equals("minecraft:blue_concrete"),
-                    "Road presets preserve custom height and plot material"); checks++;
+            if (theme == PlotSettings.RoadPreset.CAMPUS || theme == PlotSettings.RoadPreset.FACTORY) {
+                PlotSettings authored = theme == PlotSettings.RoadPreset.CAMPUS
+                        ? PlotSettings.plannedCampus() : PlotSettings.factoryCampus();
+                check(themed.equals(authored), "Authored campus presets select their entire independent default recipe"); checks++;
+                check(themed.bedrockY() == -64 && themed.surfaceY() == -53
+                                && themed.groundBlock().equals("minecraft:light_gray_concrete"),
+                        "Authored campus presets reset incompatible custom height and materials"); checks++;
+            } else {
+                check(themed.bedrockY() == -32 && themed.surfaceY() == 128
+                        && themed.groundBlock().equals("minecraft:blue_concrete"),
+                        "Road presets preserve custom height and plot material"); checks++;
+            }
         }
         check(PlotLayout.effectiveRoadWidth(PlotSettings.preset(1).withRoadWidth(32)) == 5,
                 "Small plots bound oversized road width to retain interior space"); checks++;
         for (PlotSettings.RoadPreset theme : PlotSettings.RoadPreset.values()) {
-            if (theme == PlotSettings.RoadPreset.CAMPUS) continue;
             PlotSettings themed = PlotSettings.defaults().withRoadPreset(theme);
             check(PlotSettings.MATERIALS.containsAll(java.util.List.of(themed.groundBlock(), themed.roadBlock(),
-                    themed.borderBlock(), themed.lineBlock())), "All templates stay within the concrete-only palette"); checks++;
+                    themed.borderBlock(), themed.lineBlock())), "All template settings retain the supported configurable material palette"); checks++;
         }
         check(PlotSettings.MATERIALS.size() == 16, "The palette exposes all sixteen concrete colors"); checks++;
         PlotSettings garden = highway.withRoadPreset(PlotSettings.RoadPreset.GARDEN).withLineStyle(PlotSettings.LineStyle.SOLID);

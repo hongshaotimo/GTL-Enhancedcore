@@ -7,7 +7,7 @@ import com.gregtechceu.gtceu.api.capability.recipe.RecipeCapability;
 import com.gregtechceu.gtceu.api.capability.recipe.EURecipeCapability;
 import com.gregtechceu.gtceu.api.capability.recipe.ItemRecipeCapability;
 import com.gregtechceu.gtceu.api.capability.recipe.FluidRecipeCapability;
-import com.gregtechceu.gtceu.api.machine.multiblock.WorkableElectricMultiblockMachine;
+import com.gregtechceu.gtceu.api.machine.multiblock.WorkableMultiblockMachine;
 import com.gregtechceu.gtceu.api.recipe.GTRecipe;
 import com.gregtechceu.gtceu.api.recipe.GTRecipeSerializer;
 import com.gregtechceu.gtceu.api.recipe.RecipeHelper;
@@ -28,7 +28,7 @@ public final class CloudPatternMatching {
     static RecipeIndex index(net.minecraft.world.level.Level level, com.gregtechceu.gtceu.api.recipe.GTRecipeType type) {
         var server = Objects.requireNonNull(level.getServer(), "Server recipe index required");
         return INDEXES.computeIfAbsent(server, ignored -> new HashMap<>()).computeIfAbsent(type.registryName,
-                ignored -> new RecipeIndex(recipes(level, type)));
+                ignored -> new RecipeIndex(cloudRecipes(level, type)));
     }
     static void clear(net.minecraft.server.MinecraftServer server) { INDEXES.remove(server); }
     /** Shared candidates only; callers still validate live catalysts, inputs and controller capabilities. */
@@ -73,8 +73,12 @@ public final class CloudPatternMatching {
         private final List<String> candidateIds = new ArrayList<>();
         public MatchSet() { this(null); }
         MatchSet(RecipeIndex index) { this.index = index; }
-        public void add(GTRecipe recipe, WorkableElectricMultiblockMachine machine, Probe probe) {
+        public void add(GTRecipe recipe, WorkableMultiblockMachine machine, Probe probe) {
             if (!matches(recipe, machine, probe)) return;
+            // Both chemical maps may contain their own copy. Preserve ambiguity
+            // within the preferred map instead of counting the fallback copy twice.
+            if (first != null && recipe.recipeType != first.recipeType
+                    && CloudChemicalModes.equivalent(first.recipeType.registryName.toString(), recipe.recipeType.registryName.toString())) return;
             if (candidateIds.size() < 64) candidateIds.add(recipe.id.toString());
             Family next = index == null ? family(recipe) : index.families.computeIfAbsent(recipe, CloudPatternMatching::family);
             if (count++ == 0) { first = recipe; family = next; }
@@ -158,6 +162,18 @@ public final class CloudPatternMatching {
         type.getProxyRecipes().values().forEach(proxy -> proxy.forEach(recipe -> recipes.putIfAbsent(recipe.id, recipe)));
         return List.copyOf(recipes.values());
     }
+    public static List<com.gregtechceu.gtceu.api.recipe.GTRecipeType> queryTypes(com.gregtechceu.gtceu.api.recipe.GTRecipeType type) {
+        return CloudChemicalModes.queryModes(type.registryName.toString()).stream().map(mode ->
+                mode.equals(type.registryName.toString()) ? type
+                        : com.gregtechceu.gtceu.api.registry.GTRegistries.RECIPE_TYPES.get(new net.minecraft.resources.ResourceLocation(mode))).toList();
+    }
+    private static List<GTRecipe> cloudRecipes(net.minecraft.world.level.Level level, com.gregtechceu.gtceu.api.recipe.GTRecipeType type) {
+        var recipes = new LinkedHashMap<net.minecraft.resources.ResourceLocation, GTRecipe>();
+        for (var candidateType : queryTypes(type)) {
+            recipes(level, candidateType).forEach(recipe -> recipes.putIfAbsent(recipe.id, recipe));
+        }
+        return List.copyOf(recipes.values());
+    }
     public record Probe(Map<AEKey, Long> inputs, Map<AEKey, Long> virtual, Map<AEKey, Long> outputs) {
         public Probe {
             inputs = Collections.unmodifiableMap(new LinkedHashMap<>(inputs));
@@ -181,8 +197,10 @@ public final class CloudPatternMatching {
         for (var output : processed.getOutputs()) outputs.merge(output.what(), output.amount(), Math::addExact);
         return new Probe(inputs, selectors, outputs);
     }
-    public static boolean supported(GTRecipe recipe, WorkableElectricMultiblockMachine machine) {
-        return recipe.ingredientActions.isEmpty() && recipe.tickOutputs.isEmpty()
+    public static boolean supported(GTRecipe recipe, WorkableMultiblockMachine machine) {
+        return (machine instanceof com.gregtechceu.gtceu.api.machine.multiblock.WorkableElectricMultiblockMachine
+                || !recipe.tickInputs.containsKey(EURecipeCapability.CAP))
+                && recipe.ingredientActions.isEmpty() && recipe.tickOutputs.isEmpty()
                 && recipe.inputs.keySet().stream().allMatch(cap -> cap == ItemRecipeCapability.CAP || cap == FluidRecipeCapability.CAP)
                 && recipe.outputs.keySet().stream().allMatch(cap -> cap == ItemRecipeCapability.CAP || cap == FluidRecipeCapability.CAP)
                 && recipe.tickInputs.keySet().stream().allMatch(cap -> cap == EURecipeCapability.CAP
@@ -191,7 +209,7 @@ public final class CloudPatternMatching {
                     && machine.getRecipeLogic() instanceof IvNativeAccess
                     && machine.getParts().stream().anyMatch(CloudPatternBufferMachine.class::isInstance));
     }
-    public static boolean matches(GTRecipe recipe, WorkableElectricMultiblockMachine machine, Probe probe) {
+    public static boolean matches(GTRecipe recipe, WorkableMultiblockMachine machine, Probe probe) {
         return probe != null && supported(recipe, machine)
                 // Allocation publishes a route even while its physical catalyst is
                 // absent, while retaining the integrated-circuit selector. The

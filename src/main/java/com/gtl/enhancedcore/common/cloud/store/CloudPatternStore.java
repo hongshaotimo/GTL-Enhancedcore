@@ -268,10 +268,10 @@ public final class CloudPatternStore {
             if (!prior.kind().equals("EXPORT") || !prior.subject().equals(entryId)) throw new IllegalStateException("Operation collision");
             return ItemStack.EMPTY;
         }
-        Entry entry = library.entry(entryId); var lease = entry.lease();
+        Entry entry = library.entry(entryId); var leases = entry.leases();
         library.ledger.exportFromCore(entryId, operation); library.unindexOriginal(entry);
         library.catalogChanged(entryId);
-        if (lease != null) {
+        for (var lease : leases) {
             try { com.gtl.enhancedcore.common.cloud.CloudPatternAllocator.originalRemoved(server.overworld(), libraryId, entryId, lease); }
             catch (RuntimeException notificationFailure) {
                 org.slf4j.LoggerFactory.getLogger(CloudPatternStore.class).warn("Core withdrew pattern {}; provider notification failed after authority was revoked", entryId, notificationFailure);
@@ -321,20 +321,13 @@ public final class CloudPatternStore {
     public boolean canClaimMode(UUID nodeId, UUID machineInstance, ResourceLocation requested) {
         check(); Node node = node(nodeId); node.requireHealthy();
         Objects.requireNonNull(machineInstance); Objects.requireNonNull(requested);
-        UUID claimant = index.machineClaims.getOrDefault(machineInstance, Map.of()).get(requested.toString());
-        return claimant == null || claimant.equals(nodeId);
+        return !node.detached() && (node.machineInstance() == null || node.machineInstance().equals(machineInstance));
     }
     public String claimMode(UUID nodeId, UUID machineInstance, List<ResourceLocation> orderedTypes) {
         check(); Node node = node(nodeId); node.requireHealthy(); Library library = library(node.libraryId);
-        Map<String, UUID> claims = index.machineClaims.computeIfAbsent(machineInstance, ignored -> new LinkedHashMap<>());
-        List<String> available = orderedTypes.stream().map(ResourceLocation::toString)
-                .filter(type -> !claims.containsKey(type) || claims.get(type).equals(nodeId)).toList();
-        String result = library.ledger.claimMode(nodeId, machineInstance, available);
-        if (!result.isEmpty()) {
-            UUID previous = claims.putIfAbsent(result, nodeId);
-            if (previous != null && !previous.equals(nodeId)) throw new IllegalStateException("Cross-library mode claim conflict");
-            if (previous == null) { index.setDirty(); library.changed(); }
-        }
+        var previous = library.ledger.node(nodeId);
+        String result = library.ledger.claimMode(nodeId, machineInstance, orderedTypes.stream().map(ResourceLocation::toString).toList());
+        if (!previous.equals(library.ledger.node(nodeId))) library.changed();
         return result;
     }
     public CloudLedger.Lease lease(UUID nodeId, UUID entryId, int stableSlot, UUID operation) {
@@ -357,8 +350,6 @@ public final class CloudPatternStore {
         for (Node other : nodesAt(dimension, position))
             if (!other.id.equals(nodeId) && isNodeActive(other.id)) return false;
         verifySnapshot(node, library(node.libraryId));
-        if (node.mode() != null && !nodeId.equals(index.machineClaims.getOrDefault(node.machineInstance(), Map.of()).get(node.mode().toString())))
-            throw new IllegalStateException("Mode claim index mismatch; needs review");
         return library(node.libraryId).ledger.activate(nodeId, endpointToken);
     }
     public boolean active(UUID nodeId, Object endpointToken) {
@@ -428,11 +419,6 @@ public final class CloudPatternStore {
         String recoveryStatus = emptyIvState(node.ivState) && node.inventory.isEmpty() ? "EMPTY" : "FROZEN";
         Recovery recovery = new Recovery(nodeId, node.owner(), node.machineInstance(), node.mode(), node.snapshotRevision, recoveryStatus, null);
         library.ledger.detach(nodeId, operation); library.recoveries.put(nodeId, recovery);
-        if (recovery.machineInstance != null && recovery.mode != null) {
-            Map<String, UUID> claims = index.machineClaims.get(recovery.machineInstance);
-            if (claims != null) claims.remove(recovery.mode.toString(), nodeId);
-            index.setDirty();
-        }
         node.stateSupplier = null; node.inventorySupplier = null; node.originSupplier = null; node.setDirty();
         library.allocationAndLocationChanged(); return recovery;
     }
@@ -619,6 +605,8 @@ public final class CloudPatternStore {
         }
         private void requireActor(UUID actor) { check(); requireHealthy(); if (!authorized(actor)) throw new SecurityException("Cloud library denied"); }
         public CompoundTag catalysts() { requireHealthy(); return catalysts.copy(); }
+        /** Scalar provider priority; reading it must not copy the library's physical catalyst inventory. */
+        public int nodePriority(UUID nodeId) { requireHealthy(); return catalysts.getCompound("nodePriorities").getInt(nodeId.toString()); }
         /** Physical stock is owned once per library and machine definition, never per lease or controller. */
         public CompoundTag machineCatalysts(String definition) {
             requireHealthy(); requireMachineDefinition(definition);
@@ -652,6 +640,7 @@ public final class CloudPatternStore {
         }
         public List<Entry> entries() { requireHealthy(); return entryPages.keySet().stream().map(this::entry).toList(); }
         public List<UUID> entryIds() { requireHealthy(); return List.copyOf(entryPages.keySet()); }
+        public boolean containsEntry(UUID entryId) { requireHealthy(); return entryPages.containsKey(entryId); }
         public Entry entry(UUID entryId) {
             requireHealthy(); Integer page = Objects.requireNonNull(entryPages.get(entryId), "Unknown entry");
             EntryShard shard = shard(page, false); shard.requireHealthy();
@@ -819,8 +808,10 @@ public final class CloudPatternStore {
         public CloudLedger.Status status() { return library.ledger.entry(id).status(); }
         public boolean archived() { return status() == CloudLedger.Status.ARCHIVED; }
         public CloudLedger.Lease lease() { return library.ledger.entry(id).lease(); }
+        public CloudLedger.Lease lease(UUID nodeId) { return library.ledger.entry(id).lease(nodeId); }
+        public List<CloudLedger.Lease> leases() { return library.ledger.entry(id).leases(); }
         public Set<ResourceLocation> recipeTypes() { return recipeTypes; }
-        public List<Integer> stableSlots() { CloudLedger.Lease lease = lease(); return lease == null ? List.of() : List.of(lease.stableSlot()); }
+        public List<Integer> stableSlots() { return leases().stream().map(CloudLedger.Lease::stableSlot).toList(); }
         public void setRecipeTypes(UUID actor, Set<ResourceLocation> types) {
             library.requireActor(actor); Set<ResourceLocation> next = Set.copyOf(types);
             if (recipeTypes.equals(next)) return;
@@ -849,10 +840,30 @@ public final class CloudPatternStore {
         public long position() { return position; }
         public long snapshotRevision() { return snapshotRevision; }
         public Map<Integer, UUID> slots() { return state().slots(); }
-        public List<CloudLedger.Lease> leases() { return slots().values().stream().map(entry -> library(libraryId).ledger.entry(entry).lease()).toList(); }
+        public List<CloudLedger.Lease> leases() { return slots().values().stream().map(entry -> library(libraryId).ledger.entry(entry).lease(id)).toList(); }
         public CompoundTag ivState() { requireHealthy(); verifySnapshot(this, library(libraryId)); return ivState.copy(); }
         public CompoundTag inventory() { requireHealthy(); verifySnapshot(this, library(libraryId)); return inventory.copy(); }
         public CompoundTag sourceRoute() { requireHealthy(); return sourceRoute.copy(); }
+        /** Bounded UI metadata: do not copy the frozen material and energy ledger into menus. */
+        public CompoundTag recoverySummary() {
+            requireHealthy(); verifySnapshot(this, library(libraryId));
+            CompoundTag row = new CompoundTag();
+            row.putString("id", id.toString()); row.putString("operation", id.toString()); row.putString("kind", "order");
+            row.putString("mode", mode() == null ? "" : mode().toString());
+            row.putString("sourceDimension", dimension.toString());
+            row.putString("sourcePos", net.minecraft.core.BlockPos.of(position).toShortString());
+            row.putString("machineDefinition", sourceRoute.getString("machineDefinition"));
+            var jobs = ivState.getList("jobs", Tag.TAG_COMPOUND); row.putInt("jobCount", jobs.size());
+            UUID assignment = null;
+            for (Tag value : jobs) {
+                CompoundTag job = (CompoundTag)value;
+                if (!job.hasUUID("cloudMachine")) continue;
+                UUID machine = job.getUUID("cloudMachine");
+                if (assignment != null && !assignment.equals(machine)) { row.putBoolean("multipleMachines", true); break; }
+                assignment = machine;
+            }
+            return row;
+        }
         public CompoundTag snapshot() { requireHealthy(); verifySnapshot(this, library(libraryId)); return writeData(); }
         private void capture() {
             if (stateSupplier != null) {
@@ -919,15 +930,11 @@ public final class CloudPatternStore {
     private static final class Index extends CheckedData {
         @Override protected CloudPatternStore ownerStore() { return runtime; }
         private final Map<UUID, UUID> owners = new LinkedHashMap<>(), defaults = new LinkedHashMap<>(), nodeLibraries = new LinkedHashMap<>();
-        private final Map<UUID, Map<String, UUID>> machineClaims = new LinkedHashMap<>();
         private final Map<UUID, String> nodeAddresses = new LinkedHashMap<>();
         private final Map<String, LinkedHashSet<UUID>> endpointIndex = new HashMap<>();
         private CloudPatternStore runtime;
         @Override protected CompoundTag writeData() {
             CompoundTag tag = new CompoundTag(); tag.put("owners", uuidMap(owners)); tag.put("defaults", uuidMap(defaults)); tag.put("nodes", uuidMap(nodeLibraries));
-            ListTag claims = new ListTag(); machineClaims.forEach((machine, modes) -> modes.forEach((mode, node) -> {
-                CompoundTag row = new CompoundTag(); row.putUUID("machine", machine); row.putString("mode", mode); row.putUUID("node", node); claims.add(row);
-            })); tag.put("claims", claims);
             ListTag addresses = new ListTag(); nodeAddresses.forEach((node, address) -> { CompoundTag row = new CompoundTag(); row.putUUID("node", node); row.putString("address", address); addresses.add(row); });
             tag.put("addresses", addresses); return tag;
         }
@@ -940,12 +947,6 @@ public final class CloudPatternStore {
                 endpointIndex.computeIfAbsent(address, ignored -> new LinkedHashSet<>()).add(node);
             }
             if (nodeAddresses.size() != nodeLibraries.size()) throw new IllegalArgumentException("Incomplete node address index");
-            for (Tag value : tag.getList("claims", Tag.TAG_COMPOUND)) {
-                CompoundTag row = (CompoundTag)value; UUID node = row.getUUID("node"); String mode = row.getString("mode");
-                if (!nodeLibraries.containsKey(node) || ResourceLocation.tryParse(mode) == null
-                        || machineClaims.computeIfAbsent(row.getUUID("machine"), ignored -> new LinkedHashMap<>()).putIfAbsent(mode, node) != null)
-                    throw new IllegalArgumentException("Invalid global machine mode claim");
-            }
             if (defaults.values().stream().anyMatch(id -> !owners.containsKey(id)) || nodeLibraries.values().stream().anyMatch(id -> !owners.containsKey(id)))
                 throw new IllegalArgumentException("Invalid root references");
         }
@@ -1090,6 +1091,12 @@ public final class CloudPatternStore {
         for (CloudLedger.EntryState entry : ledger.entries()) {
             CompoundTag row = new CompoundTag(); row.putUUID("id", entry.id()); row.putLong("revision", entry.revision()); row.putString("status", entry.status().name());
             if (entry.lease() != null) { CloudLedger.Lease lease = entry.lease(); CompoundTag l = new CompoundTag(); l.putUUID("id", lease.id()); l.putUUID("node", lease.nodeId()); l.putInt("slot", lease.stableSlot()); l.putLong("generation", lease.generation()); row.put("lease", l); }
+            ListTag shared = new ListTag();
+            for (var lease : entry.sharedLeases()) {
+                CompoundTag l = new CompoundTag(); l.putUUID("id", lease.id()); l.putUUID("node", lease.nodeId());
+                l.putInt("slot", lease.stableSlot()); l.putLong("generation", lease.generation()); shared.add(l);
+            }
+            if (!shared.isEmpty()) row.put("sharedLeases", shared);
             entries.add(row);
         }
         for (CloudLedger.NodeState node : ledger.nodes()) {
@@ -1105,7 +1112,12 @@ public final class CloudPatternStore {
         for (Tag value : tag.getList("entries", Tag.TAG_COMPOUND)) {
             CompoundTag row = (CompoundTag)value; UUID id = row.getUUID("id"); CloudLedger.Lease lease = null;
             if (row.contains("lease", Tag.TAG_COMPOUND)) { CompoundTag l = row.getCompound("lease"); lease = new CloudLedger.Lease(l.getUUID("id"), id, l.getUUID("node"), l.getInt("slot"), l.getLong("generation")); }
-            entries.add(new CloudLedger.EntryState(id, row.getLong("revision"), CloudLedger.Status.valueOf(row.getString("status")), lease));
+            var shared = new ArrayList<CloudLedger.Lease>();
+            for (var sharedValue : row.getList("sharedLeases", Tag.TAG_COMPOUND)) {
+                var l = (CompoundTag) sharedValue;
+                shared.add(new CloudLedger.Lease(l.getUUID("id"), id, l.getUUID("node"), l.getInt("slot"), l.getLong("generation")));
+            }
+            entries.add(new CloudLedger.EntryState(id, row.getLong("revision"), CloudLedger.Status.valueOf(row.getString("status")), lease, shared));
         }
         for (Tag value : tag.getList("nodes", Tag.TAG_COMPOUND)) {
             CompoundTag row = (CompoundTag)value; Map<Integer, UUID> slots = new LinkedHashMap<>();

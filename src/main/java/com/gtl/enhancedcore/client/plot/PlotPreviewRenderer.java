@@ -110,7 +110,7 @@ public final class PlotPreviewRenderer {
     /** Samples immutable terrain once; scrolling only transforms cached, world-aligned images. */
     public static final class AtlasCached implements AutoCloseable {
         private record Layer(ResourceLocation location, DynamicTexture texture) {}
-        private PlotSettings.RoadStyle roadStyle;
+        private String campusKey;
         private PlannedCampus.Bounds bounds;
         private CompletableFuture<CampusMapImage> source;
         private CampusMapImage image;
@@ -119,9 +119,9 @@ public final class PlotPreviewRenderer {
 
         public void draw(GuiGraphics g, PlotSettings settings, int x, int y, int width, int height,
                          PlotPreviewRaster.CampusViewport region) {
-            if (source == null || settings.roadStyle() != roadStyle) {
+            if (source == null || !settings.campusKey().equals(campusKey)) {
                 close();
-                roadStyle = settings.roadStyle(); bounds = CampusPlanAccess.of(settings).bounds();
+                campusKey = settings.campusKey(); bounds = CampusPlanAccess.of(settings).bounds();
                 var capturedBounds = bounds;
                 source = CompletableFuture.supplyAsync(() -> CampusMapImage.capture(settings, capturedBounds), Util.backgroundExecutor());
                 sourceBuilds++;
@@ -178,7 +178,7 @@ public final class PlotPreviewRenderer {
                 if (manager.getTexture(layer.location) == layer.texture) manager.release(layer.location);
                 else layer.texture.close();
             }
-            layers.clear(); image = null; roadStyle = null; bounds = null;
+            layers.clear(); image = null; campusKey = null; bounds = null;
             if (source != null) source.cancel(false);
             source = null;
         }

@@ -10,7 +10,16 @@ final class PlotRoadAlignmentRegression {
         int checks = 0;
         for (int chunks = 1; chunks <= 11; chunks++) {
             for (var preset : PlotSettings.RoadPreset.values()) {
-                if (preset == PlotSettings.RoadPreset.CAMPUS) continue;
+                if (preset == PlotSettings.RoadPreset.CAMPUS || preset == PlotSettings.RoadPreset.FACTORY) {
+                    var selected = PlotSettings.defaults().withPlotChunks(chunks).withRoadPreset(preset);
+                    var authored = preset == PlotSettings.RoadPreset.CAMPUS ? PlotSettings.plannedCampus() : PlotSettings.factoryCampus();
+                    require(selected.equals(authored), selected,
+                            "Finite authored campus presets replace repeating plot size and road settings"); checks++;
+                    require(PlotLayout.surfaceBlock(selected, -1001, 0).equals("minecraft:air")
+                                    && !PlotLayout.surfaceBlock(selected, 0, 0).equals("minecraft:air"), selected,
+                            "Authored campus roads remain on their finite island rather than repeating beyond its edge"); checks++;
+                    continue;
+                }
                 var settings = PlotSettings.defaults().withPlotChunks(chunks).withRoadPreset(preset)
                         .withMarkerMode(PlotSettings.MarkerMode.NONE).withPlotEdgeWidth(0);
                 int p = settings.plotBlocks();
@@ -30,7 +39,9 @@ final class PlotRoadAlignmentRegression {
         // All custom widths, all layouts/markings, both parities of dash and gap, small/large plots.
         for (int chunks : new int[]{1, 2, 3, 10, 11}) for (var style : PlotSettings.RoadStyle.values())
             for (var line : PlotSettings.LineStyle.values()) for (int width = 1; width <= 32; width++) {
-                var settings = PlotSettings.defaults().withPlotChunks(chunks).withRoadStyle(style)
+                var base = style == PlotSettings.RoadStyle.CAMPUS_FILE ? PlotSettings.fileCampus("quartz_works")
+                        : PlotSettings.defaults().withPlotChunks(chunks).withRoadStyle(style);
+                var settings = base
                         .withLineStyle(line).withRoadWidth(width).withBorderWidth(width % 9)
                         .withDashLength(width).withDashGap(33 - width).withMarkerMode(PlotSettings.MarkerMode.NONE)
                         .withPlotEdgeWidth(0);

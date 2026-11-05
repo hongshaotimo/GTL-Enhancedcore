@@ -1,0 +1,2934 @@
+{
+  "schemaVersion": 1,
+  "catalogSha256": "379abcd2bad4608db236632ba4ad2a747c998c3dc91c3d6faf6a6c4dcc39819b",
+  "bounds": [
+    -1000,
+    -1000,
+    999,
+    999
+  ],
+  "aeBounds": [
+    -80,
+    -80,
+    79,
+    79
+  ],
+  "halls": [
+    {
+      "id": "shared-1",
+      "department": "precision",
+      "stage": "early",
+      "x": -256,
+      "z": -72,
+      "width": 144,
+      "depth": 144,
+      "clearHeight": 32,
+      "variant": 0,
+      "shared": true,
+      "outdoor": false,
+      "entranceFacing": "east"
+    },
+    {
+      "id": "shared-2",
+      "department": "precision",
+      "stage": "mid",
+      "x": 112,
+      "z": -72,
+      "width": 144,
+      "depth": 144,
+      "clearHeight": 32,
+      "variant": 1,
+      "shared": true,
+      "outdoor": false,
+      "entranceFacing": "west"
+    },
+    {
+      "id": "shared-3",
+      "department": "precision",
+      "stage": "late_north",
+      "x": -72,
+      "z": -256,
+      "width": 144,
+      "depth": 144,
+      "clearHeight": 32,
+      "variant": 2,
+      "shared": true,
+      "outdoor": false,
+      "entranceFacing": "south"
+    },
+    {
+      "id": "shared-4",
+      "department": "precision",
+      "stage": "late_south",
+      "x": -72,
+      "z": 112,
+      "width": 144,
+      "depth": 144,
+      "clearHeight": 32,
+      "variant": 3,
+      "shared": true,
+      "outdoor": false,
+      "entranceFacing": "north"
+    },
+    {
+      "id": "works-001",
+      "department": "precision",
+      "stage": "early",
+      "x": 165,
+      "z": 174,
+      "width": 132,
+      "depth": 115,
+      "clearHeight": 41,
+      "variant": 0,
+      "shared": false,
+      "outdoor": false,
+      "entranceFacing": "north"
+    },
+    {
+      "id": "works-002",
+      "department": "biology",
+      "stage": "early",
+      "x": 41,
+      "z": 301,
+      "width": 104,
+      "depth": 112,
+      "clearHeight": 28,
+      "variant": 1,
+      "shared": false,
+      "outdoor": false,
+      "entranceFacing": "north"
+    },
+    {
+      "id": "works-003",
+      "department": "chemistry",
+      "stage": "early",
+      "x": 238,
+      "z": -288,
+      "width": 104,
+      "depth": 112,
+      "clearHeight": 28,
+      "variant": 2,
+      "shared": false,
+      "outdoor": false,
+      "entranceFacing": "north"
+    },
+    {
+      "id": "works-004",
+      "department": "metallurgy",
+      "stage": "early",
+      "x": -252,
+      "z": -256,
+      "width": 104,
+      "depth": 112,
+      "clearHeight": 28,
+      "variant": 3,
+      "shared": false,
+      "outdoor": false,
+      "entranceFacing": "north"
+    },
+    {
+      "id": "works-005",
+      "department": "ore",
+      "stage": "early",
+      "x": -390,
+      "z": 34,
+      "width": 104,
+      "depth": 112,
+      "clearHeight": 28,
+      "variant": 0,
+      "shared": false,
+      "outdoor": false,
+      "entranceFacing": "north"
+    },
+    {
+      "id": "works-006",
+      "department": "steam",
+      "stage": "early",
+      "x": -221,
+      "z": 113,
+      "width": 104,
+      "depth": 112,
+      "clearHeight": 28,
+      "variant": 1,
+      "shared": false,
+      "outdoor": false,
+      "entranceFacing": "north"
+    },
+    {
+      "id": "works-007",
+      "department": "steam",
+      "stage": "early",
+      "x": -221,
+      "z": 245,
+      "width": 104,
+      "depth": 112,
+      "clearHeight": 28,
+      "variant": 2,
+      "shared": false,
+      "outdoor": false,
+      "entranceFacing": "north"
+    },
+    {
+      "id": "works-008",
+      "department": "metallurgy",
+      "stage": "early",
+      "x": -252,
+      "z": -356,
+      "width": 104,
+      "depth": 80,
+      "clearHeight": 28,
+      "variant": 3,
+      "shared": false,
+      "outdoor": false,
+      "entranceFacing": "north"
+    },
+    {
+      "id": "works-009",
+      "department": "ore",
+      "stage": "early",
+      "x": -352,
+      "z": 166,
+      "width": 74,
+      "depth": 80,
+      "clearHeight": 28,
+      "variant": 0,
+      "shared": false,
+      "outdoor": false,
+      "entranceFacing": "north"
+    },
+    {
+      "id": "works-010",
+      "department": "energy",
+      "stage": "early",
+      "x": -393,
+      "z": -142,
+      "width": 72,
+      "depth": 80,
+      "clearHeight": 28,
+      "variant": 1,
+      "shared": false,
+      "outdoor": false,
+      "entranceFacing": "north"
+    },
+    {
+      "id": "works-011",
+      "department": "steam",
+      "stage": "early",
+      "x": -313,
+      "z": 266,
+      "width": 72,
+      "depth": 80,
+      "clearHeight": 28,
+      "variant": 2,
+      "shared": false,
+      "outdoor": false,
+      "entranceFacing": "north"
+    },
+    {
+      "id": "works-012",
+      "department": "space",
+      "stage": "late_north",
+      "x": -337,
+      "z": -876,
+      "width": 307,
+      "depth": 317,
+      "clearHeight": 126,
+      "variant": 3,
+      "shared": false,
+      "outdoor": true,
+      "entranceFacing": "north"
+    },
+    {
+      "id": "works-013",
+      "department": "space",
+      "stage": "late_north",
+      "x": -587,
+      "z": -539,
+      "width": 315,
+      "depth": 183,
+      "clearHeight": 301,
+      "variant": 0,
+      "shared": false,
+      "outdoor": true,
+      "entranceFacing": "north"
+    },
+    {
+      "id": "works-014",
+      "department": "space",
+      "stage": "late_north",
+      "x": -560,
+      "z": -918,
+      "width": 203,
+      "depth": 313,
+      "clearHeight": 141,
+      "variant": 1,
+      "shared": false,
+      "outdoor": true,
+      "entranceFacing": "north"
+    },
+    {
+      "id": "works-015",
+      "department": "energy",
+      "stage": "late_north",
+      "x": -791,
+      "z": -316,
+      "width": 276,
+      "depth": 154,
+      "clearHeight": 118,
+      "variant": 2,
+      "shared": false,
+      "outdoor": true,
+      "entranceFacing": "north"
+    },
+    {
+      "id": "works-016",
+      "department": "ore",
+      "stage": "late_north",
+      "x": -920,
+      "z": -607,
+      "width": 195,
+      "depth": 271,
+      "clearHeight": 111,
+      "variant": 3,
+      "shared": false,
+      "outdoor": true,
+      "entranceFacing": "north"
+    },
+    {
+      "id": "works-017",
+      "department": "space",
+      "stage": "late_north",
+      "x": -845,
+      "z": -948,
+      "width": 265,
+      "depth": 251,
+      "clearHeight": 236,
+      "variant": 0,
+      "shared": false,
+      "outdoor": true,
+      "entranceFacing": "north"
+    },
+    {
+      "id": "works-018",
+      "department": "precision",
+      "stage": "late_north",
+      "x": 58,
+      "z": -547,
+      "width": 160,
+      "depth": 261,
+      "clearHeight": 75,
+      "variant": 1,
+      "shared": false,
+      "outdoor": false,
+      "entranceFacing": "north"
+    },
+    {
+      "id": "works-019",
+      "department": "chemistry",
+      "stage": "late_north",
+      "x": 471,
+      "z": -712,
+      "width": 256,
+      "depth": 145,
+      "clearHeight": 98,
+      "variant": 2,
+      "shared": false,
+      "outdoor": false,
+      "entranceFacing": "north"
+    },
+    {
+      "id": "works-020",
+      "department": "chemistry",
+      "stage": "late_north",
+      "x": 471,
+      "z": -547,
+      "width": 256,
+      "depth": 145,
+      "clearHeight": 98,
+      "variant": 3,
+      "shared": false,
+      "outdoor": false,
+      "entranceFacing": "north"
+    },
+    {
+      "id": "works-021",
+      "department": "metallurgy",
+      "stage": "late_north",
+      "x": 30,
+      "z": -814,
+      "width": 237,
+      "depth": 247,
+      "clearHeight": 125,
+      "variant": 0,
+      "shared": false,
+      "outdoor": true,
+      "entranceFacing": "north"
+    },
+    {
+      "id": "works-022",
+      "department": "space",
+      "stage": "late_north",
+      "x": 362,
+      "z": -382,
+      "width": 229,
+      "depth": 239,
+      "clearHeight": 164,
+      "variant": 1,
+      "shared": false,
+      "outdoor": true,
+      "entranceFacing": "north"
+    },
+    {
+      "id": "works-023",
+      "department": "energy",
+      "stage": "late_north",
+      "x": 747,
+      "z": -316,
+      "width": 194,
+      "depth": 235,
+      "clearHeight": 122,
+      "variant": 2,
+      "shared": false,
+      "outdoor": false,
+      "entranceFacing": "north"
+    },
+    {
+      "id": "works-024",
+      "department": "space",
+      "stage": "late_south",
+      "x": -634,
+      "z": 30,
+      "width": 224,
+      "depth": 234,
+      "clearHeight": 226,
+      "variant": 3,
+      "shared": false,
+      "outdoor": true,
+      "entranceFacing": "north"
+    },
+    {
+      "id": "works-025",
+      "department": "ore",
+      "stage": "mid",
+      "x": -885,
+      "z": 38,
+      "width": 231,
+      "depth": 175,
+      "clearHeight": 73,
+      "variant": 0,
+      "shared": false,
+      "outdoor": false,
+      "entranceFacing": "north"
+    },
+    {
+      "id": "works-026",
+      "department": "metallurgy",
+      "stage": "late_south",
+      "x": -882,
+      "z": 233,
+      "width": 228,
+      "depth": 221,
+      "clearHeight": 39,
+      "variant": 1,
+      "shared": false,
+      "outdoor": true,
+      "entranceFacing": "north"
+    },
+    {
+      "id": "works-027",
+      "department": "chemistry",
+      "stage": "late_south",
+      "x": -538,
+      "z": 284,
+      "width": 205,
+      "depth": 223,
+      "clearHeight": 69,
+      "variant": 2,
+      "shared": false,
+      "outdoor": false,
+      "entranceFacing": "north"
+    },
+    {
+      "id": "works-028",
+      "department": "metallurgy",
+      "stage": "late_north",
+      "x": -914,
+      "z": -316,
+      "width": 103,
+      "depth": 223,
+      "clearHeight": 84,
+      "variant": 3,
+      "shared": false,
+      "outdoor": false,
+      "entranceFacing": "north"
+    },
+    {
+      "id": "works-029",
+      "department": "space",
+      "stage": "late_south",
+      "x": -245,
+      "z": 377,
+      "width": 215,
+      "depth": 221,
+      "clearHeight": 201,
+      "variant": 0,
+      "shared": false,
+      "outdoor": true,
+      "entranceFacing": "north"
+    },
+    {
+      "id": "works-030",
+      "department": "chemistry",
+      "stage": "late_north",
+      "x": 322,
+      "z": -620,
+      "width": 129,
+      "depth": 218,
+      "clearHeight": 115,
+      "variant": 1,
+      "shared": false,
+      "outdoor": false,
+      "entranceFacing": "north"
+    },
+    {
+      "id": "works-031",
+      "department": "precision",
+      "stage": "late_north",
+      "x": -246,
+      "z": -519,
+      "width": 216,
+      "depth": 143,
+      "clearHeight": 119,
+      "variant": 2,
+      "shared": false,
+      "outdoor": false,
+      "entranceFacing": "north"
+    },
+    {
+      "id": "works-032",
+      "department": "space",
+      "stage": "late_north",
+      "x": 287,
+      "z": -935,
+      "width": 213,
+      "depth": 203,
+      "clearHeight": 190,
+      "variant": 3,
+      "shared": false,
+      "outdoor": true,
+      "entranceFacing": "north"
+    },
+    {
+      "id": "works-033",
+      "department": "precision",
+      "stage": "late_north",
+      "x": 747,
+      "z": -545,
+      "width": 199,
+      "depth": 209,
+      "clearHeight": 185,
+      "variant": 0,
+      "shared": false,
+      "outdoor": true,
+      "entranceFacing": "north"
+    },
+    {
+      "id": "works-034",
+      "department": "space",
+      "stage": "late_north",
+      "x": 520,
+      "z": -940,
+      "width": 145,
+      "depth": 208,
+      "clearHeight": 111,
+      "variant": 1,
+      "shared": false,
+      "outdoor": false,
+      "entranceFacing": "north"
+    },
+    {
+      "id": "works-035",
+      "department": "chemistry",
+      "stage": "late_south",
+      "x": 426,
+      "z": 30,
+      "width": 208,
+      "depth": 123,
+      "clearHeight": 119,
+      "variant": 2,
+      "shared": false,
+      "outdoor": false,
+      "entranceFacing": "north"
+    },
+    {
+      "id": "works-036",
+      "department": "chemistry",
+      "stage": "late_north",
+      "x": 685,
+      "z": -855,
+      "width": 208,
+      "depth": 123,
+      "clearHeight": 119,
+      "variant": 3,
+      "shared": false,
+      "outdoor": false,
+      "entranceFacing": "north"
+    },
+    {
+      "id": "works-037",
+      "department": "space",
+      "stage": "late_north",
+      "x": -477,
+      "z": -336,
+      "width": 205,
+      "depth": 115,
+      "clearHeight": 191,
+      "variant": 0,
+      "shared": false,
+      "outdoor": true,
+      "entranceFacing": "north"
+    },
+    {
+      "id": "works-038",
+      "department": "energy",
+      "stage": "late_south",
+      "x": -791,
+      "z": 618,
+      "width": 191,
+      "depth": 201,
+      "clearHeight": 105,
+      "variant": 1,
+      "shared": false,
+      "outdoor": true,
+      "entranceFacing": "north"
+    },
+    {
+      "id": "works-039",
+      "department": "chemistry",
+      "stage": "late_north",
+      "x": 747,
+      "z": -691,
+      "width": 201,
+      "depth": 126,
+      "clearHeight": 146,
+      "variant": 2,
+      "shared": false,
+      "outdoor": true,
+      "entranceFacing": "north"
+    },
+    {
+      "id": "works-040",
+      "department": "metallurgy",
+      "stage": "late_south",
+      "x": -580,
+      "z": 527,
+      "width": 181,
+      "depth": 196,
+      "clearHeight": 192,
+      "variant": 3,
+      "shared": false,
+      "outdoor": true,
+      "entranceFacing": "north"
+    },
+    {
+      "id": "works-041",
+      "department": "space",
+      "stage": "late_south",
+      "x": -182,
+      "z": 743,
+      "width": 152,
+      "depth": 196,
+      "clearHeight": 79,
+      "variant": 0,
+      "shared": false,
+      "outdoor": false,
+      "entranceFacing": "north"
+    },
+    {
+      "id": "works-042",
+      "department": "precision",
+      "stage": "late_south",
+      "x": 654,
+      "z": 385,
+      "width": 193,
+      "depth": 128,
+      "clearHeight": 66,
+      "variant": 1,
+      "shared": false,
+      "outdoor": true,
+      "entranceFacing": "north"
+    },
+    {
+      "id": "works-043",
+      "department": "precision",
+      "stage": "late_south",
+      "x": 433,
+      "z": 174,
+      "width": 95,
+      "depth": 191,
+      "clearHeight": 81,
+      "variant": 2,
+      "shared": false,
+      "outdoor": true,
+      "entranceFacing": "north"
+    },
+    {
+      "id": "works-044",
+      "department": "ore",
+      "stage": "late_south",
+      "x": -943,
+      "z": 474,
+      "width": 132,
+      "depth": 183,
+      "clearHeight": 79,
+      "variant": 3,
+      "shared": false,
+      "outdoor": true,
+      "entranceFacing": "north"
+    },
+    {
+      "id": "works-045",
+      "department": "energy",
+      "stage": "late_south",
+      "x": -379,
+      "z": 618,
+      "width": 163,
+      "depth": 180,
+      "clearHeight": 65,
+      "variant": 0,
+      "shared": false,
+      "outdoor": false,
+      "entranceFacing": "north"
+    },
+    {
+      "id": "works-046",
+      "department": "ore",
+      "stage": "late_south",
+      "x": -944,
+      "z": 677,
+      "width": 133,
+      "depth": 179,
+      "clearHeight": 83,
+      "variant": 1,
+      "shared": false,
+      "outdoor": true,
+      "entranceFacing": "north"
+    },
+    {
+      "id": "works-047",
+      "department": "energy",
+      "stage": "mid",
+      "x": -550,
+      "z": 743,
+      "width": 131,
+      "depth": 179,
+      "clearHeight": 31,
+      "variant": 2,
+      "shared": false,
+      "outdoor": false,
+      "entranceFacing": "north"
+    },
+    {
+      "id": "works-048",
+      "department": "space",
+      "stage": "mid",
+      "x": 548,
+      "z": 173,
+      "width": 155,
+      "depth": 173,
+      "clearHeight": 65,
+      "variant": 3,
+      "shared": false,
+      "outdoor": true,
+      "entranceFacing": "north"
+    },
+    {
+      "id": "works-049",
+      "department": "metallurgy",
+      "stage": "late_south",
+      "x": 165,
+      "z": 309,
+      "width": 169,
+      "depth": 146,
+      "clearHeight": 65,
+      "variant": 0,
+      "shared": false,
+      "outdoor": false,
+      "entranceFacing": "north"
+    },
+    {
+      "id": "works-050",
+      "department": "biology",
+      "stage": "late_south",
+      "x": -371,
+      "z": 818,
+      "width": 169,
+      "depth": 106,
+      "clearHeight": 78,
+      "variant": 1,
+      "shared": false,
+      "outdoor": false,
+      "entranceFacing": "north"
+    },
+    {
+      "id": "works-051",
+      "department": "metallurgy",
+      "stage": "late_south",
+      "x": 723,
+      "z": 30,
+      "width": 160,
+      "depth": 155,
+      "clearHeight": 103,
+      "variant": 2,
+      "shared": false,
+      "outdoor": true,
+      "entranceFacing": "north"
+    },
+    {
+      "id": "works-052",
+      "department": "metallurgy",
+      "stage": "late_south",
+      "x": 723,
+      "z": 205,
+      "width": 159,
+      "depth": 141,
+      "clearHeight": 151,
+      "variant": 3,
+      "shared": false,
+      "outdoor": true,
+      "entranceFacing": "north"
+    },
+    {
+      "id": "works-053",
+      "department": "chemistry",
+      "stage": "mid",
+      "x": 354,
+      "z": 385,
+      "width": 127,
+      "depth": 148,
+      "clearHeight": 49,
+      "variant": 0,
+      "shared": false,
+      "outdoor": false,
+      "entranceFacing": "north"
+    },
+    {
+      "id": "works-054",
+      "department": "metallurgy",
+      "stage": "late_north",
+      "x": -560,
+      "z": -142,
+      "width": 147,
+      "depth": 107,
+      "clearHeight": 133,
+      "variant": 1,
+      "shared": false,
+      "outdoor": true,
+      "entranceFacing": "north"
+    },
+    {
+      "id": "works-055",
+      "department": "energy",
+      "stage": "late_north",
+      "x": -791,
+      "z": -142,
+      "width": 147,
+      "depth": 105,
+      "clearHeight": 203,
+      "variant": 2,
+      "shared": false,
+      "outdoor": true,
+      "entranceFacing": "north"
+    },
+    {
+      "id": "works-056",
+      "department": "ore",
+      "stage": "late_south",
+      "x": 501,
+      "z": 385,
+      "width": 133,
+      "depth": 143,
+      "clearHeight": 167,
+      "variant": 3,
+      "shared": false,
+      "outdoor": true,
+      "entranceFacing": "north"
+    },
+    {
+      "id": "works-057",
+      "department": "ore",
+      "stage": "late_south",
+      "x": 30,
+      "z": 475,
+      "width": 137,
+      "depth": 131,
+      "clearHeight": 115,
+      "variant": 0,
+      "shared": false,
+      "outdoor": false,
+      "entranceFacing": "north"
+    },
+    {
+      "id": "works-058",
+      "department": "metallurgy",
+      "stage": "late_south",
+      "x": 187,
+      "z": 475,
+      "width": 124,
+      "depth": 135,
+      "clearHeight": 167,
+      "variant": 1,
+      "shared": false,
+      "outdoor": true,
+      "entranceFacing": "north"
+    },
+    {
+      "id": "works-059",
+      "department": "precision",
+      "stage": "mid",
+      "x": 33,
+      "z": 626,
+      "width": 134,
+      "depth": 123,
+      "clearHeight": 28,
+      "variant": 2,
+      "shared": false,
+      "outdoor": false,
+      "entranceFacing": "north"
+    },
+    {
+      "id": "works-060",
+      "department": "energy",
+      "stage": "late_south",
+      "x": -713,
+      "z": 474,
+      "width": 113,
+      "depth": 123,
+      "clearHeight": 132,
+      "variant": 3,
+      "shared": false,
+      "outdoor": true,
+      "entranceFacing": "north"
+    },
+    {
+      "id": "works-061",
+      "department": "space",
+      "stage": "late_north",
+      "x": 611,
+      "z": -382,
+      "width": 113,
+      "depth": 123,
+      "clearHeight": 101,
+      "variant": 0,
+      "shared": false,
+      "outdoor": true,
+      "entranceFacing": "north"
+    },
+    {
+      "id": "works-062",
+      "department": "metallurgy",
+      "stage": "mid",
+      "x": 286,
+      "z": 30,
+      "width": 113,
+      "depth": 121,
+      "clearHeight": 48,
+      "variant": 1,
+      "shared": false,
+      "outdoor": false,
+      "entranceFacing": "north"
+    },
+    {
+      "id": "works-063",
+      "department": "computation",
+      "stage": "mid",
+      "x": 611,
+      "z": -150,
+      "width": 77,
+      "depth": 120,
+      "clearHeight": 43,
+      "variant": 2,
+      "shared": false,
+      "outdoor": false,
+      "entranceFacing": "north"
+    },
+    {
+      "id": "works-064",
+      "department": "chemistry",
+      "stage": "late_north",
+      "x": 107,
+      "z": -266,
+      "width": 111,
+      "depth": 96,
+      "clearHeight": 150,
+      "variant": 3,
+      "shared": false,
+      "outdoor": true,
+      "entranceFacing": "north"
+    },
+    {
+      "id": "works-065",
+      "department": "steam",
+      "stage": "mid",
+      "x": -632,
+      "z": 284,
+      "width": 74,
+      "depth": 99,
+      "clearHeight": 34,
+      "variant": 0,
+      "shared": false,
+      "outdoor": false,
+      "entranceFacing": "north"
+    },
+    {
+      "id": "works-066",
+      "department": "chemistry",
+      "stage": "late_north",
+      "x": 459,
+      "z": -123,
+      "width": 74,
+      "depth": 80,
+      "clearHeight": 28,
+      "variant": 1,
+      "shared": false,
+      "outdoor": false,
+      "entranceFacing": "north"
+    },
+    {
+      "id": "works-067",
+      "department": "chemistry",
+      "stage": "mid",
+      "x": 365,
+      "z": -123,
+      "width": 74,
+      "depth": 80,
+      "clearHeight": 28,
+      "variant": 2,
+      "shared": false,
+      "outdoor": false,
+      "entranceFacing": "north"
+    },
+    {
+      "id": "works-068",
+      "department": "precision",
+      "stage": "late_south",
+      "x": 332,
+      "z": 209,
+      "width": 74,
+      "depth": 80,
+      "clearHeight": 28,
+      "variant": 3,
+      "shared": false,
+      "outdoor": false,
+      "entranceFacing": "north"
+    },
+    {
+      "id": "works-069",
+      "department": "biology",
+      "stage": "mid",
+      "x": -102,
+      "z": 618,
+      "width": 72,
+      "depth": 80,
+      "clearHeight": 28,
+      "variant": 0,
+      "shared": false,
+      "outdoor": false,
+      "entranceFacing": "north"
+    },
+    {
+      "id": "works-070",
+      "department": "computation",
+      "stage": "late_south",
+      "x": 867,
+      "z": 366,
+      "width": 72,
+      "depth": 80,
+      "clearHeight": 28,
+      "variant": 1,
+      "shared": false,
+      "outdoor": false,
+      "entranceFacing": "north"
+    },
+    {
+      "id": "works-071",
+      "department": "energy",
+      "stage": "mid",
+      "x": -679,
+      "z": -416,
+      "width": 72,
+      "depth": 80,
+      "clearHeight": 212,
+      "variant": 2,
+      "shared": false,
+      "outdoor": true,
+      "entranceFacing": "north"
+    },
+    {
+      "id": "works-072",
+      "department": "metallurgy",
+      "stage": "mid",
+      "x": -679,
+      "z": -516,
+      "width": 72,
+      "depth": 80,
+      "clearHeight": 28,
+      "variant": 3,
+      "shared": false,
+      "outdoor": false,
+      "entranceFacing": "north"
+    },
+    {
+      "id": "works-073",
+      "department": "ore",
+      "stage": "mid",
+      "x": -196,
+      "z": 618,
+      "width": 72,
+      "depth": 80,
+      "clearHeight": 28,
+      "variant": 0,
+      "shared": false,
+      "outdoor": false,
+      "entranceFacing": "north"
+    },
+    {
+      "id": "works-074",
+      "department": "space",
+      "stage": "mid",
+      "x": 37,
+      "z": -914,
+      "width": 72,
+      "depth": 80,
+      "clearHeight": 53,
+      "variant": 1,
+      "shared": false,
+      "outdoor": true,
+      "entranceFacing": "north"
+    }
+  ],
+  "plots": [
+    {
+      "id": "gtceu:a_mass_fabricator",
+      "slotIndex": 0,
+      "hall": "works-014",
+      "x": -548,
+      "z": -896,
+      "stage": "late_north"
+    },
+    {
+      "id": "gtceu:advanced_hyper_reactor",
+      "slotIndex": 0,
+      "hall": "works-045",
+      "x": -367,
+      "z": 706,
+      "stage": "late_south"
+    },
+    {
+      "id": "gtceu:advanced_infinite_driller",
+      "slotIndex": 0,
+      "hall": "works-057",
+      "x": 42,
+      "z": 568,
+      "stage": "late_south"
+    },
+    {
+      "id": "gtceu:advanced_integrated_ore_processor",
+      "slotIndex": 0,
+      "hall": "works-044",
+      "x": -931,
+      "z": 496,
+      "stage": "late_south"
+    },
+    {
+      "id": "gtceu:advanced_neutron_activator",
+      "slotIndex": 0,
+      "hall": "works-055",
+      "x": -779,
+      "z": -120,
+      "stage": "late_north"
+    },
+    {
+      "id": "gtceu:advanced_rare_earth_centrifugal",
+      "slotIndex": 0,
+      "hall": "works-057",
+      "x": 77,
+      "z": 568,
+      "stage": "late_south"
+    },
+    {
+      "id": "gtceu:advanced_sps_crafting",
+      "slotIndex": 0,
+      "hall": "works-031",
+      "x": -115,
+      "z": -497,
+      "stage": "late_north"
+    },
+    {
+      "id": "gtceu:advanced_vacuum_drying_furnace",
+      "slotIndex": 0,
+      "hall": "works-027",
+      "x": -432,
+      "z": 306,
+      "stage": "late_south"
+    },
+    {
+      "id": "gtceu:aggregation_device",
+      "slotIndex": 0,
+      "hall": "works-068",
+      "x": 344,
+      "z": 231,
+      "stage": "late_south"
+    },
+    {
+      "id": "gtceu:annihilate_generator",
+      "slotIndex": 0,
+      "hall": "works-023",
+      "x": 759,
+      "z": -294,
+      "stage": "late_north"
+    },
+    {
+      "id": "gtceu:assembly_line",
+      "slotIndex": 0,
+      "hall": "works-059",
+      "x": 45,
+      "z": 687,
+      "stage": "mid"
+    },
+    {
+      "id": "gtceu:atomic_energy_excitation_plant",
+      "slotIndex": 0,
+      "hall": "works-023",
+      "x": 759,
+      "z": -167,
+      "stage": "late_north"
+    },
+    {
+      "id": "gtceu:bedrock_drilling_rig",
+      "slotIndex": 0,
+      "hall": "works-057",
+      "x": 110,
+      "z": 568,
+      "stage": "late_south"
+    },
+    {
+      "id": "gtceu:bronze_large_boiler",
+      "slotIndex": 0,
+      "hall": "works-007",
+      "x": -209,
+      "z": 331,
+      "stage": "early"
+    },
+    {
+      "id": "gtceu:bronze_large_boiler",
+      "slotIndex": 1,
+      "hall": "works-007",
+      "x": -179,
+      "z": 331,
+      "stage": "early"
+    },
+    {
+      "id": "gtceu:bronze_large_boiler",
+      "slotIndex": 2,
+      "hall": "works-007",
+      "x": -149,
+      "z": 331,
+      "stage": "early"
+    },
+    {
+      "id": "gtceu:bronze_large_boiler",
+      "slotIndex": 3,
+      "hall": "works-011",
+      "x": -301,
+      "z": 288,
+      "stage": "early"
+    },
+    {
+      "id": "gtceu:chemical_distort",
+      "slotIndex": 0,
+      "hall": "works-053",
+      "x": 419,
+      "z": 407,
+      "stage": "mid"
+    },
+    {
+      "id": "gtceu:chemical_distort",
+      "slotIndex": 1,
+      "hall": "works-053",
+      "x": 449,
+      "z": 407,
+      "stage": "mid"
+    },
+    {
+      "id": "gtceu:chemical_distort",
+      "slotIndex": 2,
+      "hall": "works-053",
+      "x": 366,
+      "z": 472,
+      "stage": "mid"
+    },
+    {
+      "id": "gtceu:chemical_distort",
+      "slotIndex": 3,
+      "hall": "works-053",
+      "x": 396,
+      "z": 472,
+      "stage": "mid"
+    },
+    {
+      "id": "gtceu:circuit_assembly_line",
+      "slotIndex": 0,
+      "hall": "works-059",
+      "x": 120,
+      "z": 687,
+      "stage": "mid"
+    },
+    {
+      "id": "gtceu:component_assembly_line",
+      "slotIndex": 0,
+      "hall": "works-042",
+      "x": 666,
+      "z": 407,
+      "stage": "late_south"
+    },
+    {
+      "id": "gtceu:cooling_tower",
+      "slotIndex": 0,
+      "hall": "works-060",
+      "x": -701,
+      "z": 496,
+      "stage": "late_south"
+    },
+    {
+      "id": "gtceu:create_aggregation",
+      "slotIndex": 0,
+      "hall": "works-018",
+      "x": 70,
+      "z": -327,
+      "stage": "late_north"
+    },
+    {
+      "id": "gtceu:crystalline_infinity",
+      "slotIndex": 0,
+      "hall": "works-030",
+      "x": 334,
+      "z": -598,
+      "stage": "late_north"
+    },
+    {
+      "id": "gtceu:desulfurizer",
+      "slotIndex": 0,
+      "hall": "works-003",
+      "x": 310,
+      "z": -234,
+      "stage": "early"
+    },
+    {
+      "id": "gtceu:desulfurizer",
+      "slotIndex": 1,
+      "hall": "works-003",
+      "x": 250,
+      "z": -202,
+      "stage": "early"
+    },
+    {
+      "id": "gtceu:digestion_tank",
+      "slotIndex": 0,
+      "hall": "works-009",
+      "x": -310,
+      "z": 188,
+      "stage": "early"
+    },
+    {
+      "id": "gtceu:digestion_tank",
+      "slotIndex": 1,
+      "hall": "works-009",
+      "x": -340,
+      "z": 220,
+      "stage": "early"
+    },
+    {
+      "id": "gtceu:dimensional_focus_engraving_array",
+      "slotIndex": 0,
+      "hall": "works-031",
+      "x": -234,
+      "z": -497,
+      "stage": "late_north"
+    },
+    {
+      "id": "gtceu:dimensionally_transcendent_mixer",
+      "slotIndex": 0,
+      "hall": "works-039",
+      "x": 759,
+      "z": -669,
+      "stage": "late_north"
+    },
+    {
+      "id": "gtceu:dimensionally_transcendent_plasma_forge",
+      "slotIndex": 0,
+      "hall": "works-049",
+      "x": 289,
+      "z": 331,
+      "stage": "late_south"
+    },
+    {
+      "id": "gtceu:dimensionally_transcendent_steam_boiler",
+      "slotIndex": 0,
+      "hall": "works-065",
+      "x": -620,
+      "z": 306,
+      "stage": "mid"
+    },
+    {
+      "id": "gtceu:distillation_tower",
+      "slotIndex": 0,
+      "hall": "works-003",
+      "x": 250,
+      "z": -266,
+      "stage": "early"
+    },
+    {
+      "id": "gtceu:distillation_tower",
+      "slotIndex": 1,
+      "hall": "works-003",
+      "x": 280,
+      "z": -266,
+      "stage": "early"
+    },
+    {
+      "id": "gtceu:distillation_tower",
+      "slotIndex": 2,
+      "hall": "works-003",
+      "x": 310,
+      "z": -266,
+      "stage": "early"
+    },
+    {
+      "id": "gtceu:door_of_create",
+      "slotIndex": 0,
+      "hall": "works-018",
+      "x": 107,
+      "z": -327,
+      "stage": "late_north"
+    },
+    {
+      "id": "gtceu:dyson_sphere",
+      "slotIndex": 0,
+      "hall": "works-041",
+      "x": -123,
+      "z": 856,
+      "stage": "late_south"
+    },
+    {
+      "id": "gtceu:electric_blast_furnace",
+      "slotIndex": 0,
+      "hall": "works-004",
+      "x": -180,
+      "z": -234,
+      "stage": "early"
+    },
+    {
+      "id": "gtceu:electric_blast_furnace",
+      "slotIndex": 1,
+      "hall": "works-004",
+      "x": -240,
+      "z": -202,
+      "stage": "early"
+    },
+    {
+      "id": "gtceu:electric_blast_furnace",
+      "slotIndex": 2,
+      "hall": "works-004",
+      "x": -210,
+      "z": -202,
+      "stage": "early"
+    },
+    {
+      "id": "gtceu:electric_blast_furnace",
+      "slotIndex": 3,
+      "hall": "works-004",
+      "x": -180,
+      "z": -202,
+      "stage": "early"
+    },
+    {
+      "id": "gtceu:electric_blast_furnace",
+      "slotIndex": 4,
+      "hall": "works-004",
+      "x": -240,
+      "z": -170,
+      "stage": "early"
+    },
+    {
+      "id": "gtceu:electric_blast_furnace",
+      "slotIndex": 5,
+      "hall": "works-004",
+      "x": -210,
+      "z": -170,
+      "stage": "early"
+    },
+    {
+      "id": "gtceu:electric_blast_furnace",
+      "slotIndex": 6,
+      "hall": "works-004",
+      "x": -180,
+      "z": -170,
+      "stage": "early"
+    },
+    {
+      "id": "gtceu:electric_blast_furnace",
+      "slotIndex": 7,
+      "hall": "works-008",
+      "x": -240,
+      "z": -334,
+      "stage": "early"
+    },
+    {
+      "id": "gtceu:electric_blast_furnace",
+      "slotIndex": 8,
+      "hall": "works-008",
+      "x": -210,
+      "z": -334,
+      "stage": "early"
+    },
+    {
+      "id": "gtceu:electric_blast_furnace",
+      "slotIndex": 9,
+      "hall": "works-008",
+      "x": -180,
+      "z": -334,
+      "stage": "early"
+    },
+    {
+      "id": "gtceu:electric_blast_furnace",
+      "slotIndex": 10,
+      "hall": "works-008",
+      "x": -240,
+      "z": -302,
+      "stage": "early"
+    },
+    {
+      "id": "gtceu:electric_blast_furnace",
+      "slotIndex": 11,
+      "hall": "works-008",
+      "x": -210,
+      "z": -302,
+      "stage": "early"
+    },
+    {
+      "id": "gtceu:electric_implosion_compressor",
+      "slotIndex": 0,
+      "hall": "works-062",
+      "x": 328,
+      "z": 84,
+      "stage": "mid"
+    },
+    {
+      "id": "gtceu:element_copying",
+      "slotIndex": 0,
+      "hall": "works-041",
+      "x": -110,
+      "z": 912,
+      "stage": "late_south"
+    },
+    {
+      "id": "gtceu:engraving_laser_plant",
+      "slotIndex": 0,
+      "hall": "works-059",
+      "x": 76,
+      "z": 648,
+      "stage": "mid"
+    },
+    {
+      "id": "gtceu:evaporation_plant",
+      "slotIndex": 0,
+      "hall": "works-003",
+      "x": 250,
+      "z": -234,
+      "stage": "early"
+    },
+    {
+      "id": "gtceu:evaporation_plant",
+      "slotIndex": 1,
+      "hall": "works-003",
+      "x": 280,
+      "z": -234,
+      "stage": "early"
+    },
+    {
+      "id": "gtceu:eye_of_harmony",
+      "slotIndex": 0,
+      "hall": "works-029",
+      "x": -233,
+      "z": 399,
+      "stage": "late_south"
+    },
+    {
+      "id": "gtceu:field_extruder_factory",
+      "slotIndex": 0,
+      "hall": "works-028",
+      "x": -902,
+      "z": -212,
+      "stage": "late_north"
+    },
+    {
+      "id": "gtceu:fishing_ground",
+      "slotIndex": 0,
+      "hall": "works-002",
+      "x": 53,
+      "z": 387,
+      "stage": "early"
+    },
+    {
+      "id": "gtceu:fishing_ground",
+      "slotIndex": 1,
+      "hall": "works-002",
+      "x": 83,
+      "z": 387,
+      "stage": "early"
+    },
+    {
+      "id": "gtceu:fission_reactor",
+      "slotIndex": 0,
+      "hall": "works-010",
+      "x": -381,
+      "z": -120,
+      "stage": "early"
+    },
+    {
+      "id": "gtceu:fission_reactor",
+      "slotIndex": 1,
+      "hall": "works-010",
+      "x": -381,
+      "z": -88,
+      "stage": "early"
+    },
+    {
+      "id": "gtceu:flotation_cell_regulator",
+      "slotIndex": 0,
+      "hall": "works-025",
+      "x": -780,
+      "z": 182,
+      "stage": "mid"
+    },
+    {
+      "id": "gtceu:gravitation_shockburst",
+      "slotIndex": 0,
+      "hall": "works-049",
+      "x": 237,
+      "z": 428,
+      "stage": "late_south"
+    },
+    {
+      "id": "gtceu:heat_exchanger",
+      "slotIndex": 0,
+      "hall": "works-065",
+      "x": -590,
+      "z": 357,
+      "stage": "mid"
+    },
+    {
+      "id": "gtceu:holy_separator",
+      "slotIndex": 0,
+      "hall": "works-057",
+      "x": 42,
+      "z": 497,
+      "stage": "late_south"
+    },
+    {
+      "id": "gtceu:huge_incubator",
+      "slotIndex": 0,
+      "hall": "works-050",
+      "x": -359,
+      "z": 840,
+      "stage": "late_south"
+    },
+    {
+      "id": "gtceu:integrated_ore_processor",
+      "slotIndex": 0,
+      "hall": "works-025",
+      "x": -840,
+      "z": 182,
+      "stage": "mid"
+    },
+    {
+      "id": "gtceu:isa_mill",
+      "slotIndex": 0,
+      "hall": "works-073",
+      "x": -184,
+      "z": 672,
+      "stage": "mid"
+    },
+    {
+      "id": "gtceu:large_assembler",
+      "slotIndex": 0,
+      "hall": "works-059",
+      "x": 105,
+      "z": 723,
+      "stage": "mid"
+    },
+    {
+      "id": "gtceu:large_chemical_bath",
+      "slotIndex": 0,
+      "hall": "works-025",
+      "x": -750,
+      "z": 182,
+      "stage": "mid"
+    },
+    {
+      "id": "gtceu:large_chemical_bath",
+      "slotIndex": 1,
+      "hall": "works-025",
+      "x": -720,
+      "z": 182,
+      "stage": "mid"
+    },
+    {
+      "id": "gtceu:large_chemical_bath",
+      "slotIndex": 2,
+      "hall": "works-073",
+      "x": -184,
+      "z": 640,
+      "stage": "mid"
+    },
+    {
+      "id": "gtceu:large_chemical_plant",
+      "slotIndex": 0,
+      "hall": "works-027",
+      "x": -387,
+      "z": 418,
+      "stage": "late_south"
+    },
+    {
+      "id": "gtceu:large_chemical_plant",
+      "slotIndex": 1,
+      "hall": "works-066",
+      "x": 471,
+      "z": -101,
+      "stage": "late_north"
+    },
+    {
+      "id": "gtceu:large_chemical_plant",
+      "slotIndex": 2,
+      "hall": "works-066",
+      "x": 501,
+      "z": -101,
+      "stage": "late_north"
+    },
+    {
+      "id": "gtceu:large_chemical_plant",
+      "slotIndex": 3,
+      "hall": "works-066",
+      "x": 471,
+      "z": -69,
+      "stage": "late_north"
+    },
+    {
+      "id": "gtceu:large_circuit_assembler",
+      "slotIndex": 0,
+      "hall": "works-059",
+      "x": 45,
+      "z": 723,
+      "stage": "mid"
+    },
+    {
+      "id": "gtceu:large_circuit_assembler",
+      "slotIndex": 1,
+      "hall": "works-059",
+      "x": 75,
+      "z": 723,
+      "stage": "mid"
+    },
+    {
+      "id": "gtceu:large_cracker",
+      "slotIndex": 0,
+      "hall": "works-067",
+      "x": 407,
+      "z": -101,
+      "stage": "mid"
+    },
+    {
+      "id": "gtceu:large_cracker",
+      "slotIndex": 1,
+      "hall": "works-067",
+      "x": 377,
+      "z": -69,
+      "stage": "mid"
+    },
+    {
+      "id": "gtceu:large_cutter",
+      "slotIndex": 0,
+      "hall": "works-062",
+      "x": 328,
+      "z": 125,
+      "stage": "mid"
+    },
+    {
+      "id": "gtceu:large_distillery",
+      "slotIndex": 0,
+      "hall": "works-053",
+      "x": 366,
+      "z": 507,
+      "stage": "mid"
+    },
+    {
+      "id": "gtceu:large_distillery",
+      "slotIndex": 1,
+      "hall": "works-053",
+      "x": 396,
+      "z": 507,
+      "stage": "mid"
+    },
+    {
+      "id": "gtceu:large_distillery",
+      "slotIndex": 2,
+      "hall": "works-053",
+      "x": 426,
+      "z": 507,
+      "stage": "mid"
+    },
+    {
+      "id": "gtceu:large_extruder",
+      "slotIndex": 0,
+      "hall": "works-062",
+      "x": 358,
+      "z": 125,
+      "stage": "mid"
+    },
+    {
+      "id": "gtceu:large_greenhouse",
+      "slotIndex": 0,
+      "hall": "works-002",
+      "x": 53,
+      "z": 323,
+      "stage": "early"
+    },
+    {
+      "id": "gtceu:large_greenhouse",
+      "slotIndex": 1,
+      "hall": "works-002",
+      "x": 83,
+      "z": 323,
+      "stage": "early"
+    },
+    {
+      "id": "gtceu:large_greenhouse",
+      "slotIndex": 2,
+      "hall": "works-002",
+      "x": 113,
+      "z": 323,
+      "stage": "early"
+    },
+    {
+      "id": "gtceu:large_greenhouse",
+      "slotIndex": 3,
+      "hall": "works-002",
+      "x": 53,
+      "z": 355,
+      "stage": "early"
+    },
+    {
+      "id": "gtceu:large_greenhouse",
+      "slotIndex": 4,
+      "hall": "works-002",
+      "x": 83,
+      "z": 355,
+      "stage": "early"
+    },
+    {
+      "id": "gtceu:large_greenhouse",
+      "slotIndex": 5,
+      "hall": "works-002",
+      "x": 113,
+      "z": 355,
+      "stage": "early"
+    },
+    {
+      "id": "gtceu:large_incubator",
+      "slotIndex": 0,
+      "hall": "works-069",
+      "x": -90,
+      "z": 672,
+      "stage": "mid"
+    },
+    {
+      "id": "gtceu:large_material_press",
+      "slotIndex": 0,
+      "hall": "works-072",
+      "x": -667,
+      "z": -494,
+      "stage": "mid"
+    },
+    {
+      "id": "gtceu:large_naquadah_reactor",
+      "slotIndex": 0,
+      "hall": "works-047",
+      "x": -508,
+      "z": 765,
+      "stage": "mid"
+    },
+    {
+      "id": "gtceu:large_packer",
+      "slotIndex": 0,
+      "hall": "works-001",
+      "x": 177,
+      "z": 263,
+      "stage": "early"
+    },
+    {
+      "id": "gtceu:large_packer",
+      "slotIndex": 1,
+      "hall": "works-001",
+      "x": 207,
+      "z": 263,
+      "stage": "early"
+    },
+    {
+      "id": "gtceu:large_pyrolyse_oven",
+      "slotIndex": 0,
+      "hall": "works-062",
+      "x": 298,
+      "z": 125,
+      "stage": "mid"
+    },
+    {
+      "id": "gtceu:large_void_miner",
+      "slotIndex": 0,
+      "hall": "works-025",
+      "x": -810,
+      "z": 182,
+      "stage": "mid"
+    },
+    {
+      "id": "gtceu:luv_compressed_fusion_reactor",
+      "slotIndex": 0,
+      "hall": "works-047",
+      "x": -478,
+      "z": 765,
+      "stage": "mid"
+    },
+    {
+      "id": "gtceu:luv_fusion_reactor",
+      "slotIndex": 0,
+      "hall": "works-047",
+      "x": -538,
+      "z": 895,
+      "stage": "mid"
+    },
+    {
+      "id": "gtceu:mage_assembler",
+      "slotIndex": 0,
+      "hall": "works-018",
+      "x": 70,
+      "z": -525,
+      "stage": "late_north"
+    },
+    {
+      "id": "gtceu:magic_manufacturer",
+      "slotIndex": 0,
+      "hall": "works-068",
+      "x": 344,
+      "z": 263,
+      "stage": "late_south"
+    },
+    {
+      "id": "gtceu:mass_fabricator",
+      "slotIndex": 0,
+      "hall": "works-041",
+      "x": -140,
+      "z": 912,
+      "stage": "late_south"
+    },
+    {
+      "id": "gtceu:mega_alloy_blast_smelter",
+      "slotIndex": 0,
+      "hall": "works-062",
+      "x": 337,
+      "z": 52,
+      "stage": "mid"
+    },
+    {
+      "id": "gtceu:mega_blast_furnace",
+      "slotIndex": 0,
+      "hall": "works-062",
+      "x": 367,
+      "z": 52,
+      "stage": "mid"
+    },
+    {
+      "id": "gtceu:mega_canner",
+      "slotIndex": 0,
+      "hall": "works-027",
+      "x": -526,
+      "z": 306,
+      "stage": "late_south"
+    },
+    {
+      "id": "gtceu:mega_distillery",
+      "slotIndex": 0,
+      "hall": "works-064",
+      "x": 119,
+      "z": -244,
+      "stage": "late_north"
+    },
+    {
+      "id": "gtceu:mega_extractor",
+      "slotIndex": 0,
+      "hall": "works-030",
+      "x": 334,
+      "z": -475,
+      "stage": "late_north"
+    },
+    {
+      "id": "gtceu:mega_fluid_heater",
+      "slotIndex": 0,
+      "hall": "works-027",
+      "x": -526,
+      "z": 418,
+      "stage": "late_south"
+    },
+    {
+      "id": "gtceu:mega_presser",
+      "slotIndex": 0,
+      "hall": "works-028",
+      "x": -902,
+      "z": -294,
+      "stage": "late_north"
+    },
+    {
+      "id": "gtceu:mega_vacuum_freezer",
+      "slotIndex": 0,
+      "hall": "works-062",
+      "x": 358,
+      "z": 84,
+      "stage": "mid"
+    },
+    {
+      "id": "gtceu:mega_wiremill",
+      "slotIndex": 0,
+      "hall": "works-049",
+      "x": 177,
+      "z": 331,
+      "stage": "late_south"
+    },
+    {
+      "id": "gtceu:molecular_assembler_matrix",
+      "slotIndex": 0,
+      "hall": "works-018",
+      "x": 70,
+      "z": -394,
+      "stage": "late_north"
+    },
+    {
+      "id": "gtceu:nano_core",
+      "slotIndex": 0,
+      "hall": "works-058",
+      "x": 199,
+      "z": 497,
+      "stage": "late_south"
+    },
+    {
+      "id": "gtceu:nano_forge_1",
+      "slotIndex": 0,
+      "hall": "works-062",
+      "x": 298,
+      "z": 52,
+      "stage": "mid"
+    },
+    {
+      "id": "gtceu:neutron_activator",
+      "slotIndex": 0,
+      "hall": "works-071",
+      "x": -667,
+      "z": -394,
+      "stage": "mid"
+    },
+    {
+      "id": "gtceu:pcb_factory",
+      "slotIndex": 0,
+      "hall": "works-018",
+      "x": 129,
+      "z": -394,
+      "stage": "late_north"
+    },
+    {
+      "id": "gtceu:petrochemical_plant",
+      "slotIndex": 0,
+      "hall": "works-067",
+      "x": 377,
+      "z": -101,
+      "stage": "mid"
+    },
+    {
+      "id": "gtceu:plasma_condenser",
+      "slotIndex": 0,
+      "hall": "works-045",
+      "x": -367,
+      "z": 771,
+      "stage": "late_south"
+    },
+    {
+      "id": "gtceu:precision_assembler",
+      "slotIndex": 0,
+      "hall": "works-059",
+      "x": 106,
+      "z": 648,
+      "stage": "mid"
+    },
+    {
+      "id": "gtceu:qft",
+      "slotIndex": 0,
+      "hall": "works-032",
+      "x": 299,
+      "z": -913,
+      "stage": "late_north"
+    },
+    {
+      "id": "gtceu:research_station",
+      "slotIndex": 0,
+      "hall": "works-063",
+      "x": 656,
+      "z": -65,
+      "stage": "mid"
+    },
+    {
+      "id": "gtceu:space_cosmic_probe_receivers",
+      "slotIndex": 0,
+      "hall": "works-041",
+      "x": -170,
+      "z": 856,
+      "stage": "late_south"
+    },
+    {
+      "id": "gtceu:space_elevator",
+      "slotIndex": 0,
+      "hall": "works-074",
+      "x": 49,
+      "z": -892,
+      "stage": "mid"
+    },
+    {
+      "id": "gtceu:space_probe_surface_reception",
+      "slotIndex": 0,
+      "hall": "works-041",
+      "x": -170,
+      "z": 912,
+      "stage": "late_south"
+    },
+    {
+      "id": "gtceu:sps_crafting",
+      "slotIndex": 0,
+      "hall": "works-068",
+      "x": 374,
+      "z": 231,
+      "stage": "late_south"
+    },
+    {
+      "id": "gtceu:star_ultimate_material_forge_factory",
+      "slotIndex": 0,
+      "hall": "works-021",
+      "x": 42,
+      "z": -792,
+      "stage": "late_north"
+    },
+    {
+      "id": "gtceu:stellar_forge",
+      "slotIndex": 0,
+      "hall": "works-049",
+      "x": 207,
+      "z": 428,
+      "stage": "late_south"
+    },
+    {
+      "id": "gtceu:super_blast_smelter",
+      "slotIndex": 0,
+      "hall": "works-051",
+      "x": 735,
+      "z": 52,
+      "stage": "late_south"
+    },
+    {
+      "id": "gtceu:super_computation",
+      "slotIndex": 0,
+      "hall": "works-070",
+      "x": 879,
+      "z": 388,
+      "stage": "late_south"
+    },
+    {
+      "id": "gtceu:super_particle_collider",
+      "slotIndex": 0,
+      "hall": "works-048",
+      "x": 560,
+      "z": 195,
+      "stage": "mid"
+    },
+    {
+      "id": "gtceu:superconducting_electromagnetism",
+      "slotIndex": 0,
+      "hall": "works-052",
+      "x": 735,
+      "z": 227,
+      "stage": "late_south"
+    },
+    {
+      "id": "gtceu:supercritical_mega_steam_turbine",
+      "slotIndex": 0,
+      "hall": "works-065",
+      "x": -620,
+      "z": 357,
+      "stage": "mid"
+    },
+    {
+      "id": "gtceu:suprachronal_assembly_line",
+      "slotIndex": 0,
+      "hall": "works-043",
+      "x": 445,
+      "z": 196,
+      "stage": "late_south"
+    },
+    {
+      "id": "gtceu:uev_compressed_fusion_reactor",
+      "slotIndex": 0,
+      "hall": "works-045",
+      "x": -337,
+      "z": 706,
+      "stage": "late_south"
+    },
+    {
+      "id": "gtceu:uev_fusion_reactor",
+      "slotIndex": 0,
+      "hall": "works-045",
+      "x": -337,
+      "z": 771,
+      "stage": "late_south"
+    },
+    {
+      "id": "gtceu:uhv_compressed_fusion_reactor",
+      "slotIndex": 0,
+      "hall": "works-045",
+      "x": -280,
+      "z": 706,
+      "stage": "late_south"
+    },
+    {
+      "id": "gtceu:uhv_fusion_reactor",
+      "slotIndex": 0,
+      "hall": "works-045",
+      "x": -307,
+      "z": 771,
+      "stage": "late_south"
+    },
+    {
+      "id": "gtceu:uv_compressed_fusion_reactor",
+      "slotIndex": 0,
+      "hall": "works-047",
+      "x": -538,
+      "z": 830,
+      "stage": "mid"
+    },
+    {
+      "id": "gtceu:uv_fusion_reactor",
+      "slotIndex": 0,
+      "hall": "works-047",
+      "x": -508,
+      "z": 895,
+      "stage": "mid"
+    },
+    {
+      "id": "gtceu:wood_distillation",
+      "slotIndex": 0,
+      "hall": "works-053",
+      "x": 366,
+      "z": 407,
+      "stage": "mid"
+    },
+    {
+      "id": "gtceu:zpm_compressed_fusion_reactor",
+      "slotIndex": 0,
+      "hall": "works-047",
+      "x": -481,
+      "z": 830,
+      "stage": "mid"
+    },
+    {
+      "id": "gtceu:zpm_fusion_reactor",
+      "slotIndex": 0,
+      "hall": "works-047",
+      "x": -478,
+      "z": 895,
+      "stage": "mid"
+    },
+    {
+      "id": "gtl_enhancedcore:basic_ore_processing_plant",
+      "slotIndex": 0,
+      "hall": "works-005",
+      "x": -378,
+      "z": 56,
+      "stage": "early"
+    },
+    {
+      "id": "gtl_enhancedcore:basic_ore_processing_plant",
+      "slotIndex": 1,
+      "hall": "works-005",
+      "x": -348,
+      "z": 56,
+      "stage": "early"
+    },
+    {
+      "id": "gtl_enhancedcore:basic_ore_processing_plant",
+      "slotIndex": 2,
+      "hall": "works-005",
+      "x": -318,
+      "z": 56,
+      "stage": "early"
+    },
+    {
+      "id": "gtl_enhancedcore:basic_ore_processing_plant",
+      "slotIndex": 3,
+      "hall": "works-005",
+      "x": -378,
+      "z": 88,
+      "stage": "early"
+    },
+    {
+      "id": "gtl_enhancedcore:basic_ore_processing_plant",
+      "slotIndex": 4,
+      "hall": "works-005",
+      "x": -348,
+      "z": 88,
+      "stage": "early"
+    },
+    {
+      "id": "gtl_enhancedcore:basic_ore_processing_plant",
+      "slotIndex": 5,
+      "hall": "works-005",
+      "x": -318,
+      "z": 88,
+      "stage": "early"
+    },
+    {
+      "id": "gtl_enhancedcore:basic_ore_processing_plant",
+      "slotIndex": 6,
+      "hall": "works-005",
+      "x": -378,
+      "z": 120,
+      "stage": "early"
+    },
+    {
+      "id": "gtl_enhancedcore:basic_ore_processing_plant",
+      "slotIndex": 7,
+      "hall": "works-005",
+      "x": -348,
+      "z": 120,
+      "stage": "early"
+    },
+    {
+      "id": "gtl_enhancedcore:basic_ore_processing_plant",
+      "slotIndex": 8,
+      "hall": "works-005",
+      "x": -318,
+      "z": 120,
+      "stage": "early"
+    },
+    {
+      "id": "gtl_enhancedcore:basic_ore_processing_plant",
+      "slotIndex": 9,
+      "hall": "works-009",
+      "x": -340,
+      "z": 188,
+      "stage": "early"
+    },
+    {
+      "id": "gtl_enhancedcore:causality_terminal",
+      "slotIndex": 0,
+      "hall": "works-037",
+      "x": -465,
+      "z": -314,
+      "stage": "late_north"
+    },
+    {
+      "id": "gtl_enhancedcore:cloud_pattern_library",
+      "slotIndex": 0,
+      "hall": "works-063",
+      "x": 623,
+      "z": -128,
+      "stage": "mid"
+    },
+    {
+      "id": "gtl_enhancedcore:dragon_field_proliferation_core",
+      "slotIndex": 0,
+      "hall": "works-015",
+      "x": -779,
+      "z": -294,
+      "stage": "late_north"
+    },
+    {
+      "id": "gtl_enhancedcore:extreme_reactor",
+      "slotIndex": 0,
+      "hall": "works-045",
+      "x": -310,
+      "z": 640,
+      "stage": "late_south"
+    },
+    {
+      "id": "gtl_enhancedcore:hadron_catalytic_refinery",
+      "slotIndex": 0,
+      "hall": "works-053",
+      "x": 426,
+      "z": 472,
+      "stage": "mid"
+    },
+    {
+      "id": "gtl_enhancedcore:high_flux_breeder_reactor",
+      "slotIndex": 0,
+      "hall": "works-045",
+      "x": -367,
+      "z": 640,
+      "stage": "late_south"
+    },
+    {
+      "id": "gtl_enhancedcore:hydrothermal_leaching_complex",
+      "slotIndex": 0,
+      "hall": "works-046",
+      "x": -932,
+      "z": 699,
+      "stage": "late_south"
+    },
+    {
+      "id": "gtl_enhancedcore:hyperstructural_chemical_distorter",
+      "slotIndex": 0,
+      "hall": "works-035",
+      "x": 438,
+      "z": 52,
+      "stage": "late_south"
+    },
+    {
+      "id": "gtl_enhancedcore:hyperstructural_chemical_distorter",
+      "slotIndex": 1,
+      "hall": "works-035",
+      "x": 535,
+      "z": 52,
+      "stage": "late_south"
+    },
+    {
+      "id": "gtl_enhancedcore:hyperstructural_chemical_distorter",
+      "slotIndex": 2,
+      "hall": "works-036",
+      "x": 697,
+      "z": -833,
+      "stage": "late_north"
+    },
+    {
+      "id": "gtl_enhancedcore:hyperstructural_chemical_distorter",
+      "slotIndex": 3,
+      "hall": "works-036",
+      "x": 794,
+      "z": -833,
+      "stage": "late_north"
+    },
+    {
+      "id": "gtl_enhancedcore:industrial_steam_platform",
+      "slotIndex": 0,
+      "hall": "works-006",
+      "x": -209,
+      "z": 135,
+      "stage": "early"
+    },
+    {
+      "id": "gtl_enhancedcore:industrial_steam_platform",
+      "slotIndex": 1,
+      "hall": "works-006",
+      "x": -179,
+      "z": 135,
+      "stage": "early"
+    },
+    {
+      "id": "gtl_enhancedcore:industrial_steam_platform",
+      "slotIndex": 2,
+      "hall": "works-006",
+      "x": -149,
+      "z": 135,
+      "stage": "early"
+    },
+    {
+      "id": "gtl_enhancedcore:industrial_steam_platform",
+      "slotIndex": 3,
+      "hall": "works-006",
+      "x": -209,
+      "z": 167,
+      "stage": "early"
+    },
+    {
+      "id": "gtl_enhancedcore:industrial_steam_platform",
+      "slotIndex": 4,
+      "hall": "works-006",
+      "x": -179,
+      "z": 167,
+      "stage": "early"
+    },
+    {
+      "id": "gtl_enhancedcore:industrial_steam_platform",
+      "slotIndex": 5,
+      "hall": "works-006",
+      "x": -149,
+      "z": 167,
+      "stage": "early"
+    },
+    {
+      "id": "gtl_enhancedcore:industrial_steam_platform",
+      "slotIndex": 6,
+      "hall": "works-006",
+      "x": -209,
+      "z": 199,
+      "stage": "early"
+    },
+    {
+      "id": "gtl_enhancedcore:industrial_steam_platform",
+      "slotIndex": 7,
+      "hall": "works-006",
+      "x": -179,
+      "z": 199,
+      "stage": "early"
+    },
+    {
+      "id": "gtl_enhancedcore:industrial_steam_platform",
+      "slotIndex": 8,
+      "hall": "works-006",
+      "x": -149,
+      "z": 199,
+      "stage": "early"
+    },
+    {
+      "id": "gtl_enhancedcore:industrial_steam_platform",
+      "slotIndex": 9,
+      "hall": "works-007",
+      "x": -209,
+      "z": 267,
+      "stage": "early"
+    },
+    {
+      "id": "gtl_enhancedcore:industrial_steam_platform",
+      "slotIndex": 10,
+      "hall": "works-007",
+      "x": -179,
+      "z": 267,
+      "stage": "early"
+    },
+    {
+      "id": "gtl_enhancedcore:industrial_steam_platform",
+      "slotIndex": 11,
+      "hall": "works-007",
+      "x": -149,
+      "z": 267,
+      "stage": "early"
+    },
+    {
+      "id": "gtl_enhancedcore:industrial_steam_platform",
+      "slotIndex": 12,
+      "hall": "works-007",
+      "x": -209,
+      "z": 299,
+      "stage": "early"
+    },
+    {
+      "id": "gtl_enhancedcore:industrial_steam_platform",
+      "slotIndex": 13,
+      "hall": "works-007",
+      "x": -179,
+      "z": 299,
+      "stage": "early"
+    },
+    {
+      "id": "gtl_enhancedcore:industrial_steam_platform",
+      "slotIndex": 14,
+      "hall": "works-007",
+      "x": -149,
+      "z": 299,
+      "stage": "early"
+    },
+    {
+      "id": "gtl_enhancedcore:infinity_singularity_compressor",
+      "slotIndex": 0,
+      "hall": "works-012",
+      "x": -325,
+      "z": -854,
+      "stage": "late_north"
+    },
+    {
+      "id": "gtl_enhancedcore:lanthanide_refining_hub",
+      "slotIndex": 0,
+      "hall": "works-025",
+      "x": -762,
+      "z": 60,
+      "stage": "mid"
+    },
+    {
+      "id": "gtl_enhancedcore:large_furnace",
+      "slotIndex": 0,
+      "hall": "works-004",
+      "x": -240,
+      "z": -234,
+      "stage": "early"
+    },
+    {
+      "id": "gtl_enhancedcore:large_furnace",
+      "slotIndex": 1,
+      "hall": "works-004",
+      "x": -210,
+      "z": -234,
+      "stage": "early"
+    },
+    {
+      "id": "gtl_enhancedcore:neutron_control_factory",
+      "slotIndex": 0,
+      "hall": "works-047",
+      "x": -538,
+      "z": 765,
+      "stage": "mid"
+    },
+    {
+      "id": "gtl_enhancedcore:plasma_machine_tool",
+      "slotIndex": 0,
+      "hall": "works-062",
+      "x": 298,
+      "z": 84,
+      "stage": "mid"
+    },
+    {
+      "id": "gtl_enhancedcore:platinum_refining_matrix",
+      "slotIndex": 0,
+      "hall": "works-025",
+      "x": -695,
+      "z": 60,
+      "stage": "mid"
+    },
+    {
+      "id": "gtl_enhancedcore:quantum_mass_spectrum_array",
+      "slotIndex": 0,
+      "hall": "works-025",
+      "x": -873,
+      "z": 182,
+      "stage": "mid"
+    },
+    {
+      "id": "gtl_enhancedcore:star_core_stripper",
+      "slotIndex": 0,
+      "hall": "works-054",
+      "x": -548,
+      "z": -120,
+      "stage": "late_north"
+    },
+    {
+      "id": "gtl_enhancedcore:stellar_confinement_fusion_reactor",
+      "slotIndex": 0,
+      "hall": "works-038",
+      "x": -779,
+      "z": 640,
+      "stage": "late_south"
+    },
+    {
+      "id": "gtl_enhancedcore:stellar_vortex_space_station",
+      "slotIndex": 0,
+      "hall": "works-024",
+      "x": -622,
+      "z": 52,
+      "stage": "late_south"
+    },
+    {
+      "id": "gtl_enhancedcore:superconducting_fusion_assembler",
+      "slotIndex": 0,
+      "hall": "works-059",
+      "x": 45,
+      "z": 648,
+      "stage": "mid"
+    },
+    {
+      "id": "gtl_enhancedcore:universal_joint_factory",
+      "slotIndex": 0,
+      "hall": "works-001",
+      "x": 177,
+      "z": 196,
+      "stage": "early"
+    },
+    {
+      "id": "gtl_enhancedcore:universal_joint_factory",
+      "slotIndex": 1,
+      "hall": "works-001",
+      "x": 236,
+      "z": 196,
+      "stage": "early"
+    },
+    {
+      "id": "gtl_enhancedcore:void_constrained_mining_field",
+      "slotIndex": 0,
+      "hall": "works-025",
+      "x": -873,
+      "z": 60,
+      "stage": "mid"
+    },
+    {
+      "id": "gtl_enhancedcore:weather_anchor",
+      "slotIndex": 0,
+      "hall": "works-063",
+      "x": 623,
+      "z": -65,
+      "stage": "mid"
+    },
+    {
+      "id": "gtladditions:antientropy_condensation_center",
+      "slotIndex": 0,
+      "hall": "works-034",
+      "x": 532,
+      "z": -841,
+      "stage": "late_north"
+    },
+    {
+      "id": "gtladditions:apocalyptic_torsion_quantum_matrix",
+      "slotIndex": 0,
+      "hall": "works-022",
+      "x": 374,
+      "z": -360,
+      "stage": "late_north"
+    },
+    {
+      "id": "gtladditions:arcane_cache_vault",
+      "slotIndex": 0,
+      "hall": "works-059",
+      "x": 135,
+      "z": 723,
+      "stage": "mid"
+    },
+    {
+      "id": "gtladditions:arcanic_astrograph",
+      "slotIndex": 0,
+      "hall": "works-013",
+      "x": -575,
+      "z": -517,
+      "stage": "late_north"
+    },
+    {
+      "id": "gtladditions:atomic_transmutation_core",
+      "slotIndex": 0,
+      "hall": "works-049",
+      "x": 267,
+      "z": 428,
+      "stage": "late_south"
+    },
+    {
+      "id": "gtladditions:biological_simulation_laboratory",
+      "slotIndex": 0,
+      "hall": "works-069",
+      "x": -90,
+      "z": 640,
+      "stage": "mid"
+    },
+    {
+      "id": "gtladditions:biosphere_iii",
+      "slotIndex": 0,
+      "hall": "works-050",
+      "x": -290,
+      "z": 840,
+      "stage": "late_south"
+    },
+    {
+      "id": "gtladditions:dimensionally_transcendent_chemical_plant",
+      "slotIndex": 0,
+      "hall": "works-019",
+      "x": 483,
+      "z": -690,
+      "stage": "late_north"
+    },
+    {
+      "id": "gtladditions:dimensionally_transcendent_chemical_plant",
+      "slotIndex": 1,
+      "hall": "works-019",
+      "x": 604,
+      "z": -690,
+      "stage": "late_north"
+    },
+    {
+      "id": "gtladditions:dimensionally_transcendent_chemical_plant",
+      "slotIndex": 2,
+      "hall": "works-020",
+      "x": 483,
+      "z": -525,
+      "stage": "late_north"
+    },
+    {
+      "id": "gtladditions:dimensionally_transcendent_chemical_plant",
+      "slotIndex": 3,
+      "hall": "works-020",
+      "x": 604,
+      "z": -525,
+      "stage": "late_north"
+    },
+    {
+      "id": "gtladditions:draconic_collapse_core",
+      "slotIndex": 0,
+      "hall": "works-018",
+      "x": 176,
+      "z": -327,
+      "stage": "late_north"
+    },
+    {
+      "id": "gtladditions:forge_of_the_antichrist",
+      "slotIndex": 0,
+      "hall": "works-026",
+      "x": -870,
+      "z": 255,
+      "stage": "late_south"
+    },
+    {
+      "id": "gtladditions:fuxi_bagua_heaven_forging_furnace",
+      "slotIndex": 0,
+      "hall": "works-040",
+      "x": -568,
+      "z": 549,
+      "stage": "late_south"
+    },
+    {
+      "id": "gtladditions:heart_of_the_universe",
+      "slotIndex": 0,
+      "hall": "works-017",
+      "x": -833,
+      "z": -926,
+      "stage": "late_north"
+    },
+    {
+      "id": "gtladditions:inferno_cleft_smelting_vault",
+      "slotIndex": 0,
+      "hall": "works-027",
+      "x": -365,
+      "z": 306,
+      "stage": "late_south"
+    },
+    {
+      "id": "gtladditions:lucid_etchdreamer",
+      "slotIndex": 0,
+      "hall": "works-033",
+      "x": 759,
+      "z": -523,
+      "stage": "late_north"
+    },
+    {
+      "id": "gtladditions:macro_atomic_resonant_fragment_stripper",
+      "slotIndex": 0,
+      "hall": "works-034",
+      "x": 532,
+      "z": -918,
+      "stage": "late_north"
+    },
+    {
+      "id": "gtladditions:planetary_ionisation_convergence_tower",
+      "slotIndex": 0,
+      "hall": "works-023",
+      "x": 896,
+      "z": -167,
+      "stage": "late_north"
+    },
+    {
+      "id": "gtladditions:primordial_evolution_nexus",
+      "slotIndex": 0,
+      "hall": "works-041",
+      "x": -87,
+      "z": 765,
+      "stage": "late_south"
+    },
+    {
+      "id": "gtladditions:quantum_syphon_matrix",
+      "slotIndex": 0,
+      "hall": "works-041",
+      "x": -170,
+      "z": 765,
+      "stage": "late_south"
+    },
+    {
+      "id": "gtladditions:recursive_reverse_array",
+      "slotIndex": 0,
+      "hall": "works-026",
+      "x": -733,
+      "z": 255,
+      "stage": "late_south"
+    },
+    {
+      "id": "gtladditions:skeleton_shift_rift_engine",
+      "slotIndex": 0,
+      "hall": "works-045",
+      "x": -259,
+      "z": 640,
+      "stage": "late_south"
+    },
+    {
+      "id": "gtladditions:space_elevator_mkii",
+      "slotIndex": 0,
+      "hall": "works-061",
+      "x": 623,
+      "z": -360,
+      "stage": "late_north"
+    },
+    {
+      "id": "gtladditions:space_infinity_integrated_ore_processor",
+      "slotIndex": 0,
+      "hall": "works-016",
+      "x": -908,
+      "z": -585,
+      "stage": "late_north"
+    },
+    {
+      "id": "gtladditions:space_scaling_instrument",
+      "slotIndex": 0,
+      "hall": "works-018",
+      "x": 146,
+      "z": -327,
+      "stage": "late_north"
+    },
+    {
+      "id": "gtladditions:subatomic_transmutatioon_core",
+      "slotIndex": 0,
+      "hall": "works-049",
+      "x": 177,
+      "z": 428,
+      "stage": "late_south"
+    },
+    {
+      "id": "gtladditions:taixu_turbid_array",
+      "slotIndex": 0,
+      "hall": "works-041",
+      "x": -82,
+      "z": 856,
+      "stage": "late_south"
+    },
+    {
+      "id": "gtladditions:time_space_distorter",
+      "slotIndex": 0,
+      "hall": "works-027",
+      "x": -474,
+      "z": 418,
+      "stage": "late_south"
+    },
+    {
+      "id": "gtladditions:titan_crip_earthbore",
+      "slotIndex": 0,
+      "hall": "works-056",
+      "x": 513,
+      "z": 407,
+      "stage": "late_south"
+    }
+  ],
+  "design": {
+    "machineOrientation": "north-unflipped",
+    "entryAlignment": "shared-halls-face-dispatch-court",
+    "sideClearance": 12,
+    "frontClearance": 22,
+    "backClearance": 12,
+    "betweenMachineRows": 18,
+    "betweenMachineColumns": 10,
+    "buildingServiceRing": 10,
+    "sharedFloorNet": [
+      120,
+      110
+    ]
+  }
+}

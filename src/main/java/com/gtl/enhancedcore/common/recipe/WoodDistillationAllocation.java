@@ -24,7 +24,7 @@ public final class WoodDistillationAllocation {
             if (maximum < 0 || maximum > budget)
                 throw new IllegalArgumentException("Wood capacity exceeded its parallel allowance");
             capacities.put(candidate, maximum);
-            available = Math.min(budget, available + maximum);
+            available += Math.min(maximum, budget - available);
         }
         if (available == 0) return 0;
         var plan = shares(capacities, available);
@@ -47,21 +47,33 @@ public final class WoodDistillationAllocation {
     }
 
     private static <T> Map<T, Long> shares(Map<T, Long> capacities, long budget) {
-        var plan = new LinkedHashMap<T, Long>();
-        capacities.keySet().forEach(key -> plan.put(key, 0L));
+        // Skip complete round-robin rounds arithmetically. Iterating once per parallel
+        // makes a large hatch/thread budget stall the server even with just three recipes.
+        long[] limits = capacities.values().stream().mapToLong(Long::longValue).sorted().toArray();
         long left = budget;
-        while (left > 0) {
-            boolean moved = false;
-            for (var entry : capacities.entrySet()) {
-                long current = plan.get(entry.getKey());
-                if (current < entry.getValue()) {
-                    plan.put(entry.getKey(), current + 1);
-                    left--;
-                    moved = true;
-                    if (left == 0) break;
-                }
+        long level = 0;
+        int remaining = limits.length;
+        for (long limit : limits) {
+            long rounds = limit - level;
+            // Divide before multiplying so even a Long.MAX_VALUE budget cannot overflow.
+            if (rounds > left / remaining) {
+                level += left / remaining;
+                left %= remaining;
+                break;
             }
-            if (!moved) break;
+            left -= rounds * remaining;
+            level = limit;
+            remaining--;
+        }
+        var plan = new LinkedHashMap<T, Long>();
+        for (var entry : capacities.entrySet()) {
+            long share = Math.min(entry.getValue(), level);
+            // Preserve the original candidate order for the final incomplete round.
+            if (left > 0 && entry.getValue() > level) {
+                share++;
+                left--;
+            }
+            plan.put(entry.getKey(), share);
         }
         return plan;
     }

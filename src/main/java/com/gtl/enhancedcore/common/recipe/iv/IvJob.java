@@ -18,6 +18,8 @@ public final class IvJob {
     public UUID cloudPattern;
     /** Shared endpoints retain the exact accepting controller instance per order. */
     public UUID cloudMachine;
+    /** Frozen conversion between AE pattern shares and GT operations for routing load. */
+    public long cloudPatternOperations = 1;
     public boolean ivGalaxy;
     public BigInteger ivGalaxyEUt = BigInteger.ZERO;
     public final Map<AEKey, Long> inventory;
@@ -100,11 +102,13 @@ public final class IvJob {
     }
 
     public CompoundTag save() {
+        if (cloudPatternOperations < 1) throw new IllegalStateException("Invalid pattern operation scale");
         CompoundTag tag = new CompoundTag();
         tag.putUUID("id", id); tag.putInt("slot", slot);
         tag.putBoolean("ivGalaxy", ivGalaxy); tag.putString("ivGalaxyEUt", ivGalaxyEUt.toString());
         if (cloudPattern != null) tag.putUUID("cloudPattern", cloudPattern);
         if (cloudMachine != null) tag.putUUID("cloudMachine", cloudMachine);
+        tag.putLong("cloudPatternOperations", cloudPatternOperations);
         tag.put("recipe", GTRecipeSerializer.CODEC.encodeStart(NbtOps.INSTANCE, recipe).getOrThrow(false, ignored -> {}));
         tag.putString("recipeId", recipe.id.toString()); tag.put("pattern", pattern.copy());
         tag.put("input", saveStock(inventory)); tag.put("virtual", saveStock(virtual));
@@ -131,6 +135,10 @@ public final class IvJob {
                 loadStock(tag.getList("input", Tag.TAG_COMPOUND)), loadStock(tag.getList("virtual", Tag.TAG_COMPOUND)), tag.getLong("remaining"));
         job.cloudPattern = tag.hasUUID("cloudPattern") ? tag.getUUID("cloudPattern") : null;
         job.cloudMachine = tag.hasUUID("cloudMachine") ? tag.getUUID("cloudMachine") : null;
+        if (tag.contains("cloudPatternOperations") && !tag.contains("cloudPatternOperations", Tag.TAG_LONG))
+            throw new IllegalArgumentException("Invalid pattern operation scale type");
+        job.cloudPatternOperations = tag.contains("cloudPatternOperations", Tag.TAG_LONG) ? tag.getLong("cloudPatternOperations") : 1;
+        if (job.cloudPatternOperations < 1) throw new IllegalArgumentException("Invalid pattern operation scale");
         job.ivGalaxy = tag.getBoolean("ivGalaxy");
         job.ivGalaxyEUt = tag.contains("ivGalaxyEUt") ? new BigInteger(tag.getString("ivGalaxyEUt")) : BigInteger.ZERO;
         if (job.ivGalaxyEUt.signum() < 0) throw new IllegalArgumentException("Invalid stellar IV rate");

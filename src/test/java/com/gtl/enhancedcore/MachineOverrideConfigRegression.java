@@ -69,6 +69,7 @@ final class MachineOverrideConfigRegression {
                 "gtladditions.GalaxyThreadCapacityMixin", "gtladditions.GalaxyMachineCapacityMixin", "gtladditions.GalaxySpecialBudgetMixin", "gtladditions.GalaxyAddParallelMixin",
                 "gtladditions.GalaxyWirelessEnergyHandlerMixin",
                 "gtlcore.GalaxyParallelCapacityMixin", "gtlcore.GalaxyChanceSimulationMixin", "mc.PersonalPlotServerAccessor", "gtceu.PersonalPlotDimensionConditionMixin",
+                "mc.PersonalPlotFilePackMixin", "mc.PersonalPlotStorageMixin",
                 "gtlcore.client.BloomPendingPruneMixin",
                 "gtlcore.client.BloomChunkProductionMixin", "gtlcore.ClientPatternSlotCapacityMixin",
                 "gtceu.EmptyRecipeContentsMixin", "gtceu.StructureSearchControllerMixin",
@@ -105,7 +106,8 @@ final class MachineOverrideConfigRegression {
                         || name.equals("gtceu.CloudMachineIdentityMixin") || name.startsWith("gtlcore.Cloud")
                         || name.startsWith("extendedae.client.") || name.startsWith("ftblibrary.client.")
                         || name.startsWith("ftbquests.client.")
-                        || name.startsWith("jei.") || name.startsWith("jer.") || name.startsWith("jade.")
+                        || name.startsWith("jei.") || name.startsWith("jer.")
+                        || name.startsWith("jade.") && !name.equals("jade.HarmonyAddParallelProviderMixin")
                         || name.startsWith("ldlib.") || name.startsWith("performance.") || name.startsWith("ftbchunks.")
                         || name.startsWith("mc.client.") || name.equals("mc.ChunkBlockEntityRemovalMixin") || name.equals("mc.SingularityConfigRecipesMixin")
                         || name.equals("gtceu.client.KeyBindDisconnectedSendMixin")

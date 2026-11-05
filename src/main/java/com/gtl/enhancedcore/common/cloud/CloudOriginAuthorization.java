@@ -92,7 +92,14 @@ public final class CloudOriginAuthorization {
         var known = LIVE.getOrDefault(server, Map.of()).get(origin);
         return known != null && continuous(known, target);
     }
+    /** Read-only UI projection; polling a menu must never grant continuity evidence. */
+    public static boolean canAuthorize(ServerPlayer player, CloudAeOriginGuard.Origin origin, IGrid target) {
+        return authorize(player, origin, target, false);
+    }
     public static boolean authorize(ServerPlayer player, CloudAeOriginGuard.Origin origin, IGrid target) {
+        return authorize(player, origin, target, true);
+    }
+    private static boolean authorize(ServerPlayer player, CloudAeOriginGuard.Origin origin, IGrid target, boolean captureEvidence) {
         if (origin == null || target == null) return false;
         var server = player.getServer();
         ResourceLocation dimension = ResourceLocation.tryParse(origin.dimension()); if (dimension == null) return false;
@@ -110,10 +117,10 @@ public final class CloudOriginAuthorization {
                 if (chunk == null) continue;
                 var holder = chunk.getBlockEntity(candidate);
                 if (holder instanceof IMachineBlockEntity machine && machine.getMetaMachine() instanceof IGridConnectedMachine connected
-                        && connected.getMainNode().getGrid() == target) { capture(server, origin, target); return true; }
+                        && connected.getMainNode().getGrid() == target) { if (captureEvidence) capture(server, origin, target); return true; }
                 if (holder instanceof IInWorldGridNodeHost host) {
                     var node = host.getGridNode(side.getOpposite());
-                    if (node != null && node.getGrid() == target) { capture(server, origin, target); return true; }
+                    if (node != null && node.getGrid() == target) { if (captureEvidence) capture(server, origin, target); return true; }
                 }
             }
         }

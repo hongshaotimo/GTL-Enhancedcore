@@ -1,6 +1,6 @@
 package com.gtl.enhancedcore.common.cloud;
 
-import com.gregtechceu.gtceu.api.machine.multiblock.WorkableElectricMultiblockMachine;
+import com.gregtechceu.gtceu.api.machine.multiblock.WorkableMultiblockMachine;
 import com.gregtechceu.gtceu.api.recipe.GTRecipe;
 import com.gtl.enhancedcore.common.cloud.store.CloudLedger;
 import com.gtl.enhancedcore.common.cloud.store.CloudPatternStore;
@@ -21,20 +21,13 @@ public final class CloudPatternAllocator {
     private static final int STEPS_PER_TICK = 1024;
     private static final long NANOS_PER_TICK = 3_000_000;
     private CloudPatternAllocator() {}
-    private record Group(UUID library, ResourceLocation mode) {}
-    private record Membership(Group group, long sequence) {}
-    private record SelectionKey(Group group, UUID entry, long revision, CloudPatternMatching.RecipeIndex index) {}
     private record DiagnosticKey(UUID library, UUID entry, UUID node) {}
     private record Ambiguity(List<String> candidates, int total) {}
     private static final class Queue {
         final Deque<CloudPatternBufferMachine> order = new ArrayDeque<>();
         final Map<CloudPatternBufferMachine, Scan> scans = new IdentityHashMap<>();
         final Set<CloudPatternBufferMachine> endpoints = Collections.newSetFromMap(new IdentityHashMap<>());
-        final Map<Group, NavigableMap<Long, CloudPatternBufferMachine>> groups = new HashMap<>();
-        final Map<CloudPatternBufferMachine, Membership> memberships = new IdentityHashMap<>();
-        final Map<SelectionKey, Selection> selections = new LinkedHashMap<>(32, .75f, true);
         final Map<DiagnosticKey, Ambiguity> ambiguities = new LinkedHashMap<>(16, .75f, true);
-        long sequence;
         void ambiguity(CloudPatternBufferMachine buffer, CloudPatternStore.Entry entry, CloudPatternMatching.MatchSet matches) {
             var key = new DiagnosticKey(buffer.cloudLibraryId(), entry.id(), buffer.cloudNodeId());
             var evidence = new Ambiguity(matches.candidateIds(), matches.candidateCount());
@@ -50,92 +43,10 @@ public final class CloudPatternAllocator {
         void clearAmbiguity(CloudPatternBufferMachine buffer, CloudPatternStore.Entry entry) {
             ambiguities.remove(new DiagnosticKey(buffer.cloudLibraryId(), entry.id(), buffer.cloudNodeId()));
         }
-        void invalidateSelections(UUID library) { selections.keySet().removeIf(key -> Objects.equals(key.group.library, library)); }
-        Selection selection(SelectionKey key) {
-            var result = selections.computeIfAbsent(key, Selection::new);
-            while (selections.size() > 4096) selections.remove(selections.keySet().iterator().next());
-            return result;
-        }
-        void regroup(CloudPatternBufferMachine buffer) {
-            var group = buffer.cloudLibraryId() == null || buffer.cloudMode() == null ? null : new Group(buffer.cloudLibraryId(), buffer.cloudMode());
-            var old = memberships.get(buffer);
-            if (old != null && old.group.equals(group)) return;
-            ungroup(buffer);
-            if (group != null) {
-                invalidateSelections(group.library);
-                long id = ++sequence; memberships.put(buffer, new Membership(group, id));
-                groups.computeIfAbsent(group, ignored -> new TreeMap<>()).put(id, buffer);
-            }
-        }
-        void ungroup(CloudPatternBufferMachine buffer) {
-            var old = memberships.remove(buffer); if (old == null) return;
-            invalidateSelections(old.group.library);
-            var group = groups.get(old.group); if (group == null) return;
-            group.remove(old.sequence); if (group.isEmpty()) groups.remove(old.group);
-        }
-    }
-    /** One bounded election per original. Every contender uses its own executor's
-     * physical stock; a machine must never borrow the initiating scan's catalysts. */
-    private static final class Selection {
-        final SelectionKey key;
-        List<GTRecipe> recipes = List.of();
-        List<WorkableElectricMultiblockMachine> candidateControllers = List.of();
-        CloudPatternMatching.Probe probe;
-        long cursor = -1;
-        CloudPatternBufferMachine candidate, preferred;
-        WorkableElectricMultiblockMachine candidateMachine, preferredMachine;
-        UUID candidateNode, preferredNode;
-        long candidateEpoch, preferredEpoch;
-        int recipeCursor, machineCursor;
-        CloudPatternMatching.MatchSet matches;
-        boolean complete;
-        Selection(SelectionKey key) { this.key = key; }
-        void step(Queue queue, net.minecraft.server.level.ServerLevel level) {
-            if (complete) return;
-            if (candidate != null) {
-                if (!IvBuffers.cloudControllers(candidate).equals(candidateControllers) || !Objects.equals(candidateNode, candidate.cloudNodeId())
-                        || candidateEpoch != candidate.cloudAllocationEpoch()
-                        || !key.group.library.equals(candidate.cloudLibraryId()) || !key.group.mode.equals(candidate.cloudMode())
-                        || !candidate.cloudReady(false) || !candidate.iv$getState().accepting) { candidate = null; return; }
-                if (candidateMachine == null) {
-                    if (machineCursor >= candidateControllers.size()) { candidate = null; return; }
-                    candidateMachine = candidateControllers.get(machineCursor++);
-                    probe = candidate.cloudProbe(candidate.cloudStore().library(key.group.library).entry(key.entry), candidateMachine);
-                    if (probe == null) { candidate = null; return; }
-                    recipes = key.index.candidates(probe); recipeCursor = 0; matches = new CloudPatternMatching.MatchSet(key.index);
-                }
-                if (recipeCursor < recipes.size()) matches.add(recipes.get(recipeCursor++), candidateMachine, probe);
-                if (recipeCursor < recipes.size()) return;
-                if (matches.unique() != null) {
-                    if (preferred == null || compare(candidate, preferred, level) < 0) {
-                        preferred = candidate; preferredMachine = candidateMachine; preferredNode = candidateNode;
-                        preferredEpoch = candidateEpoch;
-                    }
-                    candidate = null;
-                }
-                candidateMachine = null; return;
-            }
-            var group = queue.groups.get(key.group);
-            var next = group == null ? null : group.higherEntry(cursor);
-            if (next == null) { complete = true; return; }
-            cursor = next.getKey(); var endpoint = next.getValue();
-            if (endpoint.cloudReady(true) && endpoint.iv$getState().accepting) {
-                candidate = endpoint; candidateMachine = null; candidateNode = endpoint.cloudNodeId();
-                candidateControllers = IvBuffers.cloudControllers(endpoint); machineCursor = 0;
-                candidateEpoch = endpoint.cloudAllocationEpoch();
-            }
-        }
-        boolean preferredValid() {
-            return preferred == null || (IvBuffers.cloudControllers(preferred).contains(preferredMachine)
-                    && Objects.equals(preferredNode, preferred.cloudNodeId())
-                    && preferredEpoch == preferred.cloudAllocationEpoch()
-                    && key.group.library.equals(preferred.cloudLibraryId()) && key.group.mode.equals(preferred.cloudMode())
-                    && preferred.cloudReady(true) && preferred.iv$getState().accepting);
-        }
     }
     private static final class Scan {
-        final List<WorkableElectricMultiblockMachine> controllers;
-        WorkableElectricMultiblockMachine machine;
+        final List<WorkableMultiblockMachine> controllers;
+        WorkableMultiblockMachine machine;
         final CloudPatternStore.Library library;
         final UUID nodeId, libraryId;
         final ResourceLocation mode;
@@ -183,10 +94,10 @@ public final class CloudPatternAllocator {
                     entryId = page.get(cursor++ - pageOffset);
                 }
                 entry = library.entry(entryId); machineCursor = 0; machine = null; ambiguousMatches = null;
-                boolean owned = entry.lease() != null && entry.lease().nodeId().equals(buffer.cloudNodeId());
-                if (entry.status() != CloudLedger.Status.AVAILABLE && !owned) { entry = null; return true; }
+                boolean owned = entry.lease(buffer.cloudNodeId()) != null;
+                if (entry.status() != CloudLedger.Status.AVAILABLE && entry.status() != CloudLedger.Status.LEASED && !owned) { entry = null; return true; }
                 var types = PatternQuickUploadMetadata.readRecipeTypeIds(entry.original());
-                if (!types.isEmpty() && !types.contains(buffer.cloudMode())) { reject(buffer, "cloud_type"); return true; }
+                if (!CloudChemicalModes.allows(types, buffer.cloudMode())) { reject(buffer, "cloud_type"); return true; }
             }
             if (machine == null) {
                 if (machineCursor >= controllers.size()) {
@@ -214,24 +125,9 @@ public final class CloudPatternAllocator {
                     machine = null; return true;
                 }
                 QUEUES.get(buffer.getLevel().getServer()).clearAmbiguity(buffer, entry);
-                if (matches.unique() != null && entry.status() == CloudLedger.Status.AVAILABLE && buffer.iv$getState().accepting) {
-                    // Every endpoint validates its own machines before sharing this election.
-                    var level = (net.minecraft.server.level.ServerLevel)buffer.getLevel();
-                    var queue = QUEUES.get(level.getServer());
-                    var key = new SelectionKey(new Group(libraryId, mode), entry.id(), observedRevision, index);
-                    var selection = queue.selection(key);
-                    selection.step(queue, level);
-                    // Readiness checks can re-enter membership notifications. Never use
-                    // a detached election or authority/endpoint epoch after that callback.
-                    if (queue.selections.get(key) != selection || library.allocationRevision() != observedRevision
-                            || buffer.cloudAllocationEpoch() != allocationEpoch) return true;
-                    if (!selection.complete) return true;
-                    if (!selection.preferredValid()) { queue.selections.remove(key); return true; }
-                    if (queue.selections.get(key) != selection || library.allocationRevision() != observedRevision
-                            || buffer.cloudAllocationEpoch() != allocationEpoch) return true;
-                    if (selection.preferred == buffer && entry.status() == CloudLedger.Status.AVAILABLE) {
-                        buffer.cloudLeased(entry); CloudPatternDiagnostics.clear(library, entry.id());
-                    }
+                if (entry.lease(buffer.cloudNodeId()) == null && buffer.iv$getState().accepting
+                        && (entry.status() == CloudLedger.Status.AVAILABLE || entry.status() == CloudLedger.Status.LEASED)) {
+                    buffer.cloudLeased(entry); CloudPatternDiagnostics.clear(library, entry.id(), buffer.cloudNodeId());
                 }
                 if (matches.unique() != null) { buffer.cloudValidateLease(entry); CloudPatternDiagnostics.clear(library, entry.id(), buffer.cloudNodeId()); }
                 entry = null;
@@ -253,7 +149,6 @@ public final class CloudPatternAllocator {
     public static void availabilityChanged(CloudPatternBufferMachine buffer) {
         if (!(buffer.getLevel() instanceof net.minecraft.server.level.ServerLevel level)) return;
         Queue queue = QUEUES.get(level.getServer()); if (queue == null) return;
-        queue.invalidateSelections(buffer.cloudLibraryId());
         var affected = Collections.newSetFromMap(new IdentityHashMap<CloudPatternBufferMachine, Boolean>());
         for (var peer : List.copyOf(queue.endpoints))
             if (Objects.equals(peer.cloudLibraryId(), buffer.cloudLibraryId())) affected.add(peer);
@@ -273,7 +168,6 @@ public final class CloudPatternAllocator {
     public static void libraryChanged(net.minecraft.server.level.ServerLevel level, UUID libraryId) {
         if (libraryId == null || !level.getServer().isSameThread()) return;
         Queue queue = QUEUES.get(level.getServer()); if (queue == null) return;
-        queue.invalidateSelections(libraryId);
         var affected = Collections.newSetFromMap(new IdentityHashMap<CloudPatternBufferMachine, Boolean>());
         for (var endpoint : List.copyOf(queue.endpoints)) {
             if (!libraryId.equals(endpoint.cloudLibraryId())) continue;
@@ -296,28 +190,45 @@ public final class CloudPatternAllocator {
             }
         }
     }
-    private static int compare(CloudPatternBufferMachine candidate, CloudPatternBufferMachine other, net.minecraft.server.level.ServerLevel level) {
-        return Comparator.comparingInt((CloudPatternBufferMachine b) -> -CloudLibraryService.priority(level, b.cloudLibraryId(), b.cloudNodeId()))
-                .thenComparingLong(CloudPatternBufferMachine::cloudAllocationOrder)
-                .thenComparing(b -> b.getLevel().dimension().location().toString()).thenComparingLong(b -> b.getPos().asLong()).compare(candidate, other);
-    }
     public static void originalRemoved(net.minecraft.server.level.ServerLevel level, UUID library, UUID entry, CloudLedger.Lease lease) {
         Queue queue = QUEUES.get(level.getServer()); if (queue == null) return;
         for (var endpoint : List.copyOf(queue.endpoints))
             if (library.equals(endpoint.cloudLibraryId()) && lease.nodeId().equals(endpoint.cloudNodeId()))
                 endpoint.cloudOriginalRemoved(entry, lease.stableSlot());
     }
+    /** AE rotates equal patterns between their providers. Clip a large smart batch to
+     * one fair share so its first provider cannot reserve the entire plan. Read only. */
+    public static long dispatchShare(CloudPatternBufferMachine buffer, appeng.api.crafting.IPatternDetails pattern, long requested) {
+        if (requested <= 0 || !(buffer.getLevel() instanceof net.minecraft.server.level.ServerLevel level)) return requested;
+        Queue queue = QUEUES.get(level.getServer()); if (queue == null) return requested;
+        var tag = pattern.getDefinition().getTag();
+        if (tag == null) return requested;
+        var route = tag.getCompound(IvBuffers.ROUTE_KEY);
+        if (!route.hasUUID("entry")) return requested;
+        UUID entry = route.getUUID("entry");
+        var backlogs = new ArrayList<java.math.BigInteger>(); var priorities = new ArrayList<Integer>(); int selected = -1;
+        for (var peer : List.copyOf(queue.endpoints)) {
+            if (!Objects.equals(buffer.cloudLibraryId(), peer.cloudLibraryId()) || peer.getGrid() != buffer.getGrid()
+                    || !peer.iv$getState().accepting || peer.iv$getState().jobs.size() >= IvBuffers.MAX_QUEUED_DISPATCHES
+                    || !peer.cloudReady(true) || !peer.getAvailablePatterns().contains(pattern)) continue;
+            if (peer == buffer) selected = backlogs.size();
+            var pending = java.math.BigInteger.ZERO;
+            for (var job : peer.iv$getState().jobs) if (entry.equals(job.cloudPattern) && !job.cancelled)
+                pending = pending.add(CloudDispatchShares.repetitions(job.remaining, job.parallel, job.cloudPatternOperations));
+            backlogs.add(pending); priorities.add(peer.getPatternPriority());
+        }
+        return selected < 0 || backlogs.size() <= 1 ? requested : CloudDispatchShares.share(requested, backlogs, priorities, selected);
+    }
     public static void enqueue(CloudPatternBufferMachine buffer) {
         if (!(buffer.getLevel() instanceof net.minecraft.server.level.ServerLevel level)) return;
         Queue queue = QUEUES.computeIfAbsent(level.getServer(), ignored -> new Queue());
         try {
-            queue.regroup(buffer);
             if (!buffer.cloudReady(true) || queue.scans.containsKey(buffer)) return;
             queue.scans.put(buffer, new Scan(buffer)); queue.order.addLast(buffer);
         } catch (RuntimeException failure) {
             // Readiness and scan creation read durable authority too. A failed shard
             // must stop this endpoint, including callbacks from another node's finally.
-            queue.scans.remove(buffer); queue.order.remove(buffer); queue.ungroup(buffer);
+            queue.scans.remove(buffer); queue.order.remove(buffer);
             buffer.cloudClassificationFailed();
             com.gtl.enhancedcore.common.recipe.iv.IvTaskLog.error(buffer, null, "CLOUD_CLASSIFY", failure);
         }
@@ -327,7 +238,7 @@ public final class CloudPatternAllocator {
         Queue queue = QUEUES.get(level.getServer()); return queue != null && queue.scans.containsKey(buffer);
     }
     public static void remove(CloudPatternBufferMachine buffer) {
-        for (Queue queue : QUEUES.values()) { queue.order.remove(buffer); queue.scans.remove(buffer); queue.endpoints.remove(buffer); queue.ungroup(buffer); }
+        for (Queue queue : QUEUES.values()) { queue.order.remove(buffer); queue.scans.remove(buffer); queue.endpoints.remove(buffer); }
         availabilityChanged(buffer);
     }
     @SubscribeEvent public static void tick(TickEvent.ServerTickEvent event) {
@@ -358,7 +269,7 @@ public final class CloudPatternAllocator {
         if (event.getPlayer() != null) return;
         CloudPatternMatching.clear(event.getPlayerList().getServer());
         Queue queue = QUEUES.get(event.getPlayerList().getServer()); if (queue == null) return;
-        queue.scans.clear(); queue.order.clear(); queue.selections.clear();
+        queue.scans.clear(); queue.order.clear();
         queue.endpoints.forEach(CloudPatternBufferMachine::cloudRecipesChanged);
     }
 }

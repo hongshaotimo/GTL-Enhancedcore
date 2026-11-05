@@ -1,0 +1,4321 @@
+{
+  "schemaVersion": 1,
+  "presetIdentity": "CAMPUS_FACTORY",
+  "reviewedDate": "2026-11-04",
+  "catalogResource": "factory_campus_machines.json",
+  "catalogSha256": "379abcd2bad4608db236632ba4ad2a747c998c3dc91c3d6faf6a6c4dcc39819b",
+  "frozenFrom": "planned_campus_machines.json on 2026-11-04; byte-identical independent snapshot",
+  "boundary": "Stage uses audited construction voltage/component floor, not an exhaustive quest or material unlock graph. Function departments are architectural planning groups, not a change to recipes, machine behavior or binding range.",
+  "groupingPolicy": "department + placementStage; early ULV-HV, mid EV-UV, late UHV-MAX. User-requested early machines retain original planningTier with the existing placementTier override. Large machines may occupy their own hall. Shared machines use the relevant departmental production floor without standalone machine markers.",
+  "departments": [
+    {
+      "id": "steam",
+      "nameKey": "gtl_enhancedcore.factory.department.steam",
+      "accentRgb": "B89457",
+      "architecture": "boiler-turbine-hall",
+      "function": "Steam supply and the universal steam production floor",
+      "machineKinds": 5,
+      "dedicatedSlots": 22
+    },
+    {
+      "id": "ore",
+      "nameKey": "gtl_enhancedcore.factory.department.ore",
+      "accentRgb": "B7A779",
+      "architecture": "mineral-processing-hall",
+      "function": "Resource extraction, crushing, beneficiation and hydrometallurgy",
+      "machineKinds": 27,
+      "dedicatedSlots": 31
+    },
+    {
+      "id": "metallurgy",
+      "nameKey": "gtl_enhancedcore.factory.department.metallurgy",
+      "accentRgb": "C7795E",
+      "architecture": "foundry-sawtooth-hall",
+      "function": "Smelting, forming, cooling and advanced material forging",
+      "machineKinds": 38,
+      "dedicatedSlots": 40
+    },
+    {
+      "id": "chemistry",
+      "nameKey": "gtl_enhancedcore.factory.department.chemistry",
+      "accentRgb": "68AAB0",
+      "architecture": "process-plant-hall",
+      "function": "Reaction, distillation, separation and bulk fluid processing",
+      "machineKinds": 34,
+      "dedicatedSlots": 40
+    },
+    {
+      "id": "precision",
+      "nameKey": "gtl_enhancedcore.factory.department.precision",
+      "accentRgb": "7399B8",
+      "architecture": "clean-assembly-hall",
+      "function": "Mechanical components, electronics, assembly and packaging",
+      "machineKinds": 28,
+      "dedicatedSlots": 28
+    },
+    {
+      "id": "biology",
+      "nameKey": "gtl_enhancedcore.factory.department.biology",
+      "accentRgb": "8DA16B",
+      "architecture": "glass-conservatory-hall",
+      "function": "Cultivation, fermentation, incubation and biological modules",
+      "machineKinds": 8,
+      "dedicatedSlots": 12
+    },
+    {
+      "id": "energy",
+      "nameKey": "gtl_enhancedcore.factory.department.energy",
+      "accentRgb": "BE9B5C",
+      "architecture": "reactor-vault-hall",
+      "function": "Power generation, fusion, nuclear irradiation and thermal services",
+      "machineKinds": 29,
+      "dedicatedSlots": 27
+    },
+    {
+      "id": "computation",
+      "nameKey": "gtl_enhancedcore.factory.department.computation",
+      "accentRgb": "8E8AB6",
+      "architecture": "research-control-hall",
+      "function": "Research data, computation, pattern storage and site control",
+      "machineKinds": 9,
+      "dedicatedSlots": 4
+    },
+    {
+      "id": "space",
+      "nameKey": "gtl_enhancedcore.factory.department.space",
+      "accentRgb": "998DB8",
+      "architecture": "orbital-gantry-hall",
+      "function": "Space logistics, exotic matter and cosmic-scale infrastructure",
+      "machineKinds": 24,
+      "dedicatedSlots": 22
+    }
+  ],
+  "adjacencyHints": [
+    {
+      "ids": [
+        "gtladditions:forge_of_the_antichrist",
+        "gtladditions:recursive_reverse_array"
+      ],
+      "reason": "The recursive array binds to one forge; keep their independent host/module envelopes nearby"
+    },
+    {
+      "ids": [
+        "gtceu:digestion_tank",
+        "gtceu:dissolving_tank",
+        "gtl_enhancedcore:basic_ore_processing_plant"
+      ],
+      "reason": "Early mineral preparation and hydrometallurgy form one resource-processing department"
+    },
+    {
+      "ids": [
+        "gtceu:flotation_cell_regulator",
+        "gtceu:isa_mill",
+        "gtceu:integrated_ore_processor"
+      ],
+      "reason": "Mid-stage ore-beneficiation process chain"
+    },
+    {
+      "ids": [
+        "gtceu:research_station",
+        "gtceu:high_performance_computation_array",
+        "gtceu:data_bank",
+        "gtceu:network_switch",
+        "gtl_enhancedcore:cloud_pattern_library"
+      ],
+      "reason": "Research, computation and recipe data services belong near precision assembly"
+    },
+    {
+      "ids": [
+        "gtceu:bronze_large_boiler",
+        "gtl_enhancedcore:industrial_steam_platform"
+      ],
+      "reason": "The explicitly requested early steam capacity forms a common boiler/production complex"
+    }
+  ],
+  "counts": {
+    "machineKinds": 202,
+    "dedicatedKinds": 156,
+    "dedicatedSlots": 226,
+    "sharedKinds": 46,
+    "excludedModuleKinds": 16
+  },
+  "entries": [
+    {
+      "id": "gtceu:a_mass_fabricator",
+      "allocation": "dedicated",
+      "copies": 1,
+      "planningTier": 12,
+      "placementTier": 12,
+      "stage": "late",
+      "placementStage": "late",
+      "department": "space",
+      "hallGroup": "space-late",
+      "tierEvidenceStatus": "voltage-confirmed",
+      "tierEvidenceSource": "instance:kubejs/server_scripts/machine_progression.js",
+      "functionEvidence": {
+        "basis": "audited-runtime-recipe-types",
+        "source": "factory_campus_machines.json#machines/gtceu:a_mass_fabricator/themeEvidence/recipeTypes",
+        "recipeTypes": [
+          "gtceu:mass_fabricator"
+        ]
+      }
+    },
+    {
+      "id": "gtceu:active_transformer",
+      "allocation": "shared",
+      "copies": 1,
+      "planningTier": 6,
+      "placementTier": 6,
+      "stage": "mid",
+      "placementStage": "mid",
+      "department": "energy",
+      "hallGroup": "energy-mid",
+      "tierEvidenceStatus": "voltage-confirmed",
+      "tierEvidenceSource": "dependency-class:com.gregtechceu.gtceu.data.recipe.misc.ComputerRecipes",
+      "functionEvidence": {
+        "basis": "dependency-role-text",
+        "source": "dependency:gtceu-1.20.1-1.4.4.jar!assets/gtceu/lang/zh_cn.json#gtceu.machine.active_transformer.tooltip.1",
+        "sourceSha256": "e7b5239e1fedd1096f55e9408cf673b01ddbed14c806f0368f02386137289f12",
+        "role": "Aggregates and distributes energy inputs/outputs"
+      }
+    },
+    {
+      "id": "gtceu:advanced_hyper_reactor",
+      "allocation": "dedicated",
+      "copies": 1,
+      "planningTier": 11,
+      "placementTier": 11,
+      "stage": "late",
+      "placementStage": "late",
+      "department": "energy",
+      "hallGroup": "energy-late",
+      "tierEvidenceStatus": "voltage-confirmed",
+      "tierEvidenceSource": "instance:kubejs/server_scripts/machine_progression.js",
+      "functionEvidence": {
+        "basis": "audited-runtime-recipe-types",
+        "source": "factory_campus_machines.json#machines/gtceu:advanced_hyper_reactor/themeEvidence/recipeTypes",
+        "recipeTypes": [
+          "gtceu:advanced_hyper_reactor"
+        ]
+      }
+    },
+    {
+      "id": "gtceu:advanced_infinite_driller",
+      "allocation": "dedicated",
+      "copies": 1,
+      "planningTier": 10,
+      "placementTier": 10,
+      "stage": "late",
+      "placementStage": "late",
+      "department": "ore",
+      "hallGroup": "ore-late",
+      "tierEvidenceStatus": "voltage-confirmed",
+      "tierEvidenceSource": "dependency-class:org.gtlcore.gtlcore.data.recipe.MachineRecipe",
+      "functionEvidence": {
+        "basis": "dependency-role-text",
+        "source": "dependency:gtlcore-1.2.3.2-fix4.jar!assets/gtceu/lang/zh_cn.json#gtceu.machine.advanced_infinite_driller.drilled_fluid.tooltip.1",
+        "sourceSha256": "c44b8212b8d3a210eabd36e3efaf7804e78e25fc44d45f7b0fb048453aaaf346",
+        "role": "Extracts drilling fluid and requires active heat management"
+      }
+    },
+    {
+      "id": "gtceu:advanced_integrated_ore_processor",
+      "allocation": "dedicated",
+      "copies": 1,
+      "planningTier": 10,
+      "placementTier": 10,
+      "stage": "late",
+      "placementStage": "late",
+      "department": "ore",
+      "hallGroup": "ore-late",
+      "tierEvidenceStatus": "voltage-confirmed",
+      "tierEvidenceSource": "instance:kubejs/server_scripts/nuclear_rocket_fuels.js",
+      "functionEvidence": {
+        "basis": "audited-runtime-recipe-types",
+        "source": "factory_campus_machines.json#machines/gtceu:advanced_integrated_ore_processor/themeEvidence/recipeTypes",
+        "recipeTypes": [
+          "gtceu:integrated_ore_processor"
+        ]
+      }
+    },
+    {
+      "id": "gtceu:advanced_neutron_activator",
+      "allocation": "dedicated",
+      "copies": 1,
+      "planningTier": 12,
+      "placementTier": 12,
+      "stage": "late",
+      "placementStage": "late",
+      "department": "energy",
+      "hallGroup": "energy-late",
+      "tierEvidenceStatus": "voltage-confirmed",
+      "tierEvidenceSource": "dependency-class:org.gtlcore.gtlcore.data.recipe.MachineRecipe",
+      "functionEvidence": {
+        "basis": "audited-runtime-recipe-types",
+        "source": "factory_campus_machines.json#machines/gtceu:advanced_neutron_activator/themeEvidence/recipeTypes",
+        "recipeTypes": [
+          "gtceu:neutron_activator"
+        ]
+      }
+    },
+    {
+      "id": "gtceu:advanced_rare_earth_centrifugal",
+      "allocation": "dedicated",
+      "copies": 1,
+      "planningTier": 12,
+      "placementTier": 12,
+      "stage": "late",
+      "placementStage": "late",
+      "department": "ore",
+      "hallGroup": "ore-late",
+      "tierEvidenceStatus": "voltage-confirmed",
+      "tierEvidenceSource": "dependency-class:org.gtlcore.gtlcore.data.recipe.MachineRecipe",
+      "functionEvidence": {
+        "basis": "audited-runtime-recipe-types",
+        "source": "factory_campus_machines.json#machines/gtceu:advanced_rare_earth_centrifugal/themeEvidence/recipeTypes",
+        "recipeTypes": [
+          "gtceu:rare_earth_centrifugal"
+        ]
+      }
+    },
+    {
+      "id": "gtceu:advanced_sps_crafting",
+      "allocation": "dedicated",
+      "copies": 1,
+      "planningTier": 12,
+      "placementTier": 12,
+      "stage": "late",
+      "placementStage": "late",
+      "department": "precision",
+      "hallGroup": "precision-late",
+      "tierEvidenceStatus": "voltage-confirmed",
+      "tierEvidenceSource": "instance:kubejs/server_scripts/machine_progression.js",
+      "functionEvidence": {
+        "basis": "audited-runtime-recipe-types",
+        "source": "factory_campus_machines.json#machines/gtceu:advanced_sps_crafting/themeEvidence/recipeTypes",
+        "recipeTypes": [
+          "gtceu:sps_crafting"
+        ]
+      }
+    },
+    {
+      "id": "gtceu:advanced_vacuum_drying_furnace",
+      "allocation": "dedicated",
+      "copies": 1,
+      "planningTier": 11,
+      "placementTier": 11,
+      "stage": "late",
+      "placementStage": "late",
+      "department": "chemistry",
+      "hallGroup": "chemistry-late",
+      "tierEvidenceStatus": "voltage-confirmed",
+      "tierEvidenceSource": "dependency-class:org.gtlcore.gtlcore.data.recipe.MachineRecipe",
+      "functionEvidence": {
+        "basis": "audited-runtime-recipe-types",
+        "source": "factory_campus_machines.json#machines/gtceu:advanced_vacuum_drying_furnace/themeEvidence/recipeTypes",
+        "recipeTypes": [
+          "gtceu:vacuum_drying",
+          "gtceu:dehydrator"
+        ]
+      }
+    },
+    {
+      "id": "gtceu:aggregation_device",
+      "allocation": "dedicated",
+      "copies": 1,
+      "planningTier": 10,
+      "placementTier": 10,
+      "stage": "late",
+      "placementStage": "late",
+      "department": "precision",
+      "hallGroup": "precision-late",
+      "tierEvidenceStatus": "voltage-confirmed",
+      "tierEvidenceSource": "instance:kubejs/server_scripts/machine_components.js",
+      "functionEvidence": {
+        "basis": "audited-runtime-recipe-types",
+        "source": "factory_campus_machines.json#machines/gtceu:aggregation_device/themeEvidence/recipeTypes",
+        "recipeTypes": [
+          "gtceu:aggregation_device"
+        ]
+      }
+    },
+    {
+      "id": "gtceu:alloy_blast_smelter",
+      "allocation": "shared",
+      "copies": 1,
+      "planningTier": 4,
+      "placementTier": 4,
+      "stage": "mid",
+      "placementStage": "mid",
+      "department": "metallurgy",
+      "hallGroup": "metallurgy-mid",
+      "tierEvidenceStatus": "component-floor",
+      "tierEvidenceSource": "dependency-class:com.gregtechceu.gtceu.data.recipe.misc.GCyMRecipes",
+      "functionEvidence": {
+        "basis": "audited-runtime-recipe-types",
+        "source": "factory_campus_machines.json#machines/gtceu:alloy_blast_smelter/themeEvidence/recipeTypes",
+        "recipeTypes": [
+          "gtceu:alloy_blast_smelter"
+        ]
+      }
+    },
+    {
+      "id": "gtceu:annihilate_generator",
+      "allocation": "dedicated",
+      "copies": 1,
+      "planningTier": 12,
+      "placementTier": 12,
+      "stage": "late",
+      "placementStage": "late",
+      "department": "energy",
+      "hallGroup": "energy-late",
+      "tierEvidenceStatus": "voltage-confirmed",
+      "tierEvidenceSource": "instance:kubejs/server_scripts/machine_progression.js",
+      "functionEvidence": {
+        "basis": "audited-runtime-recipe-types",
+        "source": "factory_campus_machines.json#machines/gtceu:annihilate_generator/themeEvidence/recipeTypes",
+        "recipeTypes": [
+          "gtceu:annihilate_generator"
+        ]
+      }
+    },
+    {
+      "id": "gtceu:assembly_line",
+      "allocation": "dedicated",
+      "copies": 1,
+      "planningTier": 5,
+      "placementTier": 5,
+      "stage": "mid",
+      "placementStage": "mid",
+      "department": "precision",
+      "hallGroup": "precision-mid",
+      "tierEvidenceStatus": "component-floor",
+      "tierEvidenceSource": "dependency-class:com.gregtechceu.gtceu.data.recipe.misc.MetaTileEntityLoader",
+      "functionEvidence": {
+        "basis": "audited-runtime-recipe-types",
+        "source": "factory_campus_machines.json#machines/gtceu:assembly_line/themeEvidence/recipeTypes",
+        "recipeTypes": [
+          "gtceu:assembly_line"
+        ]
+      }
+    },
+    {
+      "id": "gtceu:atomic_energy_excitation_plant",
+      "allocation": "dedicated",
+      "copies": 1,
+      "planningTier": 11,
+      "placementTier": 11,
+      "stage": "late",
+      "placementStage": "late",
+      "department": "energy",
+      "hallGroup": "energy-late",
+      "tierEvidenceStatus": "voltage-confirmed",
+      "tierEvidenceSource": "instance:kubejs/server_scripts/petrochemistry.js",
+      "functionEvidence": {
+        "basis": "audited-runtime-recipe-types",
+        "source": "factory_campus_machines.json#machines/gtceu:atomic_energy_excitation_plant/themeEvidence/recipeTypes",
+        "recipeTypes": [
+          "gtceu:fuel_refining",
+          "gtceu:atomic_energy_excitation"
+        ]
+      }
+    },
+    {
+      "id": "gtceu:bedrock_drilling_rig",
+      "allocation": "dedicated",
+      "copies": 1,
+      "planningTier": 10,
+      "placementTier": 10,
+      "stage": "late",
+      "placementStage": "late",
+      "department": "ore",
+      "hallGroup": "ore-late",
+      "tierEvidenceStatus": "voltage-confirmed",
+      "tierEvidenceSource": "instance:kubejs/server_scripts/machine_progression.js",
+      "functionEvidence": {
+        "basis": "audited-runtime-recipe-types",
+        "source": "factory_campus_machines.json#machines/gtceu:bedrock_drilling_rig/themeEvidence/recipeTypes",
+        "recipeTypes": [
+          "gtceu:bedrock_drilling_rig"
+        ]
+      }
+    },
+    {
+      "id": "gtceu:blaze_blast_furnace",
+      "allocation": "shared",
+      "copies": 1,
+      "planningTier": 5,
+      "placementTier": 5,
+      "stage": "mid",
+      "placementStage": "mid",
+      "department": "metallurgy",
+      "hallGroup": "metallurgy-mid",
+      "tierEvidenceStatus": "component-floor",
+      "tierEvidenceSource": "instance:kubejs/server_scripts/machine_crafting.js",
+      "functionEvidence": {
+        "basis": "audited-runtime-recipe-types",
+        "source": "factory_campus_machines.json#machines/gtceu:blaze_blast_furnace/themeEvidence/recipeTypes",
+        "recipeTypes": [
+          "gtceu:electric_blast_furnace"
+        ]
+      }
+    },
+    {
+      "id": "gtceu:bronze_large_boiler",
+      "allocation": "dedicated",
+      "copies": 4,
+      "planningTier": 0,
+      "placementTier": 0,
+      "stage": "early",
+      "placementStage": "early",
+      "department": "steam",
+      "hallGroup": "steam-early",
+      "tierEvidenceStatus": "component-floor",
+      "tierEvidenceSource": "dependency-class:com.gregtechceu.gtceu.data.recipe.misc.MetaTileEntityLoader",
+      "functionEvidence": {
+        "basis": "audited-runtime-recipe-types",
+        "source": "factory_campus_machines.json#machines/gtceu:bronze_large_boiler/themeEvidence/recipeTypes",
+        "recipeTypes": [
+          "gtceu:large_boiler"
+        ]
+      }
+    },
+    {
+      "id": "gtceu:chemical_distort",
+      "allocation": "dedicated",
+      "copies": 4,
+      "planningTier": 8,
+      "placementTier": 8,
+      "stage": "mid",
+      "placementStage": "mid",
+      "department": "chemistry",
+      "hallGroup": "chemistry-mid",
+      "tierEvidenceStatus": "voltage-confirmed",
+      "tierEvidenceSource": "instance:kubejs/server_scripts/nanotechnology.js",
+      "functionEvidence": {
+        "basis": "audited-runtime-recipe-types",
+        "source": "factory_campus_machines.json#machines/gtceu:chemical_distort/themeEvidence/recipeTypes",
+        "recipeTypes": [
+          "gtceu:distort"
+        ]
+      }
+    },
+    {
+      "id": "gtceu:chemical_plant",
+      "allocation": "shared",
+      "copies": 1,
+      "planningTier": 6,
+      "placementTier": 6,
+      "stage": "mid",
+      "placementStage": "mid",
+      "department": "chemistry",
+      "hallGroup": "chemistry-mid",
+      "tierEvidenceStatus": "voltage-confirmed",
+      "tierEvidenceSource": "instance:kubejs/server_scripts/machine_progression.js",
+      "functionEvidence": {
+        "basis": "audited-runtime-recipe-types",
+        "source": "factory_campus_machines.json#machines/gtceu:chemical_plant/themeEvidence/recipeTypes",
+        "recipeTypes": [
+          "gtceu:large_chemical_reactor"
+        ]
+      }
+    },
+    {
+      "id": "gtceu:circuit_assembly_line",
+      "allocation": "dedicated",
+      "copies": 1,
+      "planningTier": 8,
+      "placementTier": 8,
+      "stage": "mid",
+      "placementStage": "mid",
+      "department": "precision",
+      "hallGroup": "precision-mid",
+      "tierEvidenceStatus": "voltage-confirmed",
+      "tierEvidenceSource": "instance:kubejs/server_scripts/machine_progression.js",
+      "functionEvidence": {
+        "basis": "audited-runtime-recipe-types",
+        "source": "factory_campus_machines.json#machines/gtceu:circuit_assembly_line/themeEvidence/recipeTypes",
+        "recipeTypes": [
+          "gtceu:circuit_assembly_line"
+        ]
+      }
+    },
+    {
+      "id": "gtceu:cold_ice_freezer",
+      "allocation": "shared",
+      "copies": 1,
+      "planningTier": 5,
+      "placementTier": 5,
+      "stage": "mid",
+      "placementStage": "mid",
+      "department": "metallurgy",
+      "hallGroup": "metallurgy-mid",
+      "tierEvidenceStatus": "component-floor",
+      "tierEvidenceSource": "instance:kubejs/server_scripts/machine_crafting.js",
+      "functionEvidence": {
+        "basis": "audited-runtime-recipe-types",
+        "source": "factory_campus_machines.json#machines/gtceu:cold_ice_freezer/themeEvidence/recipeTypes",
+        "recipeTypes": [
+          "gtceu:vacuum_freezer"
+        ]
+      }
+    },
+    {
+      "id": "gtceu:component_assembly_line",
+      "allocation": "dedicated",
+      "copies": 1,
+      "planningTier": 9,
+      "placementTier": 9,
+      "stage": "late",
+      "placementStage": "late",
+      "department": "precision",
+      "hallGroup": "precision-late",
+      "tierEvidenceStatus": "voltage-confirmed",
+      "tierEvidenceSource": "instance:kubejs/server_scripts/component_assembly.js",
+      "functionEvidence": {
+        "basis": "audited-runtime-recipe-types",
+        "source": "factory_campus_machines.json#machines/gtceu:component_assembly_line/themeEvidence/recipeTypes",
+        "recipeTypes": [
+          "gtceu:component_assembly_line"
+        ]
+      }
+    },
+    {
+      "id": "gtceu:cooling_tower",
+      "allocation": "dedicated",
+      "copies": 1,
+      "planningTier": 9,
+      "placementTier": 9,
+      "stage": "late",
+      "placementStage": "late",
+      "department": "energy",
+      "hallGroup": "energy-late",
+      "tierEvidenceStatus": "voltage-confirmed",
+      "tierEvidenceSource": "instance:kubejs/server_scripts/machine_progression.js",
+      "functionEvidence": {
+        "basis": "audited-runtime-recipe-types",
+        "source": "factory_campus_machines.json#machines/gtceu:cooling_tower/themeEvidence/recipeTypes",
+        "recipeTypes": [
+          "gtceu:vacuum_freezer",
+          "gtceu:plasma_condenser"
+        ]
+      }
+    },
+    {
+      "id": "gtceu:cracker",
+      "allocation": "shared",
+      "copies": 2,
+      "planningTier": 3,
+      "placementTier": 3,
+      "stage": "early",
+      "placementStage": "early",
+      "department": "chemistry",
+      "hallGroup": "chemistry-early",
+      "tierEvidenceStatus": "component-floor",
+      "tierEvidenceSource": "dependency-class:com.gregtechceu.gtceu.data.recipe.misc.MetaTileEntityLoader",
+      "functionEvidence": {
+        "basis": "audited-runtime-recipe-types",
+        "source": "factory_campus_machines.json#machines/gtceu:cracker/themeEvidence/recipeTypes",
+        "recipeTypes": [
+          "gtceu:cracker"
+        ]
+      }
+    },
+    {
+      "id": "gtceu:create_aggregation",
+      "allocation": "dedicated",
+      "copies": 1,
+      "planningTier": 12,
+      "placementTier": 12,
+      "stage": "late",
+      "placementStage": "late",
+      "department": "precision",
+      "hallGroup": "precision-late",
+      "tierEvidenceStatus": "voltage-confirmed",
+      "tierEvidenceSource": "instance:kubejs/server_scripts/machine_progression.js",
+      "functionEvidence": {
+        "basis": "audited-runtime-recipe-types",
+        "source": "factory_campus_machines.json#machines/gtceu:create_aggregation/themeEvidence/recipeTypes",
+        "recipeTypes": [
+          "gtceu:create_aggregation"
+        ]
+      }
+    },
+    {
+      "id": "gtceu:create_computation",
+      "allocation": "shared",
+      "copies": 1,
+      "planningTier": 14,
+      "placementTier": 14,
+      "stage": "late",
+      "placementStage": "late",
+      "department": "computation",
+      "hallGroup": "computation-late",
+      "tierEvidenceStatus": "voltage-confirmed",
+      "tierEvidenceSource": "instance:kubejs/server_scripts/machine_progression.js:244",
+      "functionEvidence": {
+        "basis": "dependency-role-text",
+        "source": "dependency:gtlcore-1.2.3.2-fix4.jar!assets/gtceu/lang/zh_cn.json#gtceu.machine.create_computation.tooltip.0",
+        "sourceSha256": "c44b8212b8d3a210eabd36e3efaf7804e78e25fc44d45f7b0fb048453aaaf346",
+        "role": "Creative computation source requiring MAX voltage"
+      }
+    },
+    {
+      "id": "gtceu:crystalline_infinity",
+      "allocation": "dedicated",
+      "copies": 1,
+      "planningTier": 10,
+      "placementTier": 10,
+      "stage": "late",
+      "placementStage": "late",
+      "department": "chemistry",
+      "hallGroup": "chemistry-late",
+      "tierEvidenceStatus": "voltage-confirmed",
+      "tierEvidenceSource": "instance:kubejs/server_scripts/high_energy_processing.js",
+      "functionEvidence": {
+        "basis": "audited-runtime-recipe-types",
+        "source": "factory_campus_machines.json#machines/gtceu:crystalline_infinity/themeEvidence/recipeTypes",
+        "recipeTypes": [
+          "gtceu:autoclave",
+          "gtceu:chemical_bath",
+          "gtceu:ore_washer"
+        ]
+      }
+    },
+    {
+      "id": "gtceu:data_bank",
+      "allocation": "shared",
+      "copies": 1,
+      "planningTier": 5,
+      "placementTier": 5,
+      "stage": "mid",
+      "placementStage": "mid",
+      "department": "computation",
+      "hallGroup": "computation-mid",
+      "tierEvidenceStatus": "voltage-confirmed",
+      "tierEvidenceSource": "dependency-class:com.gregtechceu.gtceu.data.recipe.misc.ComputerRecipes",
+      "functionEvidence": {
+        "basis": "dependency-role-text",
+        "source": "dependency:gtceu-1.20.1-1.4.4.jar!assets/gtceu/lang/zh_cn.json#gtceu.multiblock.data_bank.description",
+        "sourceSha256": "e7b5239e1fedd1096f55e9408cf673b01ddbed14c806f0368f02386137289f12",
+        "role": "Stores and supplies assembly-line research data"
+      }
+    },
+    {
+      "id": "gtceu:decay_hastener",
+      "allocation": "shared",
+      "copies": 1,
+      "planningTier": 8,
+      "placementTier": 8,
+      "stage": "mid",
+      "placementStage": "mid",
+      "department": "energy",
+      "hallGroup": "energy-mid",
+      "tierEvidenceStatus": "voltage-confirmed",
+      "tierEvidenceSource": "instance:kubejs/server_scripts/machine_progression.js",
+      "functionEvidence": {
+        "basis": "audited-runtime-recipe-types",
+        "source": "factory_campus_machines.json#machines/gtceu:decay_hastener/themeEvidence/recipeTypes",
+        "recipeTypes": [
+          "gtceu:decay_hastener"
+        ]
+      }
+    },
+    {
+      "id": "gtceu:desulfurizer",
+      "allocation": "dedicated",
+      "copies": 2,
+      "planningTier": 3,
+      "placementTier": 3,
+      "stage": "early",
+      "placementStage": "early",
+      "department": "chemistry",
+      "hallGroup": "chemistry-early",
+      "tierEvidenceStatus": "component-floor",
+      "tierEvidenceSource": "instance:kubejs/server_scripts/machine_crafting.js",
+      "functionEvidence": {
+        "basis": "audited-runtime-recipe-types",
+        "source": "factory_campus_machines.json#machines/gtceu:desulfurizer/themeEvidence/recipeTypes",
+        "recipeTypes": [
+          "gtceu:desulfurizer"
+        ]
+      }
+    },
+    {
+      "id": "gtceu:digestion_tank",
+      "allocation": "dedicated",
+      "copies": 2,
+      "planningTier": 2,
+      "placementTier": 2,
+      "stage": "early",
+      "placementStage": "early",
+      "department": "ore",
+      "hallGroup": "ore-early",
+      "tierEvidenceStatus": "voltage-confirmed",
+      "tierEvidenceSource": "instance:kubejs/server_scripts/trinium_chemistry.js",
+      "functionEvidence": {
+        "basis": "audited-runtime-recipe-types",
+        "source": "factory_campus_machines.json#machines/gtceu:digestion_tank/themeEvidence/recipeTypes",
+        "recipeTypes": [
+          "gtceu:digestion_treatment"
+        ]
+      }
+    },
+    {
+      "id": "gtceu:dimensional_focus_engraving_array",
+      "allocation": "dedicated",
+      "copies": 1,
+      "planningTier": 10,
+      "placementTier": 10,
+      "stage": "late",
+      "placementStage": "late",
+      "department": "precision",
+      "hallGroup": "precision-late",
+      "tierEvidenceStatus": "voltage-confirmed",
+      "tierEvidenceSource": "instance:kubejs/server_scripts/nanotechnology.js",
+      "functionEvidence": {
+        "basis": "audited-runtime-recipe-types",
+        "source": "factory_campus_machines.json#machines/gtceu:dimensional_focus_engraving_array/themeEvidence/recipeTypes",
+        "recipeTypes": [
+          "gtceu:dimensional_focus_engraving_array",
+          "gtceu:laser_engraver"
+        ]
+      }
+    },
+    {
+      "id": "gtceu:dimensionally_transcendent_mixer",
+      "allocation": "dedicated",
+      "copies": 1,
+      "planningTier": 11,
+      "placementTier": 11,
+      "stage": "late",
+      "placementStage": "late",
+      "department": "chemistry",
+      "hallGroup": "chemistry-late",
+      "tierEvidenceStatus": "voltage-confirmed",
+      "tierEvidenceSource": "instance:kubejs/server_scripts/machine_progression.js",
+      "functionEvidence": {
+        "basis": "audited-runtime-recipe-types",
+        "source": "factory_campus_machines.json#machines/gtceu:dimensionally_transcendent_mixer/themeEvidence/recipeTypes",
+        "recipeTypes": [
+          "gtceu:dimensionally_transcendent_mixer",
+          "gtceu:mixer"
+        ]
+      }
+    },
+    {
+      "id": "gtceu:dimensionally_transcendent_plasma_forge",
+      "allocation": "dedicated",
+      "copies": 1,
+      "planningTier": 11,
+      "placementTier": 11,
+      "stage": "late",
+      "placementStage": "late",
+      "department": "metallurgy",
+      "hallGroup": "metallurgy-late",
+      "tierEvidenceStatus": "voltage-confirmed",
+      "tierEvidenceSource": "instance:kubejs/server_scripts/machine_progression.js",
+      "functionEvidence": {
+        "basis": "audited-runtime-recipe-types",
+        "source": "factory_campus_machines.json#machines/gtceu:dimensionally_transcendent_plasma_forge/themeEvidence/recipeTypes",
+        "recipeTypes": [
+          "gtceu:dimensionally_transcendent_plasma_forge",
+          "gtceu:stellar_forge"
+        ]
+      }
+    },
+    {
+      "id": "gtceu:dimensionally_transcendent_steam_boiler",
+      "allocation": "dedicated",
+      "copies": 1,
+      "planningTier": 5,
+      "placementTier": 5,
+      "stage": "mid",
+      "placementStage": "mid",
+      "department": "steam",
+      "hallGroup": "steam-mid",
+      "tierEvidenceStatus": "voltage-confirmed",
+      "tierEvidenceSource": "instance:kubejs/server_scripts/high_energy_processing.js",
+      "functionEvidence": {
+        "basis": "audited-runtime-recipe-types",
+        "source": "factory_campus_machines.json#machines/gtceu:dimensionally_transcendent_steam_boiler/themeEvidence/recipeTypes",
+        "recipeTypes": [
+          "gtceu:large_boiler"
+        ]
+      }
+    },
+    {
+      "id": "gtceu:dissolving_tank",
+      "allocation": "shared",
+      "copies": 1,
+      "planningTier": 2,
+      "placementTier": 2,
+      "stage": "early",
+      "placementStage": "early",
+      "department": "ore",
+      "hallGroup": "ore-early",
+      "tierEvidenceStatus": "voltage-confirmed",
+      "tierEvidenceSource": "instance:kubejs/server_scripts/trinium_chemistry.js",
+      "functionEvidence": {
+        "basis": "audited-runtime-recipe-types",
+        "source": "factory_campus_machines.json#machines/gtceu:dissolving_tank/themeEvidence/recipeTypes",
+        "recipeTypes": [
+          "gtceu:dissolution_treatment"
+        ]
+      }
+    },
+    {
+      "id": "gtceu:distillation_tower",
+      "allocation": "dedicated",
+      "copies": 3,
+      "planningTier": 3,
+      "placementTier": 3,
+      "stage": "early",
+      "placementStage": "early",
+      "department": "chemistry",
+      "hallGroup": "chemistry-early",
+      "tierEvidenceStatus": "component-floor",
+      "tierEvidenceSource": "dependency-class:com.gregtechceu.gtceu.data.recipe.misc.MetaTileEntityLoader",
+      "functionEvidence": {
+        "basis": "audited-runtime-recipe-types",
+        "source": "factory_campus_machines.json#machines/gtceu:distillation_tower/themeEvidence/recipeTypes",
+        "recipeTypes": [
+          "gtceu:distillation_tower"
+        ]
+      }
+    },
+    {
+      "id": "gtceu:door_of_create",
+      "allocation": "dedicated",
+      "copies": 1,
+      "planningTier": 14,
+      "placementTier": 14,
+      "stage": "late",
+      "placementStage": "late",
+      "department": "precision",
+      "hallGroup": "precision-late",
+      "tierEvidenceStatus": "voltage-confirmed",
+      "tierEvidenceSource": "instance:kubejs/server_scripts/quantum_materials.js",
+      "functionEvidence": {
+        "basis": "audited-runtime-recipe-types",
+        "source": "factory_campus_machines.json#machines/gtceu:door_of_create/themeEvidence/recipeTypes",
+        "recipeTypes": [
+          "gtceu:door_of_create"
+        ]
+      }
+    },
+    {
+      "id": "gtceu:dragon_egg_copier",
+      "allocation": "shared",
+      "copies": 1,
+      "planningTier": 12,
+      "placementTier": 12,
+      "stage": "late",
+      "placementStage": "late",
+      "department": "precision",
+      "hallGroup": "precision-late",
+      "tierEvidenceStatus": "component-floor",
+      "tierEvidenceSource": "instance:kubejs/server_scripts/machine_crafting.js",
+      "functionEvidence": {
+        "basis": "audited-runtime-recipe-types",
+        "source": "factory_campus_machines.json#machines/gtceu:dragon_egg_copier/themeEvidence/recipeTypes",
+        "recipeTypes": [
+          "gtceu:dragon_egg_copier"
+        ]
+      }
+    },
+    {
+      "id": "gtceu:dyson_sphere",
+      "allocation": "dedicated",
+      "copies": 1,
+      "planningTier": 11,
+      "placementTier": 11,
+      "stage": "late",
+      "placementStage": "late",
+      "department": "space",
+      "hallGroup": "space-late",
+      "tierEvidenceStatus": "voltage-confirmed",
+      "tierEvidenceSource": "instance:kubejs/server_scripts/petrochemistry.js",
+      "functionEvidence": {
+        "basis": "audited-runtime-recipe-types",
+        "source": "factory_campus_machines.json#machines/gtceu:dyson_sphere/themeEvidence/recipeTypes",
+        "recipeTypes": [
+          "gtceu:dyson_sphere"
+        ]
+      }
+    },
+    {
+      "id": "gtceu:electric_blast_furnace",
+      "allocation": "dedicated",
+      "copies": 12,
+      "planningTier": 1,
+      "placementTier": 1,
+      "stage": "early",
+      "placementStage": "early",
+      "department": "metallurgy",
+      "hallGroup": "metallurgy-early",
+      "tierEvidenceStatus": "component-floor",
+      "tierEvidenceSource": "dependency-class:com.gregtechceu.gtceu.data.recipe.misc.MetaTileEntityLoader",
+      "functionEvidence": {
+        "basis": "audited-runtime-recipe-types",
+        "source": "factory_campus_machines.json#machines/gtceu:electric_blast_furnace/themeEvidence/recipeTypes",
+        "recipeTypes": [
+          "gtceu:electric_blast_furnace"
+        ]
+      }
+    },
+    {
+      "id": "gtceu:electric_implosion_compressor",
+      "allocation": "dedicated",
+      "copies": 1,
+      "planningTier": 6,
+      "placementTier": 6,
+      "stage": "mid",
+      "placementStage": "mid",
+      "department": "metallurgy",
+      "hallGroup": "metallurgy-mid",
+      "tierEvidenceStatus": "voltage-confirmed",
+      "tierEvidenceSource": "instance:kubejs/server_scripts/high_energy_processing.js",
+      "functionEvidence": {
+        "basis": "audited-runtime-recipe-types",
+        "source": "factory_campus_machines.json#machines/gtceu:electric_implosion_compressor/themeEvidence/recipeTypes",
+        "recipeTypes": [
+          "gtceu:electric_implosion_compressor"
+        ]
+      }
+    },
+    {
+      "id": "gtceu:element_copying",
+      "allocation": "dedicated",
+      "copies": 1,
+      "planningTier": 12,
+      "placementTier": 12,
+      "stage": "late",
+      "placementStage": "late",
+      "department": "space",
+      "hallGroup": "space-late",
+      "tierEvidenceStatus": "voltage-confirmed",
+      "tierEvidenceSource": "instance:kubejs/server_scripts/nanotechnology.js",
+      "functionEvidence": {
+        "basis": "audited-runtime-recipe-types",
+        "source": "factory_campus_machines.json#machines/gtceu:element_copying/themeEvidence/recipeTypes",
+        "recipeTypes": [
+          "gtceu:element_copying"
+        ]
+      }
+    },
+    {
+      "id": "gtceu:engraving_laser_plant",
+      "allocation": "dedicated",
+      "copies": 1,
+      "planningTier": 8,
+      "placementTier": 8,
+      "stage": "mid",
+      "placementStage": "mid",
+      "department": "precision",
+      "hallGroup": "precision-mid",
+      "tierEvidenceStatus": "voltage-confirmed",
+      "tierEvidenceSource": "instance:kubejs/server_scripts/machine_components.js",
+      "functionEvidence": {
+        "basis": "audited-runtime-recipe-types",
+        "source": "factory_campus_machines.json#machines/gtceu:engraving_laser_plant/themeEvidence/recipeTypes",
+        "recipeTypes": [
+          "gtceu:precision_laser_engraver",
+          "gtceu:laser_engraver"
+        ]
+      }
+    },
+    {
+      "id": "gtceu:ev_large_miner",
+      "allocation": "shared",
+      "copies": 1,
+      "planningTier": 4,
+      "placementTier": 4,
+      "stage": "mid",
+      "placementStage": "mid",
+      "department": "ore",
+      "hallGroup": "ore-mid",
+      "tierEvidenceStatus": "voltage-confirmed",
+      "tierEvidenceSource": "dependency-class:com.gregtechceu.gtceu.data.recipe.misc.MetaTileEntityMachineRecipeLoader",
+      "functionEvidence": {
+        "basis": "audited-runtime-recipe-types",
+        "source": "factory_campus_machines.json#machines/gtceu:ev_large_miner/themeEvidence/recipeTypes",
+        "recipeTypes": [
+          "gtceu:macerator"
+        ]
+      }
+    },
+    {
+      "id": "gtceu:evaporation_plant",
+      "allocation": "dedicated",
+      "copies": 2,
+      "planningTier": 3,
+      "placementTier": 3,
+      "stage": "early",
+      "placementStage": "early",
+      "department": "chemistry",
+      "hallGroup": "chemistry-early",
+      "tierEvidenceStatus": "component-floor",
+      "tierEvidenceSource": "dependency-class:com.gregtechceu.gtceu.data.recipe.misc.MetaTileEntityLoader",
+      "functionEvidence": {
+        "basis": "audited-runtime-recipe-types",
+        "source": "factory_campus_machines.json#machines/gtceu:evaporation_plant/themeEvidence/recipeTypes",
+        "recipeTypes": [
+          "gtceu:evaporation"
+        ]
+      }
+    },
+    {
+      "id": "gtceu:eye_of_harmony",
+      "allocation": "dedicated",
+      "copies": 1,
+      "planningTier": 14,
+      "placementTier": 14,
+      "stage": "late",
+      "placementStage": "late",
+      "department": "space",
+      "hallGroup": "space-late",
+      "tierEvidenceStatus": "voltage-confirmed",
+      "tierEvidenceSource": "instance:kubejs/server_scripts/machine_progression.js",
+      "functionEvidence": {
+        "basis": "audited-runtime-recipe-types",
+        "source": "factory_campus_machines.json#machines/gtceu:eye_of_harmony/themeEvidence/recipeTypes",
+        "recipeTypes": [
+          "gtceu:cosmos_simulation"
+        ]
+      }
+    },
+    {
+      "id": "gtceu:field_extruder_factory",
+      "allocation": "dedicated",
+      "copies": 1,
+      "planningTier": 10,
+      "placementTier": 10,
+      "stage": "late",
+      "placementStage": "late",
+      "department": "metallurgy",
+      "hallGroup": "metallurgy-late",
+      "tierEvidenceStatus": "voltage-confirmed",
+      "tierEvidenceSource": "instance:kubejs/server_scripts/nanotechnology.js",
+      "functionEvidence": {
+        "basis": "audited-runtime-recipe-types",
+        "source": "factory_campus_machines.json#machines/gtceu:field_extruder_factory/themeEvidence/recipeTypes",
+        "recipeTypes": [
+          "gtceu:extruder",
+          "gtceu:compressor"
+        ]
+      }
+    },
+    {
+      "id": "gtceu:fishing_ground",
+      "allocation": "dedicated",
+      "copies": 2,
+      "planningTier": 3,
+      "placementTier": 3,
+      "stage": "early",
+      "placementStage": "early",
+      "department": "biology",
+      "hallGroup": "biology-early",
+      "tierEvidenceStatus": "voltage-confirmed",
+      "tierEvidenceSource": "instance:kubejs/server_scripts/coils_and_casings.js",
+      "functionEvidence": {
+        "basis": "audited-runtime-recipe-types",
+        "source": "factory_campus_machines.json#machines/gtceu:fishing_ground/themeEvidence/recipeTypes",
+        "recipeTypes": [
+          "gtceu:fishing_ground"
+        ]
+      }
+    },
+    {
+      "id": "gtceu:fission_reactor",
+      "allocation": "dedicated",
+      "copies": 2,
+      "planningTier": 3,
+      "placementTier": 3,
+      "stage": "early",
+      "placementStage": "early",
+      "department": "energy",
+      "hallGroup": "energy-early",
+      "tierEvidenceStatus": "voltage-confirmed",
+      "tierEvidenceSource": "instance:kubejs/server_scripts/nanotechnology.js",
+      "functionEvidence": {
+        "basis": "audited-runtime-recipe-types",
+        "source": "factory_campus_machines.json#machines/gtceu:fission_reactor/themeEvidence/recipeTypes",
+        "recipeTypes": [
+          "gtceu:fission_reactor"
+        ]
+      }
+    },
+    {
+      "id": "gtceu:flotation_cell_regulator",
+      "allocation": "dedicated",
+      "copies": 1,
+      "planningTier": 6,
+      "placementTier": 6,
+      "stage": "mid",
+      "placementStage": "mid",
+      "department": "ore",
+      "hallGroup": "ore-mid",
+      "tierEvidenceStatus": "voltage-confirmed",
+      "tierEvidenceSource": "instance:kubejs/server_scripts/ore_processing.js",
+      "functionEvidence": {
+        "basis": "audited-runtime-recipe-types",
+        "source": "factory_campus_machines.json#machines/gtceu:flotation_cell_regulator/themeEvidence/recipeTypes",
+        "recipeTypes": [
+          "gtceu:flotating_beneficiation"
+        ]
+      }
+    },
+    {
+      "id": "gtceu:gravitation_shockburst",
+      "allocation": "dedicated",
+      "copies": 1,
+      "planningTier": 14,
+      "placementTier": 14,
+      "stage": "late",
+      "placementStage": "late",
+      "department": "metallurgy",
+      "hallGroup": "metallurgy-late",
+      "tierEvidenceStatus": "voltage-confirmed",
+      "tierEvidenceSource": "instance:kubejs/server_scripts/machine_progression.js:244",
+      "functionEvidence": {
+        "basis": "audited-runtime-recipe-types",
+        "source": "factory_campus_machines.json#machines/gtceu:gravitation_shockburst/themeEvidence/recipeTypes",
+        "recipeTypes": [
+          "gtceu:gravitation_shockburst",
+          "gtceu:electric_implosion_compressor"
+        ]
+      }
+    },
+    {
+      "id": "gtceu:greenhouse",
+      "allocation": "shared",
+      "copies": 1,
+      "planningTier": 2,
+      "placementTier": 2,
+      "stage": "early",
+      "placementStage": "early",
+      "department": "biology",
+      "hallGroup": "biology-early",
+      "tierEvidenceStatus": "component-floor",
+      "tierEvidenceSource": "instance:kubejs/server_scripts/space_resources.js",
+      "functionEvidence": {
+        "basis": "audited-runtime-recipe-types",
+        "source": "factory_campus_machines.json#machines/gtceu:greenhouse/themeEvidence/recipeTypes",
+        "recipeTypes": [
+          "gtceu:greenhouse"
+        ]
+      }
+    },
+    {
+      "id": "gtceu:heat_exchanger",
+      "allocation": "dedicated",
+      "copies": 1,
+      "planningTier": 4,
+      "placementTier": 4,
+      "stage": "mid",
+      "placementStage": "mid",
+      "department": "steam",
+      "hallGroup": "steam-mid",
+      "tierEvidenceStatus": "voltage-confirmed",
+      "tierEvidenceSource": "instance:kubejs/server_scripts/nanotechnology.js",
+      "functionEvidence": {
+        "basis": "audited-runtime-recipe-types",
+        "source": "factory_campus_machines.json#machines/gtceu:heat_exchanger/themeEvidence/recipeTypes",
+        "recipeTypes": [
+          "gtceu:heat_exchanger"
+        ]
+      }
+    },
+    {
+      "id": "gtceu:high_performance_computation_array",
+      "allocation": "shared",
+      "copies": 1,
+      "planningTier": 7,
+      "placementTier": 7,
+      "stage": "mid",
+      "placementStage": "mid",
+      "department": "computation",
+      "hallGroup": "computation-mid",
+      "tierEvidenceStatus": "voltage-confirmed",
+      "tierEvidenceSource": "dependency-class:com.gregtechceu.gtceu.data.recipe.misc.ComputerRecipes",
+      "functionEvidence": {
+        "basis": "dependency-role-text",
+        "source": "dependency:gtceu-1.20.1-1.4.4.jar!assets/gtceu/lang/zh_cn.json#gtceu.machine.high_performance_computation_array.tooltip.1",
+        "sourceSha256": "e7b5239e1fedd1096f55e9408cf673b01ddbed14c806f0368f02386137289f12",
+        "role": "Generates computation while consuming coolant and energy"
+      }
+    },
+    {
+      "id": "gtceu:holy_separator",
+      "allocation": "dedicated",
+      "copies": 1,
+      "planningTier": 10,
+      "placementTier": 10,
+      "stage": "late",
+      "placementStage": "late",
+      "department": "ore",
+      "hallGroup": "ore-late",
+      "tierEvidenceStatus": "voltage-confirmed",
+      "tierEvidenceSource": "instance:kubejs/server_scripts/petrochemistry.js",
+      "functionEvidence": {
+        "basis": "audited-runtime-recipe-types",
+        "source": "factory_campus_machines.json#machines/gtceu:holy_separator/themeEvidence/recipeTypes",
+        "recipeTypes": [
+          "gtceu:cutter",
+          "gtceu:lathe",
+          "gtceu:macerator",
+          "gtceu:centrifuge"
+        ]
+      }
+    },
+    {
+      "id": "gtceu:huge_incubator",
+      "allocation": "dedicated",
+      "copies": 1,
+      "planningTier": 11,
+      "placementTier": 11,
+      "stage": "late",
+      "placementStage": "late",
+      "department": "biology",
+      "hallGroup": "biology-late",
+      "tierEvidenceStatus": "voltage-confirmed",
+      "tierEvidenceSource": "dependency-class:org.gtlcore.gtlcore.data.recipe.MachineRecipe",
+      "functionEvidence": {
+        "basis": "audited-runtime-recipe-types",
+        "source": "factory_campus_machines.json#machines/gtceu:huge_incubator/themeEvidence/recipeTypes",
+        "recipeTypes": [
+          "gtceu:incubator",
+          "gtceu:brewery",
+          "gtceu:fermenter"
+        ]
+      }
+    },
+    {
+      "id": "gtceu:hyper_reactor",
+      "allocation": "shared",
+      "copies": 1,
+      "planningTier": 9,
+      "placementTier": 9,
+      "stage": "late",
+      "placementStage": "late",
+      "department": "energy",
+      "hallGroup": "energy-late",
+      "tierEvidenceStatus": "voltage-confirmed",
+      "tierEvidenceSource": "instance:kubejs/server_scripts/machine_progression.js",
+      "functionEvidence": {
+        "basis": "audited-runtime-recipe-types",
+        "source": "factory_campus_machines.json#machines/gtceu:hyper_reactor/themeEvidence/recipeTypes",
+        "recipeTypes": [
+          "gtceu:hyper_reactor"
+        ]
+      }
+    },
+    {
+      "id": "gtceu:implosion_compressor",
+      "allocation": "shared",
+      "copies": 1,
+      "planningTier": 2,
+      "placementTier": 2,
+      "stage": "early",
+      "placementStage": "early",
+      "department": "metallurgy",
+      "hallGroup": "metallurgy-early",
+      "tierEvidenceStatus": "component-floor",
+      "tierEvidenceSource": "dependency-class:com.gregtechceu.gtceu.data.recipe.misc.MetaTileEntityLoader",
+      "functionEvidence": {
+        "basis": "audited-runtime-recipe-types",
+        "source": "factory_campus_machines.json#machines/gtceu:implosion_compressor/themeEvidence/recipeTypes",
+        "recipeTypes": [
+          "gtceu:implosion_compressor"
+        ]
+      }
+    },
+    {
+      "id": "gtceu:integrated_ore_processor",
+      "allocation": "dedicated",
+      "copies": 1,
+      "planningTier": 7,
+      "placementTier": 7,
+      "stage": "mid",
+      "placementStage": "mid",
+      "department": "ore",
+      "hallGroup": "ore-mid",
+      "tierEvidenceStatus": "voltage-confirmed",
+      "tierEvidenceSource": "instance:kubejs/server_scripts/quantum_materials.js",
+      "functionEvidence": {
+        "basis": "audited-runtime-recipe-types",
+        "source": "factory_campus_machines.json#machines/gtceu:integrated_ore_processor/themeEvidence/recipeTypes",
+        "recipeTypes": [
+          "gtceu:integrated_ore_processor"
+        ]
+      }
+    },
+    {
+      "id": "gtceu:isa_mill",
+      "allocation": "dedicated",
+      "copies": 1,
+      "planningTier": 6,
+      "placementTier": 6,
+      "stage": "mid",
+      "placementStage": "mid",
+      "department": "ore",
+      "hallGroup": "ore-mid",
+      "tierEvidenceStatus": "voltage-confirmed",
+      "tierEvidenceSource": "instance:kubejs/server_scripts/ore_processing.js",
+      "functionEvidence": {
+        "basis": "audited-runtime-recipe-types",
+        "source": "factory_campus_machines.json#machines/gtceu:isa_mill/themeEvidence/recipeTypes",
+        "recipeTypes": [
+          "gtceu:isa_mill"
+        ]
+      }
+    },
+    {
+      "id": "gtceu:large_arc_smelter",
+      "allocation": "shared",
+      "copies": 1,
+      "planningTier": 5,
+      "placementTier": 5,
+      "stage": "mid",
+      "placementStage": "mid",
+      "department": "metallurgy",
+      "hallGroup": "metallurgy-mid",
+      "tierEvidenceStatus": "component-floor",
+      "tierEvidenceSource": "dependency-class:com.gregtechceu.gtceu.data.recipe.misc.GCyMRecipes",
+      "functionEvidence": {
+        "basis": "audited-runtime-recipe-types",
+        "source": "factory_campus_machines.json#machines/gtceu:large_arc_smelter/themeEvidence/recipeTypes",
+        "recipeTypes": [
+          "gtceu:arc_furnace",
+          "gtceu:lightning_processor"
+        ]
+      }
+    },
+    {
+      "id": "gtceu:large_assembler",
+      "allocation": "dedicated",
+      "copies": 1,
+      "planningTier": 5,
+      "placementTier": 5,
+      "stage": "mid",
+      "placementStage": "mid",
+      "department": "precision",
+      "hallGroup": "precision-mid",
+      "tierEvidenceStatus": "component-floor",
+      "tierEvidenceSource": "dependency-class:com.gregtechceu.gtceu.data.recipe.misc.GCyMRecipes",
+      "functionEvidence": {
+        "basis": "audited-runtime-recipe-types",
+        "source": "factory_campus_machines.json#machines/gtceu:large_assembler/themeEvidence/recipeTypes",
+        "recipeTypes": [
+          "gtceu:assembler"
+        ]
+      }
+    },
+    {
+      "id": "gtceu:large_autoclave",
+      "allocation": "shared",
+      "copies": 2,
+      "planningTier": 5,
+      "placementTier": 5,
+      "stage": "mid",
+      "placementStage": "mid",
+      "department": "chemistry",
+      "hallGroup": "chemistry-mid",
+      "tierEvidenceStatus": "component-floor",
+      "tierEvidenceSource": "dependency-class:com.gregtechceu.gtceu.data.recipe.misc.GCyMRecipes",
+      "functionEvidence": {
+        "basis": "audited-runtime-recipe-types",
+        "source": "factory_campus_machines.json#machines/gtceu:large_autoclave/themeEvidence/recipeTypes",
+        "recipeTypes": [
+          "gtceu:autoclave"
+        ]
+      }
+    },
+    {
+      "id": "gtceu:large_brewer",
+      "allocation": "shared",
+      "copies": 1,
+      "planningTier": 5,
+      "placementTier": 5,
+      "stage": "mid",
+      "placementStage": "mid",
+      "department": "biology",
+      "hallGroup": "biology-mid",
+      "tierEvidenceStatus": "component-floor",
+      "tierEvidenceSource": "dependency-class:com.gregtechceu.gtceu.data.recipe.misc.GCyMRecipes",
+      "functionEvidence": {
+        "basis": "audited-runtime-recipe-types",
+        "source": "factory_campus_machines.json#machines/gtceu:large_brewer/themeEvidence/recipeTypes",
+        "recipeTypes": [
+          "gtceu:brewery",
+          "gtceu:fermenter",
+          "gtceu:fluid_heater"
+        ]
+      }
+    },
+    {
+      "id": "gtceu:large_centrifuge",
+      "allocation": "shared",
+      "copies": 2,
+      "planningTier": 5,
+      "placementTier": 5,
+      "stage": "mid",
+      "placementStage": "mid",
+      "department": "chemistry",
+      "hallGroup": "chemistry-mid",
+      "tierEvidenceStatus": "component-floor",
+      "tierEvidenceSource": "dependency-class:com.gregtechceu.gtceu.data.recipe.misc.GCyMRecipes",
+      "functionEvidence": {
+        "basis": "audited-runtime-recipe-types",
+        "source": "factory_campus_machines.json#machines/gtceu:large_centrifuge/themeEvidence/recipeTypes",
+        "recipeTypes": [
+          "gtceu:centrifuge",
+          "gtceu:thermal_centrifuge"
+        ]
+      }
+    },
+    {
+      "id": "gtceu:large_chemical_bath",
+      "allocation": "dedicated",
+      "copies": 3,
+      "planningTier": 5,
+      "placementTier": 5,
+      "stage": "mid",
+      "placementStage": "mid",
+      "department": "ore",
+      "hallGroup": "ore-mid",
+      "tierEvidenceStatus": "component-floor",
+      "tierEvidenceSource": "dependency-class:com.gregtechceu.gtceu.data.recipe.misc.GCyMRecipes",
+      "functionEvidence": {
+        "basis": "audited-runtime-recipe-types",
+        "source": "factory_campus_machines.json#machines/gtceu:large_chemical_bath/themeEvidence/recipeTypes",
+        "recipeTypes": [
+          "gtceu:chemical_bath",
+          "gtceu:ore_washer"
+        ]
+      }
+    },
+    {
+      "id": "gtceu:large_chemical_plant",
+      "allocation": "dedicated",
+      "copies": 4,
+      "planningTier": 9,
+      "placementTier": 9,
+      "stage": "late",
+      "placementStage": "late",
+      "department": "chemistry",
+      "hallGroup": "chemistry-late",
+      "tierEvidenceStatus": "voltage-confirmed",
+      "tierEvidenceSource": "instance:kubejs/server_scripts/machine_progression.js",
+      "functionEvidence": {
+        "basis": "audited-runtime-recipe-types",
+        "source": "factory_campus_machines.json#machines/gtceu:large_chemical_plant/themeEvidence/recipeTypes",
+        "recipeTypes": [
+          "gtceu:large_chemical_reactor"
+        ]
+      }
+    },
+    {
+      "id": "gtceu:large_chemical_reactor",
+      "allocation": "shared",
+      "copies": 4,
+      "planningTier": 3,
+      "placementTier": 3,
+      "stage": "early",
+      "placementStage": "early",
+      "department": "chemistry",
+      "hallGroup": "chemistry-early",
+      "tierEvidenceStatus": "component-floor",
+      "tierEvidenceSource": "dependency-class:com.gregtechceu.gtceu.data.recipe.misc.MetaTileEntityLoader",
+      "functionEvidence": {
+        "basis": "audited-runtime-recipe-types",
+        "source": "factory_campus_machines.json#machines/gtceu:large_chemical_reactor/themeEvidence/recipeTypes",
+        "recipeTypes": [
+          "gtceu:large_chemical_reactor"
+        ]
+      }
+    },
+    {
+      "id": "gtceu:large_circuit_assembler",
+      "allocation": "dedicated",
+      "copies": 2,
+      "planningTier": 5,
+      "placementTier": 5,
+      "stage": "mid",
+      "placementStage": "mid",
+      "department": "precision",
+      "hallGroup": "precision-mid",
+      "tierEvidenceStatus": "component-floor",
+      "tierEvidenceSource": "dependency-class:com.gregtechceu.gtceu.data.recipe.misc.GCyMRecipes",
+      "functionEvidence": {
+        "basis": "audited-runtime-recipe-types",
+        "source": "factory_campus_machines.json#machines/gtceu:large_circuit_assembler/themeEvidence/recipeTypes",
+        "recipeTypes": [
+          "gtceu:circuit_assembler"
+        ]
+      }
+    },
+    {
+      "id": "gtceu:large_cracker",
+      "allocation": "dedicated",
+      "copies": 2,
+      "planningTier": 7,
+      "placementTier": 7,
+      "stage": "mid",
+      "placementStage": "mid",
+      "department": "chemistry",
+      "hallGroup": "chemistry-mid",
+      "tierEvidenceStatus": "component-floor",
+      "tierEvidenceSource": "instance:kubejs/server_scripts/machine_crafting.js",
+      "functionEvidence": {
+        "basis": "audited-runtime-recipe-types",
+        "source": "factory_campus_machines.json#machines/gtceu:large_cracker/themeEvidence/recipeTypes",
+        "recipeTypes": [
+          "gtceu:cracker"
+        ]
+      }
+    },
+    {
+      "id": "gtceu:large_cutter",
+      "allocation": "dedicated",
+      "copies": 1,
+      "planningTier": 5,
+      "placementTier": 5,
+      "stage": "mid",
+      "placementStage": "mid",
+      "department": "metallurgy",
+      "hallGroup": "metallurgy-mid",
+      "tierEvidenceStatus": "component-floor",
+      "tierEvidenceSource": "dependency-class:com.gregtechceu.gtceu.data.recipe.misc.GCyMRecipes",
+      "functionEvidence": {
+        "basis": "audited-runtime-recipe-types",
+        "source": "factory_campus_machines.json#machines/gtceu:large_cutter/themeEvidence/recipeTypes",
+        "recipeTypes": [
+          "gtceu:cutter",
+          "gtceu:lathe"
+        ]
+      }
+    },
+    {
+      "id": "gtceu:large_distillery",
+      "allocation": "dedicated",
+      "copies": 3,
+      "planningTier": 5,
+      "placementTier": 5,
+      "stage": "mid",
+      "placementStage": "mid",
+      "department": "chemistry",
+      "hallGroup": "chemistry-mid",
+      "tierEvidenceStatus": "component-floor",
+      "tierEvidenceSource": "dependency-class:com.gregtechceu.gtceu.data.recipe.misc.GCyMRecipes",
+      "functionEvidence": {
+        "basis": "audited-runtime-recipe-types",
+        "source": "factory_campus_machines.json#machines/gtceu:large_distillery/themeEvidence/recipeTypes",
+        "recipeTypes": [
+          "gtceu:distillation_tower",
+          "gtceu:distillery"
+        ]
+      }
+    },
+    {
+      "id": "gtceu:large_electrolyzer",
+      "allocation": "shared",
+      "copies": 2,
+      "planningTier": 5,
+      "placementTier": 5,
+      "stage": "mid",
+      "placementStage": "mid",
+      "department": "chemistry",
+      "hallGroup": "chemistry-mid",
+      "tierEvidenceStatus": "component-floor",
+      "tierEvidenceSource": "dependency-class:com.gregtechceu.gtceu.data.recipe.misc.GCyMRecipes",
+      "functionEvidence": {
+        "basis": "audited-runtime-recipe-types",
+        "source": "factory_campus_machines.json#machines/gtceu:large_electrolyzer/themeEvidence/recipeTypes",
+        "recipeTypes": [
+          "gtceu:electrolyzer"
+        ]
+      }
+    },
+    {
+      "id": "gtceu:large_electromagnet",
+      "allocation": "shared",
+      "copies": 1,
+      "planningTier": 5,
+      "placementTier": 5,
+      "stage": "mid",
+      "placementStage": "mid",
+      "department": "chemistry",
+      "hallGroup": "chemistry-mid",
+      "tierEvidenceStatus": "component-floor",
+      "tierEvidenceSource": "dependency-class:com.gregtechceu.gtceu.data.recipe.misc.GCyMRecipes",
+      "functionEvidence": {
+        "basis": "audited-runtime-recipe-types",
+        "source": "factory_campus_machines.json#machines/gtceu:large_electromagnet/themeEvidence/recipeTypes",
+        "recipeTypes": [
+          "gtceu:electromagnetic_separator",
+          "gtceu:polarizer"
+        ]
+      }
+    },
+    {
+      "id": "gtceu:large_engraving_laser",
+      "allocation": "shared",
+      "copies": 1,
+      "planningTier": 5,
+      "placementTier": 5,
+      "stage": "mid",
+      "placementStage": "mid",
+      "department": "precision",
+      "hallGroup": "precision-mid",
+      "tierEvidenceStatus": "component-floor",
+      "tierEvidenceSource": "dependency-class:com.gregtechceu.gtceu.data.recipe.misc.GCyMRecipes",
+      "functionEvidence": {
+        "basis": "audited-runtime-recipe-types",
+        "source": "factory_campus_machines.json#machines/gtceu:large_engraving_laser/themeEvidence/recipeTypes",
+        "recipeTypes": [
+          "gtceu:laser_engraver"
+        ]
+      }
+    },
+    {
+      "id": "gtceu:large_extractor",
+      "allocation": "shared",
+      "copies": 2,
+      "planningTier": 5,
+      "placementTier": 5,
+      "stage": "mid",
+      "placementStage": "mid",
+      "department": "chemistry",
+      "hallGroup": "chemistry-mid",
+      "tierEvidenceStatus": "component-floor",
+      "tierEvidenceSource": "dependency-class:com.gregtechceu.gtceu.data.recipe.misc.GCyMRecipes",
+      "functionEvidence": {
+        "basis": "audited-runtime-recipe-types",
+        "source": "factory_campus_machines.json#machines/gtceu:large_extractor/themeEvidence/recipeTypes",
+        "recipeTypes": [
+          "gtceu:extractor",
+          "gtceu:canner"
+        ]
+      }
+    },
+    {
+      "id": "gtceu:large_extruder",
+      "allocation": "dedicated",
+      "copies": 1,
+      "planningTier": 5,
+      "placementTier": 5,
+      "stage": "mid",
+      "placementStage": "mid",
+      "department": "metallurgy",
+      "hallGroup": "metallurgy-mid",
+      "tierEvidenceStatus": "component-floor",
+      "tierEvidenceSource": "dependency-class:com.gregtechceu.gtceu.data.recipe.misc.GCyMRecipes",
+      "functionEvidence": {
+        "basis": "audited-runtime-recipe-types",
+        "source": "factory_campus_machines.json#machines/gtceu:large_extruder/themeEvidence/recipeTypes",
+        "recipeTypes": [
+          "gtceu:extruder"
+        ]
+      }
+    },
+    {
+      "id": "gtceu:large_fragment_world_collection_machine",
+      "allocation": "shared",
+      "copies": 1,
+      "planningTier": 4,
+      "placementTier": 4,
+      "stage": "mid",
+      "placementStage": "mid",
+      "department": "space",
+      "hallGroup": "space-mid",
+      "tierEvidenceStatus": "component-floor",
+      "tierEvidenceSource": "dependency-class:org.gtlcore.gtlcore.data.recipe.processing.SkyTearsAndGregHeart",
+      "functionEvidence": {
+        "basis": "audited-runtime-recipe-types",
+        "source": "factory_campus_machines.json#machines/gtceu:large_fragment_world_collection_machine/themeEvidence/recipeTypes",
+        "recipeTypes": [
+          "gtceu:fragment_world_collection"
+        ]
+      }
+    },
+    {
+      "id": "gtceu:large_gas_collector",
+      "allocation": "shared",
+      "copies": 1,
+      "planningTier": 4,
+      "placementTier": 4,
+      "stage": "mid",
+      "placementStage": "mid",
+      "department": "chemistry",
+      "hallGroup": "chemistry-mid",
+      "tierEvidenceStatus": "voltage-confirmed",
+      "tierEvidenceSource": "instance:kubejs/server_scripts/circuit_boards.js",
+      "functionEvidence": {
+        "basis": "audited-runtime-recipe-types",
+        "source": "factory_campus_machines.json#machines/gtceu:large_gas_collector/themeEvidence/recipeTypes",
+        "recipeTypes": [
+          "gtceu:large_gas_collector"
+        ]
+      }
+    },
+    {
+      "id": "gtceu:large_greenhouse",
+      "allocation": "dedicated",
+      "copies": 6,
+      "planningTier": 5,
+      "placementTier": 3,
+      "stage": "early",
+      "placementStage": "early",
+      "department": "biology",
+      "hallGroup": "biology-early",
+      "tierEvidenceStatus": "component-floor",
+      "tierEvidenceSource": "instance:kubejs/server_scripts/machine_crafting.js",
+      "functionEvidence": {
+        "basis": "audited-runtime-recipe-types",
+        "source": "factory_campus_machines.json#machines/gtceu:large_greenhouse/themeEvidence/recipeTypes",
+        "recipeTypes": [
+          "gtceu:greenhouse"
+        ]
+      }
+    },
+    {
+      "id": "gtceu:large_incubator",
+      "allocation": "dedicated",
+      "copies": 1,
+      "planningTier": 7,
+      "placementTier": 7,
+      "stage": "mid",
+      "placementStage": "mid",
+      "department": "biology",
+      "hallGroup": "biology-mid",
+      "tierEvidenceStatus": "voltage-confirmed",
+      "tierEvidenceSource": "instance:kubejs/server_scripts/circuit_boards.js",
+      "functionEvidence": {
+        "basis": "audited-runtime-recipe-types",
+        "source": "factory_campus_machines.json#machines/gtceu:large_incubator/themeEvidence/recipeTypes",
+        "recipeTypes": [
+          "gtceu:incubator"
+        ]
+      }
+    },
+    {
+      "id": "gtceu:large_maceration_tower",
+      "allocation": "shared",
+      "copies": 2,
+      "planningTier": 5,
+      "placementTier": 5,
+      "stage": "mid",
+      "placementStage": "mid",
+      "department": "ore",
+      "hallGroup": "ore-mid",
+      "tierEvidenceStatus": "component-floor",
+      "tierEvidenceSource": "dependency-class:com.gregtechceu.gtceu.data.recipe.misc.GCyMRecipes",
+      "functionEvidence": {
+        "basis": "audited-runtime-recipe-types",
+        "source": "factory_campus_machines.json#machines/gtceu:large_maceration_tower/themeEvidence/recipeTypes",
+        "recipeTypes": [
+          "gtceu:macerator"
+        ]
+      }
+    },
+    {
+      "id": "gtceu:large_material_press",
+      "allocation": "dedicated",
+      "copies": 1,
+      "planningTier": 5,
+      "placementTier": 5,
+      "stage": "mid",
+      "placementStage": "mid",
+      "department": "metallurgy",
+      "hallGroup": "metallurgy-mid",
+      "tierEvidenceStatus": "component-floor",
+      "tierEvidenceSource": "dependency-class:com.gregtechceu.gtceu.data.recipe.misc.GCyMRecipes",
+      "functionEvidence": {
+        "basis": "audited-runtime-recipe-types",
+        "source": "factory_campus_machines.json#machines/gtceu:large_material_press/themeEvidence/recipeTypes",
+        "recipeTypes": [
+          "gtceu:bender",
+          "gtceu:compressor",
+          "gtceu:forge_hammer",
+          "gtceu:forming_press"
+        ]
+      }
+    },
+    {
+      "id": "gtceu:large_mixer",
+      "allocation": "shared",
+      "copies": 2,
+      "planningTier": 5,
+      "placementTier": 5,
+      "stage": "mid",
+      "placementStage": "mid",
+      "department": "chemistry",
+      "hallGroup": "chemistry-mid",
+      "tierEvidenceStatus": "component-floor",
+      "tierEvidenceSource": "dependency-class:com.gregtechceu.gtceu.data.recipe.misc.GCyMRecipes",
+      "functionEvidence": {
+        "basis": "audited-runtime-recipe-types",
+        "source": "factory_campus_machines.json#machines/gtceu:large_mixer/themeEvidence/recipeTypes",
+        "recipeTypes": [
+          "gtceu:mixer"
+        ]
+      }
+    },
+    {
+      "id": "gtceu:large_naquadah_reactor",
+      "allocation": "dedicated",
+      "copies": 1,
+      "planningTier": 7,
+      "placementTier": 7,
+      "stage": "mid",
+      "placementStage": "mid",
+      "department": "energy",
+      "hallGroup": "energy-mid",
+      "tierEvidenceStatus": "voltage-confirmed",
+      "tierEvidenceSource": "instance:kubejs/server_scripts/machine_components.js",
+      "functionEvidence": {
+        "basis": "audited-runtime-recipe-types",
+        "source": "factory_campus_machines.json#machines/gtceu:large_naquadah_reactor/themeEvidence/recipeTypes",
+        "recipeTypes": [
+          "gtceu:large_naquadah_reactor"
+        ]
+      }
+    },
+    {
+      "id": "gtceu:large_packer",
+      "allocation": "dedicated",
+      "copies": 2,
+      "planningTier": 3,
+      "placementTier": 3,
+      "stage": "early",
+      "placementStage": "early",
+      "department": "precision",
+      "hallGroup": "precision-early",
+      "tierEvidenceStatus": "component-floor",
+      "tierEvidenceSource": "dependency-class:com.gregtechceu.gtceu.data.recipe.misc.GCyMRecipes",
+      "functionEvidence": {
+        "basis": "audited-runtime-recipe-types",
+        "source": "factory_campus_machines.json#machines/gtceu:large_packer/themeEvidence/recipeTypes",
+        "recipeTypes": [
+          "gtceu:packer"
+        ]
+      }
+    },
+    {
+      "id": "gtceu:large_pyrolyse_oven",
+      "allocation": "dedicated",
+      "copies": 1,
+      "planningTier": 5,
+      "placementTier": 5,
+      "stage": "mid",
+      "placementStage": "mid",
+      "department": "metallurgy",
+      "hallGroup": "metallurgy-mid",
+      "tierEvidenceStatus": "component-floor",
+      "tierEvidenceSource": "instance:kubejs/server_scripts/machine_crafting.js",
+      "functionEvidence": {
+        "basis": "audited-runtime-recipe-types",
+        "source": "factory_campus_machines.json#machines/gtceu:large_pyrolyse_oven/themeEvidence/recipeTypes",
+        "recipeTypes": [
+          "gtceu:pyrolyse_oven"
+        ]
+      }
+    },
+    {
+      "id": "gtceu:large_rock_crusher",
+      "allocation": "shared",
+      "copies": 1,
+      "planningTier": 5,
+      "placementTier": 5,
+      "stage": "mid",
+      "placementStage": "mid",
+      "department": "ore",
+      "hallGroup": "ore-mid",
+      "tierEvidenceStatus": "component-floor",
+      "tierEvidenceSource": "instance:kubejs/server_scripts/machine_crafting.js",
+      "functionEvidence": {
+        "basis": "audited-runtime-recipe-types",
+        "source": "factory_campus_machines.json#machines/gtceu:large_rock_crusher/themeEvidence/recipeTypes",
+        "recipeTypes": [
+          "gtceu:rock_breaker"
+        ]
+      }
+    },
+    {
+      "id": "gtceu:large_sifting_funnel",
+      "allocation": "shared",
+      "copies": 2,
+      "planningTier": 5,
+      "placementTier": 5,
+      "stage": "mid",
+      "placementStage": "mid",
+      "department": "ore",
+      "hallGroup": "ore-mid",
+      "tierEvidenceStatus": "component-floor",
+      "tierEvidenceSource": "dependency-class:com.gregtechceu.gtceu.data.recipe.misc.GCyMRecipes",
+      "functionEvidence": {
+        "basis": "audited-runtime-recipe-types",
+        "source": "factory_campus_machines.json#machines/gtceu:large_sifting_funnel/themeEvidence/recipeTypes",
+        "recipeTypes": [
+          "gtceu:sifter"
+        ]
+      }
+    },
+    {
+      "id": "gtceu:large_solidifier",
+      "allocation": "shared",
+      "copies": 1,
+      "planningTier": 5,
+      "placementTier": 5,
+      "stage": "mid",
+      "placementStage": "mid",
+      "department": "metallurgy",
+      "hallGroup": "metallurgy-mid",
+      "tierEvidenceStatus": "component-floor",
+      "tierEvidenceSource": "dependency-class:com.gregtechceu.gtceu.data.recipe.misc.GCyMRecipes",
+      "functionEvidence": {
+        "basis": "audited-runtime-recipe-types",
+        "source": "factory_campus_machines.json#machines/gtceu:large_solidifier/themeEvidence/recipeTypes",
+        "recipeTypes": [
+          "gtceu:fluid_solidifier"
+        ]
+      }
+    },
+    {
+      "id": "gtceu:large_void_miner",
+      "allocation": "dedicated",
+      "copies": 1,
+      "planningTier": 7,
+      "placementTier": 7,
+      "stage": "mid",
+      "placementStage": "mid",
+      "department": "ore",
+      "hallGroup": "ore-mid",
+      "tierEvidenceStatus": "voltage-confirmed",
+      "tierEvidenceSource": "instance:kubejs/server_scripts/machine_progression.js",
+      "functionEvidence": {
+        "basis": "audited-runtime-recipe-types",
+        "source": "factory_campus_machines.json#machines/gtceu:large_void_miner/themeEvidence/recipeTypes",
+        "recipeTypes": [
+          "gtceu:large_void_miner",
+          "gtceu:random_ore"
+        ]
+      }
+    },
+    {
+      "id": "gtceu:large_wiremill",
+      "allocation": "shared",
+      "copies": 1,
+      "planningTier": 5,
+      "placementTier": 5,
+      "stage": "mid",
+      "placementStage": "mid",
+      "department": "metallurgy",
+      "hallGroup": "metallurgy-mid",
+      "tierEvidenceStatus": "component-floor",
+      "tierEvidenceSource": "dependency-class:com.gregtechceu.gtceu.data.recipe.misc.GCyMRecipes",
+      "functionEvidence": {
+        "basis": "audited-runtime-recipe-types",
+        "source": "factory_campus_machines.json#machines/gtceu:large_wiremill/themeEvidence/recipeTypes",
+        "recipeTypes": [
+          "gtceu:wiremill"
+        ]
+      }
+    },
+    {
+      "id": "gtceu:luv_compressed_fusion_reactor",
+      "allocation": "dedicated",
+      "copies": 1,
+      "planningTier": 6,
+      "placementTier": 6,
+      "stage": "mid",
+      "placementStage": "mid",
+      "department": "energy",
+      "hallGroup": "energy-mid",
+      "tierEvidenceStatus": "voltage-confirmed",
+      "tierEvidenceSource": "instance:kubejs/server_scripts/ore_processing.js",
+      "functionEvidence": {
+        "basis": "audited-runtime-recipe-types",
+        "source": "factory_campus_machines.json#machines/gtceu:luv_compressed_fusion_reactor/themeEvidence/recipeTypes",
+        "recipeTypes": [
+          "gtceu:fusion_reactor"
+        ]
+      }
+    },
+    {
+      "id": "gtceu:luv_fusion_reactor",
+      "allocation": "dedicated",
+      "copies": 1,
+      "planningTier": 6,
+      "placementTier": 6,
+      "stage": "mid",
+      "placementStage": "mid",
+      "department": "energy",
+      "hallGroup": "energy-mid",
+      "tierEvidenceStatus": "voltage-confirmed",
+      "tierEvidenceSource": "current dependency controller recipes + instance KJS",
+      "functionEvidence": {
+        "basis": "audited-runtime-recipe-types",
+        "source": "factory_campus_machines.json#machines/gtceu:luv_fusion_reactor/themeEvidence/recipeTypes",
+        "recipeTypes": [
+          "gtceu:fusion_reactor"
+        ]
+      }
+    },
+    {
+      "id": "gtceu:mage_assembler",
+      "allocation": "dedicated",
+      "copies": 1,
+      "planningTier": 9,
+      "placementTier": 9,
+      "stage": "late",
+      "placementStage": "late",
+      "department": "precision",
+      "hallGroup": "precision-late",
+      "tierEvidenceStatus": "voltage-confirmed",
+      "tierEvidenceSource": "instance:kubejs/server_scripts/machine_progression.js",
+      "functionEvidence": {
+        "basis": "audited-runtime-recipe-types",
+        "source": "factory_campus_machines.json#machines/gtceu:mage_assembler/themeEvidence/recipeTypes",
+        "recipeTypes": [
+          "gtceu:assembler",
+          "gtceu:precision_assembler",
+          "gtceu:circuit_assembler"
+        ]
+      }
+    },
+    {
+      "id": "gtceu:magic_manufacturer",
+      "allocation": "dedicated",
+      "copies": 1,
+      "planningTier": 10,
+      "placementTier": 10,
+      "stage": "late",
+      "placementStage": "late",
+      "department": "precision",
+      "hallGroup": "precision-late",
+      "tierEvidenceStatus": "voltage-confirmed",
+      "tierEvidenceSource": "instance:kubejs/server_scripts/machine_progression.js",
+      "functionEvidence": {
+        "basis": "audited-runtime-recipe-types",
+        "source": "factory_campus_machines.json#machines/gtceu:magic_manufacturer/themeEvidence/recipeTypes",
+        "recipeTypes": [
+          "gtceu:magic_manufacturer"
+        ]
+      }
+    },
+    {
+      "id": "gtceu:mass_fabricator",
+      "allocation": "dedicated",
+      "copies": 1,
+      "planningTier": 12,
+      "placementTier": 12,
+      "stage": "late",
+      "placementStage": "late",
+      "department": "space",
+      "hallGroup": "space-late",
+      "tierEvidenceStatus": "voltage-confirmed",
+      "tierEvidenceSource": "instance:kubejs/server_scripts/machine_progression.js",
+      "functionEvidence": {
+        "basis": "audited-runtime-recipe-types",
+        "source": "factory_campus_machines.json#machines/gtceu:mass_fabricator/themeEvidence/recipeTypes",
+        "recipeTypes": [
+          "gtceu:mass_fabricator"
+        ]
+      }
+    },
+    {
+      "id": "gtceu:matter_fabricator",
+      "allocation": "shared",
+      "copies": 1,
+      "planningTier": 9,
+      "placementTier": 9,
+      "stage": "late",
+      "placementStage": "late",
+      "department": "space",
+      "hallGroup": "space-late",
+      "tierEvidenceStatus": "voltage-confirmed",
+      "tierEvidenceSource": "instance:kubejs/server_scripts/machine_progression.js",
+      "functionEvidence": {
+        "basis": "audited-runtime-recipe-types",
+        "source": "factory_campus_machines.json#machines/gtceu:matter_fabricator/themeEvidence/recipeTypes",
+        "recipeTypes": [
+          "gtceu:matter_fabricator"
+        ]
+      }
+    },
+    {
+      "id": "gtceu:mega_alloy_blast_smelter",
+      "allocation": "dedicated",
+      "copies": 1,
+      "planningTier": 7,
+      "placementTier": 7,
+      "stage": "mid",
+      "placementStage": "mid",
+      "department": "metallurgy",
+      "hallGroup": "metallurgy-mid",
+      "tierEvidenceStatus": "component-floor",
+      "tierEvidenceSource": "instance:kubejs/server_scripts/machine_crafting.js",
+      "functionEvidence": {
+        "basis": "audited-runtime-recipe-types",
+        "source": "factory_campus_machines.json#machines/gtceu:mega_alloy_blast_smelter/themeEvidence/recipeTypes",
+        "recipeTypes": [
+          "gtceu:alloy_blast_smelter",
+          "gtceu:alloy_smelter"
+        ]
+      }
+    },
+    {
+      "id": "gtceu:mega_blast_furnace",
+      "allocation": "dedicated",
+      "copies": 1,
+      "planningTier": 7,
+      "placementTier": 7,
+      "stage": "mid",
+      "placementStage": "mid",
+      "department": "metallurgy",
+      "hallGroup": "metallurgy-mid",
+      "tierEvidenceStatus": "component-floor",
+      "tierEvidenceSource": "dependency-class:com.gregtechceu.gtceu.data.recipe.misc.GCyMRecipes",
+      "functionEvidence": {
+        "basis": "audited-runtime-recipe-types",
+        "source": "factory_campus_machines.json#machines/gtceu:mega_blast_furnace/themeEvidence/recipeTypes",
+        "recipeTypes": [
+          "gtceu:electric_blast_furnace"
+        ]
+      }
+    },
+    {
+      "id": "gtceu:mega_canner",
+      "allocation": "dedicated",
+      "copies": 1,
+      "planningTier": 10,
+      "placementTier": 10,
+      "stage": "late",
+      "placementStage": "late",
+      "department": "chemistry",
+      "hallGroup": "chemistry-late",
+      "tierEvidenceStatus": "voltage-confirmed",
+      "tierEvidenceSource": "instance:kubejs/server_scripts/nanotechnology.js",
+      "functionEvidence": {
+        "basis": "audited-runtime-recipe-types",
+        "source": "factory_campus_machines.json#machines/gtceu:mega_canner/themeEvidence/recipeTypes",
+        "recipeTypes": [
+          "gtceu:canner"
+        ]
+      }
+    },
+    {
+      "id": "gtceu:mega_distillery",
+      "allocation": "dedicated",
+      "copies": 1,
+      "planningTier": 9,
+      "placementTier": 9,
+      "stage": "late",
+      "placementStage": "late",
+      "department": "chemistry",
+      "hallGroup": "chemistry-late",
+      "tierEvidenceStatus": "voltage-confirmed",
+      "tierEvidenceSource": "instance:kubejs/server_scripts/ore_processing.js",
+      "functionEvidence": {
+        "basis": "audited-runtime-recipe-types",
+        "source": "factory_campus_machines.json#machines/gtceu:mega_distillery/themeEvidence/recipeTypes",
+        "recipeTypes": [
+          "gtceu:distillery",
+          "gtceu:distillation_tower",
+          "gtceu:evaporation"
+        ]
+      }
+    },
+    {
+      "id": "gtceu:mega_extractor",
+      "allocation": "dedicated",
+      "copies": 1,
+      "planningTier": 10,
+      "placementTier": 10,
+      "stage": "late",
+      "placementStage": "late",
+      "department": "chemistry",
+      "hallGroup": "chemistry-late",
+      "tierEvidenceStatus": "voltage-confirmed",
+      "tierEvidenceSource": "instance:kubejs/server_scripts/nanotechnology.js",
+      "functionEvidence": {
+        "basis": "audited-runtime-recipe-types",
+        "source": "factory_campus_machines.json#machines/gtceu:mega_extractor/themeEvidence/recipeTypes",
+        "recipeTypes": [
+          "gtceu:extractor",
+          "gtceu:fluid_solidifier"
+        ]
+      }
+    },
+    {
+      "id": "gtceu:mega_fluid_heater",
+      "allocation": "dedicated",
+      "copies": 1,
+      "planningTier": 11,
+      "placementTier": 11,
+      "stage": "late",
+      "placementStage": "late",
+      "department": "chemistry",
+      "hallGroup": "chemistry-late",
+      "tierEvidenceStatus": "voltage-confirmed",
+      "tierEvidenceSource": "instance:kubejs/server_scripts/nanotechnology.js",
+      "functionEvidence": {
+        "basis": "audited-runtime-recipe-types",
+        "source": "factory_campus_machines.json#machines/gtceu:mega_fluid_heater/themeEvidence/recipeTypes",
+        "recipeTypes": [
+          "gtceu:fluid_heater"
+        ]
+      }
+    },
+    {
+      "id": "gtceu:mega_presser",
+      "allocation": "dedicated",
+      "copies": 1,
+      "planningTier": 10,
+      "placementTier": 10,
+      "stage": "late",
+      "placementStage": "late",
+      "department": "metallurgy",
+      "hallGroup": "metallurgy-late",
+      "tierEvidenceStatus": "voltage-confirmed",
+      "tierEvidenceSource": "instance:kubejs/server_scripts/nanotechnology.js",
+      "functionEvidence": {
+        "basis": "audited-runtime-recipe-types",
+        "source": "factory_campus_machines.json#machines/gtceu:mega_presser/themeEvidence/recipeTypes",
+        "recipeTypes": [
+          "gtceu:bender",
+          "gtceu:forge_hammer",
+          "gtceu:forming_press"
+        ]
+      }
+    },
+    {
+      "id": "gtceu:mega_vacuum_freezer",
+      "allocation": "dedicated",
+      "copies": 1,
+      "planningTier": 7,
+      "placementTier": 7,
+      "stage": "mid",
+      "placementStage": "mid",
+      "department": "metallurgy",
+      "hallGroup": "metallurgy-mid",
+      "tierEvidenceStatus": "component-floor",
+      "tierEvidenceSource": "dependency-class:com.gregtechceu.gtceu.data.recipe.misc.GCyMRecipes",
+      "functionEvidence": {
+        "basis": "audited-runtime-recipe-types",
+        "source": "factory_campus_machines.json#machines/gtceu:mega_vacuum_freezer/themeEvidence/recipeTypes",
+        "recipeTypes": [
+          "gtceu:vacuum_freezer"
+        ]
+      }
+    },
+    {
+      "id": "gtceu:mega_wiremill",
+      "allocation": "dedicated",
+      "copies": 1,
+      "planningTier": 10,
+      "placementTier": 10,
+      "stage": "late",
+      "placementStage": "late",
+      "department": "metallurgy",
+      "hallGroup": "metallurgy-late",
+      "tierEvidenceStatus": "voltage-confirmed",
+      "tierEvidenceSource": "instance:kubejs/server_scripts/nanotechnology.js",
+      "functionEvidence": {
+        "basis": "audited-runtime-recipe-types",
+        "source": "factory_campus_machines.json#machines/gtceu:mega_wiremill/themeEvidence/recipeTypes",
+        "recipeTypes": [
+          "gtceu:wiremill"
+        ]
+      }
+    },
+    {
+      "id": "gtceu:molecular_assembler_matrix",
+      "allocation": "dedicated",
+      "copies": 1,
+      "planningTier": 9,
+      "placementTier": 9,
+      "stage": "late",
+      "placementStage": "late",
+      "department": "precision",
+      "hallGroup": "precision-late",
+      "tierEvidenceStatus": "voltage-confirmed",
+      "tierEvidenceSource": "dependency-class:org.gtlcore.gtlcore.data.recipe.Misc",
+      "functionEvidence": {
+        "basis": "audited-runtime-recipe-types",
+        "source": "factory_campus_machines.json#machines/gtceu:molecular_assembler_matrix/themeEvidence/recipeTypes",
+        "recipeTypes": [
+          "gtceu:molecular_assembler"
+        ]
+      }
+    },
+    {
+      "id": "gtceu:nano_core",
+      "allocation": "dedicated",
+      "copies": 1,
+      "planningTier": 12,
+      "placementTier": 12,
+      "stage": "late",
+      "placementStage": "late",
+      "department": "metallurgy",
+      "hallGroup": "metallurgy-late",
+      "tierEvidenceStatus": "voltage-confirmed",
+      "tierEvidenceSource": "instance:kubejs/server_scripts/ore_processing.js",
+      "functionEvidence": {
+        "basis": "audited-runtime-recipe-types",
+        "source": "factory_campus_machines.json#machines/gtceu:nano_core/themeEvidence/recipeTypes",
+        "recipeTypes": [
+          "gtceu:nano_forge"
+        ]
+      }
+    },
+    {
+      "id": "gtceu:nano_forge_1",
+      "allocation": "dedicated",
+      "copies": 1,
+      "planningTier": 8,
+      "placementTier": 8,
+      "stage": "mid",
+      "placementStage": "mid",
+      "department": "metallurgy",
+      "hallGroup": "metallurgy-mid",
+      "tierEvidenceStatus": "voltage-confirmed",
+      "tierEvidenceSource": "instance:kubejs/server_scripts/nanotechnology.js",
+      "functionEvidence": {
+        "basis": "audited-runtime-recipe-types",
+        "source": "factory_campus_machines.json#machines/gtceu:nano_forge_1/themeEvidence/recipeTypes",
+        "recipeTypes": [
+          "gtceu:nano_forge"
+        ]
+      }
+    },
+    {
+      "id": "gtceu:network_switch",
+      "allocation": "shared",
+      "copies": 1,
+      "planningTier": 7,
+      "placementTier": 7,
+      "stage": "mid",
+      "placementStage": "mid",
+      "department": "computation",
+      "hallGroup": "computation-mid",
+      "tierEvidenceStatus": "voltage-confirmed",
+      "tierEvidenceSource": "dependency-class:com.gregtechceu.gtceu.data.recipe.misc.ComputerRecipes",
+      "functionEvidence": {
+        "basis": "dependency-role-text",
+        "source": "dependency:gtceu-1.20.1-1.4.4.jar!assets/gtceu/lang/zh_cn.json#gtceu.multiblock.network_switch.description",
+        "sourceSha256": "e7b5239e1fedd1096f55e9408cf673b01ddbed14c806f0368f02386137289f12",
+        "role": "Routes and allocates computation to research consumers"
+      }
+    },
+    {
+      "id": "gtceu:neutron_activator",
+      "allocation": "dedicated",
+      "copies": 1,
+      "planningTier": 5,
+      "placementTier": 5,
+      "stage": "mid",
+      "placementStage": "mid",
+      "department": "energy",
+      "hallGroup": "energy-mid",
+      "tierEvidenceStatus": "voltage-confirmed",
+      "tierEvidenceSource": "instance:kubejs/server_scripts/nanotechnology.js",
+      "functionEvidence": {
+        "basis": "audited-runtime-recipe-types",
+        "source": "factory_campus_machines.json#machines/gtceu:neutron_activator/themeEvidence/recipeTypes",
+        "recipeTypes": [
+          "gtceu:neutron_activator"
+        ]
+      }
+    },
+    {
+      "id": "gtceu:pcb_factory",
+      "allocation": "dedicated",
+      "copies": 1,
+      "planningTier": 9,
+      "placementTier": 9,
+      "stage": "late",
+      "placementStage": "late",
+      "department": "precision",
+      "hallGroup": "precision-late",
+      "tierEvidenceStatus": "voltage-confirmed",
+      "tierEvidenceSource": "instance:kubejs/server_scripts/machine_components.js",
+      "functionEvidence": {
+        "basis": "audited-runtime-recipe-types",
+        "source": "factory_campus_machines.json#machines/gtceu:pcb_factory/themeEvidence/recipeTypes",
+        "recipeTypes": [
+          "gtceu:pcb_factory"
+        ]
+      }
+    },
+    {
+      "id": "gtceu:petrochemical_plant",
+      "allocation": "dedicated",
+      "copies": 1,
+      "planningTier": 7,
+      "placementTier": 7,
+      "stage": "mid",
+      "placementStage": "mid",
+      "department": "chemistry",
+      "hallGroup": "chemistry-mid",
+      "tierEvidenceStatus": "voltage-confirmed",
+      "tierEvidenceSource": "instance:kubejs/server_scripts/high_energy_processing.js",
+      "functionEvidence": {
+        "basis": "audited-runtime-recipe-types",
+        "source": "factory_campus_machines.json#machines/gtceu:petrochemical_plant/themeEvidence/recipeTypes",
+        "recipeTypes": [
+          "gtceu:petrochemical_plant"
+        ]
+      }
+    },
+    {
+      "id": "gtceu:plasma_condenser",
+      "allocation": "dedicated",
+      "copies": 1,
+      "planningTier": 9,
+      "placementTier": 9,
+      "stage": "late",
+      "placementStage": "late",
+      "department": "energy",
+      "hallGroup": "energy-late",
+      "tierEvidenceStatus": "voltage-confirmed",
+      "tierEvidenceSource": "instance:kubejs/server_scripts/machine_progression.js",
+      "functionEvidence": {
+        "basis": "audited-runtime-recipe-types",
+        "source": "factory_campus_machines.json#machines/gtceu:plasma_condenser/themeEvidence/recipeTypes",
+        "recipeTypes": [
+          "gtceu:plasma_condenser"
+        ]
+      }
+    },
+    {
+      "id": "gtceu:precision_assembler",
+      "allocation": "dedicated",
+      "copies": 1,
+      "planningTier": 7,
+      "placementTier": 7,
+      "stage": "mid",
+      "placementStage": "mid",
+      "department": "precision",
+      "hallGroup": "precision-mid",
+      "tierEvidenceStatus": "voltage-confirmed",
+      "tierEvidenceSource": "instance:kubejs/server_scripts/machine_progression.js",
+      "functionEvidence": {
+        "basis": "audited-runtime-recipe-types",
+        "source": "factory_campus_machines.json#machines/gtceu:precision_assembler/themeEvidence/recipeTypes",
+        "recipeTypes": [
+          "gtceu:precision_assembler",
+          "gtceu:assembler"
+        ]
+      }
+    },
+    {
+      "id": "gtceu:primitive_void_ore",
+      "allocation": "shared",
+      "copies": 1,
+      "planningTier": 0,
+      "placementTier": 0,
+      "stage": "early",
+      "placementStage": "early",
+      "department": "ore",
+      "hallGroup": "ore-early",
+      "tierEvidenceStatus": "component-floor",
+      "tierEvidenceSource": "dependency-class:org.gtlcore.gtlcore.data.recipe.Misc",
+      "functionEvidence": {
+        "basis": "audited-runtime-recipe-types",
+        "source": "factory_campus_machines.json#machines/gtceu:primitive_void_ore/themeEvidence/recipeTypes",
+        "recipeTypes": [
+          "gtceu:primitive_void_ore"
+        ]
+      }
+    },
+    {
+      "id": "gtceu:pyrolyse_oven",
+      "allocation": "shared",
+      "copies": 2,
+      "planningTier": 2,
+      "placementTier": 2,
+      "stage": "early",
+      "placementStage": "early",
+      "department": "metallurgy",
+      "hallGroup": "metallurgy-early",
+      "tierEvidenceStatus": "component-floor",
+      "tierEvidenceSource": "dependency-class:com.gregtechceu.gtceu.data.recipe.misc.MetaTileEntityLoader",
+      "functionEvidence": {
+        "basis": "audited-runtime-recipe-types",
+        "source": "factory_campus_machines.json#machines/gtceu:pyrolyse_oven/themeEvidence/recipeTypes",
+        "recipeTypes": [
+          "gtceu:pyrolyse_oven"
+        ]
+      }
+    },
+    {
+      "id": "gtceu:qft",
+      "allocation": "dedicated",
+      "copies": 1,
+      "planningTier": 12,
+      "placementTier": 12,
+      "stage": "late",
+      "placementStage": "late",
+      "department": "space",
+      "hallGroup": "space-late",
+      "tierEvidenceStatus": "voltage-confirmed",
+      "tierEvidenceSource": "instance:kubejs/server_scripts/machine_components.js",
+      "functionEvidence": {
+        "basis": "audited-runtime-recipe-types",
+        "source": "factory_campus_machines.json#machines/gtceu:qft/themeEvidence/recipeTypes",
+        "recipeTypes": [
+          "gtceu:qft"
+        ]
+      }
+    },
+    {
+      "id": "gtceu:rare_earth_centrifugal",
+      "allocation": "shared",
+      "copies": 1,
+      "planningTier": 10,
+      "placementTier": 10,
+      "stage": "late",
+      "placementStage": "late",
+      "department": "ore",
+      "hallGroup": "ore-late",
+      "tierEvidenceStatus": "voltage-confirmed",
+      "tierEvidenceSource": "instance:kubejs/server_scripts/coils_and_casings.js",
+      "functionEvidence": {
+        "basis": "audited-runtime-recipe-types",
+        "source": "factory_campus_machines.json#machines/gtceu:rare_earth_centrifugal/themeEvidence/recipeTypes",
+        "recipeTypes": [
+          "gtceu:rare_earth_centrifugal"
+        ]
+      }
+    },
+    {
+      "id": "gtceu:research_station",
+      "allocation": "dedicated",
+      "copies": 1,
+      "planningTier": 7,
+      "placementTier": 7,
+      "stage": "mid",
+      "placementStage": "mid",
+      "department": "computation",
+      "hallGroup": "computation-mid",
+      "tierEvidenceStatus": "voltage-confirmed",
+      "tierEvidenceSource": "dependency-class:com.gregtechceu.gtceu.data.recipe.misc.ComputerRecipes",
+      "functionEvidence": {
+        "basis": "audited-runtime-recipe-types",
+        "source": "factory_campus_machines.json#machines/gtceu:research_station/themeEvidence/recipeTypes",
+        "recipeTypes": [
+          "gtceu:research_station"
+        ]
+      }
+    },
+    {
+      "id": "gtceu:simulation_machine",
+      "allocation": "shared",
+      "copies": 1,
+      "planningTier": 14,
+      "placementTier": 14,
+      "stage": "late",
+      "placementStage": "late",
+      "department": "computation",
+      "hallGroup": "computation-late",
+      "tierEvidenceStatus": "unavailable",
+      "tierEvidenceSource": "dependency-class:org.gtlcore.gtlcore.data.recipe.Misc",
+      "functionEvidence": {
+        "basis": "dependency-role-text",
+        "source": "dependency:gtlcore-1.2.3.2-fix4.jar!assets/gtceu/lang/zh_cn.json#gtceu.machine.simulation_machine.tooltip.0",
+        "sourceSha256": "c44b8212b8d3a210eabd36e3efaf7804e78e25fc44d45f7b0fb048453aaaf346",
+        "role": "Copies and previews a scanned multiblock structure"
+      }
+    },
+    {
+      "id": "gtceu:space_cosmic_probe_receivers",
+      "allocation": "dedicated",
+      "copies": 1,
+      "planningTier": 13,
+      "placementTier": 13,
+      "stage": "late",
+      "placementStage": "late",
+      "department": "space",
+      "hallGroup": "space-late",
+      "tierEvidenceStatus": "voltage-confirmed",
+      "tierEvidenceSource": "dependency-class:org.gtlcore.gtlcore.data.recipe.MachineRecipe",
+      "functionEvidence": {
+        "basis": "audited-runtime-recipe-types",
+        "source": "factory_campus_machines.json#machines/gtceu:space_cosmic_probe_receivers/themeEvidence/recipeTypes",
+        "recipeTypes": [
+          "gtceu:space_cosmic_probe_receivers"
+        ]
+      }
+    },
+    {
+      "id": "gtceu:space_elevator",
+      "allocation": "dedicated",
+      "copies": 1,
+      "planningTier": 8,
+      "placementTier": 8,
+      "stage": "mid",
+      "placementStage": "mid",
+      "department": "space",
+      "hallGroup": "space-mid",
+      "tierEvidenceStatus": "voltage-confirmed",
+      "tierEvidenceSource": "instance:kubejs/server_scripts/machine_components.js",
+      "functionEvidence": {
+        "basis": "audited-runtime-recipe-types",
+        "source": "factory_campus_machines.json#machines/gtceu:space_elevator/themeEvidence/recipeTypes",
+        "recipeTypes": [
+          "gtceu:space_elevator"
+        ]
+      }
+    },
+    {
+      "id": "gtceu:space_probe_surface_reception",
+      "allocation": "dedicated",
+      "copies": 1,
+      "planningTier": 12,
+      "placementTier": 12,
+      "stage": "late",
+      "placementStage": "late",
+      "department": "space",
+      "hallGroup": "space-late",
+      "tierEvidenceStatus": "voltage-confirmed",
+      "tierEvidenceSource": "instance:kubejs/server_scripts/machine_progression.js",
+      "functionEvidence": {
+        "basis": "audited-runtime-recipe-types",
+        "source": "factory_campus_machines.json#machines/gtceu:space_probe_surface_reception/themeEvidence/recipeTypes",
+        "recipeTypes": [
+          "gtceu:space_probe_surface_reception"
+        ]
+      }
+    },
+    {
+      "id": "gtceu:sps_crafting",
+      "allocation": "dedicated",
+      "copies": 1,
+      "planningTier": 11,
+      "placementTier": 11,
+      "stage": "late",
+      "placementStage": "late",
+      "department": "precision",
+      "hallGroup": "precision-late",
+      "tierEvidenceStatus": "voltage-confirmed",
+      "tierEvidenceSource": "instance:kubejs/server_scripts/machine_progression.js",
+      "functionEvidence": {
+        "basis": "audited-runtime-recipe-types",
+        "source": "factory_campus_machines.json#machines/gtceu:sps_crafting/themeEvidence/recipeTypes",
+        "recipeTypes": [
+          "gtceu:sps_crafting"
+        ]
+      }
+    },
+    {
+      "id": "gtceu:star_ultimate_material_forge_factory",
+      "allocation": "dedicated",
+      "copies": 1,
+      "planningTier": 11,
+      "placementTier": 11,
+      "stage": "late",
+      "placementStage": "late",
+      "department": "metallurgy",
+      "hallGroup": "metallurgy-late",
+      "tierEvidenceStatus": "voltage-confirmed",
+      "tierEvidenceSource": "instance:kubejs/server_scripts/high_energy_processing.js",
+      "functionEvidence": {
+        "basis": "audited-runtime-recipe-types",
+        "source": "factory_campus_machines.json#machines/gtceu:star_ultimate_material_forge_factory/themeEvidence/recipeTypes",
+        "recipeTypes": [
+          "gtceu:ultimate_material_forge"
+        ]
+      }
+    },
+    {
+      "id": "gtceu:stellar_forge",
+      "allocation": "dedicated",
+      "copies": 1,
+      "planningTier": 9,
+      "placementTier": 9,
+      "stage": "late",
+      "placementStage": "late",
+      "department": "metallurgy",
+      "hallGroup": "metallurgy-late",
+      "tierEvidenceStatus": "voltage-confirmed",
+      "tierEvidenceSource": "instance:kubejs/server_scripts/machine_progression.js",
+      "functionEvidence": {
+        "basis": "audited-runtime-recipe-types",
+        "source": "factory_campus_machines.json#machines/gtceu:stellar_forge/themeEvidence/recipeTypes",
+        "recipeTypes": [
+          "gtceu:stellar_forge"
+        ]
+      }
+    },
+    {
+      "id": "gtceu:super_blast_smelter",
+      "allocation": "dedicated",
+      "copies": 1,
+      "planningTier": 9,
+      "placementTier": 9,
+      "stage": "late",
+      "placementStage": "late",
+      "department": "metallurgy",
+      "hallGroup": "metallurgy-late",
+      "tierEvidenceStatus": "voltage-confirmed",
+      "tierEvidenceSource": "instance:kubejs/server_scripts/machine_progression.js",
+      "functionEvidence": {
+        "basis": "audited-runtime-recipe-types",
+        "source": "factory_campus_machines.json#machines/gtceu:super_blast_smelter/themeEvidence/recipeTypes",
+        "recipeTypes": [
+          "gtceu:electric_blast_furnace",
+          "gtceu:alloy_smelter",
+          "gtceu:alloy_blast_smelter"
+        ]
+      }
+    },
+    {
+      "id": "gtceu:super_computation",
+      "allocation": "dedicated",
+      "copies": 1,
+      "planningTier": 10,
+      "placementTier": 10,
+      "stage": "late",
+      "placementStage": "late",
+      "department": "computation",
+      "hallGroup": "computation-late",
+      "tierEvidenceStatus": "voltage-confirmed",
+      "tierEvidenceSource": "instance:kubejs/server_scripts/machine_progression.js",
+      "functionEvidence": {
+        "basis": "dependency-role-text",
+        "source": "dependency:gtlcore-1.2.3.2-fix4.jar!assets/gtceu/lang/zh_cn.json#gtceu.machine.super_computation.tooltip.0",
+        "sourceSha256": "c44b8212b8d3a210eabd36e3efaf7804e78e25fc44d45f7b0fb048453aaaf346",
+        "role": "Generates computation according to supplied voltage tier"
+      }
+    },
+    {
+      "id": "gtceu:super_particle_collider",
+      "allocation": "dedicated",
+      "copies": 1,
+      "planningTier": 7,
+      "placementTier": 7,
+      "stage": "mid",
+      "placementStage": "mid",
+      "department": "space",
+      "hallGroup": "space-mid",
+      "tierEvidenceStatus": "voltage-confirmed",
+      "tierEvidenceSource": "instance:kubejs/server_scripts/machine_components.js",
+      "functionEvidence": {
+        "basis": "audited-runtime-recipe-types",
+        "source": "factory_campus_machines.json#machines/gtceu:super_particle_collider/themeEvidence/recipeTypes",
+        "recipeTypes": [
+          "gtceu:super_particle_collider"
+        ]
+      }
+    },
+    {
+      "id": "gtceu:superconducting_electromagnetism",
+      "allocation": "dedicated",
+      "copies": 1,
+      "planningTier": 10,
+      "placementTier": 10,
+      "stage": "late",
+      "placementStage": "late",
+      "department": "metallurgy",
+      "hallGroup": "metallurgy-late",
+      "tierEvidenceStatus": "voltage-confirmed",
+      "tierEvidenceSource": "instance:kubejs/server_scripts/machine_progression.js",
+      "functionEvidence": {
+        "basis": "audited-runtime-recipe-types",
+        "source": "factory_campus_machines.json#machines/gtceu:superconducting_electromagnetism/themeEvidence/recipeTypes",
+        "recipeTypes": [
+          "gtceu:polarizer",
+          "gtceu:electromagnetic_separator",
+          "gtceu:electrolyzer",
+          "gtceu:lightning_processor",
+          "gtceu:arc_furnace"
+        ]
+      }
+    },
+    {
+      "id": "gtceu:supercritical_mega_steam_turbine",
+      "allocation": "dedicated",
+      "copies": 1,
+      "planningTier": 7,
+      "placementTier": 7,
+      "stage": "mid",
+      "placementStage": "mid",
+      "department": "steam",
+      "hallGroup": "steam-mid",
+      "tierEvidenceStatus": "voltage-confirmed",
+      "tierEvidenceSource": "instance:kubejs/server_scripts/nanotechnology.js",
+      "functionEvidence": {
+        "basis": "audited-runtime-recipe-types",
+        "source": "factory_campus_machines.json#machines/gtceu:supercritical_mega_steam_turbine/themeEvidence/recipeTypes",
+        "recipeTypes": [
+          "gtceu:supercritical_steam_turbine"
+        ]
+      }
+    },
+    {
+      "id": "gtceu:suprachronal_assembly_line",
+      "allocation": "dedicated",
+      "copies": 1,
+      "planningTier": 10,
+      "placementTier": 10,
+      "stage": "late",
+      "placementStage": "late",
+      "department": "precision",
+      "hallGroup": "precision-late",
+      "tierEvidenceStatus": "voltage-confirmed",
+      "tierEvidenceSource": "instance:kubejs/server_scripts/high_energy_processing.js",
+      "functionEvidence": {
+        "basis": "audited-runtime-recipe-types",
+        "source": "factory_campus_machines.json#machines/gtceu:suprachronal_assembly_line/themeEvidence/recipeTypes",
+        "recipeTypes": [
+          "gtceu:suprachronal_assembly_line",
+          "gtceu:assembly_line",
+          "gtceu:circuit_assembly_line"
+        ]
+      }
+    },
+    {
+      "id": "gtceu:uev_compressed_fusion_reactor",
+      "allocation": "dedicated",
+      "copies": 1,
+      "planningTier": 10,
+      "placementTier": 10,
+      "stage": "late",
+      "placementStage": "late",
+      "department": "energy",
+      "hallGroup": "energy-late",
+      "tierEvidenceStatus": "voltage-confirmed",
+      "tierEvidenceSource": "instance:kubejs/server_scripts/ore_processing.js",
+      "functionEvidence": {
+        "basis": "audited-runtime-recipe-types",
+        "source": "factory_campus_machines.json#machines/gtceu:uev_compressed_fusion_reactor/themeEvidence/recipeTypes",
+        "recipeTypes": [
+          "gtceu:fusion_reactor"
+        ]
+      }
+    },
+    {
+      "id": "gtceu:uev_fusion_reactor",
+      "allocation": "dedicated",
+      "copies": 1,
+      "planningTier": 10,
+      "placementTier": 10,
+      "stage": "late",
+      "placementStage": "late",
+      "department": "energy",
+      "hallGroup": "energy-late",
+      "tierEvidenceStatus": "voltage-confirmed",
+      "tierEvidenceSource": "instance:kubejs/server_scripts/ore_processing.js",
+      "functionEvidence": {
+        "basis": "audited-runtime-recipe-types",
+        "source": "factory_campus_machines.json#machines/gtceu:uev_fusion_reactor/themeEvidence/recipeTypes",
+        "recipeTypes": [
+          "gtceu:fusion_reactor"
+        ]
+      }
+    },
+    {
+      "id": "gtceu:uhv_compressed_fusion_reactor",
+      "allocation": "dedicated",
+      "copies": 1,
+      "planningTier": 9,
+      "placementTier": 9,
+      "stage": "late",
+      "placementStage": "late",
+      "department": "energy",
+      "hallGroup": "energy-late",
+      "tierEvidenceStatus": "voltage-confirmed",
+      "tierEvidenceSource": "instance:kubejs/server_scripts/ore_processing.js",
+      "functionEvidence": {
+        "basis": "audited-runtime-recipe-types",
+        "source": "factory_campus_machines.json#machines/gtceu:uhv_compressed_fusion_reactor/themeEvidence/recipeTypes",
+        "recipeTypes": [
+          "gtceu:fusion_reactor"
+        ]
+      }
+    },
+    {
+      "id": "gtceu:uhv_fusion_reactor",
+      "allocation": "dedicated",
+      "copies": 1,
+      "planningTier": 9,
+      "placementTier": 9,
+      "stage": "late",
+      "placementStage": "late",
+      "department": "energy",
+      "hallGroup": "energy-late",
+      "tierEvidenceStatus": "voltage-confirmed",
+      "tierEvidenceSource": "instance:kubejs/server_scripts/ore_processing.js",
+      "functionEvidence": {
+        "basis": "audited-runtime-recipe-types",
+        "source": "factory_campus_machines.json#machines/gtceu:uhv_fusion_reactor/themeEvidence/recipeTypes",
+        "recipeTypes": [
+          "gtceu:fusion_reactor"
+        ]
+      }
+    },
+    {
+      "id": "gtceu:uv_compressed_fusion_reactor",
+      "allocation": "dedicated",
+      "copies": 1,
+      "planningTier": 8,
+      "placementTier": 8,
+      "stage": "mid",
+      "placementStage": "mid",
+      "department": "energy",
+      "hallGroup": "energy-mid",
+      "tierEvidenceStatus": "voltage-confirmed",
+      "tierEvidenceSource": "instance:kubejs/server_scripts/ore_processing.js",
+      "functionEvidence": {
+        "basis": "audited-runtime-recipe-types",
+        "source": "factory_campus_machines.json#machines/gtceu:uv_compressed_fusion_reactor/themeEvidence/recipeTypes",
+        "recipeTypes": [
+          "gtceu:fusion_reactor"
+        ]
+      }
+    },
+    {
+      "id": "gtceu:uv_fusion_reactor",
+      "allocation": "dedicated",
+      "copies": 1,
+      "planningTier": 8,
+      "placementTier": 8,
+      "stage": "mid",
+      "placementStage": "mid",
+      "department": "energy",
+      "hallGroup": "energy-mid",
+      "tierEvidenceStatus": "voltage-confirmed",
+      "tierEvidenceSource": "current dependency controller recipes + instance KJS",
+      "functionEvidence": {
+        "basis": "audited-runtime-recipe-types",
+        "source": "factory_campus_machines.json#machines/gtceu:uv_fusion_reactor/themeEvidence/recipeTypes",
+        "recipeTypes": [
+          "gtceu:fusion_reactor"
+        ]
+      }
+    },
+    {
+      "id": "gtceu:vacuum_drying_furnace",
+      "allocation": "shared",
+      "copies": 1,
+      "planningTier": 3,
+      "placementTier": 3,
+      "stage": "early",
+      "placementStage": "early",
+      "department": "chemistry",
+      "hallGroup": "chemistry-early",
+      "tierEvidenceStatus": "voltage-confirmed",
+      "tierEvidenceSource": "instance:kubejs/server_scripts/ore_processing.js",
+      "functionEvidence": {
+        "basis": "audited-runtime-recipe-types",
+        "source": "factory_campus_machines.json#machines/gtceu:vacuum_drying_furnace/themeEvidence/recipeTypes",
+        "recipeTypes": [
+          "gtceu:vacuum_drying",
+          "gtceu:dehydrator"
+        ]
+      }
+    },
+    {
+      "id": "gtceu:vacuum_freezer",
+      "allocation": "shared",
+      "copies": 4,
+      "planningTier": 3,
+      "placementTier": 3,
+      "stage": "early",
+      "placementStage": "early",
+      "department": "metallurgy",
+      "hallGroup": "metallurgy-early",
+      "tierEvidenceStatus": "component-floor",
+      "tierEvidenceSource": "dependency-class:com.gregtechceu.gtceu.data.recipe.misc.MetaTileEntityLoader",
+      "functionEvidence": {
+        "basis": "audited-runtime-recipe-types",
+        "source": "factory_campus_machines.json#machines/gtceu:vacuum_freezer/themeEvidence/recipeTypes",
+        "recipeTypes": [
+          "gtceu:vacuum_freezer"
+        ]
+      }
+    },
+    {
+      "id": "gtceu:void_miner",
+      "allocation": "shared",
+      "copies": 1,
+      "planningTier": 3,
+      "placementTier": 3,
+      "stage": "early",
+      "placementStage": "early",
+      "department": "ore",
+      "hallGroup": "ore-early",
+      "tierEvidenceStatus": "voltage-confirmed",
+      "tierEvidenceSource": "instance:kubejs/server_scripts/machine_structures.js",
+      "functionEvidence": {
+        "basis": "audited-runtime-recipe-types",
+        "source": "factory_campus_machines.json#machines/gtceu:void_miner/themeEvidence/recipeTypes",
+        "recipeTypes": [
+          "gtceu:void_miner"
+        ]
+      }
+    },
+    {
+      "id": "gtceu:wood_distillation",
+      "allocation": "dedicated",
+      "copies": 1,
+      "planningTier": 6,
+      "placementTier": 6,
+      "stage": "mid",
+      "placementStage": "mid",
+      "department": "chemistry",
+      "hallGroup": "chemistry-mid",
+      "tierEvidenceStatus": "voltage-confirmed",
+      "tierEvidenceSource": "dependency-class:org.gtlcore.gtlcore.data.recipe.MachineRecipe",
+      "functionEvidence": {
+        "basis": "audited-runtime-recipe-types",
+        "source": "factory_campus_machines.json#machines/gtceu:wood_distillation/themeEvidence/recipeTypes",
+        "recipeTypes": [
+          "gtceu:wood_distillation"
+        ]
+      }
+    },
+    {
+      "id": "gtceu:zpm_compressed_fusion_reactor",
+      "allocation": "dedicated",
+      "copies": 1,
+      "planningTier": 7,
+      "placementTier": 7,
+      "stage": "mid",
+      "placementStage": "mid",
+      "department": "energy",
+      "hallGroup": "energy-mid",
+      "tierEvidenceStatus": "voltage-confirmed",
+      "tierEvidenceSource": "instance:kubejs/server_scripts/ore_processing.js",
+      "functionEvidence": {
+        "basis": "audited-runtime-recipe-types",
+        "source": "factory_campus_machines.json#machines/gtceu:zpm_compressed_fusion_reactor/themeEvidence/recipeTypes",
+        "recipeTypes": [
+          "gtceu:fusion_reactor"
+        ]
+      }
+    },
+    {
+      "id": "gtceu:zpm_fusion_reactor",
+      "allocation": "dedicated",
+      "copies": 1,
+      "planningTier": 7,
+      "placementTier": 7,
+      "stage": "mid",
+      "placementStage": "mid",
+      "department": "energy",
+      "hallGroup": "energy-mid",
+      "tierEvidenceStatus": "voltage-confirmed",
+      "tierEvidenceSource": "current dependency controller recipes + instance KJS",
+      "functionEvidence": {
+        "basis": "audited-runtime-recipe-types",
+        "source": "factory_campus_machines.json#machines/gtceu:zpm_fusion_reactor/themeEvidence/recipeTypes",
+        "recipeTypes": [
+          "gtceu:fusion_reactor"
+        ]
+      }
+    },
+    {
+      "id": "gtl_enhancedcore:assembling_plus",
+      "allocation": "shared",
+      "copies": 1,
+      "planningTier": 2,
+      "placementTier": 2,
+      "stage": "early",
+      "placementStage": "early",
+      "department": "precision",
+      "hallGroup": "precision-early",
+      "tierEvidenceStatus": "voltage-confirmed",
+      "tierEvidenceSource": "src/main/resources/data/gtl_enhancedcore/equipment_recipes.json",
+      "functionEvidence": {
+        "basis": "audited-runtime-recipe-types",
+        "source": "factory_campus_machines.json#machines/gtl_enhancedcore:assembling_plus/themeEvidence/recipeTypes",
+        "recipeTypes": [
+          "gtceu:assembler",
+          "gtceu:circuit_assembler"
+        ]
+      }
+    },
+    {
+      "id": "gtl_enhancedcore:basic_ore_processing_plant",
+      "allocation": "dedicated",
+      "copies": 10,
+      "planningTier": 2,
+      "placementTier": 2,
+      "stage": "early",
+      "placementStage": "early",
+      "department": "ore",
+      "hallGroup": "ore-early",
+      "tierEvidenceStatus": "voltage-confirmed",
+      "tierEvidenceSource": "src/main/resources/data/gtl_enhancedcore/equipment_recipes.json",
+      "functionEvidence": {
+        "basis": "audited-runtime-recipe-types",
+        "source": "factory_campus_machines.json#machines/gtl_enhancedcore:basic_ore_processing_plant/themeEvidence/recipeTypes",
+        "recipeTypes": [
+          "gtceu:integrated_ore_processor"
+        ]
+      }
+    },
+    {
+      "id": "gtl_enhancedcore:causality_terminal",
+      "allocation": "dedicated",
+      "copies": 1,
+      "planningTier": 14,
+      "placementTier": 14,
+      "stage": "late",
+      "placementStage": "late",
+      "department": "space",
+      "hallGroup": "space-late",
+      "tierEvidenceStatus": "voltage-confirmed",
+      "tierEvidenceSource": "src/main/resources/data/gtl_enhancedcore/equipment_recipes.json",
+      "functionEvidence": {
+        "basis": "audited-runtime-recipe-types",
+        "source": "factory_campus_machines.json#machines/gtl_enhancedcore:causality_terminal/themeEvidence/recipeTypes",
+        "recipeTypes": [
+          "gtl_enhancedcore:causality_terminal"
+        ]
+      }
+    },
+    {
+      "id": "gtl_enhancedcore:cloud_pattern_library",
+      "allocation": "dedicated",
+      "copies": 1,
+      "planningTier": 8,
+      "placementTier": 8,
+      "stage": "mid",
+      "placementStage": "mid",
+      "department": "computation",
+      "hallGroup": "computation-mid",
+      "tierEvidenceStatus": "voltage-confirmed",
+      "tierEvidenceSource": "src/main/resources/data/gtl_enhancedcore/equipment_recipes.json",
+      "functionEvidence": {
+        "basis": "local-controller-source",
+        "source": "src/main/java/com/gtl/enhancedcore/common/cloud/CloudPatternLibraryMachine.java",
+        "role": "World-owned pattern storage controller connected to an AE grid"
+      }
+    },
+    {
+      "id": "gtl_enhancedcore:dragon_field_proliferation_core",
+      "allocation": "dedicated",
+      "copies": 1,
+      "planningTier": 10,
+      "placementTier": 10,
+      "stage": "late",
+      "placementStage": "late",
+      "department": "energy",
+      "hallGroup": "energy-late",
+      "tierEvidenceStatus": "voltage-confirmed",
+      "tierEvidenceSource": "src/main/resources/data/gtl_enhancedcore/equipment_recipes.json",
+      "functionEvidence": {
+        "basis": "audited-runtime-recipe-types",
+        "source": "factory_campus_machines.json#machines/gtl_enhancedcore:dragon_field_proliferation_core/themeEvidence/recipeTypes",
+        "recipeTypes": [
+          "gtl_enhancedcore:exotic_proliferation"
+        ]
+      }
+    },
+    {
+      "id": "gtl_enhancedcore:extreme_reactor",
+      "allocation": "dedicated",
+      "copies": 1,
+      "planningTier": 12,
+      "placementTier": 12,
+      "stage": "late",
+      "placementStage": "late",
+      "department": "energy",
+      "hallGroup": "energy-late",
+      "tierEvidenceStatus": "voltage-confirmed",
+      "tierEvidenceSource": "src/main/resources/data/gtl_enhancedcore/equipment_recipes.json",
+      "functionEvidence": {
+        "basis": "audited-runtime-recipe-types",
+        "source": "factory_campus_machines.json#machines/gtl_enhancedcore:extreme_reactor/themeEvidence/recipeTypes",
+        "recipeTypes": [
+          "gtl_enhancedcore:extreme_reaction"
+        ]
+      }
+    },
+    {
+      "id": "gtl_enhancedcore:hadron_catalytic_refinery",
+      "allocation": "dedicated",
+      "copies": 1,
+      "planningTier": 5,
+      "placementTier": 5,
+      "stage": "mid",
+      "placementStage": "mid",
+      "department": "chemistry",
+      "hallGroup": "chemistry-mid",
+      "tierEvidenceStatus": "voltage-confirmed",
+      "tierEvidenceSource": "src/main/resources/data/gtl_enhancedcore/equipment_recipes.json",
+      "functionEvidence": {
+        "basis": "audited-runtime-recipe-types",
+        "source": "factory_campus_machines.json#machines/gtl_enhancedcore:hadron_catalytic_refinery/themeEvidence/recipeTypes",
+        "recipeTypes": [
+          "gtceu:mixer",
+          "gtceu:evaporation",
+          "gtceu:autoclave",
+          "gtceu:extractor",
+          "gtceu:brewery",
+          "gtceu:fermenter",
+          "gtceu:distillery",
+          "gtceu:distillation_tower",
+          "gtceu:fluid_heater",
+          "gtceu:fluid_solidifier",
+          "gtceu:canner"
+        ]
+      }
+    },
+    {
+      "id": "gtl_enhancedcore:high_flux_breeder_reactor",
+      "allocation": "dedicated",
+      "copies": 1,
+      "planningTier": 9,
+      "placementTier": 9,
+      "stage": "late",
+      "placementStage": "late",
+      "department": "energy",
+      "hallGroup": "energy-late",
+      "tierEvidenceStatus": "voltage-confirmed",
+      "tierEvidenceSource": "src/main/resources/data/gtl_enhancedcore/equipment_recipes.json",
+      "functionEvidence": {
+        "basis": "audited-runtime-recipe-types",
+        "source": "factory_campus_machines.json#machines/gtl_enhancedcore:high_flux_breeder_reactor/themeEvidence/recipeTypes",
+        "recipeTypes": [
+          "gtceu:fission_reactor"
+        ]
+      }
+    },
+    {
+      "id": "gtl_enhancedcore:hydrothermal_leaching_complex",
+      "allocation": "dedicated",
+      "copies": 1,
+      "planningTier": 10,
+      "placementTier": 10,
+      "stage": "late",
+      "placementStage": "late",
+      "department": "ore",
+      "hallGroup": "ore-late",
+      "tierEvidenceStatus": "voltage-confirmed",
+      "tierEvidenceSource": "src/main/resources/data/gtl_enhancedcore/equipment_recipes.json",
+      "functionEvidence": {
+        "basis": "audited-runtime-recipe-types",
+        "source": "factory_campus_machines.json#machines/gtl_enhancedcore:hydrothermal_leaching_complex/themeEvidence/recipeTypes",
+        "recipeTypes": [
+          "gtceu:digestion_treatment",
+          "gtceu:dissolution_treatment"
+        ]
+      }
+    },
+    {
+      "id": "gtl_enhancedcore:hyperstructural_chemical_distorter",
+      "allocation": "dedicated",
+      "copies": 4,
+      "planningTier": 10,
+      "placementTier": 10,
+      "stage": "late",
+      "placementStage": "late",
+      "department": "chemistry",
+      "hallGroup": "chemistry-late",
+      "tierEvidenceStatus": "voltage-confirmed",
+      "tierEvidenceSource": "src/main/resources/data/gtl_enhancedcore/equipment_recipes.json",
+      "functionEvidence": {
+        "basis": "audited-runtime-recipe-types",
+        "source": "factory_campus_machines.json#machines/gtl_enhancedcore:hyperstructural_chemical_distorter/themeEvidence/recipeTypes",
+        "recipeTypes": [
+          "gtceu:distort"
+        ]
+      }
+    },
+    {
+      "id": "gtl_enhancedcore:industrial_steam_platform",
+      "allocation": "dedicated",
+      "copies": 15,
+      "planningTier": 0,
+      "placementTier": 0,
+      "stage": "early",
+      "placementStage": "early",
+      "department": "steam",
+      "hallGroup": "steam-early",
+      "tierEvidenceStatus": "voltage-confirmed",
+      "tierEvidenceSource": "src/main/resources/data/gtl_enhancedcore/equipment_recipes.json",
+      "functionEvidence": {
+        "basis": "audited-runtime-recipe-types",
+        "source": "factory_campus_machines.json#machines/gtl_enhancedcore:industrial_steam_platform/themeEvidence/recipeTypes",
+        "recipeTypes": [
+          "gtceu:lava_furnace",
+          "gtceu:forge_hammer",
+          "gtceu:compressor",
+          "gtceu:alloy_smelter",
+          "gtceu:macerator",
+          "gtceu:circuit_assembler",
+          "gtceu:mixer",
+          "gtceu:centrifuge",
+          "gtceu:thermal_centrifuge",
+          "gtceu:chemical_bath",
+          "gtceu:ore_washer",
+          "gtceu:electric_furnace",
+          "gtceu:extractor"
+        ]
+      }
+    },
+    {
+      "id": "gtl_enhancedcore:infinity_singularity_compressor",
+      "allocation": "dedicated",
+      "copies": 1,
+      "planningTier": 11,
+      "placementTier": 11,
+      "stage": "late",
+      "placementStage": "late",
+      "department": "space",
+      "hallGroup": "space-late",
+      "tierEvidenceStatus": "voltage-confirmed",
+      "tierEvidenceSource": "src/main/resources/data/gtl_enhancedcore/equipment_recipes.json",
+      "functionEvidence": {
+        "basis": "audited-runtime-recipe-types",
+        "source": "factory_campus_machines.json#machines/gtl_enhancedcore:infinity_singularity_compressor/themeEvidence/recipeTypes",
+        "recipeTypes": [
+          "gtl_enhancedcore:infinity_singularity"
+        ]
+      }
+    },
+    {
+      "id": "gtl_enhancedcore:lanthanide_refining_hub",
+      "allocation": "dedicated",
+      "copies": 1,
+      "planningTier": 6,
+      "placementTier": 6,
+      "stage": "mid",
+      "placementStage": "mid",
+      "department": "ore",
+      "hallGroup": "ore-mid",
+      "tierEvidenceStatus": "voltage-confirmed",
+      "tierEvidenceSource": "src/main/resources/data/gtl_enhancedcore/equipment_recipes.json",
+      "functionEvidence": {
+        "basis": "audited-runtime-recipe-types",
+        "source": "factory_campus_machines.json#machines/gtl_enhancedcore:lanthanide_refining_hub/themeEvidence/recipeTypes",
+        "recipeTypes": [
+          "gtl_enhancedcore:lanthanide_refining"
+        ]
+      }
+    },
+    {
+      "id": "gtl_enhancedcore:large_furnace",
+      "allocation": "dedicated",
+      "copies": 2,
+      "planningTier": 1,
+      "placementTier": 1,
+      "stage": "early",
+      "placementStage": "early",
+      "department": "metallurgy",
+      "hallGroup": "metallurgy-early",
+      "tierEvidenceStatus": "voltage-confirmed",
+      "tierEvidenceSource": "src/main/resources/data/gtl_enhancedcore/equipment_recipes.json",
+      "functionEvidence": {
+        "basis": "audited-runtime-recipe-types",
+        "source": "factory_campus_machines.json#machines/gtl_enhancedcore:large_furnace/themeEvidence/recipeTypes",
+        "recipeTypes": [
+          "gtceu:electric_furnace"
+        ]
+      }
+    },
+    {
+      "id": "gtl_enhancedcore:mixing_plus",
+      "allocation": "shared",
+      "copies": 1,
+      "planningTier": 2,
+      "placementTier": 2,
+      "stage": "early",
+      "placementStage": "early",
+      "department": "chemistry",
+      "hallGroup": "chemistry-early",
+      "tierEvidenceStatus": "voltage-confirmed",
+      "tierEvidenceSource": "src/main/resources/data/gtl_enhancedcore/equipment_recipes.json",
+      "functionEvidence": {
+        "basis": "audited-runtime-recipe-types",
+        "source": "factory_campus_machines.json#machines/gtl_enhancedcore:mixing_plus/themeEvidence/recipeTypes",
+        "recipeTypes": [
+          "gtceu:chemical_reactor",
+          "gtceu:mixer",
+          "gtceu:chemical_bath",
+          "gtceu:ore_washer"
+        ]
+      }
+    },
+    {
+      "id": "gtl_enhancedcore:neutron_control_factory",
+      "allocation": "dedicated",
+      "copies": 1,
+      "planningTier": 7,
+      "placementTier": 7,
+      "stage": "mid",
+      "placementStage": "mid",
+      "department": "energy",
+      "hallGroup": "energy-mid",
+      "tierEvidenceStatus": "voltage-confirmed",
+      "tierEvidenceSource": "src/main/resources/data/gtl_enhancedcore/equipment_recipes.json",
+      "functionEvidence": {
+        "basis": "audited-runtime-recipe-types",
+        "source": "factory_campus_machines.json#machines/gtl_enhancedcore:neutron_control_factory/themeEvidence/recipeTypes",
+        "recipeTypes": [
+          "gtceu:neutron_activator"
+        ]
+      }
+    },
+    {
+      "id": "gtl_enhancedcore:plasma_machine_tool",
+      "allocation": "dedicated",
+      "copies": 1,
+      "planningTier": 5,
+      "placementTier": 5,
+      "stage": "mid",
+      "placementStage": "mid",
+      "department": "metallurgy",
+      "hallGroup": "metallurgy-mid",
+      "tierEvidenceStatus": "voltage-confirmed",
+      "tierEvidenceSource": "src/main/resources/data/gtl_enhancedcore/equipment_recipes.json",
+      "functionEvidence": {
+        "basis": "audited-runtime-recipe-types",
+        "source": "factory_campus_machines.json#machines/gtl_enhancedcore:plasma_machine_tool/themeEvidence/recipeTypes",
+        "recipeTypes": [
+          "gtceu:lathe",
+          "gtceu:bender",
+          "gtceu:compressor",
+          "gtceu:forge_hammer",
+          "gtceu:cutter",
+          "gtceu:forming_press",
+          "gtceu:wiremill",
+          "gtceu:extruder",
+          "gtceu:polarizer"
+        ]
+      }
+    },
+    {
+      "id": "gtl_enhancedcore:platinum_refining_matrix",
+      "allocation": "dedicated",
+      "copies": 1,
+      "planningTier": 5,
+      "placementTier": 5,
+      "stage": "mid",
+      "placementStage": "mid",
+      "department": "ore",
+      "hallGroup": "ore-mid",
+      "tierEvidenceStatus": "voltage-confirmed",
+      "tierEvidenceSource": "src/main/resources/data/gtl_enhancedcore/equipment_recipes.json",
+      "functionEvidence": {
+        "basis": "audited-runtime-recipe-types",
+        "source": "factory_campus_machines.json#machines/gtl_enhancedcore:platinum_refining_matrix/themeEvidence/recipeTypes",
+        "recipeTypes": [
+          "gtl_enhancedcore:platinum_refining"
+        ]
+      }
+    },
+    {
+      "id": "gtl_enhancedcore:processing_plus",
+      "allocation": "shared",
+      "copies": 1,
+      "planningTier": 2,
+      "placementTier": 2,
+      "stage": "early",
+      "placementStage": "early",
+      "department": "metallurgy",
+      "hallGroup": "metallurgy-early",
+      "tierEvidenceStatus": "voltage-confirmed",
+      "tierEvidenceSource": "src/main/resources/data/gtl_enhancedcore/equipment_recipes.json",
+      "functionEvidence": {
+        "basis": "audited-runtime-recipe-types",
+        "source": "factory_campus_machines.json#machines/gtl_enhancedcore:processing_plus/themeEvidence/recipeTypes",
+        "recipeTypes": [
+          "gtceu:bender",
+          "gtceu:compressor",
+          "gtceu:forge_hammer",
+          "gtceu:cutter",
+          "gtceu:extruder",
+          "gtceu:lathe",
+          "gtceu:wiremill",
+          "gtceu:forming_press",
+          "gtceu:polarizer",
+          "gtceu:laser_engraver",
+          "gtceu:fluid_solidifier"
+        ]
+      }
+    },
+    {
+      "id": "gtl_enhancedcore:quantum_mass_spectrum_array",
+      "allocation": "dedicated",
+      "copies": 1,
+      "planningTier": 5,
+      "placementTier": 5,
+      "stage": "mid",
+      "placementStage": "mid",
+      "department": "ore",
+      "hallGroup": "ore-mid",
+      "tierEvidenceStatus": "voltage-confirmed",
+      "tierEvidenceSource": "src/main/resources/data/gtl_enhancedcore/equipment_recipes.json",
+      "functionEvidence": {
+        "basis": "audited-runtime-recipe-types",
+        "source": "factory_campus_machines.json#machines/gtl_enhancedcore:quantum_mass_spectrum_array/themeEvidence/recipeTypes",
+        "recipeTypes": [
+          "gtceu:rock_breaker",
+          "gtceu:ore_washer",
+          "gtceu:centrifuge",
+          "gtceu:electrolyzer",
+          "gtceu:sifter",
+          "gtceu:macerator",
+          "gtceu:dehydrator",
+          "gtceu:thermal_centrifuge",
+          "gtceu:electromagnetic_separator",
+          "gtceu:chemical_bath",
+          "gtceu:laser_engraver"
+        ]
+      }
+    },
+    {
+      "id": "gtl_enhancedcore:separating_plus",
+      "allocation": "shared",
+      "copies": 1,
+      "planningTier": 2,
+      "placementTier": 2,
+      "stage": "early",
+      "placementStage": "early",
+      "department": "chemistry",
+      "hallGroup": "chemistry-early",
+      "tierEvidenceStatus": "voltage-confirmed",
+      "tierEvidenceSource": "src/main/resources/data/gtl_enhancedcore/equipment_recipes.json",
+      "functionEvidence": {
+        "basis": "audited-runtime-recipe-types",
+        "source": "factory_campus_machines.json#machines/gtl_enhancedcore:separating_plus/themeEvidence/recipeTypes",
+        "recipeTypes": [
+          "gtceu:centrifuge",
+          "gtceu:thermal_centrifuge",
+          "gtceu:electrolyzer",
+          "gtceu:sifter",
+          "gtceu:macerator",
+          "gtceu:extractor",
+          "gtceu:dehydrator"
+        ]
+      }
+    },
+    {
+      "id": "gtl_enhancedcore:star_core_stripper",
+      "allocation": "dedicated",
+      "copies": 1,
+      "planningTier": 9,
+      "placementTier": 9,
+      "stage": "late",
+      "placementStage": "late",
+      "department": "metallurgy",
+      "hallGroup": "metallurgy-late",
+      "tierEvidenceStatus": "voltage-confirmed",
+      "tierEvidenceSource": "src/main/resources/data/gtl_enhancedcore/equipment_recipes.json",
+      "functionEvidence": {
+        "basis": "audited-runtime-recipe-types",
+        "source": "factory_campus_machines.json#machines/gtl_enhancedcore:star_core_stripper/themeEvidence/recipeTypes",
+        "recipeTypes": [
+          "gtceu:fragment_world_collection"
+        ]
+      }
+    },
+    {
+      "id": "gtl_enhancedcore:stellar_confinement_fusion_reactor",
+      "allocation": "dedicated",
+      "copies": 1,
+      "planningTier": 11,
+      "placementTier": 11,
+      "stage": "late",
+      "placementStage": "late",
+      "department": "energy",
+      "hallGroup": "energy-late",
+      "tierEvidenceStatus": "voltage-confirmed",
+      "tierEvidenceSource": "src/main/resources/data/gtl_enhancedcore/equipment_recipes.json",
+      "functionEvidence": {
+        "basis": "audited-runtime-recipe-types",
+        "source": "factory_campus_machines.json#machines/gtl_enhancedcore:stellar_confinement_fusion_reactor/themeEvidence/recipeTypes",
+        "recipeTypes": [
+          "gtceu:fusion_reactor"
+        ]
+      }
+    },
+    {
+      "id": "gtl_enhancedcore:stellar_vortex_space_station",
+      "allocation": "dedicated",
+      "copies": 1,
+      "planningTier": 13,
+      "placementTier": 13,
+      "stage": "late",
+      "placementStage": "late",
+      "department": "space",
+      "hallGroup": "space-late",
+      "tierEvidenceStatus": "voltage-confirmed",
+      "tierEvidenceSource": "src/main/resources/data/gtl_enhancedcore/equipment_recipes.json",
+      "functionEvidence": {
+        "basis": "audited-runtime-recipe-types",
+        "source": "factory_campus_machines.json#machines/gtl_enhancedcore:stellar_vortex_space_station/themeEvidence/recipeTypes",
+        "recipeTypes": [
+          "gtl_enhancedcore:brilliant_stars"
+        ]
+      }
+    },
+    {
+      "id": "gtl_enhancedcore:superconducting_fusion_assembler",
+      "allocation": "dedicated",
+      "copies": 1,
+      "planningTier": 5,
+      "placementTier": 5,
+      "stage": "mid",
+      "placementStage": "mid",
+      "department": "precision",
+      "hallGroup": "precision-mid",
+      "tierEvidenceStatus": "voltage-confirmed",
+      "tierEvidenceSource": "src/main/resources/data/gtl_enhancedcore/equipment_recipes.json",
+      "functionEvidence": {
+        "basis": "audited-runtime-recipe-types",
+        "source": "factory_campus_machines.json#machines/gtl_enhancedcore:superconducting_fusion_assembler/themeEvidence/recipeTypes",
+        "recipeTypes": [
+          "gtceu:arc_furnace",
+          "gtceu:lightning_processor",
+          "gtceu:assembler",
+          "gtceu:precision_assembler",
+          "gtceu:circuit_assembler"
+        ]
+      }
+    },
+    {
+      "id": "gtl_enhancedcore:universal_joint_factory",
+      "allocation": "dedicated",
+      "copies": 2,
+      "planningTier": 2,
+      "placementTier": 2,
+      "stage": "early",
+      "placementStage": "early",
+      "department": "precision",
+      "hallGroup": "precision-early",
+      "tierEvidenceStatus": "voltage-confirmed",
+      "tierEvidenceSource": "src/main/resources/data/gtl_enhancedcore/equipment_recipes.json",
+      "functionEvidence": {
+        "basis": "audited-runtime-recipe-types",
+        "source": "factory_campus_machines.json#machines/gtl_enhancedcore:universal_joint_factory/themeEvidence/recipeTypes",
+        "recipeTypes": [
+          "gtceu:bender",
+          "gtceu:compressor",
+          "gtceu:forge_hammer",
+          "gtceu:cutter",
+          "gtceu:extruder",
+          "gtceu:lathe",
+          "gtceu:wiremill",
+          "gtceu:forming_press",
+          "gtceu:polarizer",
+          "gtceu:laser_engraver",
+          "gtceu:fluid_solidifier",
+          "gtceu:assembler",
+          "gtceu:circuit_assembler",
+          "gtceu:centrifuge",
+          "gtceu:thermal_centrifuge",
+          "gtceu:electrolyzer",
+          "gtceu:sifter",
+          "gtceu:macerator",
+          "gtceu:extractor",
+          "gtceu:dehydrator",
+          "gtceu:chemical_reactor",
+          "gtceu:mixer",
+          "gtceu:chemical_bath",
+          "gtceu:ore_washer"
+        ]
+      }
+    },
+    {
+      "id": "gtl_enhancedcore:void_constrained_mining_field",
+      "allocation": "dedicated",
+      "copies": 1,
+      "planningTier": 7,
+      "placementTier": 7,
+      "stage": "mid",
+      "placementStage": "mid",
+      "department": "ore",
+      "hallGroup": "ore-mid",
+      "tierEvidenceStatus": "voltage-confirmed",
+      "tierEvidenceSource": "src/main/resources/data/gtl_enhancedcore/equipment_recipes.json",
+      "functionEvidence": {
+        "basis": "audited-runtime-recipe-types",
+        "source": "factory_campus_machines.json#machines/gtl_enhancedcore:void_constrained_mining_field/themeEvidence/recipeTypes",
+        "recipeTypes": [
+          "gtceu:large_void_miner",
+          "gtceu:random_ore"
+        ]
+      }
+    },
+    {
+      "id": "gtl_enhancedcore:weather_anchor",
+      "allocation": "dedicated",
+      "copies": 1,
+      "planningTier": 7,
+      "placementTier": 7,
+      "stage": "mid",
+      "placementStage": "mid",
+      "department": "computation",
+      "hallGroup": "computation-mid",
+      "tierEvidenceStatus": "voltage-confirmed",
+      "tierEvidenceSource": "src/main/resources/data/gtl_enhancedcore/equipment_recipes.json",
+      "functionEvidence": {
+        "basis": "audited-runtime-recipe-types",
+        "source": "factory_campus_machines.json#machines/gtl_enhancedcore:weather_anchor/themeEvidence/recipeTypes",
+        "recipeTypes": [
+          "gtl_enhancedcore:anchor_day",
+          "gtl_enhancedcore:anchor_night",
+          "gtl_enhancedcore:anchor_clear",
+          "gtl_enhancedcore:anchor_rain",
+          "gtl_enhancedcore:anchor_thunder"
+        ]
+      }
+    },
+    {
+      "id": "gtladditions:antientropy_condensation_center",
+      "allocation": "dedicated",
+      "copies": 1,
+      "planningTier": 11,
+      "placementTier": 11,
+      "stage": "late",
+      "placementStage": "late",
+      "department": "space",
+      "hallGroup": "space-late",
+      "tierEvidenceStatus": "voltage-confirmed",
+      "tierEvidenceSource": "dependency-class:com.gtladd.gtladditions.data.recipes.NewMultiBlockMachineController",
+      "functionEvidence": {
+        "basis": "audited-runtime-recipe-types",
+        "source": "factory_campus_machines.json#machines/gtladditions:antientropy_condensation_center/themeEvidence/recipeTypes",
+        "recipeTypes": [
+          "gtceu:antientropy_condensation"
+        ]
+      }
+    },
+    {
+      "id": "gtladditions:apocalyptic_torsion_quantum_matrix",
+      "allocation": "dedicated",
+      "copies": 1,
+      "planningTier": 14,
+      "placementTier": 14,
+      "stage": "late",
+      "placementStage": "late",
+      "department": "space",
+      "hallGroup": "space-late",
+      "tierEvidenceStatus": "voltage-confirmed",
+      "tierEvidenceSource": "dependency-class:com.gtladd.gtladditions.data.recipes.NewMultiBlockMachineController",
+      "functionEvidence": {
+        "basis": "audited-runtime-recipe-types",
+        "source": "factory_campus_machines.json#machines/gtladditions:apocalyptic_torsion_quantum_matrix/themeEvidence/recipeTypes",
+        "recipeTypes": [
+          "gtceu:qft",
+          "gtceu:distort",
+          "gtceu:neutron_compressor"
+        ]
+      }
+    },
+    {
+      "id": "gtladditions:arcane_cache_vault",
+      "allocation": "dedicated",
+      "copies": 1,
+      "planningTier": 8,
+      "placementTier": 8,
+      "stage": "mid",
+      "placementStage": "mid",
+      "department": "precision",
+      "hallGroup": "precision-mid",
+      "tierEvidenceStatus": "voltage-confirmed",
+      "tierEvidenceSource": "dependency-class:com.gtladd.gtladditions.data.recipes.NewMultiBlockMachineController",
+      "functionEvidence": {
+        "basis": "audited-runtime-recipe-types",
+        "source": "factory_campus_machines.json#machines/gtladditions:arcane_cache_vault/themeEvidence/recipeTypes",
+        "recipeTypes": [
+          "gtceu:packer"
+        ]
+      }
+    },
+    {
+      "id": "gtladditions:arcanic_astrograph",
+      "allocation": "dedicated",
+      "copies": 1,
+      "planningTier": 14,
+      "placementTier": 14,
+      "stage": "late",
+      "placementStage": "late",
+      "department": "space",
+      "hallGroup": "space-late",
+      "tierEvidenceStatus": "voltage-confirmed",
+      "tierEvidenceSource": "dependency-class:com.gtladd.gtladditions.data.recipes.NewMultiBlockMachineController",
+      "functionEvidence": {
+        "basis": "audited-runtime-recipe-types",
+        "source": "factory_campus_machines.json#machines/gtladditions:arcanic_astrograph/themeEvidence/recipeTypes",
+        "recipeTypes": [
+          "gtceu:cosmos_simulation",
+          "gtceu:compressed_astral_array"
+        ]
+      }
+    },
+    {
+      "id": "gtladditions:atomic_transmutation_core",
+      "allocation": "dedicated",
+      "copies": 1,
+      "planningTier": 14,
+      "placementTier": 14,
+      "stage": "late",
+      "placementStage": "late",
+      "department": "metallurgy",
+      "hallGroup": "metallurgy-late",
+      "tierEvidenceStatus": "unavailable",
+      "tierEvidenceSource": "dependency-class:com.gtladd.gtladditions.common.machine.multiblock.MultiBlockMachine",
+      "functionEvidence": {
+        "basis": "audited-runtime-recipe-types",
+        "source": "factory_campus_machines.json#machines/gtladditions:atomic_transmutation_core/themeEvidence/recipeTypes",
+        "recipeTypes": [
+          "gtceu:em_resonance_conversion_field"
+        ]
+      }
+    },
+    {
+      "id": "gtladditions:biological_simulation_laboratory",
+      "allocation": "dedicated",
+      "copies": 1,
+      "planningTier": 7,
+      "placementTier": 7,
+      "stage": "mid",
+      "placementStage": "mid",
+      "department": "biology",
+      "hallGroup": "biology-mid",
+      "tierEvidenceStatus": "voltage-confirmed",
+      "tierEvidenceSource": "dependency-class:com.gtladd.gtladditions.data.recipes.NewMultiBlockMachineController",
+      "functionEvidence": {
+        "basis": "audited-runtime-recipe-types",
+        "source": "factory_campus_machines.json#machines/gtladditions:biological_simulation_laboratory/themeEvidence/recipeTypes",
+        "recipeTypes": [
+          "gtceu:biological_simulation"
+        ]
+      }
+    },
+    {
+      "id": "gtladditions:biosphere_iii",
+      "allocation": "dedicated",
+      "copies": 1,
+      "planningTier": 9,
+      "placementTier": 9,
+      "stage": "late",
+      "placementStage": "late",
+      "department": "biology",
+      "hallGroup": "biology-late",
+      "tierEvidenceStatus": "voltage-confirmed",
+      "tierEvidenceSource": "dependency-class:com.gtladd.gtladditions.data.recipes.NewMultiBlockMachineController",
+      "functionEvidence": {
+        "basis": "dependency-role-text",
+        "source": "dependency:gtladditions-3.3.1Custom.jar!assets/gtladditions/lang/zh_cn.json#gtladditions.multiblock.biosphere_iii.tooltip.2",
+        "sourceSha256": "17f0979124f0295a0954100ccc2ec153bccec6f8371985d138be1f19b8f42501",
+        "role": "Supplies power to Garden of Hermes modules"
+      }
+    },
+    {
+      "id": "gtladditions:dimensionally_transcendent_chemical_plant",
+      "allocation": "dedicated",
+      "copies": 4,
+      "planningTier": 12,
+      "placementTier": 12,
+      "stage": "late",
+      "placementStage": "late",
+      "department": "chemistry",
+      "hallGroup": "chemistry-late",
+      "tierEvidenceStatus": "voltage-confirmed",
+      "tierEvidenceSource": "dependency-class:com.gtladd.gtladditions.data.recipes.NewMultiBlockMachineController",
+      "functionEvidence": {
+        "basis": "audited-runtime-recipe-types",
+        "source": "factory_campus_machines.json#machines/gtladditions:dimensionally_transcendent_chemical_plant/themeEvidence/recipeTypes",
+        "recipeTypes": [
+          "gtceu:large_chemical_reactor"
+        ]
+      }
+    },
+    {
+      "id": "gtladditions:draconic_collapse_core",
+      "allocation": "dedicated",
+      "copies": 1,
+      "planningTier": 13,
+      "placementTier": 13,
+      "stage": "late",
+      "placementStage": "late",
+      "department": "precision",
+      "hallGroup": "precision-late",
+      "tierEvidenceStatus": "voltage-confirmed",
+      "tierEvidenceSource": "dependency-class:com.gtladd.gtladditions.data.recipes.NewMultiBlockMachineController",
+      "functionEvidence": {
+        "basis": "audited-runtime-recipe-types",
+        "source": "factory_campus_machines.json#machines/gtladditions:draconic_collapse_core/themeEvidence/recipeTypes",
+        "recipeTypes": [
+          "gtceu:aggregation_device"
+        ]
+      }
+    },
+    {
+      "id": "gtladditions:forge_of_the_antichrist",
+      "allocation": "dedicated",
+      "copies": 1,
+      "planningTier": 14,
+      "placementTier": 14,
+      "stage": "late",
+      "placementStage": "late",
+      "department": "metallurgy",
+      "hallGroup": "metallurgy-late",
+      "tierEvidenceStatus": "voltage-confirmed",
+      "tierEvidenceSource": "dependency-class:com.gtladd.gtladditions.data.recipes.NewMultiBlockMachineController",
+      "functionEvidence": {
+        "basis": "audited-runtime-recipe-types",
+        "source": "factory_campus_machines.json#machines/gtladditions:forge_of_the_antichrist/themeEvidence/recipeTypes",
+        "recipeTypes": [
+          "gtceu:dimensionally_transcendent_plasma_forge",
+          "gtceu:stellar_forge",
+          "gtceu:ultimate_material_forge"
+        ]
+      }
+    },
+    {
+      "id": "gtladditions:fuxi_bagua_heaven_forging_furnace",
+      "allocation": "dedicated",
+      "copies": 1,
+      "planningTier": 14,
+      "placementTier": 14,
+      "stage": "late",
+      "placementStage": "late",
+      "department": "metallurgy",
+      "hallGroup": "metallurgy-late",
+      "tierEvidenceStatus": "voltage-confirmed",
+      "tierEvidenceSource": "dependency-class:com.gtladd.gtladditions.data.recipes.NewMultiBlockMachineController",
+      "functionEvidence": {
+        "basis": "audited-runtime-recipe-types",
+        "source": "factory_campus_machines.json#machines/gtladditions:fuxi_bagua_heaven_forging_furnace/themeEvidence/recipeTypes",
+        "recipeTypes": [
+          "gtceu:stellar_lgnition",
+          "gtceu:chaotic_alchemy",
+          "gtceu:molecular_deconstruction",
+          "gtceu:ultimate_material_forge"
+        ]
+      }
+    },
+    {
+      "id": "gtladditions:heart_of_the_universe",
+      "allocation": "dedicated",
+      "copies": 1,
+      "planningTier": 14,
+      "placementTier": 14,
+      "stage": "late",
+      "placementStage": "late",
+      "department": "space",
+      "hallGroup": "space-late",
+      "tierEvidenceStatus": "voltage-confirmed",
+      "tierEvidenceSource": "dependency-class:com.gtladd.gtladditions.data.recipes.NewMultiBlockMachineController",
+      "functionEvidence": {
+        "basis": "audited-runtime-recipe-types",
+        "source": "factory_campus_machines.json#machines/gtladditions:heart_of_the_universe/themeEvidence/recipeTypes",
+        "recipeTypes": [
+          "gtceu:genesis_engine"
+        ]
+      }
+    },
+    {
+      "id": "gtladditions:inferno_cleft_smelting_vault",
+      "allocation": "dedicated",
+      "copies": 1,
+      "planningTier": 11,
+      "placementTier": 11,
+      "stage": "late",
+      "placementStage": "late",
+      "department": "chemistry",
+      "hallGroup": "chemistry-late",
+      "tierEvidenceStatus": "voltage-confirmed",
+      "tierEvidenceSource": "dependency-class:com.gtladd.gtladditions.data.recipes.NewMultiBlockMachineController",
+      "functionEvidence": {
+        "basis": "audited-runtime-recipe-types",
+        "source": "factory_campus_machines.json#machines/gtladditions:inferno_cleft_smelting_vault/themeEvidence/recipeTypes",
+        "recipeTypes": [
+          "gtceu:pyrolyse_oven",
+          "gtceu:cracker"
+        ]
+      }
+    },
+    {
+      "id": "gtladditions:lucid_etchdreamer",
+      "allocation": "dedicated",
+      "copies": 1,
+      "planningTier": 13,
+      "placementTier": 13,
+      "stage": "late",
+      "placementStage": "late",
+      "department": "precision",
+      "hallGroup": "precision-late",
+      "tierEvidenceStatus": "voltage-confirmed",
+      "tierEvidenceSource": "dependency-class:com.gtladd.gtladditions.data.recipes.NewMultiBlockMachineController",
+      "functionEvidence": {
+        "basis": "audited-runtime-recipe-types",
+        "source": "factory_campus_machines.json#machines/gtladditions:lucid_etchdreamer/themeEvidence/recipeTypes",
+        "recipeTypes": [
+          "gtceu:photon_matrix_etch"
+        ]
+      }
+    },
+    {
+      "id": "gtladditions:macro_atomic_resonant_fragment_stripper",
+      "allocation": "dedicated",
+      "copies": 1,
+      "planningTier": 12,
+      "placementTier": 12,
+      "stage": "late",
+      "placementStage": "late",
+      "department": "space",
+      "hallGroup": "space-late",
+      "tierEvidenceStatus": "voltage-confirmed",
+      "tierEvidenceSource": "dependency-class:com.gtladd.gtladditions.data.recipes.NewMultiBlockMachineController",
+      "functionEvidence": {
+        "basis": "audited-runtime-recipe-types",
+        "source": "factory_campus_machines.json#machines/gtladditions:macro_atomic_resonant_fragment_stripper/themeEvidence/recipeTypes",
+        "recipeTypes": [
+          "gtceu:star_core_stripper",
+          "gtceu:element_copying"
+        ]
+      }
+    },
+    {
+      "id": "gtladditions:planetary_ionisation_convergence_tower",
+      "allocation": "dedicated",
+      "copies": 1,
+      "planningTier": 11,
+      "placementTier": 11,
+      "stage": "late",
+      "placementStage": "late",
+      "department": "energy",
+      "hallGroup": "energy-late",
+      "tierEvidenceStatus": "voltage-confirmed",
+      "tierEvidenceSource": "dependency-class:com.gtladd.gtladditions.data.recipes.NewMultiBlockMachineController",
+      "functionEvidence": {
+        "basis": "dependency-controller-guide",
+        "source": "dependency:gtladditions-3.3.1Custom.jar!assets/gtladditions/guides/gtladditions/guide/machine/controller/planetary_ionisation_convergence_tower.md",
+        "sourceSha256": "17f0979124f0295a0954100ccc2ec153bccec6f8371985d138be1f19b8f42501",
+        "role": "Pulsed EU generator with thermal containment, stored energy and dynamo/laser power output"
+      }
+    },
+    {
+      "id": "gtladditions:primordial_evolution_nexus",
+      "allocation": "dedicated",
+      "copies": 1,
+      "planningTier": 10,
+      "placementTier": 10,
+      "stage": "late",
+      "placementStage": "late",
+      "department": "space",
+      "hallGroup": "space-late",
+      "tierEvidenceStatus": "voltage-confirmed",
+      "tierEvidenceSource": "dependency-class:com.gtladd.gtladditions.data.recipes.NewMultiBlockMachineController",
+      "functionEvidence": {
+        "basis": "audited-runtime-recipe-types",
+        "source": "factory_campus_machines.json#machines/gtladditions:primordial_evolution_nexus/themeEvidence/recipeTypes",
+        "recipeTypes": [
+          "gtceu:evolution_of_primordial"
+        ]
+      }
+    },
+    {
+      "id": "gtladditions:quantum_syphon_matrix",
+      "allocation": "dedicated",
+      "copies": 1,
+      "planningTier": 11,
+      "placementTier": 11,
+      "stage": "late",
+      "placementStage": "late",
+      "department": "space",
+      "hallGroup": "space-late",
+      "tierEvidenceStatus": "voltage-confirmed",
+      "tierEvidenceSource": "dependency-class:com.gtladd.gtladditions.data.recipes.NewMultiBlockMachineController",
+      "functionEvidence": {
+        "basis": "audited-runtime-recipe-types",
+        "source": "factory_campus_machines.json#machines/gtladditions:quantum_syphon_matrix/themeEvidence/recipeTypes",
+        "recipeTypes": [
+          "gtceu:voidflux_reaction"
+        ]
+      }
+    },
+    {
+      "id": "gtladditions:recursive_reverse_array",
+      "allocation": "dedicated",
+      "copies": 1,
+      "planningTier": 14,
+      "placementTier": 14,
+      "stage": "late",
+      "placementStage": "late",
+      "department": "metallurgy",
+      "hallGroup": "metallurgy-late",
+      "tierEvidenceStatus": "voltage-confirmed",
+      "tierEvidenceSource": "dependency-class:com.gtladd.gtladditions.data.recipes.NewMultiBlockMachineController",
+      "functionEvidence": {
+        "basis": "dependency-role-text",
+        "source": "dependency:gtladditions-3.3.1Custom.jar!assets/gtladditions/lang/zh_cn.json#gtladditions.multiblock.recursive_reverse_array.tooltip.0",
+        "sourceSha256": "17f0979124f0295a0954100ccc2ec153bccec6f8371985d138be1f19b8f42501",
+        "role": "Binds to Forge of the Antichrist and supplies module slots"
+      }
+    },
+    {
+      "id": "gtladditions:skeleton_shift_rift_engine",
+      "allocation": "dedicated",
+      "copies": 1,
+      "planningTier": 12,
+      "placementTier": 12,
+      "stage": "late",
+      "placementStage": "late",
+      "department": "energy",
+      "hallGroup": "energy-late",
+      "tierEvidenceStatus": "voltage-confirmed",
+      "tierEvidenceSource": "dependency-class:com.gtladd.gtladditions.data.recipes.NewMultiBlockMachineController",
+      "functionEvidence": {
+        "basis": "audited-runtime-recipe-types",
+        "source": "factory_campus_machines.json#machines/gtladditions:skeleton_shift_rift_engine/themeEvidence/recipeTypes",
+        "recipeTypes": [
+          "gtceu:decay_hastener"
+        ]
+      }
+    },
+    {
+      "id": "gtladditions:space_elevator_mkii",
+      "allocation": "dedicated",
+      "copies": 1,
+      "planningTier": 13,
+      "placementTier": 13,
+      "stage": "late",
+      "placementStage": "late",
+      "department": "space",
+      "hallGroup": "space-late",
+      "tierEvidenceStatus": "voltage-confirmed",
+      "tierEvidenceSource": "dependency-class:com.gtladd.gtladditions.data.recipes.NewMultiBlockMachineController",
+      "functionEvidence": {
+        "basis": "audited-runtime-recipe-types",
+        "source": "factory_campus_machines.json#machines/gtladditions:space_elevator_mkii/themeEvidence/recipeTypes",
+        "recipeTypes": [
+          "gtceu:space_elevator"
+        ]
+      }
+    },
+    {
+      "id": "gtladditions:space_infinity_integrated_ore_processor",
+      "allocation": "dedicated",
+      "copies": 1,
+      "planningTier": 14,
+      "placementTier": 14,
+      "stage": "late",
+      "placementStage": "late",
+      "department": "ore",
+      "hallGroup": "ore-late",
+      "tierEvidenceStatus": "voltage-confirmed",
+      "tierEvidenceSource": "dependency-class:com.gtladd.gtladditions.data.recipes.NewMultiBlockMachineController",
+      "functionEvidence": {
+        "basis": "audited-runtime-recipe-types",
+        "source": "factory_campus_machines.json#machines/gtladditions:space_infinity_integrated_ore_processor/themeEvidence/recipeTypes",
+        "recipeTypes": [
+          "gtceu:space_ore_processor"
+        ]
+      }
+    },
+    {
+      "id": "gtladditions:space_scaling_instrument",
+      "allocation": "dedicated",
+      "copies": 1,
+      "planningTier": 12,
+      "placementTier": 12,
+      "stage": "late",
+      "placementStage": "late",
+      "department": "precision",
+      "hallGroup": "precision-late",
+      "tierEvidenceStatus": "voltage-confirmed",
+      "tierEvidenceSource": "dependency-class:com.gtladd.gtladditions.data.recipes.NewMultiBlockMachineController",
+      "functionEvidence": {
+        "basis": "audited-runtime-recipe-types",
+        "source": "factory_campus_machines.json#machines/gtladditions:space_scaling_instrument/themeEvidence/recipeTypes",
+        "recipeTypes": [
+          "gtceu:packer"
+        ]
+      }
+    },
+    {
+      "id": "gtladditions:subatomic_transmutatioon_core",
+      "allocation": "dedicated",
+      "copies": 1,
+      "planningTier": 12,
+      "placementTier": 12,
+      "stage": "late",
+      "placementStage": "late",
+      "department": "metallurgy",
+      "hallGroup": "metallurgy-late",
+      "tierEvidenceStatus": "voltage-confirmed",
+      "tierEvidenceSource": "dependency-class:com.gtladd.gtladditions.data.recipes.NewMultiBlockMachineController",
+      "functionEvidence": {
+        "basis": "audited-runtime-recipe-types",
+        "source": "factory_campus_machines.json#machines/gtladditions:subatomic_transmutatioon_core/themeEvidence/recipeTypes",
+        "recipeTypes": [
+          "gtceu:transmutation_block_conversion"
+        ]
+      }
+    },
+    {
+      "id": "gtladditions:taixu_turbid_array",
+      "allocation": "dedicated",
+      "copies": 1,
+      "planningTier": 11,
+      "placementTier": 11,
+      "stage": "late",
+      "placementStage": "late",
+      "department": "space",
+      "hallGroup": "space-late",
+      "tierEvidenceStatus": "voltage-confirmed",
+      "tierEvidenceSource": "dependency-class:com.gtladd.gtladditions.data.recipes.NewMultiBlockMachineController",
+      "functionEvidence": {
+        "basis": "audited-runtime-recipe-types",
+        "source": "factory_campus_machines.json#machines/gtladditions:taixu_turbid_array/themeEvidence/recipeTypes",
+        "recipeTypes": [
+          "gtceu:chaos_weave"
+        ]
+      }
+    },
+    {
+      "id": "gtladditions:time_space_distorter",
+      "allocation": "dedicated",
+      "copies": 1,
+      "planningTier": 14,
+      "placementTier": 14,
+      "stage": "late",
+      "placementStage": "late",
+      "department": "chemistry",
+      "hallGroup": "chemistry-late",
+      "tierEvidenceStatus": "voltage-confirmed",
+      "tierEvidenceSource": "dependency-class:com.gtladd.gtladditions.data.recipes.NewMultiBlockMachineController",
+      "functionEvidence": {
+        "basis": "audited-runtime-recipe-types",
+        "source": "factory_campus_machines.json#machines/gtladditions:time_space_distorter/themeEvidence/recipeTypes",
+        "recipeTypes": [
+          "gtceu:time_space_distortion"
+        ]
+      }
+    },
+    {
+      "id": "gtladditions:titan_crip_earthbore",
+      "allocation": "dedicated",
+      "copies": 1,
+      "planningTier": 12,
+      "placementTier": 12,
+      "stage": "late",
+      "placementStage": "late",
+      "department": "ore",
+      "hallGroup": "ore-late",
+      "tierEvidenceStatus": "voltage-confirmed",
+      "tierEvidenceSource": "dependency-class:com.gtladd.gtladditions.data.recipes.NewMultiBlockMachineController",
+      "functionEvidence": {
+        "basis": "audited-runtime-recipe-types",
+        "source": "factory_campus_machines.json#machines/gtladditions:titan_crip_earthbore/themeEvidence/recipeTypes",
+        "recipeTypes": [
+          "gtceu:tectonic_fault_generator"
+        ]
+      }
+    }
+  ]
+}

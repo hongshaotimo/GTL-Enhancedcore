@@ -2,6 +2,7 @@ package com.gtl.enhancedcore.common.world.plotinfo;
 
 import com.gtl.enhancedcore.GTLEnhancedcore;
 import com.gtl.enhancedcore.common.world.plot.PlotChunkGenerator;
+import com.gtl.enhancedcore.common.world.plot.CampusPresetRegistry;
 import com.gtl.enhancedcore.common.world.plot.PlotSettings;
 import java.util.Optional;
 import java.util.function.Supplier;
@@ -18,7 +19,7 @@ import net.minecraftforge.network.simple.SimpleChannel;
 
 /** A bounded, server-to-client-only snapshot; it offers no runtime terrain mutation action. */
 public final class PlotWorldInfoNetwork {
-    private static final String PROTOCOL = "4";
+    private static final String PROTOCOL = "5";
     private static final SimpleChannel CHANNEL = NetworkRegistry.newSimpleChannel(
             new ResourceLocation(GTLEnhancedcore.MOD_ID, "plot_info"), () -> PROTOCOL,
             PROTOCOL::equals, PROTOCOL::equals);
@@ -54,6 +55,7 @@ public final class PlotWorldInfoNetwork {
             buffer.writeVarInt(s.dashLength()); buffer.writeVarInt(s.dashGap()); buffer.writeVarInt(s.borderWidth());
             buffer.writeUtf(s.plotEdgeBlock(), 192); buffer.writeVarInt(s.plotEdgeWidth());
             buffer.writeBoolean(s.showMachineFrames());
+            buffer.writeUtf(s.campusPresetId(), CampusPresetRegistry.MAX_ID_LENGTH);
         }
         static Snapshot decode(FriendlyByteBuf b) {
             if (!b.readBoolean()) return new Snapshot(null);
@@ -61,7 +63,7 @@ public final class PlotWorldInfoNetwork {
                     b.readUtf(192), b.readUtf(192), b.readEnum(PlotSettings.RoadStyle.class), b.readVarInt(),
                     b.readEnum(PlotSettings.MarkerMode.class), b.readVarInt(), b.readInt(), b.readInt(), b.readUtf(192),
                     b.readEnum(PlotSettings.LineStyle.class), b.readVarInt(), b.readVarInt(), b.readVarInt(),
-                    b.readUtf(192), b.readVarInt(), b.readBoolean()));
+                    b.readUtf(192), b.readVarInt(), b.readBoolean(), b.readUtf(CampusPresetRegistry.MAX_ID_LENGTH)));
         }
         static void handle(Snapshot packet, Supplier<NetworkEvent.Context> context) {
             NetworkEvent.Context ctx = context.get();

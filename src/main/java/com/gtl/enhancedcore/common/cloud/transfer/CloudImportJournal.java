@@ -23,22 +23,52 @@ public final class CloudImportJournal {
     private static java.util.Set<UUID> activeUploads(ServerLevel level) {
         return ACTIVE_UPLOADS.computeIfAbsent(level.getServer(), unused -> new java.util.HashSet<>());
     }
+    public record PendingUpload(UUID operation, java.util.concurrent.CompletableFuture<Void> completion) {}
+    /** Freeze a central inbox intent on the server, then force it before asking the server to debit.
+     * An empty debit result cancels a changed/unloaded/unauthorized source without consuming it. */
+    public static PendingUpload prepareInboxUploadAsync(ServerLevel level, UUID library, UUID actor,
+            CloudBufferImport.Source source, ItemStack expected, java.util.function.Function<UUID, ItemStack> debit) {
+        if (expected.getCount() != 1) throw new IllegalArgumentException("One original per import receipt");
+        var target = CloudPatternStore.get(level).library(library);
+        if (!target.authorized(actor)) throw new SecurityException("Library denied");
+        target.requireUniqueOriginal(expected);
+        UUID operation = UUID.randomUUID(); CompoundTag intent = new CompoundTag();
+        intent.putInt("schema", 1); intent.putUUID("operation", operation); intent.putUUID("library", library); intent.putUUID("actor", actor);
+        intent.putString("dimension", source.dimension()); intent.putLong("position", source.position()); intent.putUUID("identity", source.identity());
+        intent.putInt("slot", 0); intent.put("expected", expected.save(new CompoundTag())); intent.put("configuration", new CompoundTag());
+        intent.putString("status", "PREPARED"); intent.putBoolean("inboxAuthorizationPending", true);
+        Path journal = path(level, intent);
+        activeUploads(level).add(operation);
+        var completion = CloudImportIo.run(() -> writeFile(journal, intent)).thenComposeAsync(ignored -> {
+            REVIEWS.computeIfAbsent(root(level), unused -> new ReviewCatalog()).remember(intent);
+            ItemStack actual = debit.apply(operation);
+            if (actual.isEmpty()) {
+                CompoundTag aborted = intent.copy(); aborted.putString("status", "ABORTED");
+                return CloudImportIo.run(() -> writeFile(journal, aborted)).thenRunAsync(() ->
+                        REVIEWS.computeIfAbsent(root(level), unused -> new ReviewCatalog()).remember(aborted), level.getServer()::execute);
+            }
+            return commitUploadAsync(level, intent, journal, actual);
+        }, level.getServer()::execute).whenComplete((ignored, failure) ->
+                level.getServer().execute(() -> activeUploads(level).remove(operation)));
+        return new PendingUpload(operation, completion);
+    }
     /** The original has already been debited behind a forced PREPARED record. No success
      * is reported until payload, COMMITTED journal and ACK authority are all durable. */
     public static java.util.concurrent.CompletableFuture<Void> commitUploadAsync(ServerLevel level, UUID transaction, ItemStack actual) {
         CompoundTag tag = find(level, transaction);
+        return commitUploadAsync(level, tag, paths.get(transaction), actual);
+    }
+    private static java.util.concurrent.CompletableFuture<Void> commitUploadAsync(ServerLevel level, CompoundTag tag, Path journal, ItemStack actual) {
         if (!ItemStack.matches(ItemStack.of(tag.getCompound("expected")), actual))
             throw new IllegalStateException("Unexpected import debit");
-        UUID library = tag.getUUID("library"), actor = tag.getUUID("actor");
-        Path target = paths.get(transaction);
-        if (target == null) target = path(level, tag);
-        final Path journal = target;
+        UUID library = tag.getUUID("library"), actor = tag.getUUID("actor"), transaction = tag.getUUID("operation");
         // Reserve the exact original synchronously before yielding; another core cannot
         // accept a duplicate while this upload waits for its first worker completion.
         var store = CloudPatternStore.get(level);
         var entry = store.upload(library, actor, actual.copy(), tag.getCompound("configuration"), transaction);
         CloudLibraryService.identify(entry, actor); tag.putUUID("entry", entry.id());
         activeUploads(level).add(transaction);
+        tag.remove("inboxAuthorizationPending");
         tag.putString("status", "DEBITED");
         CompoundTag debited = tag.copy();
         return CloudUploadSequence.run(level.getServer()::execute, () -> CloudImportIo.run(() -> writeFile(journal, debited)),
@@ -255,7 +285,8 @@ public final class CloudImportJournal {
                 if (!tag.getUUID("identity").equals(access.cloud$sourceIdentity())) continue;
                 String status = tag.getString("status");
                 if (status.equals("ABORTED") || status.equals("RETIRED")) continue;
-                if (!status.equals("COMMITTED") || !access.cloud$processed(tag.getUUID("operation")))
+                if (activeUploads(level).contains(tag.getUUID("operation"))) continue;
+                if (!status.equals("COMMITTED") || tag.getBoolean("review") || !access.cloud$processed(tag.getUUID("operation")))
                     throw new IllegalStateException("Import source has unresolved transactions");
                 committed.add(tag);
                 }
@@ -283,8 +314,18 @@ public final class CloudImportJournal {
                 if (status.equals("ABORTED")) continue;
                 // A cleanly removed source leaves a tombstone for rollback detection, not a lock on the address.
                 if (status.equals("RETIRED") && !access.cloud$sourceIdentity().equals(tag.getUUID("identity"))) continue;
-                if (!access.cloud$sourceIdentity().equals(tag.getUUID("identity"))) throw new IllegalStateException("Import source was replaced or not yet durably identified");
+                // The live upload owns its exact-source checks and completion cleanup.
+                // A replacement BE must not quarantine itself before that callback can abort.
                 if (activeUploads(level).contains(operation)) continue;
+                if (!access.cloud$sourceIdentity().equals(tag.getUUID("identity"))) throw new IllegalStateException("Import source was replaced or not yet durably identified");
+                // A forced asynchronous intent is not authorization to debit on reload.
+                // Before the live callback ran, the physical inbox remains authoritative.
+                if (status.equals("PREPARED") && tag.getBoolean("inboxAuthorizationPending") && !access.cloud$processed(operation)) {
+                    if (CloudPatternStore.get(level).library(tag.getUUID("library")).receipt(operation) != null)
+                        throw new IllegalStateException("Pending inbox authorization disagrees with an import receipt");
+                    tag.putString("status", "ABORTED"); write(level, tag);
+                    continue;
+                }
                 if (tag.hasUUID("returnOperation") && CloudNetworkPatternImport.reconcileReturn(source, tag)) continue;
                 if (status.equals("RETIRED")) {
                     if (!access.cloud$processed(operation)) {
@@ -385,9 +426,9 @@ public final class CloudImportJournal {
             CompoundTag row = new CompoundTag();
             if (i >= pending.size()) {
                 var order = orders.get(i - pending.size());
-                row.putString("id", order.nodeId().toString()); row.putString("operation", order.nodeId().toString());
+                row = CloudPatternStore.get(level).node(order.nodeId()).recoverySummary();
                 row.putString("name", order.nodeId().toString()); row.putString("target", order.nodeId().toString());
-                row.putString("kind", "order"); row.putString("status", order.status());
+                row.putString("status", order.status());
                 row.putString("evidence", "gtl_enhancedcore.cloud.recovery.visit_node");
             } else {
                 var receipt = pending.get(i); UUID operation = receipt.operation();

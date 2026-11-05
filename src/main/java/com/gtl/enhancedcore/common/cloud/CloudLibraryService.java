@@ -53,16 +53,18 @@ public final class CloudLibraryService {
     }
 
     public static int priority(ServerLevel level, UUID libraryId, UUID nodeId) {
-        return CloudPatternStore.get(level).library(libraryId).catalysts().getCompound("nodePriorities").getInt(nodeId.toString());
+        return CloudPatternStore.get(level).library(libraryId).nodePriority(nodeId);
     }
     public static void adjustPriority(ServerLevel level, UUID libraryId, UUID actor, UUID entryId, int direction) {
         var library = CloudPatternStore.get(level).library(libraryId);
         if (!library.authorized(actor)) throw new SecurityException("Library denied");
-        var lease = library.entry(entryId).lease();
-        if (lease == null) throw new IllegalStateException("Select a pattern leased to the target node");
+        var leases = library.entry(entryId).leases();
+        if (leases.isEmpty()) throw new IllegalStateException("Select a pattern leased to the target node");
         CompoundTag saved = library.catalysts(), priorities = saved.getCompound("nodePriorities");
-        String node = lease.nodeId().toString(); int previous = priorities.getInt(node);
-        priorities.putInt(node, Math.max(-1_000_000, Math.min(1_000_000, previous + Integer.signum(direction))));
+        for (var lease : leases) {
+            String node = lease.nodeId().toString(); int previous = priorities.getInt(node);
+            priorities.putInt(node, Math.max(-1_000_000, Math.min(1_000_000, previous + Integer.signum(direction))));
+        }
         saved.put("nodePriorities", priorities); library.setCatalysts(actor, saved); CloudPatternStore.get(level).checkpoint();
     }
 
@@ -250,6 +252,7 @@ public final class CloudLibraryService {
     private static CatalogRow catalogRow(CloudPatternStore.Entry original, ServerLevel level) {
         CompoundTag display = metadata(original, level);
         Set<String> recipeTypes = new TreeSet<>(); original.recipeTypes().forEach(t -> recipeTypes.add(t.toString()));
+        recipeTypes.addAll(CloudChemicalModes.catalogueTypes(recipeTypes));
         String searchable = display.getString("name") + " " + display.getString("author") + " " + display.getString("authorId")
                 + " " + display.getString("typeNames") + " " + String.join(" ", recipeTypes)
                 + (display.getBoolean("hasCircuit") ? " " + display.getInt("circuit") : "");
@@ -549,7 +552,7 @@ public final class CloudLibraryService {
         CompoundTag row = metadata(entry, level);
         row.putLong("revision", entry.revision());
         row.putBoolean("catalystsOnly", entry.status() == CloudLedger.Status.EXPORTED);
-        row.putBoolean("leased", entry.lease() != null); row.putString("state", entry.status().name());
+        row.putBoolean("leased", !entry.leases().isEmpty()); row.putInt("targetCount", entry.leases().size()); row.putString("state", entry.status().name());
         row.putString("target", targetAddress(entry, level));
         if (entry.lease() != null) {
             var node = CloudPatternStore.get(level).node(entry.lease().nodeId());
@@ -564,9 +567,12 @@ public final class CloudLibraryService {
         return row;
     }
     private static String targetAddress(CloudPatternStore.Entry entry, ServerLevel level) {
-        if (entry.lease() == null) return "";
-        var node = CloudPatternStore.get(level).node(entry.lease().nodeId());
-        return node.dimension() + " " + net.minecraft.core.BlockPos.of(node.position()).toShortString();
+        var leases = entry.leases();
+        String addresses = leases.stream().limit(16).map(lease -> {
+            var node = CloudPatternStore.get(level).node(lease.nodeId());
+            return node.dimension() + " " + net.minecraft.core.BlockPos.of(node.position()).toShortString();
+        }).collect(java.util.stream.Collectors.joining("; "));
+        return leases.size() <= 16 ? addresses : addresses + " (+" + (leases.size() - 16) + ")";
     }
     public static void identify(CloudPatternStore.Entry entry, UUID actor) {
         entry.setRecipeTypes(actor, PatternQuickUploadMetadata.readRecipeTypeIds(entry.original()));

@@ -54,11 +54,13 @@ public final class IvMachineDisplay {
                     recipe != null && recipe.data.contains(com.gtl.enhancedcore.common.machine.galaxy.GalaxyPower.EU_TAG)
                             ? com.gtl.enhancedcore.common.machine.galaxy.GalaxyPower.eut(recipe) : null);
         }
-        if (IvMachineScope.unlimited(machine)) {
+        if (IvMachineScope.unlimitedParallel(machine))
             canonicalLine(text, "gtceu.multiblock.parallel", unlimitedLine("gtceu.multiblock.parallel"));
+        if (IvMachineScope.unlimitedThreads(machine))
             canonicalLine(text, "gtladditions.multiblock.threads", unlimitedLine("gtladditions.multiblock.threads"));
-        }
-        if (machine.isFormed() && IvMachineScope.crossRecipeEnabled(machine)
+        else if (com.gtl.enhancedcore.common.recipe.iv.IvNativeCapacity.singleRecipe(machine))
+            canonicalLine(text, "gtladditions.multiblock.threads", null);
+        if (machine.isFormed() && !IvBuffers.genericCloudTarget(machine) && IvMachineScope.crossRecipeEnabled(machine)
                 && ((IvNativeAccess)machine.getRecipeLogic()).iv$nativeInputsActive()) {
             canonicalLine(text, "gtceu.gui.machinemode", nativeModeLine());
             int threads = plainThreads(machine);
@@ -69,7 +71,8 @@ public final class IvMachineDisplay {
         }
         if (machine.isFormed() && IvBuffers.genericCloudTarget(machine)) {
             var access = (IvNativeAccess) machine.getRecipeLogic();
-            isolation(text, IvMachineScope.parallel(machine), IvMachineScope.threads(machine), access.iv$summary());
+            // A cloud endpoint routes orders; it does not opt this machine into IV mode.
+            if (!access.iv$nativeInputsActive()) nativeCloud(text, access.iv$summary());
             text.add(Component.translatable("gtl_enhancedcore.cloud.ui.native_inputs").withStyle(ChatFormatting.GRAY));
             return;
         }
@@ -83,6 +86,11 @@ public final class IvMachineDisplay {
         }
         isolation(text, IvMachineScope.parallel(machine), IvMachineScope.threads(machine),
                 ((IvNativeAccess)machine.getRecipeLogic()).iv$summary());
+    }
+
+    /** Preserve the host's mode, parallel and thread rows, adding only cloud order data. */
+    public static void nativeCloud(List<Component> text, CompoundTag summary) {
+        IvPresentation.append(text, summary, true);
     }
 
     /** The upstream capacity rows retain their position, gray labels and colored values. */

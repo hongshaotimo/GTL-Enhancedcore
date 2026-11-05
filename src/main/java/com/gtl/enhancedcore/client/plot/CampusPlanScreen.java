@@ -1,10 +1,12 @@
 package com.gtl.enhancedcore.client.plot;
 
 import com.gtl.enhancedcore.common.gui.GuiStyle;
+import com.gtl.enhancedcore.client.ftbchunks.CampusLiveMapBackground;
 import com.gtl.enhancedcore.common.world.campus.CampusPlanAccess;
 import com.gtl.enhancedcore.common.world.campus.CampusTeleportNetwork;
 import com.gtl.enhancedcore.common.world.plot.CompactPlannedCampus;
 import com.gtl.enhancedcore.common.world.plot.DensePlannedCampus;
+import com.gtl.enhancedcore.common.world.plot.FactoryCampus;
 import com.gtl.enhancedcore.common.world.plot.LegacyPlannedCampus;
 import com.gtl.enhancedcore.common.world.plot.ParkPlannedCampus;
 import com.gtl.enhancedcore.common.world.plot.PlannedCampus;
@@ -21,14 +23,19 @@ import java.util.UUID;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.AbstractButton;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
+import org.lwjgl.glfw.GLFW;
 
 /** A movable atlas; live device mode keeps its server-owned session separate from preview mode. */
 public final class CampusPlanScreen extends Screen {
@@ -39,6 +46,7 @@ public final class CampusPlanScreen extends Screen {
     private final PlannedCampus.Bounds worldBounds, aeBounds;
     private final TeleportSession session;
     private final PlotPreviewRenderer.AtlasCached map = new PlotPreviewRenderer.AtlasCached();
+    private final CampusLiveMapBackground liveMap = new CampusLiveMapBackground();
     private double zoom = 1, centerX, centerZ;
     private int mapLeftEdge, mapRightEdge, mapTop, mapBottom, baseSize;
     private CampusPlanAccess.Target selected, pressedTarget;
@@ -48,11 +56,13 @@ public final class CampusPlanScreen extends Screen {
     private boolean pointerPressed, dragged, pending, sessionClosed, sessionInvalid, statusVisible;
     private Component status;
     private EditBox searchBox;
-    private Button previousMatch, nextMatch;
+    private AbstractButton previousMatch, nextMatch;
+    private SearchIconButton clearSearch;
     private String searchText = "";
     private List<CampusPlanAccess.Target> searchMatches = List.of();
-    private final Map<Integer, List<String>> searchAliases = new HashMap<>();
+    private final Map<Integer, CampusPlotSearch.Aliases> searchAliases = new HashMap<>();
     private int searchIndex = -1, searchStatusY;
+    private int searchPanelX, searchPanelWidth, searchPanelY;
 
     public CampusPlanScreen(Screen parent, PlotSettings settings) { this(parent, settings, null); }
     private CampusPlanScreen(Screen parent, PlotSettings settings, TeleportSession session) {
@@ -91,7 +101,7 @@ public final class CampusPlanScreen extends Screen {
             baseSize = Math.max(20, Math.min((int) (Math.min(width, height) * .75), height - 60));
             mapLeftEdge = (width - baseSize) / 2; mapRightEdge = mapLeftEdge + baseSize;
             mapTop = Math.max(48, (height - baseSize) / 2); mapBottom = mapTop + baseSize;
-            initSearch(8);
+            initTeleporterSearch();
             return;
         }
         mapLeftEdge = 12; mapRightEdge = width - 12;
@@ -113,19 +123,60 @@ public final class CampusPlanScreen extends Screen {
         initSearch(34);
     }
     private void initSearch(int y) {
+        rebuildSearchAliases();
+        searchBox = addRenderableWidget(new EditBox(font, 12, y, width - 76, GuiStyle.CONTROL, tp("search")));
+        configureSearchBox();
+        previousMatch = addRenderableWidget(Button.builder(Component.literal("<"), button -> cycleSearch(-1))
+                .bounds(width - 60, y, 22, GuiStyle.CONTROL).tooltip(Tooltip.create(tp("search_previous"))).build());
+        nextMatch = addRenderableWidget(Button.builder(Component.literal(">"), button -> cycleSearch(1))
+                .bounds(width - 34, y, 22, GuiStyle.CONTROL).tooltip(Tooltip.create(tp("search_next"))).build());
+        searchStatusY = y + 24; updateSearch(searchText, true);
+    }
+    private void initTeleporterSearch() {
+        rebuildSearchAliases();
+        searchPanelWidth = Math.min(400, width - 24);
+        searchPanelX = (width - searchPanelWidth) / 2;
+        searchPanelY = 8;
+        int nextX = searchPanelX + searchPanelWidth - 26;
+        int previousX = nextX - 23, clearX = previousX - 23;
+        int fieldLeft = searchPanelX + 28, fieldRight = clearX - 64;
+        searchBox = addRenderableWidget(new EditBox(font, fieldLeft, searchPanelY + 11,
+                fieldRight - fieldLeft, 14, tp("search")));
+        searchBox.setBordered(false);
+        searchBox.setTextColor(GuiStyle.DARK_TEXT);
+        searchBox.setTextColorUneditable(GuiStyle.DARK_SECONDARY);
+        configureSearchBox();
+        clearSearch = addRenderableWidget(new SearchIconButton(clearX, searchPanelY + 6,
+                SearchIcon.CLEAR, tp("search_clear"), () -> searchBox.setValue("")));
+        previousMatch = addRenderableWidget(new SearchIconButton(previousX, searchPanelY + 6,
+                SearchIcon.PREVIOUS, tp("search_previous"), () -> cycleSearch(-1)));
+        nextMatch = addRenderableWidget(new SearchIconButton(nextX, searchPanelY + 6,
+                SearchIcon.NEXT, tp("search_next"), () -> cycleSearch(1)));
+        searchStatusY = searchPanelY + 11;
+        updateSearch(searchText, true);
+        setFocused(null); searchBox.setFocused(false);
+    }
+    private void configureSearchBox() {
+        searchBox.setMaxLength(128); searchBox.setHint(tp("search"));
+        searchBox.setTooltip(Tooltip.create(tp("search_hint"))); searchBox.setValue(searchText);
+        searchBox.setResponder(value -> updateSearch(value, false));
+    }
+    private void rebuildSearchAliases() {
         searchAliases.clear();
         Map<String, List<String>> members = new HashMap<>();
-        String catalogPath = switch (settings.roadStyle()) {
+        String catalog = switch (settings.roadStyle()) {
             case CAMPUS -> LegacyPlannedCampus.CATALOG;
             case CAMPUS_PARK -> ParkPlannedCampus.CATALOG;
             case CAMPUS_COMPACT -> CompactPlannedCampus.CATALOG;
             case CAMPUS_DENSE -> DensePlannedCampus.CATALOG;
             case CAMPUS_WOODLAND -> PlannedCampus.CATALOG;
+            case CAMPUS_FACTORY -> FactoryCampus.CATALOG;
+            case CAMPUS_FILE -> com.gtl.enhancedcore.common.world.plot.FileCampus.of(settings.campusPresetId()).catalogResource();
             default -> throw new IllegalArgumentException("Not a campus preset");
         };
-        try (var reader = new InputStreamReader(CampusPlanScreen.class.getResourceAsStream(catalogPath), StandardCharsets.UTF_8)) {
-            var catalog = JsonParser.parseReader(reader).getAsJsonObject();
-            for (var entry : catalog.getAsJsonArray(catalog.has("reservations") ? "reservations" : "machines")) {
+        try (var reader = new InputStreamReader(CampusPlanScreen.class.getResourceAsStream(catalog), StandardCharsets.UTF_8)) {
+            var root = JsonParser.parseReader(reader).getAsJsonObject();
+            for (var entry : root.getAsJsonArray(root.has("reservations") ? "reservations" : "machines")) {
                 var reservation = entry.getAsJsonObject();
                 if (!reservation.has("memberIds")) continue;
                 members.put(reservation.get("id").getAsString(), reservation.getAsJsonArray("memberIds").asList().stream()
@@ -139,25 +190,20 @@ public final class CampusPlanScreen extends Screen {
                     aliases.add(id); aliases.add(BuiltInRegistries.BLOCK.get(new ResourceLocation(id)).getName().getString());
                 }
             }
-            searchAliases.put(target.index(), List.copyOf(aliases));
+            searchAliases.put(target.index(), CampusPlotSearch.prepare(aliases));
         }
-        searchBox = addRenderableWidget(new EditBox(font, 12, y, width - 76, GuiStyle.CONTROL, tp("search")));
-        searchBox.setMaxLength(128); searchBox.setHint(tp("search"));
-        searchBox.setTooltip(Tooltip.create(tp("search_hint"))); searchBox.setValue(searchText);
-        searchBox.setResponder(value -> updateSearch(value, false));
-        previousMatch = addRenderableWidget(Button.builder(Component.literal("<"), button -> cycleSearch(-1))
-                .bounds(width - 60, y, 22, GuiStyle.CONTROL).tooltip(Tooltip.create(tp("search_previous"))).build());
-        nextMatch = addRenderableWidget(Button.builder(Component.literal(">"), button -> cycleSearch(1))
-                .bounds(width - 34, y, 22, GuiStyle.CONTROL).tooltip(Tooltip.create(tp("search_next"))).build());
-        searchStatusY = y + 24; updateSearch(searchText, true);
     }
     private void updateSearch(String query, boolean preserveSelection) {
         searchText = query;
+        var compiled = CampusPlotSearch.compile(query);
         searchMatches = query.isBlank() ? List.of() : plan.targets().stream()
-                .filter(target -> CampusPlotSearch.matches(query, searchAliases.get(target.index()))).toList();
-        searchIndex = preserveSelection ? searchMatches.indexOf(selected) : -1;
+                .filter(target -> compiled.matches(searchAliases.get(target.index()))).toList();
+        searchIndex = preserveSelection && selected != null ? searchMatches.indexOf(selected) : -1;
         if (searchIndex < 0 && !searchMatches.isEmpty()) { searchIndex = 0; focusSearchMatch(); }
         previousMatch.active = nextMatch.active = searchMatches.size() > 1;
+        if (clearSearch != null) clearSearch.active = !query.isEmpty();
+        if (session != null) searchBox.setTooltip(Tooltip.create(!query.isBlank() && searchMatches.isEmpty()
+                ? tp("search_none") : tp("search_hint")));
         if (!preserveSelection && searchMatches.isEmpty()) selected = null;
         lastClickAt = 0; lastClickedIndex = -1;
     }
@@ -246,7 +292,13 @@ public final class CampusPlanScreen extends Screen {
         double minZ = worldBounds.minZ() + (mapTop - mapY()) * worldBounds.depth() / side();
         var viewport = new PlotPreviewRaster.CampusViewport(minX, minZ,
                 (mapRightEdge - mapLeftEdge) * worldBounds.width() / side(), (mapBottom - mapTop) * worldBounds.depth() / side());
-        map.draw(g, settings, mapLeftEdge, mapTop, mapRightEdge - mapLeftEdge, mapBottom - mapTop, viewport);
+        if (session == null) map.draw(g, settings, mapLeftEdge, mapTop, mapRightEdge - mapLeftEdge, mapBottom - mapTop, viewport);
+        else {
+            int regions = liveMap.draw(g, ResourceKey.create(Registries.DIMENSION, session.dimension), mapLeftEdge, mapTop,
+                    mapRightEdge - mapLeftEdge, mapBottom - mapTop, minX, minZ, viewport.width(), viewport.depth());
+            if (regions == 0) g.drawCenteredString(font, tp("live_map_waiting"),
+                    (mapLeftEdge + mapRightEdge) / 2, (mapTop + mapBottom) / 2 - font.lineHeight / 2, GuiStyle.DARK_SECONDARY);
+        }
         if (session == null) mapLabel(g, tr("campus_ae_short"), (aeBounds.minX() + aeBounds.maxX()) / 2.0, (aeBounds.minZ() + aeBounds.maxZ()) / 2.0);
         for (var target : plan.targets()) if (session == null && target.kind() == CampusPlanAccess.Kind.WORKSHOP) {
             Component label = tp("workshop_short", target.ordinal());
@@ -260,7 +312,8 @@ public final class CampusPlanScreen extends Screen {
         if (hover != null && hover != selected) outline(g, hover, GuiStyle.DARK_TEXT);
         g.disableScissor();
         Component searchStatus = searchStatus();
-        g.drawString(font, font.plainSubstrByWidth(searchStatus.getString(), width - 24), 12, searchStatusY,
+        if (session != null) drawTeleporterSearchBar(g);
+        else g.drawString(font, font.plainSubstrByWidth(searchStatus.getString(), width - 24), 12, searchStatusY,
                 !searchText.isBlank() && searchMatches.isEmpty() ? GuiStyle.DARK_ERROR : GuiStyle.DARK_SECONDARY, false);
         if (session != null) {
             if (statusVisible && !pending) {
@@ -293,6 +346,65 @@ public final class CampusPlanScreen extends Screen {
         if (tooltip != null && !dragged) g.renderTooltip(font,
                 font.split(name(tooltip).copy().append("\n").append(details(tooltip)), Math.min(320, width - 20)), mx, my);
     }
+    private void drawTeleporterSearchBar(GuiGraphics g) {
+        int x = searchPanelX, y = searchPanelY, right = x + searchPanelWidth;
+        g.fill(x + 2, y + 2, right + 2, y + 34, 0x50000000);
+        g.fill(x, y, right, y + 32, 0xf0182229);
+        g.renderOutline(x, y, searchPanelWidth, 32, 0xff3a4c58);
+        g.fill(x + 1, y + 1, right - 1, y + 2, 0xff52626b);
+        int iconX = x + 9, iconY = y + 14, iconColor = 0xffa2bcc6;
+        g.fill(iconX + 2, iconY - 4, iconX + 7, iconY - 3, iconColor);
+        g.fill(iconX + 1, iconY - 3, iconX + 2, iconY + 2, iconColor);
+        g.fill(iconX + 7, iconY - 3, iconX + 8, iconY + 2, iconColor);
+        g.fill(iconX + 2, iconY + 2, iconX + 7, iconY + 3, iconColor);
+        g.fill(iconX + 7, iconY + 2, iconX + 9, iconY + 4, iconColor);
+        g.fill(iconX + 9, iconY + 4, iconX + 11, iconY + 5, iconColor);
+        int fieldX = searchBox.getX() - 5, fieldRight = searchBox.getX() + searchBox.getWidth() + 5;
+        g.fill(fieldX, y + 5, fieldRight, y + 27, 0xff0f171d);
+        g.renderOutline(fieldX, y + 5, fieldRight - fieldX, 22,
+                searchBox.isFocused() ? GuiStyle.DARK_ACCENT : 0xff34454f);
+        if (searchBox.isFocused() && searchBox.getValue().isEmpty()) {
+            g.drawString(font, font.plainSubstrByWidth(tp("search").getString(), searchBox.getWidth()),
+                    searchBox.getX(), searchBox.getY(), 0xff778f9c, false);
+        }
+        if (!searchText.isBlank()) {
+            Component count = tp("search_position", searchIndex < 0 ? 0 : searchIndex + 1, searchMatches.size());
+            int countRight = clearSearch.getX() - 8;
+            g.drawString(font, count, countRight - font.width(count), searchStatusY,
+                    searchMatches.isEmpty() ? GuiStyle.DARK_ERROR : GuiStyle.DARK_SECONDARY, false);
+        }
+    }
+    private enum SearchIcon { PREVIOUS, NEXT, CLEAR }
+    private static final class SearchIconButton extends AbstractButton {
+        private final SearchIcon icon;
+        private final Runnable action;
+        private SearchIconButton(int x, int y, SearchIcon icon, Component label, Runnable action) {
+            super(x, y, 20, 20, label); this.icon = icon; this.action = action;
+            setTooltip(Tooltip.create(label));
+        }
+        @Override public void onPress() { action.run(); }
+        @Override protected void updateWidgetNarration(NarrationElementOutput output) { defaultButtonNarrationText(output); }
+        @Override protected void renderWidget(GuiGraphics g, int mx, int my, float partial) {
+            boolean highlighted = active && isHoveredOrFocused();
+            int x = getX(), y = getY();
+            g.fill(x, y, x + width, y + height, highlighted ? 0xff36515d : 0xff23333e);
+            g.renderOutline(x, y, width, height, highlighted ? GuiStyle.DARK_ACCENT : 0xff40535e);
+            int color = !active ? 0xff53626c : highlighted ? 0xffecfeff : 0xffb9d1da;
+            int centerX = x + width / 2, centerY = y + height / 2;
+            if (icon == SearchIcon.CLEAR) {
+                for (int i = -3; i <= 3; i++) {
+                    g.fill(centerX + i, centerY + i, centerX + i + 1, centerY + i + 1, color);
+                    g.fill(centerX + i, centerY - i, centerX + i + 1, centerY - i + 1, color);
+                }
+            } else {
+                int direction = icon == SearchIcon.NEXT ? 1 : -1;
+                for (int i = 0; i < 4; i++) {
+                    int px = centerX + direction * (2 - i);
+                    g.fill(px, centerY - i, px + 1, centerY + i + 1, color);
+                }
+            }
+        }
+    }
     private void outline(GuiGraphics g, CampusPlanAccess.Target target, int color) {
         var b = target.bounds();
         int x = (int) (mapLeft() + (b.minX() - worldBounds.minX()) * side() / worldBounds.width());
@@ -317,7 +429,10 @@ public final class CampusPlanScreen extends Screen {
             searchBox.setFocused(false);
             pointerPressed = true; dragged = false; pressX = x; pressY = y; pressedTarget = hovered(x, y); return true;
         }
-        return super.mouseClicked(x, y, button);
+        boolean clearing = button == 0 && clearSearch != null && clearSearch.active && clearSearch.isMouseOver(x, y);
+        boolean handled = super.mouseClicked(x, y, button);
+        if (handled && clearing) { setFocused(searchBox); searchBox.setFocused(true); }
+        return handled;
     }
     @Override public boolean mouseReleased(double x, double y, int button) {
         if (button == 0 && pointerPressed) {
@@ -354,12 +469,18 @@ public final class CampusPlanScreen extends Screen {
         }
         return super.mouseScrolled(x, y, amount);
     }
-    @Override public void tick() { if (searchBox != null) searchBox.tick(); }
+    @Override public void tick() {
+        if (searchBox != null) searchBox.tick();
+        if (session != null && minecraft.level != null && !minecraft.level.dimension().location().equals(session.dimension)) onClose();
+    }
     @Override public boolean keyPressed(int key, int scan, int modifiers) {
-        if (searchBox.isFocused() && (key == 257 || key == 335)) {
-            cycleSearch((modifiers & 1) != 0 ? -1 : 1); return true;
+        if (session != null && minecraft.options.keyInventory.matches(key, scan) && !searchBox.isFocused()) {
+            onClose(); return true;
         }
-        if (searchBox.isFocused() && key == 256 && !searchBox.getValue().isEmpty()) {
+        if (searchBox.isFocused() && (key == GLFW.GLFW_KEY_ENTER || key == GLFW.GLFW_KEY_KP_ENTER)) {
+            cycleSearch((modifiers & GLFW.GLFW_MOD_SHIFT) != 0 ? -1 : 1); return true;
+        }
+        if (searchBox.isFocused() && key == GLFW.GLFW_KEY_ESCAPE && !searchBox.getValue().isEmpty()) {
             searchBox.setValue(""); return true;
         }
         return super.keyPressed(key, scan, modifiers);
@@ -368,6 +489,7 @@ public final class CampusPlanScreen extends Screen {
     @Override public void onClose() { minecraft.setScreen(parent); }
     @Override public void removed() {
         map.close();
+        liveMap.close();
         if (session != null && !sessionClosed) {
             sessionClosed = true;
             if (minecraft.getConnection() != null) CampusTeleportNetwork.close(session.id);

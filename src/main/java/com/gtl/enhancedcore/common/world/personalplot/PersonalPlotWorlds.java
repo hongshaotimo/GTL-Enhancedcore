@@ -44,7 +44,7 @@ import net.minecraftforge.fml.common.Mod;
 /** Server-authoritative personal dimension lifecycle. No existing level or generator is replaced. */
 @Mod.EventBusSubscriber(modid = GTLEnhancedcore.MOD_ID)
 public final class PersonalPlotWorlds {
-    public enum State { NONE, PENDING, READY, UNAVAILABLE }
+    public enum State { NONE, PENDING, READY, UNAVAILABLE, DELETING }
     private static final Map<MinecraftServer, Session> SESSIONS = new WeakHashMap<>();
     private static final String RETURN_TAG = "gtlEnhancedcorePersonalPlotReturn";
     private static final String PREFIX = "gtl_enhancedcore.personal_plot.";
@@ -62,7 +62,7 @@ public final class PersonalPlotWorlds {
         final Map<UUID, Long> lastAction = new java.util.HashMap<>();
         Session(MinecraftServer server) throws IOException {
             path = server.getWorldPath(LevelResource.ROOT);
-            data = PersonalPlotStore.read(path); startupOwners = java.util.Set.copyOf(data.worlds().keySet());
+            data = PersonalPlotStore.read(path); startupOwners = new java.util.HashSet<>(data.worlds().keySet());
             data.worlds().forEach((owner, settings) -> definitions.put(key(owner), settings));
             activeTemplate = data.template();
         }
@@ -74,10 +74,13 @@ public final class PersonalPlotWorlds {
         return session;
     }
     @SubscribeEvent public static void started(ServerStartedEvent event) {
-        try { session(event.getServer()); }
+        try {
+            Session s = session(event.getServer());
+            PersonalPlotDeletion.resume(event.getServer(), s.path);
+        }
         catch (IOException error) { GTLEnhancedcore.LOGGER.error("Personal plot archive unavailable; no changes will be made", error); }
     }
-    @SubscribeEvent public static void stopped(ServerStoppedEvent event) { SESSIONS.remove(event.getServer()); }
+    @SubscribeEvent public static void stopped(ServerStoppedEvent event) { SESSIONS.remove(event.getServer()); PersonalPlotDeletion.stopped(event.getServer()); }
     @SubscribeEvent public static void login(PlayerEvent.PlayerLoggedInEvent event) {
         if (event.getEntity() instanceof ServerPlayer player) PersonalPlotNetwork.sendEnvironment(player);
     }
@@ -100,7 +103,7 @@ public final class PersonalPlotWorlds {
             boolean inside = player.level().dimension().equals(key(id));
             return new PersonalPlotNetwork.Snapshot(dedicated,
                     PersonalPlotPolicy.editTemplate(dedicated, player.hasPermissions(2)),
-                    PersonalPlotPolicy.create(dedicated, owner, s.activeTemplate != null, settings != null),
+                    state != State.DELETING && PersonalPlotPolicy.create(dedicated, owner, s.activeTemplate != null, settings != null),
                     PersonalPlotPolicy.customize(dedicated, owner), s.activeTemplate != null,
                     s.templateSavedThisSession && !java.util.Objects.equals(s.data.template(), s.activeTemplate), s.data.template(), s.activeTemplate,
                     state, settings, inside, inside, notice);
@@ -110,6 +113,7 @@ public final class PersonalPlotWorlds {
         }
     }
     private static State state(MinecraftServer server, Session session, UUID id, PlotSettings settings) {
+        if (PersonalPlotDeletion.isDeleting(server, id)) return State.DELETING;
         if (settings == null) return State.NONE;
         ServerLevel level = server.getLevel(key(id));
         if (level == null) return session.startupOwners.contains(id) ? State.UNAVAILABLE : State.PENDING;
@@ -117,12 +121,9 @@ public final class PersonalPlotWorlds {
                 && level.dimensionTypeId().equals(BuiltinDimensionTypes.OVERWORLD) ? State.READY : State.UNAVAILABLE;
     }
     public static String handle(ServerPlayer player, PersonalPlotNetwork.Action action, PlotSettings proposed) {
-        if (!(player.getMainHandItem().getItem() instanceof PlotWorldControllerItem)
-                && !(player.getOffhandItem().getItem() instanceof PlotWorldControllerItem)) return PREFIX + "controller_required";
         try {
             Session s = session(player.server);
-            long now = player.server.getTickCount(); Long before = s.lastAction.put(player.getUUID(), now);
-            if (before != null && now - before < 10) return PREFIX + "cooldown";
+            String denied = authorizeAction(player, s); if (denied != null) return denied;
             return switch (action) {
                 case OPEN -> "";
                 case CREATE -> create(player, s, proposed);
@@ -135,6 +136,59 @@ public final class PersonalPlotWorlds {
             return PREFIX + "storage_error";
         }
     }
+    private static String authorizeAction(ServerPlayer actor, Session s) {
+        if (!(actor.getMainHandItem().getItem() instanceof PlotWorldControllerItem)
+                && !(actor.getOffhandItem().getItem() instanceof PlotWorldControllerItem)) return PREFIX + "controller_required";
+        long now = actor.server.getTickCount(); Long before = s.lastAction.put(actor.getUUID(), now);
+        return before != null && now - before < 10 ? PREFIX + "cooldown" : null;
+    }
+    public static PersonalPlotStore.Data data(MinecraftServer server) throws IOException { return session(server).data; }
+    public static State ownerState(MinecraftServer server, UUID owner) {
+        try { Session s = session(server); return state(server, s, owner, s.data.worlds().get(owner)); }
+        catch (IOException failure) { return State.UNAVAILABLE; }
+    }
+    public static String createFor(ServerPlayer actor, UUID owner) {
+        try {
+            Session s = session(actor.server); String denied = authorizeAction(actor, s); if (denied != null) return denied;
+            if (!PersonalPlotPolicy.manageOwner(actor.server.isDedicatedServer(), actor.server.isSingleplayerOwner(actor.getGameProfile()),
+                    actor.hasPermissions(2), actor.getUUID().equals(owner))) return PREFIX + "management_denied";
+            if (!actor.server.isDedicatedServer()) return PREFIX + "invalid_settings";
+            return createOwner(actor, s, owner, null);
+        } catch (IOException | RuntimeException failure) {
+            GTLEnhancedcore.LOGGER.error("Personal plot managed creation failed for {}", owner, failure); return PREFIX + "storage_error";
+        }
+    }
+    public static String deleteFor(ServerPlayer actor, UUID owner) {
+        try {
+            Session s = session(actor.server); String denied = authorizeAction(actor, s); if (denied != null) return denied;
+            if (!PersonalPlotPolicy.manageOwner(actor.server.isDedicatedServer(), actor.server.isSingleplayerOwner(actor.getGameProfile()),
+                    actor.hasPermissions(2), actor.getUUID().equals(owner))) return PREFIX + "management_denied";
+            if (PersonalPlotDeletion.isDeleting(actor.server, owner)) return PREFIX + "deleting";
+            if (!s.data.worlds().containsKey(owner)) return PREFIX + "not_created";
+            ServerLevel level = actor.server.getLevel(key(owner));
+            if (level != null && !isRegisteredPersonalLevel(level)) return PREFIX + "dimension_conflict";
+            if (level != null && !evacuate(level)) return PREFIX + "travel_cancelled";
+            PersonalPlotStore.beginDeletion(s.path, owner);
+            s.data = s.data.without(owner); s.definitions.remove(key(owner));
+            PersonalPlotManagement.invalidate(actor.server, owner);
+            PersonalPlotDeletion.begin(actor.server, s.path, owner, level);
+            return PREFIX + "delete_started";
+        } catch (IOException | RuntimeException failure) {
+            GTLEnhancedcore.LOGGER.error("Personal plot deletion could not begin for {}", owner, failure); return PREFIX + "delete_failed";
+        }
+    }
+    private static boolean evacuate(ServerLevel level) {
+        if (level.players().isEmpty()) return true;
+        ServerLevel target = level.getServer().overworld(); BlockPos safe = safePosition(target, target.getSharedSpawnPos());
+        if (safe == null) return false;
+        for (ServerPlayer visitor : List.copyOf(level.players())) {
+            visitor.stopRiding(); if (visitor.isSleeping()) visitor.stopSleepInBed(true, true);
+            visitor.teleportTo(target, safe.getX() + .5, safe.getY(), safe.getZ() + .5, visitor.getYRot(), visitor.getXRot());
+            if (visitor.level() != target) return false;
+            visitor.fallDistance = 0; visitor.getPersistentData().remove(RETURN_TAG);
+        }
+        return level.players().isEmpty();
+    }
     private static void validate(PlotSettings settings) {
         if (settings == null) throw new IllegalArgumentException("Missing plot settings");
     }
@@ -145,7 +199,11 @@ public final class PersonalPlotWorlds {
         return PREFIX + "template_saved";
     }
     private static String create(ServerPlayer player, Session s, PlotSettings proposed) throws IOException {
-        boolean dedicated = player.server.isDedicatedServer(); UUID owner = player.getUUID();
+        return createOwner(player, s, player.getUUID(), proposed);
+    }
+    private static String createOwner(ServerPlayer player, Session s, UUID owner, PlotSettings proposed) throws IOException {
+        boolean dedicated = player.server.isDedicatedServer();
+        if (PersonalPlotDeletion.isDeleting(player.server, owner)) return PREFIX + "deleting";
         if (s.data.worlds().containsKey(owner)) return PREFIX + "already_owned";
         if (!PersonalPlotPolicy.create(dedicated, player.server.isSingleplayerOwner(player.getGameProfile()), s.activeTemplate != null, false))
             return PREFIX + (dedicated ? "template_required" : "permission_denied");
@@ -153,6 +211,8 @@ public final class PersonalPlotWorlds {
         if (player.server.getLevel(key(owner)) != null) return PREFIX + "dimension_conflict";
         PersonalPlotStore.Data next = s.data.create(owner, settings);
         PersonalPlotStore.write(s.path, next); s.data = next; s.definitions.put(key(owner), settings);
+        s.startupOwners.remove(owner);
+        PersonalPlotManagement.invalidate(player.server, owner);
         if (!dedicated) return PREFIX + "created_restart_client";
         try { createLiveLevel(player.server, owner, settings); return PREFIX + "created_ready"; }
         catch (RuntimeException error) {

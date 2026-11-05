@@ -1,8 +1,13 @@
 package com.gtl.enhancedcore;
 
 import com.gtl.enhancedcore.common.cloud.store.CloudPatternStore;
+import com.gtl.enhancedcore.common.cloud.store.CloudLedger;
+import java.lang.reflect.InvocationTargetException;
+import java.util.List;
+import java.util.UUID;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.Tag;
 
 /** Actual NBT envelope/validation checks, independent of a player world. */
 public final class CloudStoreNbtRegression {
@@ -47,7 +52,62 @@ public final class CloudStoreNbtRegression {
         check(!CloudPatternStore.checksum(listsA).equals(CloudPatternStore.checksum(listsB)), "List order is part of the checksum");
         diskFailure();
         unchangedSnapshots();
+        sharedLedgerNbt();
         return assertions;
+    }
+    private static void sharedLedgerNbt() {
+        try {
+            var source = new CloudLedger();
+            UUID owner = UUID.randomUUID(), library = UUID.randomUUID(), machine = UUID.randomUUID();
+            UUID a = UUID.randomUUID(), b = UUID.randomUUID(), original = UUID.randomUUID();
+            for (UUID node : List.of(a, b)) { source.addNode(node, owner, library); source.claimMode(node, machine, List.of("assembler")); }
+            source.addEntry(original);
+            var first = source.lease(a, original, 3, UUID.randomUUID());
+            var second = source.lease(b, original, Integer.MAX_VALUE, UUID.randomUUID());
+            var write = CloudPatternStore.class.getDeclaredMethod("writeLedger", CloudLedger.class); write.setAccessible(true);
+            var read = CloudPatternStore.class.getDeclaredMethod("readLedger", CompoundTag.class); read.setAccessible(true);
+            CompoundTag state = (CompoundTag)write.invoke(null, source);
+            var rows = state.getList("entries", Tag.TAG_COMPOUND);
+            check(rows.size() == 1 && rows.getCompound(0).getList("sharedLeases", Tag.TAG_COMPOUND).size() == 1,
+                    "Actual authority serializer keeps one original row with its additional node publication");
+            var bytes = new java.io.ByteArrayOutputStream(); net.minecraft.nbt.NbtIo.writeCompressed(state, bytes);
+            var disk = net.minecraft.nbt.NbtIo.readCompressed(new java.io.ByteArrayInputStream(bytes.toByteArray()));
+            var restored = (CloudLedger)read.invoke(null, disk);
+            check(restored.entry(original).leases().equals(List.of(first, second))
+                            && restored.node(a).slots().get(3).equals(original)
+                            && restored.node(b).slots().get(Integer.MAX_VALUE).equals(original),
+                    "Compressed real NBT roundtrip preserves every node lease identity generation and sparse slot");
+            check(restored.receipts().equals(source.receipts()) && restored.nodes().equals(source.nodes()),
+                    "Shared authority roundtrip preserves idempotent operation receipts and independent endpoint modes");
+            var invalid = state.copy(); var row = invalid.getList("entries", Tag.TAG_COMPOUND).getCompound(0);
+            row.getList("sharedLeases", Tag.TAG_COMPOUND).getCompound(0).putUUID("id", first.id());
+            rejectsLedger(read, invalid, "Persisted duplicate lease UUID is rejected instead of silently merging consumers");
+            invalid = state.copy(); row = invalid.getList("entries", Tag.TAG_COMPOUND).getCompound(0);
+            row.getList("sharedLeases", Tag.TAG_COMPOUND).getCompound(0).putLong("generation", second.generation() + 1);
+            rejectsLedger(read, invalid, "Persisted shared generation mismatch fails closed");
+            invalid = state.copy(); row = invalid.getList("entries", Tag.TAG_COMPOUND).getCompound(0);
+            row.remove("lease");
+            rejectsLedger(read, invalid, "Persisted shared publications require a valid leased primary authority record");
+            restored.releaseLease(a, original, UUID.randomUUID());
+            var promoted = (CloudLedger)read.invoke(null, write.invoke(null, restored));
+            check(promoted.entry(original).leases().equals(List.of(second)) && promoted.node(a).slots().isEmpty(),
+                    "Promoted secondary survives real authority NBT serialization without resurrecting released primary");
+            UUID export = UUID.randomUUID(); promoted.exportFromCore(original, export); promoted.acknowledge(export);
+            var withdrawn = (CloudLedger)read.invoke(null, write.invoke(null, promoted));
+            check(withdrawn.entry(original).status() == CloudLedger.Status.EXPORTED && withdrawn.entry(original).leases().isEmpty()
+                            && withdrawn.nodes().stream().allMatch(node -> node.slots().isEmpty())
+                            && withdrawn.receipt(export).status().equals("ACKNOWLEDGED"),
+                    "Exported authority NBT retains removal of all shared routes and acknowledged receipt");
+        } catch (Exception failure) { throw new AssertionError("Shared cloud authority NBT", failure); }
+    }
+    private static void rejectsLedger(java.lang.reflect.Method read, CompoundTag state, String message) throws Exception {
+        boolean rejected = false;
+        try { read.invoke(null, state); }
+        catch (InvocationTargetException failure) {
+            if (!(failure.getCause() instanceof IllegalStateException || failure.getCause() instanceof IllegalArgumentException)) throw failure;
+            rejected = true;
+        }
+        check(rejected, message);
     }
     private static void unchangedSnapshots() {
         java.nio.file.Path root = null;

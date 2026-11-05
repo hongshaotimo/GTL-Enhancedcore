@@ -25,7 +25,9 @@ public final class CloudPatternSearch {
     public Set<String> types() { return Set.copyOf(types); }
     public boolean matchesItem(int id) { return id >= 0 && items.get(id); }
     public boolean matchesFluid(int id) { return id >= 0 && fluids.get(id); }
-    public boolean matchesType(String id) { return types.contains(id); }
+    public boolean matchesType(String id) {
+        return types.stream().anyMatch(type -> com.gtl.enhancedcore.common.cloud.CloudChemicalModes.equivalent(type, id));
+    }
     public boolean matches(AEKey key) {
         return key instanceof AEItemKey item ? matchesItem(BuiltInRegistries.ITEM.getId(item.getItem()))
                 : key instanceof AEFluidKey fluid && matchesFluid(BuiltInRegistries.FLUID.getId(fluid.getFluid()));

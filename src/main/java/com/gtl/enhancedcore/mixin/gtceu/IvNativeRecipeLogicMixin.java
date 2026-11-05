@@ -1,6 +1,6 @@
 package com.gtl.enhancedcore.mixin.gtceu;
 
-import com.gregtechceu.gtceu.api.machine.multiblock.WorkableElectricMultiblockMachine;
+import com.gregtechceu.gtceu.api.machine.multiblock.WorkableMultiblockMachine;
 import com.gregtechceu.gtceu.api.machine.trait.RecipeLogic;
 import com.gregtechceu.gtceu.api.recipe.GTRecipe;
 import com.gtl.enhancedcore.common.recipe.iv.*;
@@ -58,7 +58,7 @@ public abstract class IvNativeRecipeLogicMixin implements IvNativeAccess {
     }
 
     @Override public boolean iv$onWorking() {
-        var machine = (WorkableElectricMultiblockMachine)((RecipeLogic)(Object)this).getMachine();
+        var machine = (WorkableMultiblockMachine)((RecipeLogic)(Object)this).getMachine();
         var id = machine.getDefinition().getId();
         boolean periodicCoolant = id.getNamespace().equals("gtceu")
                 && (id.getPath().equals("cold_ice_freezer") || id.getPath().equals("blaze_blast_furnace"));
@@ -81,7 +81,7 @@ public abstract class IvNativeRecipeLogicMixin implements IvNativeAccess {
     @Override public IvNativeEngine iv$engine() {
         if (iv$engine == null) {
             var logic = (RecipeLogic)(Object)this;
-            iv$engine = new IvNativeEngine((WorkableElectricMultiblockMachine)logic.getMachine(), logic, this);
+            iv$engine = new IvNativeEngine((WorkableMultiblockMachine)logic.getMachine(), logic, this);
         }
         return iv$engine;
     }
@@ -90,7 +90,15 @@ public abstract class IvNativeRecipeLogicMixin implements IvNativeAccess {
     @Override public boolean iv$managed() { return iv$managed; }
     @Override public void iv$managed(boolean value) { iv$managed = value; }
     @Override public boolean iv$nativeInputsActive() { return iv$nativeInputsActive; }
-    @Override public boolean iv$nativeInputExecution() { return iv$passivePatternLane; }
+    @Override public boolean iv$nativeInputExecution() {
+        if (iv$passivePatternLane) return true;
+        var owner = ((RecipeLogic)(Object)this).getMachine();
+        return owner instanceof WorkableMultiblockMachine machine && !machine.isRemote()
+                && IvBuffers.genericCloudTarget(machine) && !iv$hasOrders(machine);
+    }
+    @Unique private boolean iv$hasOrders(WorkableMultiblockMachine machine) {
+        return IvBuffers.collect(machine).stream().anyMatch(buffer -> !IvBuffers.jobs(buffer, machine).isEmpty());
+    }
     @Override public void iv$nativeOutputAccepted() {
         if (iv$finishingNativeInputs) iv$nativeOutputReady = true;
     }
@@ -103,7 +111,7 @@ public abstract class IvNativeRecipeLogicMixin implements IvNativeAccess {
         waitingReason = status == RecipeLogic.Status.WAITING && !details.isEmpty() ? details.getFirst() : null;
     }
     @Unique private boolean iv$isCrossRecipeEnabled() {
-        return !iv$passivePatternLane
+        return !iv$nativeInputExecution()
                 && IvMachineScope.crossRecipeEnabled(((RecipeLogic)(Object)this).getMachine());
     }
     @Unique private void iv$restoreWorkingState() {
@@ -141,25 +149,56 @@ public abstract class IvNativeRecipeLogicMixin implements IvNativeAccess {
     @WrapMethod(method = "serverTick")
     private void iv$tick(Operation<Void> original) {
         var logic = (RecipeLogic)(Object)this;
-        if (!(logic.getMachine() instanceof WorkableElectricMultiblockMachine machine)
-                || !IvMachineScope.crossRecipeEnabled(machine) || iv$passivePatternLane) { original.call(); return; }
+        if (!(logic.getMachine() instanceof WorkableMultiblockMachine machine)
+                || iv$passivePatternLane) { original.call(); return; }
+        if (!IvMachineScope.crossRecipeEnabled(machine)) {
+            // A cloud display may have left iv$managed set after the cloud parts were
+            // removed.  Clear that display-only state while the native logic is idle;
+            // otherwise a later cloud handoff mistakes the next native batch for an
+            // already managed order and overwrites its paid lastRecipe.
+            if (iv$managed && !iv$nativeInputsActive && logic.isIdle()) {
+                iv$managed = false;
+                iv$clearNativeRecipe();
+                machine.markDirty();
+            }
+            original.call(); return;
+        }
         iv$runMixedInputs(() -> original.call(), allow -> iv$engine().tick(allow), () -> iv$engine().hasActiveBatches());
     }
     @Override public void iv$runMixedInputs(Runnable nativeTick, java.util.function.Consumer<Boolean> orderTick,
             java.util.function.BooleanSupplier activeBatches) {
         var logic = (RecipeLogic)(Object)this;
-        var machine = (WorkableElectricMultiblockMachine) logic.getMachine();
+        var machine = (WorkableMultiblockMachine) logic.getMachine();
         iv$restoreWorkingState();
         boolean physicalInputs = IvBuffers.genericCloudNativeInputs(machine);
         // A paid physical batch keeps its native state until output has really been
         // delivered. Cloud display publication must never replace its lastRecipe.
-        if (iv$nativeInputsActive || physicalInputs && !iv$managed && lastRecipe != null
+        if (iv$nativeInputsActive || !iv$managed && lastRecipe != null
                 && duration > 0 && !logic.isIdle()) {
             iv$managed = true; iv$nativeInputsActive = true;
             iv$passivePatternLane = true;
             try { nativeTick.run(); }
             finally {
                 iv$passivePatternLane = false; iv$endNativeIfIdle(); logic.updateTickSubscription();
+            }
+            return;
+        }
+        boolean orders = iv$hasOrders(machine);
+        if (IvBuffers.genericCloudTarget(machine) && !orders) {
+            // Installing storage must leave autonomous generation, mining and
+            // custom native lookup/working loops available even without item IO.
+            if (iv$managed) iv$clearNativeRecipe();
+            iv$managed = false; iv$summary = new CompoundTag(); iv$message = "";
+            iv$passivePatternLane = true;
+            try { nativeTick.run(); }
+            finally {
+                iv$passivePatternLane = false;
+                // Native RecipeLogic.serverTick unsubscribes itself directly
+                // after an empty lookup. Keep the cloud admission wake-up alive.
+                logic.updateTickSubscription();
+            }
+            if (lastRecipe != null && duration > 0 && !logic.isIdle()) {
+                iv$managed = true; iv$nativeInputsActive = true; machine.markDirty();
             }
             return;
         }
@@ -226,7 +265,7 @@ public abstract class IvNativeRecipeLogicMixin implements IvNativeAccess {
     private void iv$subscription(CallbackInfo ci) {
         var logic = (RecipeLogic)(Object)this;
         if (!IvMachineScope.crossRecipeEnabled(logic.getMachine())) return;
-        var machine = (WorkableElectricMultiblockMachine)logic.getMachine();
+        var machine = (WorkableMultiblockMachine)logic.getMachine();
         if (machine.isRemote()) return;
         if (machine.isFormed()) subscription = machine.subscribeServerTick(subscription, logic::serverTick);
         else if (subscription != null) { subscription.unsubscribe(); subscription = null; }

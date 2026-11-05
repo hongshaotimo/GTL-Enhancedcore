@@ -9,7 +9,7 @@ public record PlotSettings(int plotChunks, String groundBlock, String roadBlock,
                            String markerBlock, RoadStyle roadStyle, int roadWidth, MarkerMode markerMode,
                            int markerSize, int bedrockY, int surfaceY, String lineBlock,
                            LineStyle lineStyle, int dashLength, int dashGap, int borderWidth,
-                           String plotEdgeBlock, int plotEdgeWidth, boolean showMachineFrames) {
+                           String plotEdgeBlock, int plotEdgeWidth, boolean showMachineFrames, String campusPresetId) {
     public static final int FORMAT_VERSION = 3;
     public static final List<String> CONCRETE_COLORS = List.of("white", "orange", "magenta", "light_blue",
             "yellow", "lime", "pink", "gray", "light_gray", "cyan", "purple", "blue", "brown", "green", "red", "black");
@@ -17,9 +17,9 @@ public record PlotSettings(int plotChunks, String groundBlock, String roadBlock,
             .map(color -> "minecraft:" + color + "_concrete").toList();
     public static final List<String> MARKER_LIGHTS = List.of("minecraft:sea_lantern", "minecraft:glowstone");
 
-    public enum RoadStyle { RING, OUTLINE, GARDEN, AVENUE, NONE, HIGHWAY, BOULEVARD, CAMPUS, CAMPUS_PARK, CAMPUS_COMPACT, CAMPUS_DENSE, CAMPUS_WOODLAND }
+    public enum RoadStyle { RING, OUTLINE, GARDEN, AVENUE, NONE, HIGHWAY, BOULEVARD, CAMPUS, CAMPUS_PARK, CAMPUS_COMPACT, CAMPUS_DENSE, CAMPUS_WOODLAND, CAMPUS_FACTORY, CAMPUS_FILE }
     public enum LineStyle { NONE, DASHED, SOLID, DOUBLE, CROSSWALK }
-    public enum RoadPreset { HIGHWAY, CITY, STONE, GARDEN, NEON, MINIMAL, CAMPUS }
+    public enum RoadPreset { HIGHWAY, CITY, STONE, GARDEN, NEON, MINIMAL, CAMPUS, FACTORY }
     public enum MarkerMode { PLOT, CHUNK, NONE }
 
     public PlotSettings {
@@ -28,6 +28,9 @@ public record PlotSettings(int plotChunks, String groundBlock, String roadBlock,
         if (!MATERIALS.contains(markerBlock) && !MARKER_LIGHTS.contains(markerBlock))
             throw new IllegalArgumentException("Center marker must be concrete or a preset light");
         Objects.requireNonNull(roadStyle, "roadStyle"); Objects.requireNonNull(lineStyle, "lineStyle"); Objects.requireNonNull(markerMode, "markerMode");
+        Objects.requireNonNull(campusPresetId, "campusPresetId");
+        if (roadStyle == RoadStyle.CAMPUS_FILE) CampusPresetRegistry.get(campusPresetId);
+        else if (!campusPresetId.isEmpty()) throw new IllegalArgumentException("Only file presets carry a campus ID");
         if (roadWidth < 1 || roadWidth > 32) throw new IllegalArgumentException("roadWidth must be 1..32");
         validateConcrete(plotEdgeBlock);
         if (dashLength < 1 || dashLength > 32 || dashGap < 1 || dashGap > 32
@@ -37,19 +40,33 @@ public record PlotSettings(int plotChunks, String groundBlock, String roadBlock,
         if (bedrockY < -64 || bedrockY > 318 || surfaceY <= bedrockY || surfaceY > 319)
             throw new IllegalArgumentException("layers must fit overworld -64..319 and leave a foundation");
         boolean campus = roadStyle == RoadStyle.CAMPUS || roadStyle == RoadStyle.CAMPUS_PARK
-                || roadStyle == RoadStyle.CAMPUS_COMPACT || roadStyle == RoadStyle.CAMPUS_DENSE || roadStyle == RoadStyle.CAMPUS_WOODLAND;
+                || roadStyle == RoadStyle.CAMPUS_COMPACT || roadStyle == RoadStyle.CAMPUS_DENSE || roadStyle == RoadStyle.CAMPUS_WOODLAND
+                || roadStyle == RoadStyle.CAMPUS_FACTORY || roadStyle == RoadStyle.CAMPUS_FILE;
         int campusHeight = switch (roadStyle) {
             case CAMPUS -> LegacyPlannedCampus.maxHeight();
             case CAMPUS_PARK -> ParkPlannedCampus.maxHeight();
             case CAMPUS_COMPACT -> CompactPlannedCampus.maxHeight();
             case CAMPUS_DENSE -> DensePlannedCampus.maxHeight();
             case CAMPUS_WOODLAND -> PlannedCampus.maxHeight();
+            case CAMPUS_FACTORY -> FactoryCampus.maxHeight();
+            case CAMPUS_FILE -> FileCampus.of(campusPresetId).maxHeight();
             default -> 0;
         };
         if (campus && surfaceY + campusHeight > 319)
             throw new IllegalArgumentException("Campus frames must fit below world height");
         if (campus && surfaceY - bedrockY < 9)
             throw new IllegalArgumentException("Campus cable galleries require at least nine foundation layers");
+    }
+
+    /** Published recipes retain their original field set; file presets append an explicit stable ID. */
+    public PlotSettings(int plotChunks, String groundBlock, String roadBlock, String borderBlock,
+                        String markerBlock, RoadStyle roadStyle, int roadWidth, MarkerMode markerMode,
+                        int markerSize, int bedrockY, int surfaceY, String lineBlock,
+                        LineStyle lineStyle, int dashLength, int dashGap, int borderWidth,
+                        String plotEdgeBlock, int plotEdgeWidth, boolean showMachineFrames) {
+        this(plotChunks,groundBlock,roadBlock,borderBlock,markerBlock,roadStyle,roadWidth,markerMode,
+                markerSize,bedrockY,surfaceY,lineBlock,lineStyle,dashLength,dashGap,borderWidth,
+                plotEdgeBlock,plotEdgeWidth,showMachineFrames, "");
     }
 
     private static void validateConcrete(String id) {
@@ -81,7 +98,8 @@ public record PlotSettings(int plotChunks, String groundBlock, String roadBlock,
     public int concreteLayers() { return surfaceY - bedrockY; }
     public static PlotSettings defaults() { return preset(3); }
     public boolean isCampus() { return roadStyle == RoadStyle.CAMPUS || roadStyle == RoadStyle.CAMPUS_PARK
-            || roadStyle == RoadStyle.CAMPUS_COMPACT || roadStyle == RoadStyle.CAMPUS_DENSE || roadStyle == RoadStyle.CAMPUS_WOODLAND; }
+            || roadStyle == RoadStyle.CAMPUS_COMPACT || roadStyle == RoadStyle.CAMPUS_DENSE || roadStyle == RoadStyle.CAMPUS_WOODLAND
+            || roadStyle == RoadStyle.CAMPUS_FACTORY || roadStyle == RoadStyle.CAMPUS_FILE; }
     public int campusPlotCount() {
         return switch (roadStyle) {
             case CAMPUS -> LegacyPlannedCampus.plots().size();
@@ -89,6 +107,8 @@ public record PlotSettings(int plotChunks, String groundBlock, String roadBlock,
             case CAMPUS_COMPACT -> CompactPlannedCampus.plots().size();
             case CAMPUS_DENSE -> DensePlannedCampus.plots().size();
             case CAMPUS_WOODLAND -> PlannedCampus.plots().size();
+            case CAMPUS_FACTORY -> FactoryCampus.plots().size();
+            case CAMPUS_FILE -> FileCampus.of(campusPresetId).plots().size();
             default -> 0;
         };
     }
@@ -98,6 +118,20 @@ public record PlotSettings(int plotChunks, String groundBlock, String roadBlock,
                 MarkerMode.NONE, 1, -64, -53, "minecraft:white_concrete", LineStyle.CROSSWALK,
                 4, 4, 1, "minecraft:gray_concrete", 1, false);
     }
+    public static PlotSettings factoryCampus() {
+        return new PlotSettings(8, "minecraft:light_gray_concrete", "minecraft:black_concrete",
+                "minecraft:white_concrete", "minecraft:sea_lantern", RoadStyle.CAMPUS_FACTORY, 6,
+                MarkerMode.NONE, 1, -64, -53, "minecraft:white_concrete", LineStyle.CROSSWALK,
+                4, 4, 1, "minecraft:gray_concrete", 1, false);
+    }
+    public static PlotSettings fileCampus(String id) {
+        var definition = CampusPresetRegistry.get(id);
+        return new PlotSettings(8, "minecraft:light_gray_concrete", "minecraft:black_concrete",
+                "minecraft:white_concrete", "minecraft:sea_lantern", RoadStyle.CAMPUS_FILE, 6,
+                MarkerMode.NONE,1,definition.dimensions().get("defaultBedrockY"),definition.dimensions().get("defaultSurfaceY"),
+                "minecraft:white_concrete",LineStyle.CROSSWALK,4,4,1,"minecraft:gray_concrete",1,false,id);
+    }
+    public String campusKey() { return roadStyle == RoadStyle.CAMPUS_FILE ? "file:" + campusPresetId : roadStyle.name(); }
     public static PlotSettings preset(int size) {
         if (size < 1 || size > 10) throw new IllegalArgumentException("preset size must be 1..10");
         return new PlotSettings(size, "minecraft:light_gray_concrete", "minecraft:black_concrete",
@@ -115,6 +149,7 @@ public record PlotSettings(int plotChunks, String groundBlock, String roadBlock,
     public PlotSettings withRoadPreset(RoadPreset preset) {
         return switch (preset) {
             case CAMPUS -> plannedCampus();
+            case FACTORY -> factoryCampus();
             case HIGHWAY -> roadTheme("black_concrete", "white_concrete", "white_concrete", RoadStyle.HIGHWAY, 3, LineStyle.DASHED, 3, 3, 1);
             case CITY -> roadTheme("black_concrete", "light_gray_concrete", "white_concrete", RoadStyle.BOULEVARD, 4, LineStyle.CROSSWALK, 3, 3, 2);
             case STONE -> roadTheme("light_gray_concrete", "gray_concrete", "white_concrete", RoadStyle.RING, 2, LineStyle.NONE, 3, 3, 1);
@@ -133,7 +168,8 @@ public record PlotSettings(int plotChunks, String groundBlock, String roadBlock,
                               int width, MarkerMode markers, int markerSide, int bottom, int top, String line,
                               LineStyle marking, int dash, int gap, int curbWidth, String edge, int edgeWidth) {
         return new PlotSettings(chunks,ground,road,curb,marker,layout,width,markers,markerSide,bottom,top,
-                line,marking,dash,gap,curbWidth,edge,edgeWidth,showMachineFrames);
+                line,marking,dash,gap,curbWidth,edge,edgeWidth,showMachineFrames,
+                layout == RoadStyle.CAMPUS_FILE ? campusPresetId : "");
     }
     public PlotSettings withLevels(int bottom, int top) { return copy(plotChunks,groundBlock,roadBlock,borderBlock,markerBlock,roadStyle,roadWidth,markerMode,markerSize,bottom,top,lineBlock,lineStyle,dashLength,dashGap,borderWidth,plotEdgeBlock,plotEdgeWidth); }
     public static List<PlotSettings> presets() { return IntStream.rangeClosed(1, 10).mapToObj(PlotSettings::preset).toList(); }
@@ -158,6 +194,6 @@ public record PlotSettings(int plotChunks, String groundBlock, String roadBlock,
     public PlotSettings withMachineFrames(boolean v) {
         return new PlotSettings(plotChunks, groundBlock, roadBlock, borderBlock, markerBlock, roadStyle, roadWidth,
                 markerMode, markerSize, bedrockY, surfaceY, lineBlock, lineStyle, dashLength, dashGap, borderWidth,
-                plotEdgeBlock, plotEdgeWidth, v);
+                plotEdgeBlock, plotEdgeWidth, v,campusPresetId);
     }
 }

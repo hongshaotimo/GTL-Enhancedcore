@@ -5,6 +5,8 @@ import java.util.Set;
 /** Explicit feature groups; package-wide filters would also remove shared UI and safety fixes. */
 public final class ForeignMachineMixinPolicy {
     private static final String PREFIX = "com.gtl.enhancedcore.mixin.";
+    private static final Set<String> PERSONAL_WORLD_LIFECYCLE_MIXINS = Set.of(
+            "mc.PersonalPlotFilePackMixin", "mc.PersonalPlotStorageMixin");
     private static final Set<String> STRUCTURE_MIXINS = Set.of(
             "gtceu.GtlMegastructurePatternMixin", "gtceu.LucidEtchdreamerPreviewMixin",
             "gtlcore.client.LucidSparsePreviewShapeMixin",
@@ -15,6 +17,12 @@ public final class ForeignMachineMixinPolicy {
             "gtladditions.client.HeartOfTheUniverseEffectBoundsMixin",
             "gtladditions.ArcanicAstrographCollectionAnchorMixin");
     private static final Set<String> ENHANCEMENT_MIXINS = Set.of(
+            "gtlcore.HarmonyAddRecipesMixin", "gtladditions.ArcanicAddRecipesMixin",
+            "jade.HarmonyAddParallelProviderMixin",
+            "gtceu.PrimitiveCloudPatternMixin",
+            "gtladditions.IvNativeForgeStateAccessor", "gtladditions.IvNativeForgeRecipeAccessor",
+            "gtladditions.IvNativeAntientropyAccessor",
+            "gtladditions.IvNativeTaixuAccessor", "gtladditions.IvNativeApocalypticAccessor",
             "gtladditions.SuperBufferWideInventoryMixin",
             "gtladditions.SuperBufferWideLimitInventoryMixin",
             "gtceu.IvNativeModifierMixin",
@@ -48,6 +56,7 @@ public final class ForeignMachineMixinPolicy {
 
     public static boolean shouldApply(MachineOverrideConfig.Settings settings, String mixinClassName) {
         String name = mixinClassName.startsWith(PREFIX) ? mixinClassName.substring(PREFIX.length()) : mixinClassName;
+        if (PERSONAL_WORLD_LIFECYCLE_MIXINS.contains(name)) return true;
         if (name.equals("gtceu.GtlMegastructurePatternMixin"))
             return settings.replaceOriginalStructures() || settings.enhanceOriginalMachines();
         if (STRUCTURE_MIXINS.contains(name)) return settings.replaceOriginalStructures();

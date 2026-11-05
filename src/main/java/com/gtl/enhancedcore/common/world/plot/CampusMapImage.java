@@ -41,6 +41,8 @@ public final class CampusMapImage {
             case CAMPUS_COMPACT -> CompactPlannedCampus::previewColorAt;
             case CAMPUS_DENSE -> DensePlannedCampus::previewColorAt;
             case CAMPUS_WOODLAND -> PlannedCampus::previewColorAt;
+            case CAMPUS_FACTORY -> FactoryCampus::previewColorAt;
+            case CAMPUS_FILE -> FileCampus.of(settings.campusPresetId())::previewColorAt;
             default -> throw new IllegalArgumentException("Not a campus preset");
         };
         return sample(bounds.minX(), bounds.minZ(), bounds.width(), bounds.depth(), sampler);

@@ -113,9 +113,14 @@ public final class IvIsolationRegression {
                     "src/main/java/com/gtl/enhancedcore/common/recipe/iv/IvMachineScope.java"));
             String engine = java.nio.file.Files.readString(java.nio.file.Path.of(
                     "src/main/java/com/gtl/enhancedcore/common/recipe/iv/IvNativeEngine.java"));
+            String capacity = java.nio.file.Files.readString(java.nio.file.Path.of(
+                    "src/main/java/com/gtl/enhancedcore/common/recipe/iv/IvNativeCapacity.java"));
             check(scope.contains("PRECISION_LASER_ENGRAVER_RECIPES") && scope.contains("return 1;"),
                     "precision laser recipes have an explicit per-recipe parallel cap of one");
-            check(engine.contains("IvMachineScope.parallel(machine, ref.job.recipe)"),
+            check(engine.contains("IvNativeCapacity.candidateCapacity(machine, ref.job.recipe, budget)")
+                            && capacity.contains("IvMachineScope.parallel(machine, recipe)")
+                            && capacity.contains("PRECISION_LASER_ENGRAVER_RECIPES")
+                            && capacity.contains("return Math.min(1, budget);"),
                     "native scheduling derives capacity from each job recipe, avoiding mode cache leakage");
         } catch (java.io.IOException failure) {
             throw new AssertionError(failure);

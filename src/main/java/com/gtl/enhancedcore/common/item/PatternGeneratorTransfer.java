@@ -4,6 +4,7 @@ import appeng.api.parts.IPartHost;
 import appeng.helpers.patternprovider.PatternContainer;
 import com.gregtechceu.gtceu.api.recipe.GTRecipe;
 import com.gregtechceu.gtceu.api.machine.MetaMachine;
+import com.gtl.enhancedcore.common.cloud.CloudPatternLibraryMachine;
 import java.util.Map;
 import java.lang.ref.WeakReference;
 import java.util.UUID;
@@ -32,6 +33,11 @@ public final class PatternGeneratorTransfer {
     private static final int PER_TICK = 8;
     private static final double DROP_RANGE = 8;
     private static final Map<ServerPlayer, Transfer> TRANSFERS = new WeakHashMap<>();
+
+    private record Target(IItemHandler inventory, CloudPatternLibraryMachine library) {
+        boolean pending() { return library != null && library.generatorImportPending(); }
+        int batchSize() { return library == null ? PER_TICK : 1; }
+    }
 
     private static final class Transfer {
         final UUID generator;
@@ -123,8 +129,15 @@ public final class PatternGeneratorTransfer {
             finish(player, transfer, "fill_stopped");
             return;
         }
-        IItemHandler target = target(player, transfer);
+        Target target = target(player, transfer);
         if (target == null) { finish(player, transfer, "fill_stopped"); return; }
+        if (target.library() != null && target.library().generatorImportBlocked()) {
+            finish(player, transfer, "fill_stopped"); return;
+        }
+        // The library owns a physical inbox, then asynchronously commits its existing WAL.
+        // Keep the transfer armed until that original is acknowledged before staging another.
+        if (target.pending()) return;
+        int batchSize = target.batchSize();
         int moved = 0;
         var queue = PatternGeneratorSettings.load(tool);
         if (!queue.transferRecipes.isEmpty()) {
@@ -132,7 +145,7 @@ public final class PatternGeneratorTransfer {
             config.applyConfiguration(queue.transferConfiguration);
             boolean validMode = PatternGeneratorRecipes.machineTypes(config.machine).stream()
                     .anyMatch(type -> type.registryName.toString().equals(config.recipeType));
-            while (moved < PER_TICK && !queue.transferRecipes.isEmpty()) {
+            while (moved < batchSize && !queue.transferRecipes.isEmpty()) {
                 String id = queue.transferRecipes.getFirst();
                 try {
                     var recipe = player.server.getRecipeManager().byKey(new net.minecraft.resources.ResourceLocation(id)).orElse(null);
@@ -140,7 +153,7 @@ public final class PatternGeneratorTransfer {
                         throw new IllegalArgumentException("Machine mode or recipe changed: " + id);
                     ItemStack pattern = PatternGeneratorRecipes.encode(PatternGeneratorRecipes.describe(gtRecipe), player);
                     if (pattern.isEmpty()) throw new IllegalArgumentException("Empty encoded pattern: " + id);
-                    if (insert(target, pattern, 1) != 1) {
+                    if (insert(player, target, pattern, 1) != 1) {
                         saveQueue(player, tool, queue);
                         finish(player, transfer, "fill_partial");
                         return;
@@ -158,10 +171,10 @@ public final class PatternGeneratorTransfer {
                 }
             }
         }
-        for (int slot = 0; slot < player.getInventory().getContainerSize() && moved < PER_TICK; slot++) {
+        for (int slot = 0; slot < player.getInventory().getContainerSize() && moved < batchSize; slot++) {
             ItemStack source = player.getInventory().getItem(slot);
             if (!belongs(source, transfer.generator)) continue;
-            int accepted = insert(target, source, PER_TICK - moved);
+            int accepted = insert(player, target, source, batchSize - moved);
             if (accepted > 0) {
                 source.shrink(accepted);
                 player.getInventory().setChanged();
@@ -169,9 +182,9 @@ public final class PatternGeneratorTransfer {
                 transfer.inserted += accepted;
             }
         }
-        if (moved < PER_TICK) for (ItemEntity entity : drops(player, transfer.generator)) {
+        if (moved < batchSize) for (ItemEntity entity : drops(player, transfer.generator)) {
             ItemStack source = entity.getItem();
-            int accepted = insert(target, source, PER_TICK - moved);
+            int accepted = insert(player, target, source, batchSize - moved);
             if (accepted > 0) {
                 ItemStack remainder = source.copy();
                 remainder.shrink(accepted);
@@ -180,14 +193,15 @@ public final class PatternGeneratorTransfer {
                 moved += accepted;
                 transfer.inserted += accepted;
             }
-            if (moved >= PER_TICK) break;
+            if (moved >= batchSize) break;
         }
         int remaining = available(player, transfer.generator) + queue.transferRecipes.size();
         if (remaining == 0) {
+            if (target.pending()) return;
             queue.transferArmed = false;
             saveQueue(player, tool, queue);
             finish(player, transfer, "fill_complete");
-        } else if (moved < PER_TICK) finish(player, transfer, "fill_partial");
+        } else if (moved < batchSize) finish(player, transfer, "fill_partial");
     }
 
     private static void saveQueue(ServerPlayer player, ItemStack tool, PatternGeneratorSettings settings) {
@@ -196,31 +210,35 @@ public final class PatternGeneratorTransfer {
         player.getInventory().setChanged();
     }
 
-    private static int insert(IItemHandler target, ItemStack source, int limit) {
+    private static int insert(ServerPlayer player, Target target, ItemStack source, int limit) {
         ItemStack remainder = source.copyWithCount(Math.min(source.getCount(), limit));
         // Provenance is for transport only; stored patterns retain their original AE identity.
         remainder.removeTagKey(SOURCE);
         int offered = remainder.getCount();
-        for (int slot = 0; slot < target.getSlots() && !remainder.isEmpty(); slot++) {
-            if (target.isItemValid(slot, remainder)) remainder = target.insertItem(slot, remainder, false);
+        if (target.library() != null) return target.library().stageGeneratorOriginal(player, remainder) ? offered : 0;
+        for (int slot = 0; slot < target.inventory().getSlots() && !remainder.isEmpty(); slot++) {
+            if (target.inventory().isItemValid(slot, remainder)) remainder = target.inventory().insertItem(slot, remainder, false);
         }
         return offered - remainder.getCount();
     }
 
-    private static IItemHandler target(ServerPlayer player, Transfer transfer) {
+    private static Target target(ServerPlayer player, Transfer transfer) {
         var level = player.serverLevel();
         var blockEntity = transfer.blockEntity.get();
         if (blockEntity == null || !level.hasChunkAt(transfer.pos) || level.getBlockEntity(transfer.pos) != blockEntity) return null;
         var machine = MetaMachine.getMachine(level, transfer.pos);
-        if (machine instanceof PatternContainer patterns) return patterns.getTerminalPatternInventory().toItemHandler();
-        if (blockEntity instanceof PatternContainer patterns) return patterns.getTerminalPatternInventory().toItemHandler();
+        if (machine instanceof CloudPatternLibraryMachine library)
+            return library.generatorImportAuthorized(player) ? new Target(null, library) : null;
+        if (machine instanceof PatternContainer patterns) return new Target(patterns.getTerminalPatternInventory().toItemHandler(), null);
+        if (blockEntity instanceof PatternContainer patterns) return new Target(patterns.getTerminalPatternInventory().toItemHandler(), null);
         if (blockEntity instanceof IPartHost host) {
             var selected = host.selectPartWorld(transfer.hit);
-            if (selected.part instanceof PatternContainer patterns) return patterns.getTerminalPatternInventory().toItemHandler();
-            if (host.getPart(transfer.side) instanceof PatternContainer patterns) return patterns.getTerminalPatternInventory().toItemHandler();
+            if (selected.part instanceof PatternContainer patterns) return new Target(patterns.getTerminalPatternInventory().toItemHandler(), null);
+            if (host.getPart(transfer.side) instanceof PatternContainer patterns) return new Target(patterns.getTerminalPatternInventory().toItemHandler(), null);
         }
-        return blockEntity.getCapability(ForgeCapabilities.ITEM_HANDLER, transfer.side)
+        var inventory = blockEntity.getCapability(ForgeCapabilities.ITEM_HANDLER, transfer.side)
                 .orElseGet(() -> blockEntity.getCapability(ForgeCapabilities.ITEM_HANDLER).orElse(null));
+        return inventory == null ? null : new Target(inventory, null);
     }
 
     private static void finish(ServerPlayer player, Transfer transfer, String message) {

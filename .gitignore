@@ -94,3 +94,7 @@ build_log.txt
 # Local tool scratch
 /javac.*.args
 /.workbuddy/
+
+# Internal working notes; not part of the published project
+/TODO.md
+/.learnings/

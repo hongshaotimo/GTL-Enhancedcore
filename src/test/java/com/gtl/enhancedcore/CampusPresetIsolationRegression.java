@@ -34,7 +34,8 @@ final class CampusPresetIsolationRegression {
                     "Identity serialization is independent of the process locale"); checks++;
         } finally { Locale.setDefault(oldLocale); }
         for (var style : List.of(PlotSettings.RoadStyle.CAMPUS, PlotSettings.RoadStyle.CAMPUS_PARK,
-                PlotSettings.RoadStyle.CAMPUS_COMPACT, PlotSettings.RoadStyle.CAMPUS_DENSE, PlotSettings.RoadStyle.CAMPUS_WOODLAND)) {
+                PlotSettings.RoadStyle.CAMPUS_COMPACT, PlotSettings.RoadStyle.CAMPUS_DENSE, PlotSettings.RoadStyle.CAMPUS_WOODLAND,
+                PlotSettings.RoadStyle.CAMPUS_FACTORY)) {
             var settings = PlotSettings.plannedCampus().withRoadStyle(style);
             String current = CampusPlanAccess.layoutIdentity(settings);
             check(current.startsWith("campus-plan-v1:" + style.name() + ":"), "Preset identity contains its explicit stable name"); checks++;

@@ -4,6 +4,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.gtl.enhancedcore.common.world.personalplot.PersonalPlotPolicy;
 import com.gtl.enhancedcore.common.world.personalplot.PersonalPlotStore;
+import com.gtl.enhancedcore.common.world.personalplot.PersonalPlotDeletion;
 import com.gtl.enhancedcore.common.world.plot.PlotPresetShare;
 import com.gtl.enhancedcore.common.world.plot.PlotSettingsCodec;
 import com.gtl.enhancedcore.common.world.plot.PlotSettings;
@@ -23,16 +24,28 @@ final class PersonalPlotWorldRegression {
     private static int checks;
     static int run() throws Exception {
         checks = 0;
+        String storageMixin = Files.readString(Path.of("src/main/java/com/gtl/enhancedcore/mixin/mc/PersonalPlotStorageMixin.java"));
+        check(storageMixin.contains("m_246049_") && storageMixin.contains("getDataTag(")
+                        && storageMixin.contains("m_78290_") && storageMixin.contains("saveDataTag(")
+                        && storageMixin.contains("m_6626_") && storageMixin.contains("createTag("),
+                "Personal storage lifecycle hooks retain both Mojmap and runtime SRG signatures");
+        String packMixin = Files.readString(Path.of("src/main/java/com/gtl/enhancedcore/mixin/mc/PersonalPlotFilePackMixin.java"));
+        check(packMixin.contains("f_243662_") && packMixin.contains("failedToLoad") && packMixin.contains("close()"),
+                "Personal ZIP retirement hook retains Forge runtime field and close method");
         for (boolean dedicated : new boolean[] {false, true}) for (boolean owner : new boolean[] {false, true})
             for (boolean operator : new boolean[] {false, true}) for (boolean template : new boolean[] {false, true}) {
                 check(PersonalPlotPolicy.customize(dedicated, owner) == (!dedicated && owner), "Only integrated owner customizes terrain");
                 check(PersonalPlotPolicy.editTemplate(dedicated, operator) == (dedicated && operator), "Only dedicated OP edits template");
                 check(!PersonalPlotPolicy.create(dedicated, owner, template, true), "Already-owned world always denies another creation");
                 check(PersonalPlotPolicy.create(dedicated, owner, template, false) == (dedicated ? template : owner), "LAN guest cannot create; dedicated player needs active template");
+                for (boolean self : new boolean[] {false, true})
+                    check(PersonalPlotPolicy.manageOwner(dedicated, owner, operator, self) == (dedicated ? self || operator : owner && self),
+                            "Dedicated players manage self, OP manages others; integrated owner only manages self");
             }
         Path root = Files.createTempDirectory("gtl-personal-plots-regression-");
         UUID alice = UUID.fromString("01234567-89ab-cdef-0123-456789abcdef"), bob = UUID.fromString("fedcba98-7654-3210-fedc-ba9876543210");
         try {
+            deletionLifecycle(root.resolve("deletion-lifecycle"), alice, bob);
             legacyArchives(root.resolve("legacy"), alice, bob);
             var empty = PersonalPlotStore.read(root); check(empty.template() == null && empty.worlds().isEmpty(), "Ordinary existing save starts without personal state");
             var template = PlotSettings.preset(3); var pending = empty.withTemplate(template); PersonalPlotStore.write(root, pending);
@@ -99,6 +112,33 @@ final class PersonalPlotWorldRegression {
             try (var files = Files.walk(root)) { for (Path path : files.sorted(java.util.Comparator.reverseOrder()).toList()) Files.deleteIfExists(path); }
         }
         return checks;
+    }
+    private static void deletionLifecycle(Path root, UUID alice, UUID bob) throws Exception {
+        var settings = PlotSettings.preset(3);
+        PersonalPlotStore.write(root, new PersonalPlotStore.Data(null, java.util.Map.of(alice, settings)));
+        PersonalPlotStore.write(root, PersonalPlotStore.read(root).create(bob, settings));
+        Path dimension = PersonalPlotStore.dimensionDirectory(root, alice);
+        Files.createDirectories(dimension.resolve("region")); Files.writeString(dimension.resolve("region/r.0.0.mca"), "old terrain");
+        Path otherDimension = PersonalPlotStore.dimensionDirectory(root, bob);
+        Files.createDirectories(otherDimension); Files.writeString(otherDimension.resolve("keep.txt"), "unrelated owner");
+        byte[] bobPack = Files.readAllBytes(PersonalPlotStore.packPath(root, bob));
+        PersonalPlotStore.beginDeletion(root, alice);
+        PersonalPlotStore.beginDeletion(root, alice);
+        check(PersonalPlotStore.deletions(root).equals(java.util.Set.of(alice)), "Durable deletion marker is idempotent and preserves UUID identity");
+        check(!PersonalPlotStore.read(root).worlds().containsKey(alice), "Restart reads cannot resurrect a tombstoned owner from its remaining ZIP");
+        try { PersonalPlotStore.write(root, PersonalPlotStore.read(root).create(alice, settings)); throw new AssertionError("Deletion with residual ZIP was recreated"); }
+        catch (IOException expected) { check(Files.exists(PersonalPlotStore.packPath(root, alice)), "Residual archive blocks recreation until cleanup completes"); }
+        PersonalPlotDeletion.cleanup(root, alice);
+        check(!Files.exists(dimension) && !Files.exists(PersonalPlotStore.packPath(root, alice)), "Cleanup removes both exact dimension directory and owner archive");
+        check(Files.readString(otherDimension.resolve("keep.txt")).equals("unrelated owner")
+                        && java.util.Arrays.equals(bobPack, Files.readAllBytes(PersonalPlotStore.packPath(root, bob))),
+                "Deleting one owner preserves the other owner's chunks and ZIP byte for byte");
+        check(PersonalPlotStore.deletions(root).contains(alice), "Completed deletion keeps tombstone so old level.dat definitions cannot reappear");
+        var replacement = settings.withGroundBlock("minecraft:red_concrete");
+        PersonalPlotStore.write(root, PersonalPlotStore.read(root).create(alice, replacement));
+        check(!PersonalPlotStore.deletions(root).contains(alice) && PersonalPlotStore.read(root).worlds().get(alice).equals(replacement),
+                "Explicit recreation publishes new settings and clears deletion tombstone");
+        check(!Files.exists(dimension), "Recreation cannot inherit the deleted terrain directory");
     }
     private static void legacyArchives(Path root, UUID alice, UUID bob) throws Exception {
         // Captured v1 wire shapes: the owner preset and dimension definition are separate contracts.

@@ -8,4 +8,7 @@ public final class PersonalPlotPolicy {
     public static boolean create(boolean dedicated, boolean owner, boolean activeTemplate, boolean alreadyOwned) {
         return !alreadyOwned && (dedicated ? activeTemplate : owner);
     }
+    public static boolean manageOwner(boolean dedicated, boolean singleplayerOwner, boolean operator, boolean self) {
+        return dedicated ? self || operator : singleplayerOwner && self;
+    }
 }

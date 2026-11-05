@@ -65,6 +65,8 @@ public final class TooltipPolicy {
                     List.of("add_threads.cross_recipe", "add_threads.threads"), List.of())),
             Map.entry("wood_distillation", page(
                     List.of("wood_distillation.cross_recipe", "wood_distillation.threads"), List.of())),
+            Map.entry("harmony_add", page(
+                    List.of("harmony_add.cross_recipe", "harmony_add.threads"), List.of())),
             // 星阵不足64个时仅额外增加10,000线程，装满后解锁无限容量。
             Map.entry("stellar_vortex", page(List.of("stellar_vortex.flavor", "stellar_vortex.intro", "stellar_vortex.power",
                     "stellar_vortex.circuit", "stellar_vortex.buff", "stellar_vortex.pair"), List.of())),

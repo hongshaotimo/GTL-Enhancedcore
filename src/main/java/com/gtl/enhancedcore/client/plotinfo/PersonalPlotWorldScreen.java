@@ -12,6 +12,7 @@ import com.gtl.enhancedcore.common.world.plot.PlotPresetShare;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.function.Consumer;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractButton;
@@ -32,6 +33,7 @@ public final class PersonalPlotWorldScreen extends Screen {
     private boolean pending;
     private boolean copied;
     private int pendingTicks;
+    private Consumer<Runnable> transport = Runnable::run;
 
     private PersonalPlotWorldScreen(Snapshot snapshot) { super(tr("title")); this.snapshot = snapshot; }
 
@@ -80,13 +82,14 @@ public final class PersonalPlotWorldScreen extends Screen {
                     () -> minecraft.setScreen(new CampusPlanScreen(this, previewSettings())), !pending,
                     Component.translatable("gtl_enhancedcore.create_world_plot.campus_open_plan"));
 
-        int count = snapshot.canEditTemplate() ? 3 : 2;
+        int count = snapshot.canEditTemplate() ? 4 : 3;
         int y = contentBottom - count * 26 + 4;
         Component label = switch (snapshot.state()) {
             case NONE -> tr(snapshot.canCustomizePersonal() ? "customize_create" : "create");
             case PENDING -> tr("waiting_restart");
             case READY -> tr(snapshot.inOwnWorld() ? "already_inside" : "enter");
             case UNAVAILABLE -> tr("unavailable");
+            case DELETING -> tr("deleting");
         };
         boolean primaryEnabled = !pending && (snapshot.state() == State.NONE && snapshot.canCreatePersonal()
                 || snapshot.state() == State.READY && !snapshot.inOwnWorld());
@@ -97,6 +100,10 @@ public final class PersonalPlotWorldScreen extends Screen {
             action(tr("edit_template"), sidebarX, y + 52, sidebarWidth, this::editTemplate,
                     !pending, tr("template_hint"));
         }
+        action(tr(snapshot.dedicated() && snapshot.canEditTemplate() ? "manage_all" : "manage_mine"),
+                sidebarX, y + (count - 1) * 26, sidebarWidth,
+                () -> request(() -> PersonalPlotNetwork.requestManagement(0)),
+                !pending && (snapshot.dedicated() || snapshot.canCustomizePersonal()), tr("management_hint"));
     }
 
     private void primaryAction() {
@@ -119,7 +126,7 @@ public final class PersonalPlotWorldScreen extends Screen {
         if (pending) return;
         pending = true; copied = false; pendingTicks = 0;
         actions.forEach(button -> button.active = false);
-        action.run();
+        transport.accept(action);
     }
 
     private Component stateHint() {
@@ -148,12 +155,13 @@ public final class PersonalPlotWorldScreen extends Screen {
             g.drawString(font, environment, left + bodyWidth - environmentWidth - 12, top + 11, MUTED, false);
         panel(g, sidebarX - 4, contentY - 4, sidebarWidth + 8, contentBottom - contentY + 8, 0xff20252a);
         panel(g, previewX - 4, contentY - 4, previewWidth + 8, contentBottom - contentY + 8, 0xff181d22);
-        int stateColor = snapshot.state() == State.READY ? 0xffa6c794 : snapshot.state() == State.PENDING ? GOLD : MUTED;
+        int stateColor = snapshot.state() == State.READY ? 0xffa6c794
+                : snapshot.state() == State.PENDING || snapshot.state() == State.DELETING ? GOLD : MUTED;
         g.drawString(font, clipped(tr("your_world"), sidebarWidth), sidebarX + 3, contentY + 4, GOLD, false);
         g.fill(sidebarX + 3, contentY + 22, sidebarX + 7, contentY + 26, stateColor);
         g.drawString(font, clipped(tr("state." + snapshot.state().name().toLowerCase(Locale.ROOT)), sidebarWidth - 15),
                 sidebarX + 13, contentY + 20, stateColor, false);
-        int helpBottom = contentBottom - (snapshot.canEditTemplate() ? 3 : 2) * 26 - 4;
+        int helpBottom = contentBottom - (snapshot.canEditTemplate() ? 4 : 3) * 26 - 4;
         g.enableScissor(sidebarX, contentY + 36, sidebarX + sidebarWidth, Math.max(contentY + 36, helpBottom));
         int textY = contentY + 37;
         for (var line : font.split(stateHint(), Math.max(20, sidebarWidth - 8))) {

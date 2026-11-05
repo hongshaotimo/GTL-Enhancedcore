@@ -31,7 +31,7 @@ public abstract class IvSmartDispatchMixin {
     private void iv$refillCloudInputs(int budget, CraftingService service,
                                       appeng.api.networking.energy.IEnergyService energy,
                                       net.minecraft.world.level.Level level, CallbackInfoReturnable<Integer> cir) {
-        if (job == null) return;
+        if (job == null || budget <= 0) return;
         var grid = cluster.getGrid();
         var source = cluster.getSrc();
         for (var task : ((ExecutingCraftingJobAccessor)job).getTasks().entrySet()) {
@@ -43,10 +43,17 @@ public abstract class IvSmartDispatchMixin {
     @Redirect(method = "executeCrafting", at = @At(value = "INVOKE", target = "Lorg/gtlcore/gtlcore/integration/ae2/crafting/CraftingPatternAutoExpand;getOperations(ZLappeng/api/networking/crafting/ICraftingProvider;Lappeng/api/crafting/IPatternDetails;J)J"))
     private long iv$rememberOrder(boolean processing, ICraftingProvider provider, IPatternDetails pattern, long requested) {
         IvDispatchContext.clear();
+        if (provider instanceof com.gtl.enhancedcore.common.cloud.CloudPatternBufferMachine
+                && CloudCpuRefill.availableOperations(pattern, 1, inventory) < 1) {
+            // Keep the same explicit zero order context as the final inventory clip.
+            // No physical whole pattern can be dispatched, so capacity matching has no work.
+            IvDispatchContext.set(provider, pattern, 0);
+            return 0;
+        }
         long operations = CraftingPatternAutoExpand.getOperations(processing, provider, pattern, requested);
         if (provider instanceof com.gtl.enhancedcore.common.cloud.CloudPatternBufferMachine cloud) {
             operations = cloud.cloudDispatchCapacity(pattern, operations);
-            operations = Math.max(1, CloudCpuRefill.availableOperations(pattern, operations, inventory));
+            operations = CloudCpuRefill.availableOperations(pattern, operations, inventory);
         }
         if (provider instanceof MEPatternBufferPartMachine buffer && IvBuffers.isolated(buffer))
             IvDispatchContext.set(provider, pattern, operations);

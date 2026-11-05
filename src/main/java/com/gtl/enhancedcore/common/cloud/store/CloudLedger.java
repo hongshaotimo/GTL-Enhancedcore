@@ -7,7 +7,26 @@ public final class CloudLedger {
     public enum Status { AVAILABLE, LEASED, ARCHIVED, EXPORTED, EXTERNAL_PENDING, NEEDS_REVIEW }
     public record Lease(UUID id, UUID entryId, UUID nodeId, int stableSlot, long generation) {}
     public record Receipt(UUID operation, String kind, UUID subject, String status) {}
-    public record EntryState(UUID id, long revision, Status status, Lease lease) {}
+    public record EntryState(UUID id, long revision, Status status, Lease lease, List<Lease> sharedLeases) {
+        public EntryState { sharedLeases = List.copyOf(sharedLeases); }
+        public EntryState(UUID id, long revision, Status status, Lease lease) {
+            this(id, revision, status, lease, List.of());
+        }
+        public List<Lease> leases() {
+            if (lease == null) return sharedLeases;
+            var result = new ArrayList<Lease>(sharedLeases.size() + 1);
+            result.add(lease); result.addAll(sharedLeases); return List.copyOf(result);
+        }
+        public Lease lease(UUID node) {
+            if (lease != null && lease.nodeId.equals(node)) return lease;
+            for (var shared : sharedLeases) if (shared.nodeId.equals(node)) return shared;
+            return null;
+        }
+        private EntryState withLeases(List<Lease> next) {
+            return new EntryState(id, Math.addExact(revision, 1), next.isEmpty() ? Status.AVAILABLE : Status.LEASED,
+                    next.isEmpty() ? null : next.getFirst(), next.isEmpty() ? List.of() : next.subList(1, next.size()));
+        }
+    }
     public record NodeState(UUID id, UUID owner, UUID library, UUID machineInstance, String mode,
                             long generation, boolean detached, Map<Integer, UUID> slots) {
         public NodeState { slots = slots instanceof PersistentSlots ? slots : Map.copyOf(slots); }
@@ -45,10 +64,7 @@ public final class CloudLedger {
             if (!node.machineInstance.equals(machine)) throw new IllegalStateException("Machine instance changed");
             return node.mode; // Never silently shuffle a live binding after a definition reload.
         }
-        Set<String> occupied = new HashSet<>();
-        nodes.values().stream().filter(n -> !n.detached && machine.equals(n.machineInstance))
-                .forEach(n -> occupied.add(n.mode));
-        for (String type : types) if (!occupied.contains(type)) {
+        for (String type : types) {
             nodes.put(nodeId, new NodeState(node.id, node.owner, node.library, machine, type,
                     node.generation, false, node.slots));
             return type;
@@ -60,18 +76,20 @@ public final class CloudLedger {
         Receipt previous = receipts.get(operation);
         if (previous != null) {
             requireReplay(previous, "LEASE", entryId);
-            EntryState existing = entry(entryId);
-            return existing.lease != null && existing.lease.nodeId.equals(nodeId)
-                    && existing.lease.stableSlot == slot ? existing.lease : null;
+            Lease existing = entry(entryId).lease(nodeId);
+            return existing != null && existing.stableSlot == slot ? existing : null;
         }
         NodeState node = node(nodeId); EntryState entry = entry(entryId);
-        if (node.detached || node.mode.isEmpty() || entry.status != Status.AVAILABLE || node.slots.containsKey(slot))
+        if (node.detached || node.mode.isEmpty()
+                || (entry.status != Status.AVAILABLE && entry.status != Status.LEASED)
+                || entry.lease(nodeId) != null || node.slots.containsKey(slot))
             throw new IllegalStateException("Unavailable node, entry or stable slot");
         Lease lease = new Lease(UUID.randomUUID(), entryId, nodeId, slot, node.generation);
         var slots = PersistentSlots.copyOf(node.slots).with(slot, entryId);
         nodes.put(nodeId, new NodeState(node.id, node.owner, node.library, node.machineInstance,
                 node.mode, node.generation, false, slots));
-        entries.put(entryId, new EntryState(entryId, Math.addExact(entry.revision, 1), Status.LEASED, lease));
+        var leases = new ArrayList<>(entry.leases()); leases.add(lease);
+        entries.put(entryId, entry.withLeases(leases));
         record(operation, "LEASE", entryId, "COMMITTED"); return lease;
     }
     /** Caller proves the slot has no outstanding dispatch before releasing a stale match. */
@@ -79,12 +97,14 @@ public final class CloudLedger {
         Receipt previous = receipts.get(operation);
         if (previous != null) { requireReplay(previous, "RELEASE_LEASE", entryId); return; }
         NodeState node = node(nodeId); EntryState entry = entry(entryId);
-        if (node.detached || entry.lease == null || !entry.lease.nodeId.equals(nodeId))
+        Lease lease = entry.lease(nodeId);
+        if (node.detached || lease == null)
             throw new IllegalStateException("Lease belongs to another endpoint or was already released");
-        var slots = PersistentSlots.copyOf(node.slots).without(entry.lease.stableSlot);
+        var slots = PersistentSlots.copyOf(node.slots).without(lease.stableSlot);
         nodes.put(nodeId, new NodeState(node.id, node.owner, node.library, node.machineInstance,
                 node.mode, node.generation, false, slots));
-        entries.put(entryId, new EntryState(entryId, Math.addExact(entry.revision, 1), Status.AVAILABLE, null));
+        var remaining = new ArrayList<>(entry.leases()); remaining.remove(lease);
+        entries.put(entryId, entry.withLeases(remaining));
         record(operation, "RELEASE_LEASE", entryId, "COMMITTED");
     }
     public void archive(UUID entryId, long revision, boolean archived) {
@@ -101,10 +121,10 @@ public final class CloudLedger {
         EntryState entry = entry(entryId);
         if (entry.status != Status.AVAILABLE && entry.status != Status.LEASED && entry.status != Status.ARCHIVED)
             throw new IllegalStateException("Original is not held by the library");
-        if (entry.lease != null) {
-            NodeState node = node(entry.lease.nodeId);
+        for (var lease : entry.leases()) {
+            NodeState node = node(lease.nodeId);
             nodes.put(node.id, new NodeState(node.id, node.owner, node.library, node.machineInstance,
-                    node.mode, node.generation, node.detached, PersistentSlots.copyOf(node.slots).without(entry.lease.stableSlot)));
+                    node.mode, node.generation, node.detached, PersistentSlots.copyOf(node.slots).without(lease.stableSlot)));
         }
         entries.put(entryId, new EntryState(entryId, Math.addExact(entry.revision, 1), Status.EXPORTED, null));
         record(operation, "EXPORT", entryId, "EXTERNAL_PENDING");
@@ -124,12 +144,13 @@ public final class CloudLedger {
         if (node.detached) throw new IllegalStateException("Already detached");
         for (UUID id : node.slots.values()) {
             EntryState entry = entry(id);
-            if (entry.lease == null || !entry.lease.nodeId.equals(nodeId))
+            if (entry.lease(nodeId) == null)
                 throw new IllegalStateException("Broken lease ownership");
         }
         for (UUID id : node.slots.values()) {
             EntryState entry = entry(id);
-            entries.put(id, new EntryState(id, Math.addExact(entry.revision, 1), Status.AVAILABLE, null));
+            var remaining = new ArrayList<>(entry.leases()); remaining.remove(entry.lease(nodeId));
+            entries.put(id, entry.withLeases(remaining));
         }
         nodes.put(nodeId, new NodeState(node.id, node.owner, node.library, node.machineInstance,
                 node.mode, Math.addExact(node.generation, 1), true, Map.of()));
@@ -187,26 +208,28 @@ public final class CloudLedger {
         validate();
     }
     public void validate() {
-        Set<String> claims = new HashSet<>();
         for (NodeState node : nodes.values()) {
             if (node.generation < 1 || node.mode == null || node.owner == null || node.library == null)
                 throw new IllegalStateException("Invalid node");
-            if (!node.detached && node.machineInstance != null && !node.mode.isEmpty()
-                    && !claims.add(node.machineInstance + "/" + node.mode)) throw new IllegalStateException("Duplicate mode claim");
             if (node.detached && !node.slots.isEmpty()) throw new IllegalStateException("Detached leases");
             for (var slot : node.slots.entrySet()) {
                 EntryState entry = entry(slot.getValue());
-                if (slot.getKey() < 0 || entry.lease == null || !entry.lease.nodeId.equals(node.id)
-                        || entry.lease.stableSlot != slot.getKey() || entry.lease.generation != node.generation)
+                Lease lease = entry.lease(node.id);
+                if (slot.getKey() < 0 || lease == null
+                        || lease.stableSlot != slot.getKey() || lease.generation != node.generation)
                     throw new IllegalStateException("Slot ownership mismatch");
             }
         }
         for (EntryState entry : entries.values()) {
-            if (entry.revision < 1 || (entry.status == Status.LEASED) != (entry.lease != null))
+            if (entry.revision < 1 || (entry.status == Status.LEASED) != (entry.lease != null)
+                    || entry.lease == null && !entry.sharedLeases.isEmpty())
                 throw new IllegalStateException("Invalid entry state");
-            if (entry.lease != null) {
-                NodeState node = node(entry.lease.nodeId);
-                if (!entry.id.equals(node.slots.get(entry.lease.stableSlot))) throw new IllegalStateException("Orphan lease");
+            Set<UUID> consumers = new HashSet<>(), identities = new HashSet<>();
+            for (var lease : entry.leases()) {
+                NodeState node = node(lease.nodeId);
+                if (!entry.id.equals(lease.entryId) || !consumers.add(node.id) || !identities.add(lease.id)
+                        || node.detached || !entry.id.equals(node.slots.get(lease.stableSlot))
+                        || node.generation != lease.generation || node.mode.isEmpty()) throw new IllegalStateException("Orphan or duplicate lease");
             }
         }
     }

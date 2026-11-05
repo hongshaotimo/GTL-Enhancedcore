@@ -26,6 +26,9 @@ import static com.gtl.enhancedcore.common.cloud.transfer.CloudNetworkImportState
 public final class CloudNetworkPatternImport {
     private static final Map<MinecraftServer,Map<UUID,Task>> TASKS=new WeakHashMap<>();
     private static final Map<Object,Task> LOCKS=new IdentityHashMap<>();
+    private static final Map<Batch,Map<CompoundTag,UUID>> RESERVATIONS=new IdentityHashMap<>();
+    private static final int WORK_STEPS=128;
+    private static final long WORK_NANOS=3_000_000;
     private CloudNetworkPatternImport() {}
     public static boolean sourceLocked(Object source){return LOCKS.containsKey(source);}
     public static boolean entryLocked(UUID library,UUID entry){
@@ -35,14 +38,30 @@ public final class CloudNetworkPatternImport {
         }return false;
     }
     public static boolean reservedForOtherOperation(UUID library,ItemStack pattern,UUID operation){
+        CompoundTag key=null;
         for(var tasks:TASKS.values()){
             Task t=tasks.get(library);if(t==null||t.active==null||t.failed)continue;
-            for(CompoundTag row:t.active.rows)if(!row.getString("status").equals("ABORTED")&&ItemStack.isSameItemSameTags(pattern,ItemStack.of(row.getCompound("expected"))))
-                return operation==null||!operation.equals(row.getUUID("operation"));
+            if(!t.server.isSameThread())continue;
+            Map<CompoundTag,UUID> reserved=RESERVATIONS.get(t.active);
+            if(reserved==null)throw new IllegalStateException("Active import reservation index is missing");
+            if(key==null)key=reservationKey(pattern);
+            UUID owner=reserved.get(key);if(owner!=null)return operation==null||!operation.equals(owner);
         }return false;
     }
-    static void lock(Task t,Batch b){LOCKS.put(b.source.owner,t);}
-    static void unlock(Batch b){if(b!=null&&b.source!=null){LOCKS.remove(b.source.owner);b.source.changed(b.rows);}}
+    private static CompoundTag reservationKey(ItemStack pattern){return pattern.copyWithCount(1).save(new CompoundTag());}
+    static void lock(Task t,Batch b){
+        Map<CompoundTag,UUID> reserved=new HashMap<>();
+        for(CompoundTag row:b.rows)if(!row.getString("status").equals("ABORTED")){
+            CompoundTag key=reservationKey(ItemStack.of(row.getCompound("expected")));UUID operation=row.getUUID("operation"),previous=reserved.putIfAbsent(key,operation);
+            if(previous!=null&&!previous.equals(operation))throw new IllegalStateException("Import original is reserved by multiple operations");
+        }
+        RESERVATIONS.put(b,reserved);LOCKS.put(b.source.owner,t);
+    }
+    static void unlock(Batch b){
+        if(b==null)return;
+        try{if(b.source!=null){LOCKS.remove(b.source.owner);b.source.changed(b.rows);}}
+        finally{RESERVATIONS.remove(b);}
+    }
     private static Task task(CloudPatternLibraryMachine main){
         Task t=TASKS.computeIfAbsent(main.serverLevel().getServer(),s->new HashMap<>()).computeIfAbsent(main.libraryId(),id->new Task(main));
         if(!t.running&&!t.undoRunning&&t.active==null)t.main=main;return t;
@@ -67,14 +86,15 @@ public final class CloudNetworkPatternImport {
         tag.putInt("networkUndoReturned",t.returned);tag.putInt("networkUndoPending",t.pending);
     }
     public static void tickAll(MinecraftServer server){var tasks=TASKS.get(server);if(tasks!=null)for(Task t:List.copyOf(tasks.values()))tick(t);}
-    public static void stopped(MinecraftServer server){var tasks=TASKS.remove(server);if(tasks!=null)tasks.values().forEach(t->{if(t.active!=null&&t.active.source!=null)LOCKS.remove(t.active.source.owner);});}
+    public static void stopped(MinecraftServer server){var tasks=TASKS.remove(server);if(tasks!=null)tasks.values().forEach(t->{if(t.active!=null){RESERVATIONS.remove(t.active);if(t.active.source!=null)LOCKS.remove(t.active.source.owner);}});}
     public static void tick(CloudPatternLibraryMachine main){var tasks=TASKS.get(main.serverLevel().getServer());Task t=tasks==null?null:tasks.get(main.libraryId());if(t!=null)tick(t);}
     private static void tick(Task t){
         if(t.failed||t.lastTick==t.server.getTickCount())return;t.lastTick=t.server.getTickCount();
         try{
             if(t.loading!=null){if(!t.loading.isDone())return;UUID actor=t.actor;boolean requested=t.requestStart||t.requestUndo;t.load(t.loading.join());t.loading=null;refreshHistory(t);if(requested)t.actor=actor;}
             if(t.io!=null){if(!t.io.isDone())return;t.io.join();t.io=null;}
-            if(t.active!=null){advance(t);return;}
+            long deadline=System.nanoTime()+WORK_NANOS;
+            if(t.active!=null){advance(t,deadline);return;}
             ServerPlayer player=t.player();
             if(t.requestUndo&&!t.running){authorize(player,t.main);CloudNetworkPatternUndo.begin(t);}
             if(t.requestStart){authorize(player,t.main);begin(t);}
@@ -82,8 +102,7 @@ public final class CloudNetworkPatternImport {
             if(!t.running)return;
             if(!permitted(t,player)){t.stop=true;t.stopReason="disconnected";}
             if(t.stop){finish(t);return;}
-            long deadline=System.nanoTime()+3_000_000;
-            for(int step=0;step<32&&System.nanoTime()<deadline;step++){
+            for(int step=0;step<WORK_STEPS&&System.nanoTime()<deadline;step++){
                 if(t.planning!=null){plan(t,player);if(t.active!=null)return;continue;}
                 if(t.nodeCursor<t.nodes.size()){
                     Source s=discover(t.nodes.get(t.nodeCursor++));if(s==null||!t.seen.add(s.buffer!=null?s.buffer.getPatternInventory():s.inventory))continue;
@@ -101,7 +120,7 @@ public final class CloudNetworkPatternImport {
             t.failed=true;t.running=false;t.undoRunning=false;t.requestStart=false;t.requestUndo=false;t.finished=true;t.stopReason="review";
             if(t.active!=null&&t.active.source!=null&&t.active.source.buffer instanceof CloudImportSourceAccess source)source.cloud$quarantineImport("Cloud batch requires review: "+t.session);
             if(t.loading==null&&t.io==null){try{persist(t);}catch(RuntimeException suppressed){failure.addSuppressed(suppressed);}}
-            if(t.active!=null&&t.active.source!=null)LOCKS.remove(t.active.source.owner);
+            if(t.active!=null){RESERVATIONS.remove(t.active);if(t.active.source!=null)LOCKS.remove(t.active.source.owner);}
             org.slf4j.LoggerFactory.getLogger(CloudNetworkPatternImport.class).warn("Pattern batch stopped; ownership evidence retained",failure);
         }
     }
@@ -204,7 +223,7 @@ public final class CloudNetworkPatternImport {
         CompoundTag data=s.holder.getPersistentData();if(!data.hasUUID(IDENTITY)){data.putUUID(IDENTITY,UUID.randomUUID());s.holder.setChanged();}return data.getUUID(IDENTITY);
     }
     private static void prepare(Task t,Batch b){if(t.newSession){t.batches.clear();t.newSession=false;}if(b.source.buffer instanceof CloudImportSourceAccess access)CloudImportInventoryGuard.register(b.source.buffer.getPatternInventory(),access);t.active=b;t.batches.add(b);lock(t,b);b.phase="PREPARED";persist(t);}
-    private static void advance(Task t){
+    private static void advance(Task t,long deadline){
         Batch b=t.active;Source s=b.source;ServerPlayer player=t.player();var store=CloudPatternStore.get(t.main.serverLevel());var library=store.library(t.library);
         switch(b.phase){
             case "PREPARED" -> {
@@ -220,7 +239,7 @@ public final class CloudNetworkPatternImport {
                     if(library.containsOriginal(expected))throw new IllegalStateException("Original was uploaded concurrently after source preflight");
                     if(!s.storage&&!ItemStack.matches(s.get(r.getInt("slot")),ItemStack.of(r.getCompound("before"))))throw new IllegalStateException("Source changed after durable intent");
                     ItemStack actual;
-                    if(s.storage){long n=t.grid.getStorageService().getInventory().extract(AEItemKey.of(expected),1,Actionable.MODULATE,IActionSource.ofPlayer(player));if(n==0){r.putString("status","ABORTED");t.skip("unextractable",1);continue;}if(n!=1)throw new IllegalStateException("Invalid ME extraction amount");actual=expected.copy();}
+                    if(s.storage){long n=t.grid.getStorageService().getInventory().extract(AEItemKey.of(expected),1,Actionable.MODULATE,IActionSource.ofPlayer(player));if(n==0){r.putString("status","ABORTED");RESERVATIONS.get(b).remove(reservationKey(expected),r.getUUID("operation"));t.skip("unextractable",1);continue;}if(n!=1)throw new IllegalStateException("Invalid ME extraction amount");actual=expected.copy();}
                     else actual=s.extract(r.getInt("slot"));
                     r.put("escrow",actual.save(new CompoundTag()));if(!ItemStack.matches(actual,expected))throw new IllegalStateException("Unexpected actual pattern debit");
                     if(s.buffer!=null){
@@ -237,21 +256,35 @@ public final class CloudNetworkPatternImport {
             case "DEBITED" -> {
                 library.beginImportBatch(t.actor);
                 try{
-                    if(s.buffer!=null&&CloudImportedCatalysts.hasContents(b.shared))library.setImportedCatalysts(t.actor,b.id,b.shared);
-                    for(CompoundTag r:b.rows)if(r.getString("status").equals("DEBITED")){
+                    if(b.cursor==0&&s.buffer!=null&&CloudImportedCatalysts.hasContents(b.shared))library.setImportedCatalysts(t.actor,b.id,b.shared);
+                    // The durable batch and source lock span slices; the authority's
+                    // notification batch is always closed within this server tick.
+                    for(int step=0;step<WORK_STEPS&&b.cursor<b.rows.size()&&(step==0||System.nanoTime()<deadline);step++,b.cursor++){
+                        CompoundTag r=b.rows.get(b.cursor);if(!r.getString("status").equals("DEBITED"))continue;
                         var entry=store.upload(t.library,t.actor,ItemStack.of(r.getCompound("escrow")),r.getCompound("configuration"),r.getUUID("operation"));
                         CloudLibraryService.identify(entry,t.actor);if(s.buffer!=null)entry.initializeImportedCatalysts(t.actor,r.getUUID("operation"),r.getCompound("catalysts"));r.putUUID("entry",entry.id());
                     }
                 }finally{library.endImportBatch();}
-                b.phase="UPLOADED";t.io=store.checkpointAsync();
+                if(b.cursor<b.rows.size())return;
+                b.cursor=0;b.phase="UPLOADED";t.io=store.checkpointLibraryAsync(t.library);
             }
             case "UPLOADED" -> {
-                library.beginImportBatch(t.actor);try{for(CompoundTag r:b.rows)if(r.hasUUID("entry"))store.acknowledge(t.library,t.actor,r.getUUID("operation"));}finally{library.endImportBatch();}
-                b.phase="ACKNOWLEDGED";t.io=store.checkpointAsync();
+                library.beginImportBatch(t.actor);
+                try{
+                    for(int step=0;step<WORK_STEPS&&b.cursor<b.rows.size()&&(step==0||System.nanoTime()<deadline);step++,b.cursor++){
+                        CompoundTag r=b.rows.get(b.cursor);if(r.hasUUID("entry"))store.acknowledge(t.library,t.actor,r.getUUID("operation"));
+                    }
+                }finally{library.endImportBatch();}
+                if(b.cursor<b.rows.size())return;
+                b.cursor=0;b.phase="ACKNOWLEDGED";t.io=store.checkpointLibraryAsync(t.library);
             }
             case "ACKNOWLEDGED" -> {
-                for(CompoundTag r:b.rows)if(r.hasUUID("entry")){r.putString("status","COMMITTED");r.remove("escrow");t.moved=add(t.moved,1);long left=s.storage?r.getLong("visibleCount")-1:ItemStack.of(r.getCompound("before")).getCount()-1-r.getInt("duplicatesCounted");if(left>0)t.skip("duplicate",(int)Math.min(Integer.MAX_VALUE,left));}
-                b.phase="COMMITTED";persist(t);
+                for(int step=0;step<WORK_STEPS&&b.cursor<b.rows.size()&&(step==0||System.nanoTime()<deadline);step++,b.cursor++){
+                    CompoundTag r=b.rows.get(b.cursor);if(!r.hasUUID("entry"))continue;
+                    r.putString("status","COMMITTED");r.remove("escrow");t.moved=add(t.moved,1);long left=s.storage?r.getLong("visibleCount")-1:ItemStack.of(r.getCompound("before")).getCount()-1-r.getInt("duplicatesCounted");if(left>0)t.skip("duplicate",(int)Math.min(Integer.MAX_VALUE,left));
+                }
+                if(b.cursor<b.rows.size())return;
+                b.cursor=0;b.phase="COMMITTED";persist(t);
             }
             case "COMMITTED","ABORTED" -> {unlock(b);t.active=null;if(t.stop)finish(t);}
             case "RETURN_PREPARED","RETURN_EXPORT_CHECKPOINT","RETURN_EXPORTED","RETURN_DELIVERED","RETURN_ACKNOWLEDGED","RETURN_ROLLBACK","RETURNED" -> CloudNetworkPatternUndo.advance(t,b,player);
@@ -260,7 +293,7 @@ public final class CloudNetworkPatternImport {
     }
     private static void abort(Task t,Batch b,String reason){
         if(b.cursor!=0||b.rows.stream().anyMatch(r->r.getString("status").equals("DEBITED")))throw new IllegalStateException("A partially debited batch cannot be discarded");
-        b.rows.forEach(r->r.putString("status","ABORTED"));t.skip(reason,b.rows.size());b.phase="ABORTED";persist(t);
+        b.rows.forEach(r->r.putString("status","ABORTED"));RESERVATIONS.get(b).clear();t.skip(reason,b.rows.size());b.phase="ABORTED";persist(t);
     }
     static String sourceReason(Task t,ServerPlayer player,Source s){
         if(player==null)return "permission";if(s.storage)return t.main.serviceGrid()==t.grid?"":"disconnected";

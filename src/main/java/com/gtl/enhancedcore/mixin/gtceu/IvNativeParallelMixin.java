@@ -23,8 +23,12 @@ public abstract class IvNativeParallelMixin {
         var context = IvNativeMatchContext.forMachine(holder);
         if (context != null) {
             int available = (int)context.limit(recipe, limit);
+            // Steam checks base voltage in its modifier and pays once per admitted batch.
             for (var cap : recipe.tickInputs.keySet())
-                if (cap.doMatchInRecipe()) available = Math.min(available, cap.getMaxParallelRatio(holder, recipe, available));
+                if (cap.doMatchInRecipe()
+                        && !(cap == com.gregtechceu.gtceu.api.capability.recipe.EURecipeCapability.CAP
+                        && holder instanceof com.gtl.enhancedcore.common.machine.IndustrialSteamPlatformMachine))
+                    available = Math.min(available, cap.getMaxParallelRatio(holder, recipe, available));
             cir.setReturnValue(available);
         }
     }

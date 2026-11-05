@@ -27,9 +27,13 @@ public final class RegressionSuite {
         configParsing();
         assertions += CampusPlotSearchRegression.run();
         assertions += CampusMapImageRegression.run();
+        assertions += CampusMapTilesRegression.run();
         assertions += CampusPresetIsolationRegression.run();
         assertions += CampusPlanIdentityRegression.run();
         assertions += CloudLedgerRegression.run();
+        assertions += CloudChemicalModesRegression.run();
+        assertions += HarmonyAddRecipesRegression.run();
+        assertions += CloudNativeCapacityRegression.run();
         assertions += CloudTeamPermissionRegression.run();
         assertions += com.gtl.enhancedcore.common.cloud.CloudPerformanceRegression.run();
         assertions += CloudStoreNbtRegression.run();
@@ -56,6 +60,11 @@ public final class RegressionSuite {
         assertions += PlotWorldRegression.run();
         assertions += CampusRegression.run();
         assertions += CampusPresetPersistenceRegression.run();
+        assertions += FactoryPresetPersistenceRegression.run();
+        assertions += FactoryCampusRegression.run();
+        assertions += CampusPresetRegistryRegression.run();
+        assertions += FileCampusPresetPersistenceRegression.run();
+        assertions += FileCampusEngineRegression.run();
         assertions += PlotRoadAlignmentRegression.run();
         assertions += PlotPreviewRegression.run();
         assertions += PlotPresetShareRegression.run();

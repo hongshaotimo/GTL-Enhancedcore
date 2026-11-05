@@ -32,7 +32,7 @@ public abstract class IvNativeMachineUiMixin implements com.gregtechceu.gtceu.ap
      */
     @Override public void attachSideTabs(com.gregtechceu.gtceu.api.gui.fancy.TabsWidget tabs) {
         tabs.setMainTab(this);
-        if (!IvMachineScope.crossRecipeEnabled(iv$self())) {
+        if (IvBuffers.genericCloudTarget(iv$self()) || !IvMachineScope.crossRecipeEnabled(iv$self())) {
             if (iv$self() instanceof com.gregtechceu.gtceu.api.machine.feature.IRecipeLogicMachine logicMachine
                     && logicMachine.getRecipeTypes().length > 1) {
                 tabs.attachSubTab(new com.gregtechceu.gtceu.api.machine.fancyconfigurator.MachineModeFancyConfigurator(logicMachine));

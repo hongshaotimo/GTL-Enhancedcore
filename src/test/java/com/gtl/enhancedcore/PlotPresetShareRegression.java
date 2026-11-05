@@ -49,7 +49,8 @@ final class PlotPresetShareRegression {
         check(framed.withRoadPreset(PlotSettings.RoadPreset.CITY).showMachineFrames(),
                 "Changing a road theme preserves the selected frame choice");
         for (var road : PlotSettings.RoadStyle.values()) for (var line : PlotSettings.LineStyle.values()) {
-            var campus = PlotSettings.plannedCampus().withRoadStyle(road);
+            var campus = road == PlotSettings.RoadStyle.CAMPUS_FILE ? PlotSettings.fileCampus("quartz_works")
+                    : PlotSettings.plannedCampus().withRoadStyle(road);
             // Every fixed campus needs foundation and height headroom, including woodland.
             var settings = (campus.isCampus() ? campus : custom.withRoadStyle(road)).withLineStyle(line);
             check(PlotPresetShare.decode(PlotPresetShare.encode(settings)).equals(settings), "All supported road and lane enums roundtrip");

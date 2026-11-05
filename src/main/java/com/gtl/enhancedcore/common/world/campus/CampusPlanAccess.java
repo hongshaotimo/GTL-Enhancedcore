@@ -2,12 +2,15 @@ package com.gtl.enhancedcore.common.world.campus;
 
 import com.gtl.enhancedcore.common.world.plot.CompactPlannedCampus;
 import com.gtl.enhancedcore.common.world.plot.DensePlannedCampus;
+import com.gtl.enhancedcore.common.world.plot.FactoryCampus;
+import com.gtl.enhancedcore.common.world.plot.FileCampus;
 import com.gtl.enhancedcore.common.world.plot.LegacyPlannedCampus;
 import com.gtl.enhancedcore.common.world.plot.ParkPlannedCampus;
 import com.gtl.enhancedcore.common.world.plot.PlannedCampus;
 import com.gtl.enhancedcore.common.world.plot.PlotSettings;
 import java.util.ArrayList;
-import java.util.EnumMap;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.List;
 import java.util.function.ToIntFunction;
 import java.io.ByteArrayOutputStream;
@@ -17,7 +20,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.HexFormat;
 
-/** The five frozen campus layouts, adapted without changing their authored order or geometry. */
+/** Explicit campus identities, adapted without changing the authored order or geometry of published layouts. */
 public final class CampusPlanAccess {
     public static final List<String> PLANNING_TIERS = List.of(
             "ULV", "LV", "MV", "HV", "EV", "IV", "LuV", "ZPM", "UV", "UHV", "UEV", "UIV", "UXV", "OpV", "MAX");
@@ -35,18 +38,25 @@ public final class CampusPlanAccess {
             return null;
         }
     }
-    private static final EnumMap<PlotSettings.RoadStyle, Plan> PLANS = new EnumMap<>(PlotSettings.RoadStyle.class);
-    private static final EnumMap<PlotSettings.RoadStyle, String> IDENTITIES = new EnumMap<>(PlotSettings.RoadStyle.class);
+    private static final Map<String, Plan> PLANS = new HashMap<>();
+    private static final Map<String, String> IDENTITIES = new HashMap<>();
     private CampusPlanAccess() {}
 
     public static synchronized Plan of(PlotSettings settings) {
         if (!settings.isCampus()) throw new IllegalArgumentException("Not a campus preset");
-        return PLANS.computeIfAbsent(settings.roadStyle(), CampusPlanAccess::build);
+        return PLANS.computeIfAbsent(settings.campusKey(), key -> {
+            if (settings.roadStyle() != PlotSettings.RoadStyle.CAMPUS_FILE) return build(settings.roadStyle());
+            var campus=FileCampus.of(settings.campusPresetId());
+            return filePlan(campus);
+        });
     }
     /** One cached identity per explicit preset; never translated or rebuilt for travel requests. */
     public static synchronized String layoutIdentity(PlotSettings settings) {
         Plan plan = of(settings);
-        return IDENTITIES.computeIfAbsent(settings.roadStyle(), style -> fingerprint(style, plan));
+        return IDENTITIES.computeIfAbsent(settings.campusKey(), key -> settings.roadStyle() == PlotSettings.RoadStyle.CAMPUS_FILE
+                ? "campus-file-v1:" + settings.campusPresetId() + ":" + FileCampus.of(settings.campusPresetId()).resourceIdentity()
+                    + ":" + fingerprint(settings.roadStyle(),plan)
+                : fingerprint(settings.roadStyle(), plan));
     }
     /** Stable binary geometry contract, also used by the frozen-preset regression fixtures. */
     public static String fingerprint(PlotSettings.RoadStyle style, Plan plan) {
@@ -121,8 +131,21 @@ public final class CampusPlanAccess {
             }
             case CAMPUS_WOODLAND -> plan(PlannedCampus.plots(), PlannedCampus.workshops(), PlannedCampus.bounds(),
                     PlannedCampus.aeCoreBounds(), PlannedCampus::planningTier);
+            case CAMPUS_FACTORY -> filePlan(FileCampus.of("quartz_works"));
             default -> throw new IllegalArgumentException("Not a campus preset");
         };
+    }
+    private static Plan filePlan(FileCampus campus) {
+        Plan base = plan(campus.plots(), campus.workshops(), campus.bounds(), campus.aeCoreBounds(), campus::planningTier);
+        List<Target> targets = new ArrayList<>(base.targets());
+        for (Target target : base.targets()) {
+            if (target.kind() != Kind.WORKSHOP) continue;
+            var bounds = target.bounds();
+            var hall = campus.hallAt((bounds.minX() + bounds.maxX()) / 2, (bounds.minZ() + bounds.maxZ()) / 2);
+            targets.set(target.index(), new Target(target.index(), target.kind(), target.bounds(), null,
+                    target.stage(), target.ordinal(), (int) Math.floor(hall.arrivalX()), (int) Math.floor(hall.arrivalZ())));
+        }
+        return new Plan(base.plots(), base.workshops(), base.bounds(), base.aeBounds(), base.tiers(), List.copyOf(targets));
     }
     private static Plan plan(List<PlannedCampus.Plot> plots, List<PlannedCampus.Workshop> workshops,
                              PlannedCampus.Bounds bounds, PlannedCampus.Bounds aeBounds, ToIntFunction<String> tier) {

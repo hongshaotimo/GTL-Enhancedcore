@@ -69,14 +69,14 @@ public final class CloudPatternLibraryMachine extends MultiblockControllerMachin
     @Override public boolean shouldSyncME() { return false; }
     public boolean networkAvailable(IGrid grid) {
         if (!(getLevel() instanceof ServerLevel level) || !level.getServer().isSameThread() || grid == null
-                || libraryId == null || cloud$importQuarantined()) return false;
+                || !isFormed() || libraryId == null || cloud$importQuarantined()) return false;
         var chunk = level.getChunkSource().getChunkNow(getPos().getX() >> 4, getPos().getZ() >> 4);
         if (chunk == null || chunk.getBlockEntity(getPos()) != getHolder().getSelf()
                 || CloudLibraryNetwork.serviceGrid(this) != grid) return false;
         try { return CloudPatternStore.get(level).library(libraryId).healthy(); }
         catch (RuntimeException invalid) { return false; }
     }
-    /** The SavedData anchor resolves the library's live grid independently of GTLCore selection. */
+    /** Resolve the core's active AE grid, including the exact bridge of an explicit wireless binding. */
     public IGrid serviceGrid() {
         return CloudLibraryNetwork.serviceGrid(this);
     }
@@ -133,7 +133,7 @@ public final class CloudPatternLibraryMachine extends MultiblockControllerMachin
             CloudNetworkPatternImport.forget(this);
             CloudLibraryNetwork.unloaded(this);
             uploadSourceRemoved = true;
-            if (inboxUpload == null) CloudImportJournal.retire(this);
+            CloudImportJournal.retire(this);
             clearInventory(inbox);
         }
         importingPlayer = null; connected = false; online = false;
@@ -330,45 +330,79 @@ public final class CloudPatternLibraryMachine extends MultiblockControllerMachin
         var decoded = appeng.api.crafting.PatternDetailsHelper.decodePattern(pattern, getLevel());
         if (decoded == null || decoded instanceof appeng.crafting.pattern.AECraftingPattern) throw new IllegalArgumentException("Processing pattern required");
         CloudPatternStore.get(serverLevel()).library(libraryId).requireUniqueOriginal(pattern);
-        var sink = CloudImportJournal.sink(serverLevel(), libraryId, player.getUUID());
-        UUID operation = sink.prepare(new CloudBufferImport.Source(getLevel().dimension().location().toString(), getPos().asLong(), cloud$sourceIdentity()), 0, pattern, new CompoundTag());
-        try {
+        final ServerLevel uploadLevel = serverLevel();
+        final UUID uploadLibrary = libraryId, uploadIdentity = cloud$sourceIdentity();
+        final boolean[] debited = {false};
+        var pending = CloudImportJournal.prepareInboxUploadAsync(uploadLevel, uploadLibrary, player.getUUID(),
+                new CloudBufferImport.Source(getLevel().dimension().location().toString(), getPos().asLong(), uploadIdentity),
+                pattern, operation -> {
+            var chunk = uploadLevel.getChunkSource().getChunkNow(getPos().getX() >> 4, getPos().getZ() >> 4);
+            if (!uploadLevel.getServer().isRunning() || uploadLevel.getServer().getPlayerList().getPlayer(player.getUUID()) != player
+                    || !uploadSourceLoaded || uploadSourceRemoved || !uploadLibrary.equals(libraryId) || !uploadIdentity.equals(cloud$sourceIdentity())
+                    || chunk == null || chunk.getBlockEntity(getPos()) != getHolder().getSelf())
+                return ItemStack.EMPTY;
+            if (!generatorImportAuthorized(player) || !ItemStack.matches(inbox.getStackInSlot(0), pattern)) {
+                inboxActor = null; diagnostic = "gtl_enhancedcore.cloud.status.denied"; markDirty();
+                return ItemStack.EMPTY;
+            }
+            // A different core may have committed the same original while PREPARED was forced.
+            if (CloudPatternStore.get(uploadLevel).library(libraryId).containsOriginal(pattern)
+                    || CloudNetworkPatternImport.reservedForOtherOperation(libraryId, pattern, null)) {
+                inboxActor = null; diagnostic = "gtl_enhancedcore.cloud.status.duplicate"; markDirty();
+                return ItemStack.EMPTY;
+            }
+            debited[0] = true;
             ItemStack actual = inbox.extractItem(0, 1, false, true);
             if (!ItemStack.matches(actual, pattern)) throw new IllegalStateException("Upload source changed");
-            cloud$markProcessed(operation); inboxActor = null;
-            diagnostic = "gtl_enhancedcore.cloud.status.uploading"; uploadUiChange++; markDirty();
-            final ServerLevel uploadLevel = serverLevel();
-            inboxUpload = CloudImportJournal.commitUploadAsync(uploadLevel, operation, actual);
-            inboxUpload.whenComplete((ignored, failure) -> uploadLevel.getServer().execute(() -> {
-                inboxUpload = null;
-                try {
-                    if (failure != null) throw new IllegalStateException("Upload durable commit failed", failure);
-                    if (uploadSourceRemoved) CloudImportJournal.retireCompletedUpload(uploadLevel, operation);
-                    // Transaction completion is world authority, not proof this old block
-                    // object is still loaded or represents the block now at its position.
-                    if (!uploadSourceLoaded || uploadSourceRemoved || MetaMachine.getMachine(getLevel(), getPos()) != this) return;
-                    diagnostic = "gtl_enhancedcore.cloud.status.ready";
-                } catch (RuntimeException completionFailure) {
+            cloud$markProcessed(operation); inboxActor = null; markDirty();
+            return actual;
+        });
+        UUID operation = pending.operation();
+        diagnostic = "gtl_enhancedcore.cloud.status.uploading"; uploadUiChange++; markDirty();
+        inboxUpload = pending.completion();
+        inboxUpload.whenComplete((ignored, failure) -> uploadLevel.getServer().execute(() -> {
+            inboxUpload = null;
+            try {
+                if (failure != null) throw new IllegalStateException("Upload durable commit failed", failure);
+                if (uploadSourceRemoved && debited[0]) CloudImportJournal.retireCompletedUpload(uploadLevel, operation);
+                // Completion grants rights to the world authority, not to a removed or replaced block object.
+                if (!uploadSourceLoaded || uploadSourceRemoved || MetaMachine.getMachine(getLevel(), getPos()) != this) return;
+                if (debited[0]) diagnostic = "gtl_enhancedcore.cloud.status.ready";
+            } catch (RuntimeException completionFailure) {
+                if (debited[0]) {
                     try { CloudImportJournal.reviewUpload(uploadLevel, operation, completionFailure); }
                     catch (RuntimeException journalFailure) { completionFailure.addSuppressed(journalFailure); }
-                    if (!uploadSourceLoaded || uploadSourceRemoved || MetaMachine.getMachine(getLevel(), getPos()) != this) return;
+                }
+                if (!uploadSourceLoaded || uploadSourceRemoved || MetaMachine.getMachine(getLevel(), getPos()) != this) return;
+                if (debited[0]) {
                     importMarkers.putUUID("reviewOperation", operation);
                     cloud$quarantineImport("Upload " + operation + " requires review");
-                    recordFailure(completionFailure);
-                }
-                uploadUiChange++; markDirty();
-            }));
-        } catch (RuntimeException failure) { quarantineUpload(serverLevel(), operation, failure); throw failure; }
-    }
-    private void quarantineUpload(ServerLevel level, UUID operation, RuntimeException failure) {
-        importMarkers.putUUID("reviewOperation", operation);
-        cloud$quarantineImport("Upload " + operation + " requires review");
-        try { CloudImportJournal.reviewUpload(level, operation, failure); }
-        catch (RuntimeException journalFailure) { failure.addSuppressed(journalFailure); }
+                } else inboxActor = null;
+                recordFailure(completionFailure);
+            }
+            uploadUiChange++; markDirty();
+        }));
     }
     /** Defer until the native slot click has finished its temporary clear/restore probes. */
     void scheduleInboxUpload(ServerPlayer player) {
         inboxActor = inbox.getStackInSlot(0).isEmpty() ? null : player.getUUID(); markDirty();
+    }
+    /** Tool interaction uses the core's physical upload slot without requiring its menu to be open. */
+    public boolean generatorImportAuthorized(ServerPlayer player) {
+        return openingAuthorized(player) && !cloud$importQuarantined();
+    }
+    public boolean inboxUploadInProgress() { return inboxUpload != null; }
+    public boolean generatorImportPending() { return inboxUpload != null || !inbox.getStackInSlot(0).isEmpty(); }
+    public boolean generatorImportBlocked() { return inboxUpload == null && inboxActor == null && !inbox.getStackInSlot(0).isEmpty(); }
+    /** Stage one actual original. The tool debits its source before importTick prepares and commits it. */
+    public boolean stageGeneratorOriginal(ServerPlayer player, ItemStack original) {
+        if (!generatorImportAuthorized(player) || generatorImportPending()
+                || !CloudTerminalUpload.processingOriginal(original, getLevel())) return false;
+        var library = CloudPatternStore.get(serverLevel()).library(libraryId);
+        if (library.containsOriginal(original) || CloudNetworkPatternImport.reservedForOtherOperation(libraryId, original, null)) return false;
+        inbox.setStackInSlot(0, original.copy());
+        scheduleInboxUpload(player); uploadUiChange++;
+        return true;
     }
     /** AE management menu owns the carried original; stage it in the existing durable inbox/WAL. */
     public boolean acceptTerminalOriginal(ServerPlayer player, appeng.api.networking.IGrid grid) {

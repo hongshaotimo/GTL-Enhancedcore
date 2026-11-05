@@ -165,7 +165,7 @@ public final class TooltipPolicyRegression {
                     "every upstream multi-recipe id reports 64 + 128: " + id);
         }
         // 显示值不得再被超级总成门槛截断为 1；引擎侧另用 activeThreads。
-        var threadsStart = source.indexOf("public static int threads(WorkableElectricMultiblockMachine machine)");
+        var threadsStart = source.indexOf("public static int threads(WorkableMultiblockMachine machine)");
         require(threadsStart > 0, "threads() exists");
         var threadsHead = source.substring(threadsStart, source.indexOf("public static int activeThreads(", threadsStart));
         require(!threadsHead.contains("crossRecipeEnabled(machine)) return 1"),
