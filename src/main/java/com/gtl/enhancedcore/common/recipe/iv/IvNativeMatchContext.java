@@ -59,8 +59,7 @@ public final class IvNativeMatchContext {
             GTRecipe modified = machine.doModifyRecipe(copy,
                     new com.gregtechceu.gtceu.api.recipe.logic.OCParams(),
                     new com.gregtechceu.gtceu.api.recipe.logic.OCResult());
-            if (modified != null && (machine instanceof com.gtl.enhancedcore.common.machine.IndustrialSteamPlatformMachine
-                    || IvNativeCapacity.modifierParallel(machine) > 0))
+            if (modified != null && IvNativeCapacity.modifierParallel(machine) > 0)
                 reserved(Math.max(1, IGTRecipe.of(modified).getRealParallels()));
             return com.gtl.enhancedcore.common.recipe.RecipeBatchPreparation.apply(machine, origin, modified);
         });

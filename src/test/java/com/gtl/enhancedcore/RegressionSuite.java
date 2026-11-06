@@ -25,19 +25,13 @@ public final class RegressionSuite {
 
     public static void main(String[] args) throws Exception {
         configParsing();
+        assertions += CloudRemovalRegression.run();
         assertions += CampusPlotSearchRegression.run();
         assertions += CampusMapImageRegression.run();
         assertions += CampusMapTilesRegression.run();
         assertions += CampusPresetIsolationRegression.run();
         assertions += CampusPlanIdentityRegression.run();
-        assertions += CloudLedgerRegression.run();
-        assertions += CloudChemicalModesRegression.run();
         assertions += HarmonyAddRecipesRegression.run();
-        assertions += CloudNativeCapacityRegression.run();
-        assertions += CloudTeamPermissionRegression.run();
-        assertions += com.gtl.enhancedcore.common.cloud.CloudPerformanceRegression.run();
-        assertions += CloudStoreNbtRegression.run();
-        assertions += com.gtl.enhancedcore.common.cloud.transfer.CloudTransferRegression.run();
         assertions += IvTimeAccelerationRegression.run();
         assertions += FtbQuestBookmarkRegression.run();
         assertions += QuestVisibilityCycleGuardRegression.run();
@@ -51,7 +45,6 @@ public final class RegressionSuite {
         assertions += FtbClaimMapRegression.run();
         assertions += BloomPacingRegression.run();
         assertions += PreciseAmountSortCacheRegression.run();
-        assertions += CloudViewCacheRegression.run();
         assertions += StructurePerformanceRegression.run();
         assertions += EventBusHandlerRegression.run();
         assertions += StagedPreviewContractRegression.run();
@@ -65,6 +58,8 @@ public final class RegressionSuite {
         assertions += CampusPresetRegistryRegression.run();
         assertions += FileCampusPresetPersistenceRegression.run();
         assertions += FileCampusEngineRegression.run();
+        assertions += CampusSceneRegression.run();
+        assertions += PinkDreamHomeRegression.run();
         assertions += PlotRoadAlignmentRegression.run();
         assertions += PlotPreviewRegression.run();
         assertions += PlotPresetShareRegression.run();
@@ -103,7 +98,6 @@ public final class RegressionSuite {
         assertions += BlackHoleFrameRegression.run();
         assertions += StellarForgeRegression.run();
         assertions += IvIsolationRegression.run();
-        assertions += CloudPassivePatternLaneRegression.run();
         assertions += FuxiIsolationUpstreamRegression.run();
         assertions += WoodDistillationAllocationRegression.run();
         assertions += BiosphereModulePowerRegression.run();
@@ -111,7 +105,7 @@ public final class RegressionSuite {
         assertions += IvVirtualIngredientRegression.run();
         assertions += IvDisplayRegression.run();
         assertions += IvDisplayUpstreamRegression.run();
-        assertions += IvCancellationRegression.run();
+        assertions += com.gtl.enhancedcore.common.recipe.iv.IvCancellationRegression.run();
         assertions += SuperBufferAutoNameRegression.run();
         assertions += SuperBufferJadeNameRegression.run();
         assertions += Audit20260925Regression.run();

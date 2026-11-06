@@ -323,10 +323,10 @@ public final class IvIsolationRegression {
         check(!com.gtl.enhancedcore.common.recipe.iv.IvMachineScope.KEEP_NATIVE_THREADS_WITHOUT_BUFFER
                         .contains("mega_extractor"),
                 "ordinary whitelist machines still fall back to a single thread without a buffer");
-        // 三处「无总成压到 1」的 mixin 都必须尊重该例外，否则例外形同虚设。
+        // 两处原生线程限制都必须尊重该例外，否则例外形同虚设。
         try {
             for (String mixin : List.of("gtlcore/IvNativeGtlAddThreadLimitMixin.java",
-                    "gtlcore/IvNativeMultipleGuardMixin.java", "gtlcore/IvNativeRecipeThreadLimitMixin.java")) {
+                    "gtlcore/IvNativeRecipeThreadLimitMixin.java")) {
                 String body = java.nio.file.Files.readString(java.nio.file.Path.of(
                         "src/main/java/com/gtl/enhancedcore/mixin/" + mixin));
                 check(body.contains("keepsNativeThreads("),

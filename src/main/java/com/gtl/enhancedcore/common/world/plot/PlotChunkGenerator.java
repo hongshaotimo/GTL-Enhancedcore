@@ -70,8 +70,11 @@ public final class PlotChunkGenerator extends ChunkGenerator {
         this.settings = settings;
         Stream<String> materials = Stream.of(settings.groundBlock(), settings.plotEdgeBlock(), settings.roadBlock(), settings.borderBlock(), settings.markerBlock(), settings.lineBlock());
         if (settings.isCampus()) materials = Stream.concat(materials, campusMaterials().stream());
+        boolean authoredScene = settings.roadStyle() == PlotSettings.RoadStyle.CAMPUS_FILE
+                && CampusPresetRegistry.get(settings.campusPresetId()).engine().equals("file_scene");
         this.palette = materials.distinct().collect(Collectors.toUnmodifiableMap(id -> id,
-                id -> settings.isCampus() && campusMaterials().contains(id) ? resolveCampusMaterial(id) : resolveMaterial(id)));
+                id -> settings.isCampus() && campusMaterials().contains(id)
+                        ? authoredScene ? resolveSceneMaterial(id) : resolveCampusMaterial(id) : resolveMaterial(id)));
         this.signsByChunk = new HashMap<>(); this.signHeights = new HashMap<>();
         this.devicesByColumn = new HashMap<>(); this.devicesByChunk = new HashMap<>();
         if (settings.isCampus()) {
@@ -203,6 +206,21 @@ public final class PlotChunkGenerator extends ChunkGenerator {
             return state.hasProperty(LeavesBlock.PERSISTENT) ? state.setValue(LeavesBlock.PERSISTENT, true) : state;
         } catch (com.mojang.brigadier.exceptions.CommandSyntaxException invalid) {
             throw new IllegalArgumentException("Invalid authored campus material " + id, invalid);
+        }
+    }
+    /** File-authored scenery may use static partial blocks and source water, but never block entities or falling blocks. */
+    private static BlockState resolveSceneMaterial(String id) {
+        try {
+            BlockState state = net.minecraft.commands.arguments.blocks.BlockStateParser
+                    .parseForBlock(BuiltInRegistries.BLOCK.asLookup(), id, false).blockState();
+            Block block = state.getBlock();
+            if (block instanceof EntityBlock || block instanceof FallingBlock
+                    || !state.getFluidState().isEmpty() && (block != Blocks.WATER || !state.getFluidState().isSource())
+                    || state.isRandomlyTicking() && !(block instanceof LeavesBlock) && block != Blocks.GRASS_BLOCK)
+                throw new IllegalArgumentException("Unsafe authored scenery material " + id);
+            return block instanceof LeavesBlock ? state.setValue(LeavesBlock.PERSISTENT, true) : state;
+        } catch (com.mojang.brigadier.exceptions.CommandSyntaxException invalid) {
+            throw new IllegalArgumentException("Invalid authored scenery material " + id, invalid);
         }
     }
     @Override protected Codec<? extends ChunkGenerator> codec() { return CODEC; }

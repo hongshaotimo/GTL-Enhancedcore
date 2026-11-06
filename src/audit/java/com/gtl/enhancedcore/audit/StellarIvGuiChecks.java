@@ -273,7 +273,7 @@ public final class StellarIvGuiChecks {
             // mode arrives through RecipeLogic's DescSynced fields, never by a
             // renderer scanning the client-side structure list.
             ((com.gtl.enhancedcore.common.recipe.iv.IvNativeAccess) machine.getRecipeLogic())
-                    .iv$syncMode(IvMachineScope.nativeTarget(machine), false);
+                    .iv$syncMode(IvMachineScope.nativeTarget(machine));
         }
         // Real supplier/controller/recipe logic retained; only loaded part membership is seeded.
         var player = (AuditPlayer) unsafe.allocateInstance(AuditPlayer.class);

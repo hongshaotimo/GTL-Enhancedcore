@@ -1,7 +1,7 @@
 package com.gtl.enhancedcore;
 
 import com.gtl.enhancedcore.client.plot.CampusPlotSearch;
-import com.gtl.enhancedcore.client.cloud.CloudSearchMatcher;
+import com.gtl.enhancedcore.client.search.PhoneticSearchMatcher;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.net.URLClassLoader;
@@ -58,7 +58,7 @@ final class CampusPlotSearchRegression {
         int checks = 0;
         var code = new LinkedHashSet<URL>();
         code.add(CampusPlotSearch.class.getProtectionDomain().getCodeSource().getLocation());
-        code.add(CloudSearchMatcher.class.getProtectionDomain().getCodeSource().getLocation());
+        code.add(PhoneticSearchMatcher.class.getProtectionDomain().getCodeSource().getLocation());
         try (var loader = new URLClassLoader(code.toArray(URL[]::new), ClassLoader.getPlatformClassLoader())) {
             var search = Class.forName(CampusPlotSearch.class.getName(), true, loader);
             Method matches = search.getMethod("matches", String.class, Collection.class);
@@ -108,7 +108,7 @@ final class CampusPlotSearchRegression {
             var query = search.getMethod("compile", String.class).invoke(null, "dlgl furnace");
             Method preparedMatch = query.getClass().getMethod("matches", prepared.getClass());
             check((boolean) preparedMatch.invoke(query, prepared), "Prepared names warm the actual lazy PinIn syllables"); checks++;
-            var cache = Class.forName(CloudSearchMatcher.class.getName(), true, loader).getDeclaredField("TEXTS"); cache.setAccessible(true);
+            var cache = Class.forName(PhoneticSearchMatcher.class.getName(), true, loader).getDeclaredField("TEXTS"); cache.setAccessible(true);
             ((Map<?, ?>) cache.get(null)).clear();
             boolean stable = true;
             for (int index = 0; index < 256; index++) stable &= (boolean) preparedMatch.invoke(query, prepared);

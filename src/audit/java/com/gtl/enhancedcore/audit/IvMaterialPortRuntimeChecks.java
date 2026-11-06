@@ -101,10 +101,8 @@ public final class IvMaterialPortRuntimeChecks {
         check(expectedJointLimit > 0 && expectedJointLimit < 142,
                 "Explicit expected joint-factory endpoint limit fits its real 142-position panel");
         Block superBuffer = block("gtladditions:me_super_pattern_buffer");
-        Block cloud = block("gtl_enhancedcore:cloud_pattern_buffer");
-        check(IvBufferRegistry.contains(ForgeRegistries.BLOCKS.getKey(superBuffer))
-                && IvBufferRegistry.contains(ForgeRegistries.BLOCKS.getKey(cloud)),
-                "Actual ADD super buffer and own cloud buffer are registered isolation endpoints");
+        check(IvBufferRegistry.contains(ForgeRegistries.BLOCKS.getKey(superBuffer)),
+                "Actual ADD super buffer is a registered isolation endpoint");
         List<Block> ordinary = new ArrayList<>();
         for (var ability : List.of(PartAbility.IMPORT_ITEMS, PartAbility.EXPORT_ITEMS,
                 PartAbility.IMPORT_FLUIDS, PartAbility.EXPORT_FLUIDS)) {
@@ -142,7 +140,7 @@ public final class IvMaterialPortRuntimeChecks {
         }
         var state = new MultiblockState(world, BlockPos.ZERO);
         try {
-            for (String id : targets) testMachine(id, world, state, superBuffer, cloud, ordinary);
+            for (String id : targets) testMachine(id, world, state, superBuffer, ordinary);
         } finally {
             world.renderedBlocks.clear();
             world.blockEntities.clear();
@@ -150,7 +148,7 @@ public final class IvMaterialPortRuntimeChecks {
     }
 
     private void testMachine(String id, AuditWorld world, MultiblockState state,
-                             Block superBuffer, Block cloud, List<Block> ordinary) throws Exception {
+                             Block superBuffer, List<Block> ordinary) throws Exception {
         var raw = GTRegistries.MACHINES.get(new ResourceLocation(id));
         check(raw instanceof MultiblockMachineDefinition, id + " resolves to a registered multiblock");
         var definition = (MultiblockMachineDefinition) raw;
@@ -169,14 +167,13 @@ public final class IvMaterialPortRuntimeChecks {
                 boolean containsMaterials = false;
                 for (var list : List.of(rule.common, rule.limited)) for (var simple : list) {
                     if (simple.candidates == null) continue;
-                    boolean acceptsSuper = false, acceptsCloud = false;
+                    boolean acceptsSuper = false;
                     for (var candidate : simple.candidates.get()) {
                         if (candidate == null) continue;
                         Block candidateBlock = candidate.getBlockState().getBlock();
                         acceptsSuper |= candidateBlock == superBuffer;
-                        acceptsCloud |= candidateBlock == cloud;
                     }
-                    if (acceptsSuper && acceptsCloud) { materials.add(simple); containsMaterials = true; }
+                    if (acceptsSuper) { materials.add(simple); containsMaterials = true; }
                 }
                 materialRules.put(rule, containsMaterials);
             }
@@ -205,38 +202,18 @@ public final class IvMaterialPortRuntimeChecks {
             if (factory) {
                 for (int amount : new int[]{1, 2, 3, 30}) {
                     expect(id, "super-" + amount, world, state, rule, repeated(superBuffer, amount), amount <= expectedJointLimit);
-                    expect(id, "cloud-" + amount, world, state, rule, repeated(cloud, amount), amount <= expectedJointLimit);
                 }
                 expect(id, "super-at-limit", world, state, rule, repeated(superBuffer, expectedJointLimit), true);
-                expect(id, "cloud-at-limit", world, state, rule, repeated(cloud, expectedJointLimit), true);
                 expect(id, "super-over-limit", world, state, rule, repeated(superBuffer, expectedJointLimit + 1), false);
-                expect(id, "cloud-over-limit", world, state, rule, repeated(cloud, expectedJointLimit + 1), false);
-                var mixed = new ArrayList<Block>();
-                for (int index = 0; index < expectedJointLimit; index++) mixed.add(index % 2 == 0 ? superBuffer : cloud);
-                expect(id, "mixed-super-cloud-at-limit", world, state, rule, mixed, true);
-                mixed.add(cloud);
-                expect(id, "mixed-super-cloud-over-limit", world, state, rule, mixed, false);
             } else {
                 expect(id, "multiple-super-" + count, world, state, rule, repeated(superBuffer, count), true);
-                expect(id, "multiple-cloud-" + count, world, state, rule, repeated(cloud, count), true);
             }
             expect(id, "all-four-ordinary-io", world, state, rule, ordinary, true);
             for (Block input : ordinary) {
                 String name = ForgeRegistries.BLOCKS.getKey(input).toString();
                 expect(id, "super-before-ordinary-" + name, world, state, rule, List.of(superBuffer, input), false);
                 expect(id, "ordinary-before-super-" + name, world, state, rule, List.of(input, superBuffer), false);
-                var cloudsFirst = repeated(cloud, Math.min(2, endpointLimit)); cloudsFirst.add(input);
-                var ordinaryFirst = new ArrayList<Block>(); ordinaryFirst.add(input);
-                ordinaryFirst.addAll(repeated(cloud, Math.min(2, endpointLimit)));
-                expect(id, "clouds-before-ordinary-" + name, world, state, rule, cloudsFirst, true);
-                expect(id, "ordinary-before-clouds-" + name, world, state, rule, ordinaryFirst, true);
-                for (List<Block> mixed : List.of(List.of(cloud, superBuffer, input), List.of(cloud, input, superBuffer),
-                        List.of(superBuffer, cloud, input), List.of(superBuffer, input, cloud),
-                        List.of(input, cloud, superBuffer), List.of(input, superBuffer, cloud)))
-                    expect(id, "cloud-does-not-remove-super-ordinary-exclusion-" + name, world, state, rule, mixed, false);
             }
-            expect(id, "cloud-then-multiple-super", world, state, rule, List.of(cloud, superBuffer, superBuffer), endpointLimit >= 3);
-            expect(id, "multiple-super-then-cloud", world, state, rule, List.of(superBuffer, superBuffer, cloud), endpointLimit >= 3);
             // Each expect reuses exactly the same state and invokes the actual upstream cleanState().
             expect(id, "retry-after-exclusion-ordinary", world, state, rule, List.of(ordinary.getFirst()), true);
             expect(id, "retry-after-ordinary-super", world, state, rule, repeated(superBuffer, Math.min(3, endpointLimit)), true);

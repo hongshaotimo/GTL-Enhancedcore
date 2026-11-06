@@ -41,7 +41,7 @@ public final class HarmonyAddRuntimeChecks {
     public static void run(Path directory, List<String> checks) throws Exception {
         var rows = new ArrayList<Map<String, Object>>();
         for (String id : List.of("gtceu:eye_of_harmony", "gtladditions:arcanic_astrograph")) {
-            try (var fixture = new CloudCapacityFixture(id, false, false)) {
+            try (var fixture = new MachineRuntimeFixture(id, false)) {
                 require(fixture.machine instanceof HarmonyMachine, id + " retains native Harmony inheritance", checks);
                 var machine = (HarmonyMachine) fixture.machine;
                 var logic = machine.getRecipeLogic();
@@ -55,7 +55,7 @@ public final class HarmonyAddRuntimeChecks {
                 }
                 require(!IvMachineScope.nativeTarget(machine) && !IvMachineScope.addThreadOnly(machine.getDefinition().getId())
                                 && !IvMachineScope.crossRecipeEnabled(machine),
-                        id + " remains outside IV isolation with the audit cloud part present", checks);
+                        id + " remains outside IV isolation with ordinary physical ports", checks);
                 var tips = new ArrayList<Component>();
                 machine.getDefinition().getTooltipBuilder().accept(machine.getDefinition().asStack(), tips);
                 require(tips.stream().anyMatch(line -> MachineTooltips.containsKey(line,
@@ -110,7 +110,7 @@ public final class HarmonyAddRuntimeChecks {
         boolean hadBalance = GlobalVariableStorage.GlobalEnergy.containsKey(team);
         BigInteger savedBalance = GlobalVariableStorage.GlobalEnergy.get(team);
         HarmonyMachine audited = null;
-        try (var fixture = new CloudCapacityFixture(id, false, false)) {
+        try (var fixture = new MachineRuntimeFixture(id, false)) {
             var machine = (HarmonyMachine) fixture.machine; audited = machine;
             var logic = machine.getRecipeLogic();
             var input = (ItemBusPartMachine) fixture.place("gtceu:lv_input_bus", 3).getMetaMachine();

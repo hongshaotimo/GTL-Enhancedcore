@@ -30,6 +30,7 @@ public final class GuiStyleClientChecks {
     private static final Path JADE_ROOT = Path.of("C:/IDEA/GTL-Enhancedcore/_work/jade-compact-20261102").toAbsolutePath().normalize();
     private static final Path JADE_NATIVE_ROOT = Path.of("C:/IDEA/GTL-Enhancedcore/_work/jade-native-20261102").toAbsolutePath().normalize();
     private static final Path JEI_ROLLBACK_ROOT = Path.of("C:/IDEA/GTL-Enhancedcore/_work/jei-team-20261104").toAbsolutePath().normalize();
+    private static final Path CORE_REMOVAL_ROOT = Path.of("C:/IDEA/GTL-Enhancedcore/_work/cloud-removal-20261106").toAbsolutePath().normalize();
     private static final List<String> CHECKS = new ArrayList<>();
     @FunctionalInterface public interface ScreenFactory { Screen create() throws Exception; }
     @FunctionalInterface public interface ScreenCheck { void verify(Screen screen) throws Exception; }
@@ -68,7 +69,8 @@ public final class GuiStyleClientChecks {
                 require((directory.startsWith(ROOT) && !directory.equals(ROOT))
                         || (directory.startsWith(JADE_ROOT) && !directory.equals(JADE_ROOT))
                         || (directory.startsWith(JADE_NATIVE_ROOT) && !directory.equals(JADE_NATIVE_ROOT))
-                        || (directory.startsWith(JEI_ROLLBACK_ROOT) && !directory.equals(JEI_ROLLBACK_ROOT)), "Dedicated GUI task instance");
+                        || (directory.startsWith(JEI_ROLLBACK_ROOT) && !directory.equals(JEI_ROLLBACK_ROOT))
+                        || (directory.startsWith(CORE_REMOVAL_ROOT) && !directory.equals(CORE_REMOVAL_ROOT)), "Dedicated GUI task instance");
                 require(Files.isRegularFile(directory.resolve("gui-style.marker")), "Explicit GUI audit marker");
                 require(mc.level == null && mc.player == null && mc.getSingleplayerServer() == null, "Starts at title screen without a world");
                 Files.createDirectories(directory.resolve("screenshots"));

@@ -127,7 +127,7 @@ public class IndustrialSteamPlatformMachine extends WorkableElectricMultiblockMa
         return this.steamInsufficient;
     }
 
-    /** Called once after a native or cloud batch has successfully committed its inputs. */
+    /** Called once after a native batch has successfully committed its inputs. */
     public void chargeSteamForSuccessfulBatch() {
         this.steamStored -= steamPerRecipeMb();
         this.markDirty();

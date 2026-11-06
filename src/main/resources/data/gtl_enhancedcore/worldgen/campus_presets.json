@@ -53,6 +53,59 @@
           "precision": 10795201
         }
       }
+    },
+    {
+      "id": "pink_dream_home_v1",
+      "nameKey": "gtl_enhancedcore.create_world_plot.pink_dream_home_v1",
+      "descriptionKey": "gtl_enhancedcore.create_world_plot.pink_dream_home_v1_hint",
+      "catalogResource": "/data/gtl_enhancedcore/worldgen/pink_dream_machines.json",
+      "layoutResource": "/data/gtl_enhancedcore/worldgen/pink_dream_layout.json",
+      "architectureResource": "/data/gtl_enhancedcore/worldgen/pink_dream_architecture.json",
+      "engine": "file_scene",
+      "terrain": {
+        "materials": {
+          "quartz": "minecraft:smooth_quartz",
+          "dark": "minecraft:pink_terracotta",
+          "floor": "minecraft:white_concrete",
+          "road": "minecraft:pink_concrete",
+          "light": "minecraft:sea_lantern",
+          "yellow": "minecraft:pearlescent_froglight",
+          "green": "minecraft:grass_block",
+          "leaves": "minecraft:cherry_leaves[persistent=true,distance=1]",
+          "slab": "minecraft:smooth_quartz_slab[type=bottom,waterlogged=false]",
+          "iron": "minecraft:calcite",
+          "column": "minecraft:cherry_log[axis=y]",
+          "accent": "minecraft:cherry_planks"
+        },
+        "dimensions": {
+          "mainRoadHalfWidth": 8,
+          "outerRoadInset": 20,
+          "boundaryWalkWidth": 8,
+          "gridPeriod": 64,
+          "serviceRingWidth": 6,
+          "defaultBedrockY": -64,
+          "defaultSurfaceY": -53
+        },
+        "previewColors": {
+          "background": 16514043,
+          "facade": 16752895,
+          "quartz": 16777215,
+          "dark": 12648447,
+          "floor": 16777195,
+          "road": 16733695,
+          "green": 10748556,
+          "yellow": 16775654,
+          "steam": 16761087,
+          "ore": 16750571,
+          "metallurgy": 16432704,
+          "chemistry": 16098815,
+          "biology": 11184486,
+          "energy": 16775654,
+          "computation": 15658734,
+          "space": 15925247,
+          "precision": 16752895
+        }
+      }
     }
   ]
 }

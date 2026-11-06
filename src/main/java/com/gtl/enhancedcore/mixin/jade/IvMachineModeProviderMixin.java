@@ -21,15 +21,12 @@ public abstract class IvMachineModeProviderMixin {
     private void gtle$crossRecipeMode(CompoundTag data, BlockAccessor accessor, CallbackInfo ci) {
         if (!(accessor.getBlockEntity() instanceof MetaMachineBlockEntity entity)
                 || !(entity.getMetaMachine() instanceof WorkableElectricMultiblockMachine machine)
-                || com.gtl.enhancedcore.common.recipe.iv.IvBuffers.genericCloudTarget(machine)
                 || !IvMachineScope.crossRecipeEnabled(machine)) return;
 
         // GTCEu's appendTooltip translates each ResourceLocation as namespace.path.
         // A single synthetic entry lets its compact and expanded views use the same mode.
         ListTag modes = new ListTag();
-        var access = (com.gtl.enhancedcore.common.recipe.iv.IvNativeAccess) machine.getRecipeLogic();
-        modes.add(StringTag.valueOf(access.iv$nativeInputsActive() ? "gtl_enhancedcore:gui.cloud_native_mode"
-                : com.gtl.enhancedcore.common.recipe.iv.IvMachineDisplay.MODE_ID));
+        modes.add(StringTag.valueOf(com.gtl.enhancedcore.common.recipe.iv.IvMachineDisplay.MODE_ID));
         data.put("RecipeTypes", modes);
         data.putInt("CurrentRecipeType", 0);
         ci.cancel();

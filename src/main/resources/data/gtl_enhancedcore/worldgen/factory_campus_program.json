@@ -3,7 +3,7 @@
   "presetIdentity": "CAMPUS_FACTORY",
   "reviewedDate": "2026-11-04",
   "catalogResource": "factory_campus_machines.json",
-  "catalogSha256": "379abcd2bad4608db236632ba4ad2a747c998c3dc91c3d6faf6a6c4dcc39819b",
+  "catalogSha256": "e2012d2259da80d2e599941dd6ec727d98f35c9d756c2b9a2f6a32245947224a",
   "frozenFrom": "planned_campus_machines.json on 2026-11-04; byte-identical independent snapshot",
   "boundary": "Stage uses audited construction voltage/component floor, not an exhaustive quest or material unlock graph. Function departments are architectural planning groups, not a change to recipes, machine behavior or binding range.",
   "groupingPolicy": "department + placementStage; early ULV-HV, mid EV-UV, late UHV-MAX. User-requested early machines retain original planningTier with the existing placementTier override. Large machines may occupy their own hall. Shared machines use the relevant departmental production floor without standalone machine markers.",
@@ -77,8 +77,8 @@
       "accentRgb": "8E8AB6",
       "architecture": "research-control-hall",
       "function": "Research data, computation, pattern storage and site control",
-      "machineKinds": 9,
-      "dedicatedSlots": 4
+      "machineKinds": 8,
+      "dedicatedSlots": 3
     },
     {
       "id": "space",
@@ -119,8 +119,7 @@
         "gtceu:research_station",
         "gtceu:high_performance_computation_array",
         "gtceu:data_bank",
-        "gtceu:network_switch",
-        "gtl_enhancedcore:cloud_pattern_library"
+        "gtceu:network_switch"
       ],
       "reason": "Research, computation and recipe data services belong near precision assembly"
     },
@@ -133,9 +132,9 @@
     }
   ],
   "counts": {
-    "machineKinds": 202,
-    "dedicatedKinds": 156,
-    "dedicatedSlots": 226,
+    "machineKinds": 201,
+    "dedicatedKinds": 155,
+    "dedicatedSlots": 225,
     "sharedKinds": 46,
     "excludedModuleKinds": 16
   },
@@ -3178,24 +3177,6 @@
         "recipeTypes": [
           "gtl_enhancedcore:causality_terminal"
         ]
-      }
-    },
-    {
-      "id": "gtl_enhancedcore:cloud_pattern_library",
-      "allocation": "dedicated",
-      "copies": 1,
-      "planningTier": 8,
-      "placementTier": 8,
-      "stage": "mid",
-      "placementStage": "mid",
-      "department": "computation",
-      "hallGroup": "computation-mid",
-      "tierEvidenceStatus": "voltage-confirmed",
-      "tierEvidenceSource": "src/main/resources/data/gtl_enhancedcore/equipment_recipes.json",
-      "functionEvidence": {
-        "basis": "local-controller-source",
-        "source": "src/main/java/com/gtl/enhancedcore/common/cloud/CloudPatternLibraryMachine.java",
-        "role": "World-owned pattern storage controller connected to an AE grid"
       }
     },
     {

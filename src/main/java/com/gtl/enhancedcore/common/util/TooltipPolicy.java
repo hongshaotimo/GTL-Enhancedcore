@@ -32,10 +32,6 @@ public final class TooltipPolicy {
     private static final Pattern FORMAT_CODE = Pattern.compile("\u00a7[0-9a-fk-orA-FK-OR]");
     private static final Map<String, Layout<String>> PAGES = Map.ofEntries(
             // 用户 2026-10-25 指定文案（item_tooltips.json 优化版）。
-            Map.entry("cloud_library", page(List.of("cloud.library.flavor", "cloud.library.intro", "cloud.library.usage",
-                    "cloud.library.catalyst", "cloud.library.terminal", "cloud.library.isolation"), List.of())),
-            Map.entry("cloud_buffer", page(List.of("cloud.buffer.intro", "cloud.buffer.modes", "cloud.buffer.multiple",
-                    "cloud.buffer.catalyst", "cloud.buffer.native_inputs", "cloud.buffer.auxiliary"), List.of())),
             Map.entry("large_furnace", page(
                     List.of("large_furnace.efficient", "large_furnace.base_parallel", "large_furnace.base_threads",
                             "large_furnace.cross_recipe_parallel", "large_furnace.voltage_scaling",

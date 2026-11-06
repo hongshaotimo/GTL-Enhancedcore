@@ -1,7 +1,7 @@
 package com.gtl.enhancedcore.audit;
 
 import com.google.gson.GsonBuilder;
-import com.gtl.enhancedcore.client.cloud.CloudSearchMatcher;
+import com.gtl.enhancedcore.client.search.PhoneticSearchMatcher;
 import com.gtl.enhancedcore.client.gui.ChangelogScreen;
 import com.gtl.enhancedcore.client.plot.CampusPlanScreen;
 import com.gtl.enhancedcore.client.plot.CreateWorldPlotScreen;
@@ -142,11 +142,11 @@ public final class CampusSearchClientChecks {
     }
     private void checkDictionary() throws Exception {
         String resource="me/towdium/pinin/data.txt";
-        try(var stream=CloudSearchMatcher.class.getClassLoader().getResourceAsStream(resource)) {
-            require(stream!=null,"PinIn dictionary visible to production CloudSearchMatcher loader");
+        try(var stream=PhoneticSearchMatcher.class.getClassLoader().getResourceAsStream(resource)) {
+            require(stream!=null,"PinIn dictionary visible to production PhoneticSearchMatcher loader");
             byte[] bytes=stream.readAllBytes();require(bytes.length>1000,"PinIn dictionary is populated");
             dictionary.put("resource",resource);dictionary.put("bytes",bytes.length);dictionary.put("visible",true);
-            dictionary.put("owner",CloudSearchMatcher.class.getName());dictionary.put("sha256",HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256").digest(bytes)));
+            dictionary.put("owner",PhoneticSearchMatcher.class.getName());dictionary.put("sha256",HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256").digest(bytes)));
         }
     }
     private void openDashboard(Minecraft mc) throws Exception {

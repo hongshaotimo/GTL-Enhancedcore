@@ -15,17 +15,10 @@ public interface IvNativeAccess {
     String iv$message();
     boolean iv$managed();
     void iv$managed(boolean value);
-    boolean iv$nativeInputsActive();
-    boolean iv$nativeInputExecution();
-    void iv$finishNativeInputs(Runnable finish);
-    void iv$nativeOutputAccepted();
-    void iv$runMixedInputs(Runnable nativeTick, java.util.function.Consumer<Boolean> orderTick,
-                          java.util.function.BooleanSupplier activeBatches);
     boolean iv$onWorking();
     /** A server-published mode snapshot. Client render workers must never scan live parts. */
     boolean iv$crossRecipeEnabled();
-    boolean iv$genericCloudTarget();
-    void iv$syncMode(boolean isolated, boolean cloudTarget);
+    void iv$syncMode(boolean isolated);
     /** Expose this order to upstream callbacks, then restore the ordinary/display state. */
     RecipeScope iv$recipeContext(GTRecipe recipe, GTRecipe origin, int elapsed, int ticks);
     interface RecipeScope extends AutoCloseable {

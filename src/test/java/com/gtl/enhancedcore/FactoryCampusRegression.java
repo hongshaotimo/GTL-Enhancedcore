@@ -24,7 +24,7 @@ final class FactoryCampusRegression {
                 "The factory has its own campus identity");
         check(FactoryCampus.bounds().equals(new PlannedCampus.Bounds(-1000, -1000, 999, 999)),
                 "Quartz Works occupies the requested continuous 2000 by 2000 island");
-        check(FactoryCampus.plots().size() == 226 && FactoryCampus.sharedMachineCount() == 46,
+        check(FactoryCampus.plots().size() == 225 && FactoryCampus.sharedMachineCount() == 46,
                 "The frozen retained machine list keeps its dedicated and shared capacity");
         check(FactoryCampus.workshops().size() == 4, "Four large production halls retain shared machine capacity");
         check(settings.surfaceY() + FactoryCampus.maxHeight() <= 319, "Factory architecture fits the world build height");

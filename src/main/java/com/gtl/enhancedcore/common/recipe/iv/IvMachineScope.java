@@ -110,10 +110,9 @@ public final class IvMachineScope {
         if (machine == null) return false;
         var access = (IvNativeAccess) machine.getRecipeLogic();
         if (machine.isRemote()) return access.iv$crossRecipeEnabled();
-        boolean cloud = IvBuffers.genericCloudTarget(machine);
-        boolean enabled = (IvBuffers.legacyTargetController(machine) || cloud)
+        boolean enabled = IvBuffers.targetController(machine)
                 && IvBuffers.collect(machine).stream().anyMatch(IvBuffers::isolated);
-        access.iv$syncMode(enabled, cloud);
+        access.iv$syncMode(enabled);
         return enabled;
     }
     public static boolean crossRecipeEnabled(Object machine) {
@@ -122,10 +121,7 @@ public final class IvMachineScope {
     public static int parallel(WorkableMultiblockMachine machine) {
         if (unlimitedParallel(machine)) return Integer.MAX_VALUE;
         if (!(machine instanceof WorkableElectricMultiblockMachine)) return 1;
-        if (machine instanceof com.gtl.enhancedcore.common.machine.IndustrialSteamPlatformMachine steam)
-            return steam.getCurrentParallel();
         if (machine instanceof ParallelMachine parallel) return Math.max(1, parallel.getMaxParallel());
-        if (IvBuffers.genericCloudTarget(machine)) return Math.max(1, GTLRecipeModifiers.getHatchParallel(machine));
         if (machine instanceof CoilWorkableElectricMultiblockMachine coil)
             return Math.max(1, (int)Math.min(Integer.MAX_VALUE, Math.pow(2, coil.getCoilType().getCoilTemperature() / 900.0)));
         return Math.max(1, GTLRecipeModifiers.getHatchParallel(machine));
@@ -137,8 +133,7 @@ public final class IvMachineScope {
      * operation while ordinary laser recipes retain the installed hatch capacity.
      */
     public static long parallel(WorkableMultiblockMachine machine, GTRecipe recipe) {
-        long nativeCapacity = IvNativeCapacity.parallel(machine, recipe);
-        long capacity = unlimited(machine) ? Long.MAX_VALUE : nativeCapacity >= 0 ? nativeCapacity : parallel(machine);
+        long capacity = unlimited(machine) ? Long.MAX_VALUE : parallel(machine);
         if (recipe != null && recipe.recipeType == org.gtlcore.gtlcore.common.data.GTLRecipeTypes.PRECISION_LASER_ENGRAVER_RECIPES)
             return 1;
         return capacity;
@@ -149,20 +144,7 @@ public final class IvMachineScope {
      */
     public static int threads(WorkableMultiblockMachine machine) {
         if (!(machine instanceof WorkableElectricMultiblockMachine)) return 1;
-        if (machine instanceof com.gtl.enhancedcore.common.machine.IndustrialSteamPlatformMachine) return 1;
         if (unlimitedThreads(machine)) return Integer.MAX_VALUE;
-        if (IvNativeCapacity.singleRecipe(machine)) return 1;
-        if (IvBuffers.genericCloudTarget(machine)) {
-            // A cloud endpoint is storage/routing, not a grant of the opt-in IV +128 threads.
-            var logic = machine.getRecipeLogic();
-            if (logic instanceof com.gtladd.gtladditions.api.machine.logic.MutableRecipesLogic<?> mutable && mutable.isMultipleRecipeMode())
-                return Math.max(1, mutable.getMultipleThreads());
-            if (logic instanceof com.gtladd.gtladditions.api.machine.logic.GTLAddMultipleRecipesLogic multiple)
-                return Math.max(1, multiple.getMultipleThreads());
-            if (logic instanceof org.gtlcore.gtlcore.common.machine.trait.MultipleRecipesLogic)
-                return upstreamBatchThreads(modifierThreads(machine));
-            return 1;
-        }
         if (machine instanceof TieredParallelMachine iv) return grantGalaxyThreads(machine, Math.max(1, iv.getThreadsForTier()));
         int modifier = modifierThreads(machine);
         if (nativeTarget(machine)) {
@@ -245,7 +227,7 @@ public final class IvMachineScope {
         return total;
     }
     public static long budget(WorkableMultiblockMachine machine) {
-        return IvNativeCapacity.budget(machine, parallel(machine, null), crossRecipeEnabled(machine) ? threads(machine) : 1);
+        return IvNativeCapacity.budget(parallel(machine, null), crossRecipeEnabled(machine) ? threads(machine) : 1);
     }
 
     /**
@@ -253,14 +235,14 @@ public final class IvMachineScope {
      * 引擎实际分配仍用 {@link #budget}；普通模式应交给上游显示。
      */
     public static long displayCapacity(WorkableMultiblockMachine machine) {
-        return IvNativeCapacity.budget(machine, parallel(machine, null), threads(machine));
+        return IvNativeCapacity.budget(parallel(machine, null), threads(machine));
     }
 
     public static boolean unlimitedParallel(WorkableMultiblockMachine machine) {
-        return unlimited(machine) || IvNativeCapacity.unlimitedParallel(machine, null);
+        return unlimited(machine);
     }
     public static boolean unlimitedThreads(WorkableMultiblockMachine machine) {
-        return unlimited(machine) || IvNativeCapacity.unlimitedThreads(machine);
+        return unlimited(machine);
     }
 
     /** Galaxy capacity is granted only by a live, paid galaxy source. */
@@ -274,17 +256,6 @@ public final class IvMachineScope {
     }
     public static boolean unmeteredBatch(WorkableMultiblockMachine machine,
                                          com.gregtechceu.gtceu.api.recipe.GTRecipe recipe) {
-        // Low-tier chemical recipes do not consume the high-tier hatch/thread budget.
-        if (machine instanceof com.gtladd.gtladditions.common.machine.multiblock.controller.DimensionallyTranscendentChemicalPlant
-                && org.gtlcore.gtlcore.api.recipe.IGTRecipe.of(recipe).getEuTier() <= 8) return true;
-        if (machine instanceof com.gtladd.gtladditions.common.machine.multiblock.controller.mutable.MutablePCBFactoryMachine
-                && com.gregtechceu.gtceu.api.recipe.RecipeHelper.getInputEUt(recipe) <= com.gregtechceu.gtceu.api.GTValues.V[6]
-                && machine.getRecipeLogic() instanceof com.gtladd.gtladditions.api.machine.logic.MutableRecipesLogic<?> pcb
-                && pcb.isMultipleRecipeMode()) return true;
-        if (machine.getRecipeLogic().getClass().getName().equals(
-                "com.gtladd.gtladditions.common.modify.MutableMultiBlockModify$setOtherMutable$13$1$createRecipeLogic$1")
-                && com.gregtechceu.gtceu.api.recipe.RecipeHelper.getInputEUt(recipe) <= com.gregtechceu.gtceu.api.GTValues.V[5]
-                && ((com.gtladd.gtladditions.api.machine.logic.MutableRecipesLogic<?>)machine.getRecipeLogic()).isMultipleRecipeMode()) return true;
         // GTLAdd's atomic-factory calculateParallel returns (all available fuel recipes, 0).
         return machine.getDefinition().getId().equals(new ResourceLocation("gtceu", "atomic_energy_excitation_plant"))
                 && machine.getRecipeLogic() instanceof com.gtladd.gtladditions.api.machine.logic.MutableRecipesLogic<?> mutable

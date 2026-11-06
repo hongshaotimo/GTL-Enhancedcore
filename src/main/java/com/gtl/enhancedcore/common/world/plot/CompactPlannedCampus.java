@@ -478,100 +478,12 @@ public final class CompactPlannedCampus {
         }
     }
     private static Plan build() {
-        JsonObject catalog = catalog(); List<Machine> machines = machines(catalog);
-        Map<String, Integer> tiers = new HashMap<>();
-        for (var element : catalog.getAsJsonArray("machines")) {
-            JsonObject machine = element.getAsJsonObject();
-            String stage = machine.get("stage").getAsString();
-            tiers.put(machine.get("id").getAsString(), machine.has("planningTier") ? machine.get("planningTier").getAsInt()
-                    : stage.equals("early") ? 3 : stage.equals("mid") ? 7 : 12);
-        }
-        int shared = (int) catalog.getAsJsonArray("machines").asList().stream()
-                .map(element -> element.getAsJsonObject()).filter(json -> json.has("allocation") && json.get("allocation").getAsString().equals("shared")).count();
-        Packing packing = packing(machines);
-        Bounds bounds = new Bounds(-packing.halfWidth, -packing.halfDepth, packing.halfWidth - 1, packing.halfDepth - 1);
-        // Every interior column belongs to this one continuous island. Only its outside is void.
-        List<Bounds> islands = List.of(bounds);
-        List<Plot> plots = new ArrayList<>(); List<Street> streets = new ArrayList<>(); List<District> districts = new ArrayList<>();
-        List<Workshop> pads = List.of(new Workshop("early", -216, -216, 128, 128), new Workshop("early", 88, -216, 128, 128),
-                new Workshop("early", -216, 88, 128, 128), new Workshop("early", 88, 88, 128, 128));
-        addStreet(streets, new Street(true, 0, bounds.minZ, bounds.maxZ, 16));
-        addStreet(streets, new Street(false, 0, bounds.minX, bounds.maxX, 16));
-        for (int axis : new int[] {-232, 232}) {
-            addStreet(streets, new Street(true, axis, -CORE_EDGE, CORE_EDGE - 1, 12));
-            addStreet(streets, new Street(false, axis, -CORE_EDGE, CORE_EDGE - 1, 12));
-        }
-        for (Shelf shelf : packing.shelves) {
-            placeRow(shelf, plots, streets);
-            int far = shelf.near + shelf.row.depth;
-            crossStreet(streets, shelf.south ? far + 12 : -far - 12, packing.halfWidth);
-            int tier = shelf.row.columns.stream().flatMap(column -> column.pairs.stream()).mapToInt(CompactPlannedCampus::pairTier).min().orElseThrow();
-            String stage = tier <= 3 ? "early" : tier <= 8 ? "mid" : "late";
-            districts.add(new District(stage, shelf.south ? shelf.near : -far, shelf.south ? far : -shelf.near));
-        }
-        for (int side : new int[] {-1, 1}) {
-            addStreet(streets, new Street(true, side * (packing.halfWidth - 12), bounds.minZ, bounds.maxZ, 12));
-            addStreet(streets, new Street(false, side * (packing.halfDepth - 12), bounds.minX, bounds.maxX, 12));
-        }
-        Map<Long, List<Plot>> plotIndex = new HashMap<>(); Map<Long, List<Street>> streetIndex = new HashMap<>();
-        Map<Long, List<Bounds>> islandIndex = new HashMap<>(); Map<Long, List<Tree>> treeIndex = new HashMap<>();
-        Map<Long, List<Lamp>> lampIndex = new HashMap<>(); Map<Long, List<Landscape>> landscapeIndex = new HashMap<>();
-        index(islandIndex, bounds, bounds);
-        for (Plot plot : plots) index(plotIndex, new Bounds(plot.x - COURT, plot.z - COURT, plot.maxX() + COURT, plot.maxZ() + COURT), plot);
-        List<Tree> trees = new ArrayList<>(); List<Lamp> lamps = new ArrayList<>(); List<Landscape> landscapes = new ArrayList<>();
-        Set<Long> treeKeys = new LinkedHashSet<>(), lampKeys = new LinkedHashSet<>();
-        for (Street street : streets) {
-            Bounds extent = street.vertical ? new Bounds(street.axis - street.halfWidth, street.start, street.axis + street.halfWidth - 1, street.end)
-                    : new Bounds(street.start, street.axis - street.halfWidth, street.end, street.axis + street.halfWidth - 1);
-            index(streetIndex, extent, street);
-            if (street.halfWidth <= 4) continue;
-            int alongLimit = Math.max(fold(street.start), fold(street.end));
-            for (int offset = 16; offset <= alongLimit; offset += 32) for (int direction : new int[] {-1, 1}) for (int side : new int[] {-1, 1}) {
-                int along = direction > 0 ? offset : -1 - offset;
-                if (along < street.start || along > street.end) continue;
-                int across = street.axis + (side > 0 ? street.halfWidth - 2 : -street.halfWidth + 1);
-                int x = street.vertical ? across : along, z = street.vertical ? along : across;
-                if (supported(islands, x, z, 3) && safeGarden(x, z, 3, plots, pads, streets, street) && treeKeys.add(key(x, z))) trees.add(new Tree(x, z));
-                int lampAcross = street.axis + (side > 0 ? street.halfWidth - 5 : -street.halfWidth + 4);
-                int lampAlong = direction > 0 ? offset - 16 : -1 - (offset - 16);
-                int lx = street.vertical ? lampAcross : lampAlong, lz = street.vertical ? lampAlong : lampAcross;
-                if (supported(islands, lx, lz, 3) && safeGarden(lx, lz, 3, plots, pads, streets, street) && lampKeys.add(key(lx, lz)))
-                    lamps.add(new Lamp(lx, lz, street.vertical, -side));
-            }
-        }
-        for (Garden garden : AE_GARDENS) for (int dx : new int[] {-46, 45}) for (int dz : new int[] {-14, 13}) {
-            int x = garden.x + dx, z = garden.z + dz;
-            if (safeGarden(x, z, 3, plots, pads, streets, null) && treeKeys.add(key(x, z))) trees.add(new Tree(x, z));
-        }
-        int landscapeRadius = CompactCampusLandscape.radius() + 1;
-        // Reserve complete modules before filling the narrower residual lawns with trees.
-        for (int dx = 16; dx < packing.halfWidth; dx += 32) for (int dz = 16; dz < packing.halfDepth; dz += 32)
-            for (int sx : new int[] {-1, 1}) for (int sz : new int[] {-1, 1}) {
-                int x = sx > 0 ? dx : -1 - dx, z = sz > 0 ? dz : -1 - dz;
-                if (supported(islands, x, z, landscapeRadius) && safeGarden(x, z, landscapeRadius, plots, pads, streets, null)
-                        && clearOfGardens(x, z, landscapeRadius) && clearOfTreesAndLamps(x, z, landscapeRadius, trees, lamps))
-                    landscapes.add(new Landscape(x, z, (dx / 32 + dz / 32 * 3) % 4));
-            }
-        for (int dx = 16; dx < packing.halfWidth; dx += 32) for (int dz = 16; dz < packing.halfDepth; dz += 32)
-            for (int sx : new int[] {-1, 1}) for (int sz : new int[] {-1, 1}) {
-                int x = sx > 0 ? dx : -1 - dx, z = sz > 0 ? dz : -1 - dz;
-                if (supported(islands, x, z, 4) && safeGarden(x, z, 4, plots, pads, streets, null)
-                        && clearOfGardens(x, z, 4) && clearOfLandscapes(x, z, 4, landscapes)
-                        && clearOfTreesAndLamps(x, z, 4, trees, lamps) && treeKeys.add(key(x, z))) trees.add(new Tree(x, z));
-            }
-        for (Tree tree : trees) index(treeIndex, new Bounds(tree.x - 3, tree.z - 3, tree.x + 3, tree.z + 3), tree);
-        for (Lamp lamp : lamps) index(lampIndex, new Bounds(lamp.x - 3, lamp.z - 3, lamp.x + 3, lamp.z + 3), lamp);
-        for (Landscape landscape : landscapes) index(landscapeIndex, new Bounds(landscape.x - CompactCampusLandscape.radius(), landscape.z - CompactCampusLandscape.radius(),
-                landscape.x + CompactCampusLandscape.radius(), landscape.z + CompactCampusLandscape.radius()), landscape);
-        Set<Long> tiles = new LinkedHashSet<>(); tiles.addAll(plotIndex.keySet()); tiles.addAll(streetIndex.keySet());
-        tiles.addAll(treeIndex.keySet()); tiles.addAll(lampIndex.keySet()); tiles.addAll(landscapeIndex.keySet()); tiles.addAll(islandIndex.keySet());
+        Plan frozen = FrozenCampusLayouts.load("campus_compact_layout.json.gz", CATALOG, Plan.class);
         Map<Long, Local> index = new HashMap<>();
-        for (long tile : tiles) index.put(tile, new Local(List.copyOf(plotIndex.getOrDefault(tile, List.of())),
-                List.copyOf(streetIndex.getOrDefault(tile, List.of())), List.copyOf(treeIndex.getOrDefault(tile, List.of())),
-                List.copyOf(lampIndex.getOrDefault(tile, List.of())), List.copyOf(landscapeIndex.getOrDefault(tile, List.of())),
-                List.copyOf(islandIndex.getOrDefault(tile, List.of()))));
-        return new Plan(List.copyOf(plots), List.copyOf(streets), pads, List.copyOf(districts), Map.copyOf(index), bounds,
-                Math.max(12, plots.stream().mapToInt(plot -> plot.height + 2).max().orElseThrow()), shared, Map.copyOf(tiers));
+        frozen.index.forEach((tile, local) -> index.put(tile, new Local(List.copyOf(local.plots), List.copyOf(local.streets), List.copyOf(local.trees),
+                List.copyOf(local.lamps), List.copyOf(local.landscapes), List.copyOf(local.islands))));
+        return new Plan(List.copyOf(frozen.plots), List.copyOf(frozen.streets), List.copyOf(frozen.workshops),
+                List.copyOf(frozen.districts), Map.copyOf(index), frozen.bounds, frozen.height, frozen.shared, Map.copyOf(frozen.tiers));
     }
     private static boolean clearOfGardens(int x, int z, int radius) {
         for (Garden garden : AE_GARDENS) {

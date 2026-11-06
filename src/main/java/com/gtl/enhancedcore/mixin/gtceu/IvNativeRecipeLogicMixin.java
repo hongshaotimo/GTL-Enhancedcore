@@ -30,22 +30,12 @@ public abstract class IvNativeRecipeLogicMixin implements IvNativeAccess {
     @Unique @DescSynced private CompoundTag iv$summary = new CompoundTag();
     @Unique @DescSynced private String iv$message = "";
     @Unique @DescSynced private volatile boolean iv$crossRecipeEnabled;
-    @Unique @DescSynced private volatile boolean iv$genericCloudTarget;
     @Unique @Persisted private boolean iv$managed;
     @Unique @Persisted @DescSynced private boolean iv$workingEnabled = true;
     @Unique @Persisted @DescSynced private boolean iv$workingStateStored;
     @Unique private boolean iv$workingCallback, iv$callbackReset, iv$coolantWaiting;
-    @Unique private boolean iv$passivePatternLane;
-    @Unique @Persisted @DescSynced private boolean iv$nativeInputsActive;
-    @Unique private boolean iv$preferNativeInputs = true;
-    @Unique private boolean iv$finishingNativeInputs, iv$nativeOutputReady;
-    @Unique private long iv$nextNativeProbe;
-
     @Override public boolean iv$crossRecipeEnabled() { return iv$crossRecipeEnabled; }
-    @Override public boolean iv$genericCloudTarget() { return iv$genericCloudTarget; }
-    @Override public void iv$syncMode(boolean isolated, boolean cloudTarget) {
-        iv$crossRecipeEnabled = isolated; iv$genericCloudTarget = cloudTarget;
-    }
+    @Override public void iv$syncMode(boolean isolated) { iv$crossRecipeEnabled = isolated; }
     @Override public RecipeScope iv$recipeContext(GTRecipe recipe, GTRecipe origin, int elapsed, int ticks) {
         var previousRecipe = lastRecipe; var previousOrigin = lastOriginRecipe;
         int previousProgress = progress, previousDuration = duration;
@@ -89,19 +79,6 @@ public abstract class IvNativeRecipeLogicMixin implements IvNativeAccess {
     @Override public String iv$message() { return iv$message; }
     @Override public boolean iv$managed() { return iv$managed; }
     @Override public void iv$managed(boolean value) { iv$managed = value; }
-    @Override public boolean iv$nativeInputsActive() { return iv$nativeInputsActive; }
-    @Override public boolean iv$nativeInputExecution() {
-        if (iv$passivePatternLane) return true;
-        var owner = ((RecipeLogic)(Object)this).getMachine();
-        return owner instanceof WorkableMultiblockMachine machine && !machine.isRemote()
-                && IvBuffers.genericCloudTarget(machine) && !iv$hasOrders(machine);
-    }
-    @Unique private boolean iv$hasOrders(WorkableMultiblockMachine machine) {
-        return IvBuffers.collect(machine).stream().anyMatch(buffer -> !IvBuffers.jobs(buffer, machine).isEmpty());
-    }
-    @Override public void iv$nativeOutputAccepted() {
-        if (iv$finishingNativeInputs) iv$nativeOutputReady = true;
-    }
     @Override public void iv$publish(CompoundTag summary, String message, GTRecipe display, int elapsed, int ticks, RecipeLogic.Status status) {
         iv$summary = summary; iv$message = message; lastRecipe = display; progress = elapsed; duration = ticks;
         lastOriginRecipe = null; recipeDirty = false;
@@ -111,8 +88,7 @@ public abstract class IvNativeRecipeLogicMixin implements IvNativeAccess {
         waitingReason = status == RecipeLogic.Status.WAITING && !details.isEmpty() ? details.getFirst() : null;
     }
     @Unique private boolean iv$isCrossRecipeEnabled() {
-        return !iv$nativeInputExecution()
-                && IvMachineScope.crossRecipeEnabled(((RecipeLogic)(Object)this).getMachine());
+        return IvMachineScope.crossRecipeEnabled(((RecipeLogic)(Object)this).getMachine());
     }
     @Unique private void iv$restoreWorkingState() {
         if (!iv$workingStateStored) {
@@ -141,7 +117,6 @@ public abstract class IvNativeRecipeLogicMixin implements IvNativeAccess {
     }
     @Inject(method = "resetRecipeLogic", at = @At("TAIL"))
     private void iv$afterLifecycleReset(CallbackInfo ci) {
-        iv$endNativeIfIdle();
         if (!iv$isCrossRecipeEnabled()) return;
         if (iv$engine != null) iv$engine.invalidateRuntime();
         if (!iv$workingEnabled) setStatus(RecipeLogic.Status.SUSPEND);
@@ -149,117 +124,13 @@ public abstract class IvNativeRecipeLogicMixin implements IvNativeAccess {
     @WrapMethod(method = "serverTick")
     private void iv$tick(Operation<Void> original) {
         var logic = (RecipeLogic)(Object)this;
-        if (!(logic.getMachine() instanceof WorkableMultiblockMachine machine)
-                || iv$passivePatternLane) { original.call(); return; }
-        if (!IvMachineScope.crossRecipeEnabled(machine)) {
-            // A cloud display may have left iv$managed set after the cloud parts were
-            // removed.  Clear that display-only state while the native logic is idle;
-            // otherwise a later cloud handoff mistakes the next native batch for an
-            // already managed order and overwrites its paid lastRecipe.
-            if (iv$managed && !iv$nativeInputsActive && logic.isIdle()) {
-                iv$managed = false;
-                iv$clearNativeRecipe();
-                machine.markDirty();
-            }
-            original.call(); return;
+        if (!IvMachineScope.crossRecipeEnabled(logic.getMachine())) {
+            original.call();
+            return;
         }
-        iv$runMixedInputs(() -> original.call(), allow -> iv$engine().tick(allow), () -> iv$engine().hasActiveBatches());
-    }
-    @Override public void iv$runMixedInputs(Runnable nativeTick, java.util.function.Consumer<Boolean> orderTick,
-            java.util.function.BooleanSupplier activeBatches) {
-        var logic = (RecipeLogic)(Object)this;
-        var machine = (WorkableMultiblockMachine) logic.getMachine();
         iv$restoreWorkingState();
-        boolean physicalInputs = IvBuffers.genericCloudNativeInputs(machine);
-        // A paid physical batch keeps its native state until output has really been
-        // delivered. Cloud display publication must never replace its lastRecipe.
-        if (iv$nativeInputsActive || !iv$managed && lastRecipe != null
-                && duration > 0 && !logic.isIdle()) {
-            iv$managed = true; iv$nativeInputsActive = true;
-            iv$passivePatternLane = true;
-            try { nativeTick.run(); }
-            finally {
-                iv$passivePatternLane = false; iv$endNativeIfIdle(); logic.updateTickSubscription();
-            }
-            return;
-        }
-        boolean orders = iv$hasOrders(machine);
-        if (IvBuffers.genericCloudTarget(machine) && !orders) {
-            // Installing storage must leave autonomous generation, mining and
-            // custom native lookup/working loops available even without item IO.
-            if (iv$managed) iv$clearNativeRecipe();
-            iv$managed = false; iv$summary = new CompoundTag(); iv$message = "";
-            iv$passivePatternLane = true;
-            try { nativeTick.run(); }
-            finally {
-                iv$passivePatternLane = false;
-                // Native RecipeLogic.serverTick unsubscribes itself directly
-                // after an empty lookup. Keep the cloud admission wake-up alive.
-                logic.updateTickSubscription();
-            }
-            if (lastRecipe != null && duration > 0 && !logic.isIdle()) {
-                iv$managed = true; iv$nativeInputsActive = true; machine.markDirty();
-            }
-            return;
-        }
-        long tick = machine.getOffsetTimer();
-        if (physicalInputs && iv$preferNativeInputs && tick >= iv$nextNativeProbe
-                && !activeBatches.getAsBoolean() && logic.isWorkingEnabled()
-                && machine.isRecipeLogicAvailable() && machine.hasProxies()) {
-            iv$managed = true; iv$clearNativeRecipe();
-            iv$passivePatternLane = true;
-            try { logic.findAndHandleRecipe(); }
-            finally { iv$passivePatternLane = false; }
-            if (lastRecipe != null && duration > 0 && !logic.isIdle()) {
-                iv$nativeInputsActive = true; machine.markDirty(); return;
-            }
-            iv$clearNativeRecipe(); iv$preferNativeInputs = false; iv$nextNativeProbe = tick + 20;
-        }
         iv$managed = true;
-        orderTick.accept(!physicalInputs || !iv$preferNativeInputs || tick < iv$nextNativeProbe);
-        if (logic.isWorkingEnabled()) iv$preferNativeInputs = true;
-    }
-    @Unique private void iv$clearNativeRecipe() {
-        lastRecipe = null; lastOriginRecipe = null; progress = 0; duration = 0;
-        isActive = false; recipeDirty = true; waitingReason = null;
-        ((RecipeLogic)(Object)this).lastFailedMatches = null;
-        setStatus(iv$workingEnabled ? RecipeLogic.Status.IDLE : RecipeLogic.Status.SUSPEND);
-    }
-    @Unique private void iv$endNativeIfIdle() {
-        if (iv$nativeInputsActive && (lastRecipe == null || duration <= 0
-                || ((RecipeLogic)(Object)this).isIdle())) {
-            iv$nativeInputsActive = false; iv$preferNativeInputs = false;
-            iv$clearNativeRecipe(); ((RecipeLogic)(Object)this).getMachine().markDirty();
-        }
-    }
-    @WrapMethod(method = "onRecipeFinish")
-    private void iv$finishNativeInputBatch(Operation<Void> original) {
-        iv$finishNativeInputs(() -> original.call());
-    }
-    @Override public void iv$finishNativeInputs(Runnable finish) {
-        if (!iv$nativeInputsActive || iv$finishingNativeInputs) { finish.run(); return; }
-        var logic = (RecipeLogic)(Object)this;
-        if (lastRecipe != null && !org.gtlcore.gtlcore.api.recipe.RecipeRunnerHelper.matchRecipeOutput(
-                (com.gregtechceu.gtceu.api.machine.feature.IRecipeLogicMachine)logic.getMachine(), lastRecipe)) {
-            logic.setWaiting(Component.translatable("gtl_enhancedcore.diagnostic.output")); return;
-        }
-        iv$finishingNativeInputs = true; iv$nativeOutputReady = false;
-        boolean returned = false;
-        try { finish.run(); returned = true; }
-        finally {
-            iv$finishingNativeInputs = false;
-            if (returned && iv$nativeOutputReady) {
-                // Preserve the upstream suspend-after-finish option as a real user pause.
-                if (logic.isSuspend()) logic.setWorkingEnabled(false);
-                iv$nativeInputsActive = false; iv$preferNativeInputs = false;
-                iv$clearNativeRecipe(); ((RecipeLogic)(Object)this).getMachine().markDirty();
-            }
-        }
-    }
-    @Inject(method = "onRecipeFinish", at = @At(value = "INVOKE", target =
-            "Lcom/gregtechceu/gtceu/api/machine/feature/IRecipeLogicMachine;afterWorking()V"))
-    private void iv$nativeOutputAccepted(CallbackInfo ci) {
-        iv$nativeOutputAccepted();
+        iv$engine().tick();
     }
     @Inject(method = "updateTickSubscription", at = @At("HEAD"), cancellable = true)
     private void iv$subscription(CallbackInfo ci) {
@@ -281,6 +152,6 @@ public abstract class IvNativeRecipeLogicMixin implements IvNativeAccess {
     }
     @Inject(method = "setupRecipe", at = @At("HEAD"), cancellable = true)
     private void iv$noExternalSetup(GTRecipe recipe, CallbackInfo ci) {
-        if (iv$finishingNativeInputs || iv$isCrossRecipeEnabled()) ci.cancel();
+        if (iv$isCrossRecipeEnabled()) ci.cancel();
     }
 }

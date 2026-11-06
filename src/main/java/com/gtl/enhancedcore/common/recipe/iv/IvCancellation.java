@@ -20,6 +20,7 @@ public final class IvCancellation {
         for(var job:state.jobs)if(slot<0 || job.slot==slot){
             long aborted=job.parallel;
             job.cancel();
+            state.trackCancelled(job);
             IvTaskLog.event(buffer,job,"CANCEL","ALL_UNFINISHED_WORK_CANCELLED","cancelledOperations",job.cancelledOperations,
                     "abortedRunningOperations",aborted,"refunds",IvTaskLog.stock(job.refunds),"completedOutput",IvTaskLog.stock(job.pending));
         }
@@ -39,16 +40,19 @@ public final class IvCancellation {
     public static void returnStock(MEPatternBufferPartMachineBase buffer){
         var state=IvBuffers.state(buffer);
         if(buffer.isRemote() || state==null || !state.dedicated() || !state.healthy())return;
-        var grid=buffer.getGrid();
-        boolean online=grid!=null && buffer.getMainNode().isActive() && IvBuffers.mayUseNetwork(buffer);
+        if (state.cancelledJobs.isEmpty()) return;
         var returns=new ArrayList<Return>();
-        if(online)for(var job:state.jobs){
+        for(var job:state.cancelledJobs){
             job.refunds.keySet().forEach(key->returns.add(new Return(job,job.refunds,key)));
-            if(job.cancelled)job.pending.keySet().forEach(key->returns.add(new Return(job,job.pending,key)));
+            job.pending.keySet().forEach(key->returns.add(new Return(job,job.pending,key)));
         }
+        // Ordinary active orders never enter this index, so their every-tick path
+        // performs no queue traversal or AE/ownership/wireless/chunk lookup.
+        var grid=returns.isEmpty() ? null : buffer.getGrid();
+        boolean online=!returns.isEmpty() && grid!=null && buffer.getMainNode().isActive();
         int attempts=Math.min(64,returns.size());
         int start=returns.isEmpty()?0:Math.floorMod(state.returnCursor,returns.size());
-        for(int i=0;i<attempts;i++){
+        for(int i=0;online && i<attempts;i++){
             var item=returns.get((start+i)%returns.size());
             long offered=item.stock.get(item.key);
             long inserted=StorageHelper.poweredInsert(grid.getEnergyService(),grid.getStorageService().getInventory(),item.key,offered,IActionSource.ofMachine(buffer));
@@ -59,19 +63,15 @@ public final class IvCancellation {
                     "key",item.key.toTagGeneric().toString(),"offered",offered,"inserted",inserted,"left",offered-inserted);
         }
         state.returnCursor=returns.isEmpty()?0:(start+attempts)%returns.size();
-        for(var job:state.jobs){
+        for(var job : new ArrayList<>(state.cancelledJobs)) {
             // Completed output must also drain after controller removal or while it is switched off.
-            if(job.cancelled && job.pending.isEmpty() && job.pendingOperations>0){
+            if(job.pending.isEmpty() && job.pendingOperations>0){
                 job.deliveredOperations=Math.addExact(job.deliveredOperations,job.pendingOperations);
                 job.pendingOperations=0;job.validateAccounting();buffer.markDirty();
             }
-        }
-        var jobs=state.jobs.iterator();
-        while(jobs.hasNext()){
-            var job=jobs.next();
             if(job.cancelled && job.done()){
                 IvTaskLog.event(buffer,job,"RETIRE","CANCELLED_AND_DRAINED","cancelledOperations",job.cancelledOperations,"deliveredOperations",job.deliveredOperations);
-                jobs.remove();buffer.markDirty();
+                state.removeJob(job); buffer.markDirty();
             }
         }
     }

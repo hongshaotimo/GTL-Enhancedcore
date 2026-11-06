@@ -38,7 +38,7 @@ public abstract class MachineDefinitionAssemblyLineParallelMixin {
         System.arraycopy(original, 0, combined, 1, original.length);
         combined[combined.length - 1] = MachineRecipeModifiers::assemblyLineAfterOverclock;
         enhanced$assemblyBase = base;
-        enhanced$assemblyElements = elements == null ? null : elements.clone();
+        enhanced$assemblyElements = elements == null ? null : Arrays.copyOf(elements, elements.length);
         enhanced$assemblyCombined = new RecipeModifierList(combined);
         cir.setReturnValue(enhanced$assemblyCombined);
     }

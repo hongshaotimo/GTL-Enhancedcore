@@ -142,12 +142,10 @@ public final class BiosphereModulePowerRegression {
                 "Wired display shares the same host tier and module allocation as recipe logic");
         check(calls(display, null, "isOnline") && calls(display, mixin.superName, "addEnergyDisplay"),
                 "Online wireless display keeps ADD's full-precision balance path");
-        check(mixin.methods.stream().filter(m -> Set.of("getMaxVoltage", "addEnergyDisplay", "cloud$hostReady",
-                        "cloudPowerLimit", "cloudPowerReady").contains(m.name)).flatMap(m -> java.util.stream.StreamSupport.stream(
+        check(mixin.methods.stream().filter(m -> Set.of("getMaxVoltage", "addEnergyDisplay").contains(m.name)).flatMap(m -> java.util.stream.StreamSupport.stream(
                         m.instructions.spliterator(), false)).noneMatch(i -> i instanceof MethodInsnNode call
                         && (call.name.equals("consumeEnergy") || call.name.equals("removeEnergy")
-                        || call.name.startsWith("requestEnergy") || call.name.startsWith("requestWirelessEnergy")
-                        || call.name.equals("cloudPowerPay"))),
+                        || call.name.startsWith("requestEnergy") || call.name.startsWith("requestWirelessEnergy"))),
                 "Reading eligibility or display cannot charge the player");
     }
 

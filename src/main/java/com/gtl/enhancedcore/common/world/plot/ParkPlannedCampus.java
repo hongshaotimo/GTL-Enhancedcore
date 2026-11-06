@@ -375,109 +375,12 @@ public final class ParkPlannedCampus {
         }
     }
     private static Plan build() {
-        JsonObject catalog = catalog(); List<Machine> machines = machines(catalog);
-        Map<String, Integer> tiers = new HashMap<>();
-        for (var element : catalog.getAsJsonArray("machines")) {
-            JsonObject machine = element.getAsJsonObject();
-            String stage = machine.get("stage").getAsString();
-            tiers.put(machine.get("id").getAsString(), machine.has("planningTier") ? machine.get("planningTier").getAsInt()
-                    : stage.equals("early") ? 3 : stage.equals("mid") ? 7 : 12);
-        }
-        int shared = (int) catalog.getAsJsonArray("machines").asList().stream()
-                .map(element -> element.getAsJsonObject()).filter(json -> json.has("allocation") && json.get("allocation").getAsString().equals("shared")).count();
-        List<Plot> plots = new ArrayList<>(); List<Street> streets = new ArrayList<>(); List<District> districts = new ArrayList<>();
-        List<Bounds> islands = new ArrayList<>(); islands.add(new Bounds(-320, -272, 319, 271));
-        List<Workshop> pads = List.of(new Workshop("early", -288, -240, 192, 128), new Workshop("early", 96, -240, 192, 128),
-                new Workshop("early", -288, 112, 192, 128), new Workshop("early", 96, 112, 192, 128));
-        streets.add(new Street(false, 0, -319, 318, 16));
-        for (int axis : new int[] {-256, -96, 96, 256}) streets.add(new Street(false, axis, -319, 318, 12));
-        int outward = 304, maxWing = 320;
-        // Each voltage band advances outwards together on both sides of the AE hub.
-        for (int tier = 0; tier <= 14; tier++) {
-            final int voltage = tier;
-            List<Machine> group = machines.stream().filter(machine -> machine.tier == voltage)
-                    .sorted(Comparator.comparingInt(Machine::depth).reversed().thenComparing(Comparator.comparingInt(Machine::width).reversed())
-                            .thenComparing(Machine::id).thenComparingInt(Machine::slotIndex)).toList();
-            if (group.isEmpty()) continue;
-            long area = group.stream().mapToLong(machine -> (long) (machine.width + 30) * (machine.depth + 30)).sum();
-            int wing = Math.max(288, Math.min(768, align((int) Math.sqrt(area / 2.0))));
-            List<Row> rows = rows(group, wing);
-            for (int i = 0; i < rows.size(); i += 2) {
-                Row north = rows.get(i), south = i + 1 < rows.size() ? rows.get(i + 1) : null;
-                int width = align(Math.max(north.width, south == null ? 0 : south.width)) + 64;
-                int depth = Math.max(north.depth, south == null ? 0 : south.depth);
-                int near = outward, far = near + depth + 32;
-                placeRow(north, -far + 16, plots); placeRow(south, near + 16, plots);
-                for (int direction : new int[] {-1, 1}) {
-                    int minZ = direction > 0 ? near - 12 : -far - 12, maxZ = direction > 0 ? far + 11 : -near + 11;
-                    islands.add(new Bounds(-width, minZ, width - 1, maxZ));
-                    for (int axis : new int[] {near, far}) streets.add(new Street(false, direction * axis, -width, width - 1, 12));
-                    for (int axis : new int[] {-width + 12, width - 12})
-                        streets.add(new Street(true, axis, minZ, maxZ, 12));
-                }
-                String stage = tier <= 3 ? "early" : tier <= 8 ? "mid" : "late";
-                districts.add(new District(stage, near, far)); districts.add(new District(stage, -far, -near));
-                outward = far + 48; maxWing = Math.max(maxWing, width);
-            }
-        }
-        streets.add(new Street(true, 0, -outward + 32, outward - 33, 16));
-        Bounds bounds = new Bounds(-maxWing - 16, -outward, maxWing + 15, outward - 1);
-        Map<Long, List<Plot>> plotIndex = new HashMap<>(); Map<Long, List<Street>> streetIndex = new HashMap<>();
-        Map<Long, List<Bounds>> islandIndex = new HashMap<>(); Map<Long, List<Tree>> treeIndex = new HashMap<>();
-        Map<Long, List<Lamp>> lampIndex = new HashMap<>();
-        for (Bounds island : islands) index(islandIndex, island, island);
-        for (Plot plot : plots) index(plotIndex, new Bounds(plot.x - COURT, plot.z - COURT, plot.maxX() + COURT, plot.maxZ() + COURT), plot);
-        List<Tree> trees = new ArrayList<>(); List<Lamp> lamps = new ArrayList<>(); Set<Long> treeKeys = new LinkedHashSet<>(), lampKeys = new LinkedHashSet<>();
-        for (Street street : streets) {
-            Bounds extent = street.vertical ? new Bounds(street.axis - street.halfWidth, street.start, street.axis + street.halfWidth - 1, street.end)
-                    : new Bounds(street.start, street.axis - street.halfWidth, street.end, street.axis + street.halfWidth - 1);
-            index(streetIndex, extent, street);
-            // Center-out phases preserve exact left/right and north/south street rhythms.
-            int alongLimit = Math.max(fold(street.start), fold(street.end));
-            for (int offset = 16; offset <= alongLimit; offset += 32) for (int direction : new int[] {-1, 1}) for (int side : new int[] {-1, 1}) {
-                int along = direction > 0 ? offset : -1 - offset;
-                if (along < street.start || along > street.end) continue;
-                int across = street.axis + (side > 0 ? street.halfWidth - 2 : -street.halfWidth + 1);
-                int x = street.vertical ? across : along, z = street.vertical ? along : across;
-                if (supported(islands, x, z, 3) && safeGarden(x, z, 3, plots, pads, streets, street) && treeKeys.add(key(x, z))) trees.add(new Tree(x, z));
-                int lampAcross = street.axis + (side > 0 ? street.halfWidth - 5 : -street.halfWidth + 4);
-                int lampAlong = direction > 0 ? offset - 16 : -1 - (offset - 16);
-                int lx = street.vertical ? lampAcross : lampAlong, lz = street.vertical ? lampAlong : lampAcross;
-                if (supported(islands, lx, lz, 3) && safeGarden(lx, lz, 3, plots, pads, streets, street) && lampKeys.add(key(lx, lz)))
-                    lamps.add(new Lamp(lx, lz, street.vertical, -side));
-            }
-        }
-        // Regular allées fill the core lawns; production courts and the AE floor remain completely open.
-        for (int x = 88; x <= 312; x += 32) for (int z = 16; z <= 256; z += 32) for (int sx : new int[] {-1, 1}) for (int sz : new int[] {-1, 1}) {
-            int px = sx > 0 ? x : -1 - x, pz = sz > 0 ? z : -1 - z;
-            if (safeGarden(px, pz, 4, plots, pads, streets, null) && !inPondOrPath(px, pz) && treeKeys.add(key(px, pz))) trees.add(new Tree(px, pz));
-        }
-        for (Garden garden : AE_GARDENS) for (int dx : new int[] {-46, 45}) for (int dz : new int[] {-14, 13}) {
-            int x = garden.x + dx, z = garden.z + dz;
-            if (treeKeys.add(key(x, z))) trees.add(new Tree(x, z));
-        }
-        // Long residual lawns become regimented groves, rather than unplanned empty green rectangles.
-        for (Bounds island : islands) {
-            if (island.minZ >= -272 && island.maxZ <= 271) continue;
-            for (int dx = 16; dx <= Math.max(fold(island.minX), fold(island.maxX)); dx += 32)
-                for (int dz = Math.max(16, Math.floorDiv(Math.min(fold(island.minZ), fold(island.maxZ)), 32) * 32 + 16);
-                        dz <= Math.max(fold(island.minZ), fold(island.maxZ)); dz += 32)
-                    for (int sx : new int[] {-1, 1}) {
-                        int x = sx > 0 ? dx : -1 - dx, z = island.minZ > 0 ? dz : -1 - dz;
-                        if (supported(islands, x, z, 4) && safeGarden(x, z, 4, plots, pads, streets, null)
-                                && treeKeys.add(key(x, z))) trees.add(new Tree(x, z));
-                    }
-        }
-        for (Tree tree : trees) index(treeIndex, new Bounds(tree.x - 3, tree.z - 3, tree.x + 3, tree.z + 3), tree);
-        for (Lamp lamp : lamps) index(lampIndex, new Bounds(lamp.x - 3, lamp.z - 3, lamp.x + 3, lamp.z + 3), lamp);
-        Set<Long> tiles = new LinkedHashSet<>(); tiles.addAll(plotIndex.keySet()); tiles.addAll(streetIndex.keySet());
-        tiles.addAll(treeIndex.keySet()); tiles.addAll(lampIndex.keySet()); tiles.addAll(islandIndex.keySet());
+        Plan frozen = FrozenCampusLayouts.load("campus_park_layout.json.gz", CATALOG, Plan.class);
         Map<Long, Local> index = new HashMap<>();
-        for (long tile : tiles) index.put(tile, new Local(List.copyOf(plotIndex.getOrDefault(tile, List.of())),
-                List.copyOf(streetIndex.getOrDefault(tile, List.of())), List.copyOf(treeIndex.getOrDefault(tile, List.of())),
-                List.copyOf(lampIndex.getOrDefault(tile, List.of())), List.copyOf(islandIndex.getOrDefault(tile, List.of()))));
-        return new Plan(List.copyOf(plots), List.copyOf(streets), pads, List.copyOf(districts), Map.copyOf(index), bounds,
-                Math.max(12, plots.stream().mapToInt(plot -> plot.height + 2).max().orElseThrow()), shared, Map.copyOf(tiers));
+        frozen.index.forEach((tile, local) -> index.put(tile, new Local(List.copyOf(local.plots), List.copyOf(local.streets), List.copyOf(local.trees),
+                List.copyOf(local.lamps), List.copyOf(local.islands))));
+        return new Plan(List.copyOf(frozen.plots), List.copyOf(frozen.streets), List.copyOf(frozen.workshops),
+                List.copyOf(frozen.districts), Map.copyOf(index), frozen.bounds, frozen.height, frozen.shared, Map.copyOf(frozen.tiers));
     }
     private static boolean supported(List<Bounds> islands, int x, int z, int radius) {
         for (Bounds island : islands) if (island.contains(x - radius, z - radius) && island.contains(x + radius, z + radius)) return true;

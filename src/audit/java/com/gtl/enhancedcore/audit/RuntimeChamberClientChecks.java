@@ -45,9 +45,6 @@ public final class RuntimeChamberClientChecks {
             merged("net.minecraft.world.item.crafting.RecipeManager","retired$removeRecipes");
             merged("com.gregtechceu.gtceu.api.machine.trait.RecipeLogic","galaxy$pay","galaxy$batch","galaxy$customCandidate");
             merged("com.gtladd.gtladditions.utils.RecipeCalculationHelper","galaxy$powerBudget");
-            merged("org.gtlcore.gtlcore.integration.ae2.wireless.WirelessAeNetworkRuntime","cloud$registeredTarget","cloud$actualTarget");
-            merged("appeng.menu.implementations.PatternAccessTermMenu","cloud$actions","cloud$sync","cloud$take");
-            merged("com.glodblock.github.extendedae.client.gui.GuiExPatternTerminal","cloud$replaceProjection","cloud$pages","cloud$search");
             merged("com.lowdragmc.lowdraglib.gui.widget.SceneWidget","enhanced$draw","enhanced$clear");
             merged("org.gtlcore.gtlcore.api.gui.PatternPreviewWidget","enhanced$chambers");
             merged("org.gtlcore.gtlcore.client.preview.PreviewControls","enhanced$includeFootprintHeight","gtlEnhancedcore$drawFootprintAboveHeight");
@@ -55,11 +52,6 @@ public final class RuntimeChamberClientChecks {
             check(com.gtl.enhancedcore.client.preview.PreviewPatternMemory.class.isAssignableFrom(memory),
                     "Real MBPattern implements chamber memory contract");
             merged("com.gregtechceu.gtceu.api.pattern.BlockPattern","enhanced$chamberOffset");
-            var wireless=Class.forName("org.gtlcore.gtlcore.integration.ae2.wireless.WirelessAeNetworkRuntime")
-                    .getDeclaredMethod("isWirelessMeTargetId",net.minecraft.resources.ResourceLocation.class);
-            wireless.setAccessible(true);
-            check(Boolean.TRUE.equals(wireless.invoke(null,new net.minecraft.resources.ResourceLocation("gtl_enhancedcore","cloud_pattern_buffer"))),
-                    "Real wireless runtime accepts cloud buffer ID");
             for(String id:RetiredMachines.ids()) {
                 var definition=GTRegistries.MACHINES.get(new net.minecraft.resources.ResourceLocation(id));
                 check(definition!=null,"Retired shell retained: "+id);
@@ -73,10 +65,9 @@ public final class RuntimeChamberClientChecks {
             Map<String,Object> patterns=new LinkedHashMap<>();
             var expected=Map.of("gtl_enhancedcore:high_flux_breeder_reactor",new int[]{47,55,48,112},
                     "gtl_enhancedcore:dragon_field_proliferation_core",new int[]{252,108,120,24},
-                    "gtl_enhancedcore:cloud_pattern_library",new int[]{49,33,45,0},
                     "gtladditions:skeleton_shift_rift_engine",new int[]{31,31,48,80});
             for(String id:List.of("gtl_enhancedcore:high_flux_breeder_reactor","gtl_enhancedcore:dragon_field_proliferation_core",
-                    "gtl_enhancedcore:cloud_pattern_library","gtladditions:skeleton_shift_rift_engine")) {
+                    "gtladditions:skeleton_shift_rift_engine")) {
                 var definition=(MultiblockMachineDefinition)GTRegistries.MACHINES.get(new net.minecraft.resources.ResourceLocation(id));
                 check(definition!=null,"Registered requested machine: "+id);
                 var pattern=definition.getPatternFactory().get();
@@ -96,14 +87,13 @@ public final class RuntimeChamberClientChecks {
             }
             result.put("patterns",patterns);
             footprintHeight();
-            result.put("cloudIntegration", CloudIntegrationReviewChecks.run(this::check));
             ChamberPreviewUiChecks.run(this::check);
             result.put("chamberPreviewUi", "PASS");
             result.put("status","PASS");
         } catch(Throwable failure) { result.put("status","FAIL");result.put("error",failure.toString());failure.printStackTrace(); }
         result.put("checks",checks);result.put("worldOpened",false);
         result.put("visualScreenshotVerified",false);
-        result.put("scope","Title-screen transform, real palette/part candidates, inert factories, wireless selection and header-height logic; no world interaction or visual screenshot");
+        result.put("scope","Title-screen transform, real palette/part candidates, inert factories and header-height logic; no world interaction or visual screenshot");
         try { Files.writeString(directory.resolve("chamber-runtime.json"),new GsonBuilder().setPrettyPrinting().create().toJson(result),StandardCharsets.UTF_8); }
         catch(Exception failure) { failure.printStackTrace(); }
         mc.stop();

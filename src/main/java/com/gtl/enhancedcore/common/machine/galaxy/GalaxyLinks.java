@@ -48,6 +48,10 @@ public final class GalaxyLinks {
     public static boolean crossRecipeEnabledByConnection(WorkableElectricMultiblockMachine machine) {
         return active(machine) && !hasThreadModifierHatch(machine);
     }
+    /** Explicit isolation owns its scheduler rather than the native stellar mode. */
+    public static boolean temporaryNativeModeAllowed(boolean isolated) {
+        return !isolated;
+    }
     public static boolean connectionProvidesUnlimitedCapacity(boolean linkActive, boolean hasThreadModifierHatch, int arrays) {
         return linkActive && !hasThreadModifierHatch && arrays >= REQUIRED_ARRAYS;
     }

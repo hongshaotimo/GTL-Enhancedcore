@@ -26,9 +26,7 @@
     "weather_anchor",
     "stellar_vortex_space_station",
     "galaxy_connection_source_hatch",
-    "galaxy_connection_target_hatch",
-    "cloud_pattern_library",
-    "cloud_pattern_buffer"
+    "galaxy_connection_target_hatch"
   ],
   "plus_factory_ids": [
     "assembling_plus",

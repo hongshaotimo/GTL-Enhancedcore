@@ -76,9 +76,7 @@ public final class WirelessTimeAcceleration {
     }
 
     private static void accelerate(ServerPlayer player, RecipeLogic logic) {
-        if (IvMachineScope.crossRecipeEnabled(logic.getMachine())
-                && !(logic instanceof com.gtl.enhancedcore.common.recipe.iv.IvNativeAccess nativeAccess
-                && nativeAccess.iv$nativeInputsActive())) {
+        if (IvMachineScope.crossRecipeEnabled(logic.getMachine())) {
             IvTimeAcceleration.accelerate(logic, player.getUUID());
             return;
         }

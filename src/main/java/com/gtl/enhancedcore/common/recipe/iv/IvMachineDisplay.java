@@ -26,11 +26,6 @@ public final class IvMachineDisplay {
                 .withStyle(ChatFormatting.AQUA);
     }
 
-    public static Component nativeModeLine() {
-        return Component.translatable("gtceu.gui.machinemode",
-                Component.translatable("gtl_enhancedcore.gui.cloud_native_mode")).withStyle(ChatFormatting.AQUA);
-    }
-
     /** Preserve null on the client: it disables server-side text polling in the upstream widget. */
     public static Consumer<List<Component>> wrap(WorkableElectricMultiblockMachine machine,
             Consumer<List<Component>> upstream) {
@@ -58,24 +53,6 @@ public final class IvMachineDisplay {
             canonicalLine(text, "gtceu.multiblock.parallel", unlimitedLine("gtceu.multiblock.parallel"));
         if (IvMachineScope.unlimitedThreads(machine))
             canonicalLine(text, "gtladditions.multiblock.threads", unlimitedLine("gtladditions.multiblock.threads"));
-        else if (com.gtl.enhancedcore.common.recipe.iv.IvNativeCapacity.singleRecipe(machine))
-            canonicalLine(text, "gtladditions.multiblock.threads", null);
-        if (machine.isFormed() && !IvBuffers.genericCloudTarget(machine) && IvMachineScope.crossRecipeEnabled(machine)
-                && ((IvNativeAccess)machine.getRecipeLogic()).iv$nativeInputsActive()) {
-            canonicalLine(text, "gtceu.gui.machinemode", nativeModeLine());
-            int threads = plainThreads(machine);
-            if (!IvMachineScope.unlimited(machine))
-                canonicalLine(text, "gtladditions.multiblock.threads", threads > 1 ? threadLine(threads) : null);
-            text.add(Component.translatable("gtl_enhancedcore.cloud.ui.native_inputs").withStyle(ChatFormatting.GRAY));
-            return;
-        }
-        if (machine.isFormed() && IvBuffers.genericCloudTarget(machine)) {
-            var access = (IvNativeAccess) machine.getRecipeLogic();
-            // A cloud endpoint routes orders; it does not opt this machine into IV mode.
-            if (!access.iv$nativeInputsActive()) nativeCloud(text, access.iv$summary());
-            text.add(Component.translatable("gtl_enhancedcore.cloud.ui.native_inputs").withStyle(ChatFormatting.GRAY));
-            return;
-        }
         if (!IvMachineScope.nativeTarget(machine) || !machine.isFormed()) return;
         if (!IvMachineScope.crossRecipeEnabled(machine)) {
             int threads = plainThreads(machine);
@@ -86,11 +63,6 @@ public final class IvMachineDisplay {
         }
         isolation(text, IvMachineScope.parallel(machine), IvMachineScope.threads(machine),
                 ((IvNativeAccess)machine.getRecipeLogic()).iv$summary());
-    }
-
-    /** Preserve the host's mode, parallel and thread rows, adding only cloud order data. */
-    public static void nativeCloud(List<Component> text, CompoundTag summary) {
-        IvPresentation.append(text, summary, true);
     }
 
     /** The upstream capacity rows retain their position, gray labels and colored values. */

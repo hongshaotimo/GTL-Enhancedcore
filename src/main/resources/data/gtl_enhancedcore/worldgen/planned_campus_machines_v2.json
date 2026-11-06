@@ -40,8 +40,8 @@
     "earlyDedicatedMaximumTier": 3
   },
   "runtimeCoverage": {
-    "registered": 290,
-    "included": 284,
+    "registered": 289,
+    "included": 283,
     "inventorySha256": "7a1d929b7a435b7d97de237e500321db711c88c8fe9170ee9f9532dd7ff1de93",
     "sourceCoreSha256": "17dce9afab5688d8736cab466689a94f2ec77352edc285d95238c088b468f671",
     "dependencies": {
@@ -2297,7 +2297,7 @@
         "kind": "project-construction-tier",
         "source": "src/main/resources/data/gtl_enhancedcore/equipment_recipes.json",
         "excerpt": "{\"output\":\"industrial_steam_platform\",\"tier\":\"ulv\",\"method\":\"crafting\",\"pattern\":[\"ABA\",\"CDC\",\"AEA\"],\"key\":{\"A\":{\"item\":\"gtceu:steam_machine_casing\",\"count\":1},\"B\":{\"item\":\"gtceu:bronze_gear\",\"count\":1},\"C\":{\"item\":\"kubejs:precision_steam_mechanism\",\"count\":1},\"D\":{\"item\":\"gtceu:lp_steam_furnace\",\"count\":1},\"E\":{\"item\":\"gtceu:double_bronze_plate\",\"count\":1}}}",
-        "sourceSha256": "a66d863e859294357b3986c1306ec969d3297b89e11a661c66c81de822a3b152",
+        "sourceSha256": "80334ae318aa3ee6f75c2dca1c9075af489a981f5e0bd1bcebfafbc21efb751f",
         "status": "voltage-confirmed",
         "directTier": 0
       },
@@ -3183,7 +3183,7 @@
         "kind": "project-construction-tier",
         "source": "src/main/resources/data/gtl_enhancedcore/equipment_recipes.json",
         "excerpt": "{\"output\":\"large_furnace\",\"tier\":\"lv\",\"method\":\"assembler\",\"duration\":400,\"ingredients\":[{\"item\":\"gtceu:lv_electric_furnace\",\"count\":4},{\"item\":\"gtceu:steel_plate\",\"count\":16},{\"tag\":\"gtceu:circuits/lv\",\"count\":4},{\"item\":\"gtceu:lv_electric_piston\",\"count\":2},{\"item\":\"gtceu:lv_conveyor_module\",\"count\":2},{\"item\":\"gtceu:firebricks\",\"count\":4}],\"fluids\":[{\"fluid\":\"gtceu:soldering_alloy\",\"amount\":288}]}",
-        "sourceSha256": "a66d863e859294357b3986c1306ec969d3297b89e11a661c66c81de822a3b152",
+        "sourceSha256": "80334ae318aa3ee6f75c2dca1c9075af489a981f5e0bd1bcebfafbc21efb751f",
         "status": "voltage-confirmed",
         "directTier": 1
       },
@@ -4082,7 +4082,7 @@
         "kind": "project-construction-tier",
         "source": "src/main/resources/data/gtl_enhancedcore/equipment_recipes.json",
         "excerpt": "{\"output\":\"assembling_plus\",\"tier\":\"mv\",\"method\":\"assembler\",\"duration\":800,\"ingredients\":[{\"item\":\"gtceu:mv_assembler\",\"count\":2},{\"item\":\"gtceu:mv_circuit_assembler\",\"count\":2},{\"item\":\"gtceu:mv_forming_press\",\"count\":2},{\"item\":\"gtlcore:multi_functional_casing\",\"count\":2},{\"item\":\"gtceu:mv_robot_arm\",\"count\":4},{\"item\":\"gtceu:mv_conveyor_module\",\"count\":4},{\"tag\":\"gtceu:circuits/mv\",\"count\":8},{\"item\":\"gtceu:double_aluminium_plate\",\"count\":8}],\"fluids\":[{\"fluid\":\"gtceu:soldering_alloy\",\"amount\":576}]}",
-        "sourceSha256": "a66d863e859294357b3986c1306ec969d3297b89e11a661c66c81de822a3b152",
+        "sourceSha256": "80334ae318aa3ee6f75c2dca1c9075af489a981f5e0bd1bcebfafbc21efb751f",
         "status": "voltage-confirmed",
         "directTier": 2
       },
@@ -4145,7 +4145,7 @@
         "kind": "project-construction-tier",
         "source": "src/main/resources/data/gtl_enhancedcore/equipment_recipes.json",
         "excerpt": "{\"output\":\"basic_ore_processing_plant\",\"tier\":\"mv\",\"method\":\"assembler\",\"duration\":1200,\"ingredients\":[{\"item\":\"gtceu:mv_macerator\",\"count\":4},{\"item\":\"gtceu:mv_ore_washer\",\"count\":4},{\"item\":\"gtceu:mv_thermal_centrifuge\",\"count\":4},{\"item\":\"gtceu:mv_centrifuge\",\"count\":4},{\"item\":\"gtceu:mv_robot_arm\",\"count\":4},{\"tag\":\"gtceu:circuits/mv\",\"count\":8},{\"item\":\"gtceu:aluminium_frame\",\"count\":4},{\"item\":\"gtceu:mv_electric_pump\",\"count\":4}],\"fluids\":[{\"fluid\":\"gtceu:soldering_alloy\",\"amount\":1152}]}",
-        "sourceSha256": "a66d863e859294357b3986c1306ec969d3297b89e11a661c66c81de822a3b152",
+        "sourceSha256": "80334ae318aa3ee6f75c2dca1c9075af489a981f5e0bd1bcebfafbc21efb751f",
         "status": "voltage-confirmed",
         "directTier": 2
       },
@@ -4210,7 +4210,7 @@
         "kind": "project-construction-tier",
         "source": "src/main/resources/data/gtl_enhancedcore/equipment_recipes.json",
         "excerpt": "{\"output\":\"mixing_plus\",\"tier\":\"mv\",\"method\":\"assembler\",\"duration\":800,\"ingredients\":[{\"item\":\"gtceu:mv_mixer\",\"count\":2},{\"item\":\"gtceu:mv_chemical_reactor\",\"count\":2},{\"item\":\"gtceu:mv_chemical_bath\",\"count\":2},{\"item\":\"gtlcore:multi_functional_casing\",\"count\":2},{\"item\":\"gtceu:mv_robot_arm\",\"count\":4},{\"item\":\"gtceu:mv_conveyor_module\",\"count\":4},{\"tag\":\"gtceu:circuits/mv\",\"count\":8},{\"item\":\"gtceu:double_aluminium_plate\",\"count\":8}],\"fluids\":[{\"fluid\":\"gtceu:soldering_alloy\",\"amount\":576}]}",
-        "sourceSha256": "a66d863e859294357b3986c1306ec969d3297b89e11a661c66c81de822a3b152",
+        "sourceSha256": "80334ae318aa3ee6f75c2dca1c9075af489a981f5e0bd1bcebfafbc21efb751f",
         "status": "voltage-confirmed",
         "directTier": 2
       },
@@ -4275,7 +4275,7 @@
         "kind": "project-construction-tier",
         "source": "src/main/resources/data/gtl_enhancedcore/equipment_recipes.json",
         "excerpt": "{\"output\":\"processing_plus\",\"tier\":\"mv\",\"method\":\"assembler\",\"duration\":800,\"ingredients\":[{\"item\":\"gtceu:mv_bender\",\"count\":2},{\"item\":\"gtceu:mv_lathe\",\"count\":2},{\"item\":\"gtceu:mv_wiremill\",\"count\":2},{\"item\":\"gtlcore:multi_functional_casing\",\"count\":2},{\"item\":\"gtceu:mv_robot_arm\",\"count\":4},{\"item\":\"gtceu:mv_conveyor_module\",\"count\":4},{\"tag\":\"gtceu:circuits/mv\",\"count\":8},{\"item\":\"gtceu:double_aluminium_plate\",\"count\":8}],\"fluids\":[{\"fluid\":\"gtceu:soldering_alloy\",\"amount\":576}]}",
-        "sourceSha256": "a66d863e859294357b3986c1306ec969d3297b89e11a661c66c81de822a3b152",
+        "sourceSha256": "80334ae318aa3ee6f75c2dca1c9075af489a981f5e0bd1bcebfafbc21efb751f",
         "status": "voltage-confirmed",
         "directTier": 2
       },
@@ -4347,7 +4347,7 @@
         "kind": "project-construction-tier",
         "source": "src/main/resources/data/gtl_enhancedcore/equipment_recipes.json",
         "excerpt": "{\"output\":\"separating_plus\",\"tier\":\"mv\",\"method\":\"assembler\",\"duration\":800,\"ingredients\":[{\"item\":\"gtceu:mv_centrifuge\",\"count\":2},{\"item\":\"gtceu:mv_electrolyzer\",\"count\":2},{\"item\":\"gtceu:mv_thermal_centrifuge\",\"count\":2},{\"item\":\"gtlcore:multi_functional_casing\",\"count\":2},{\"item\":\"gtceu:mv_robot_arm\",\"count\":4},{\"item\":\"gtceu:mv_conveyor_module\",\"count\":4},{\"tag\":\"gtceu:circuits/mv\",\"count\":8},{\"item\":\"gtceu:double_aluminium_plate\",\"count\":8}],\"fluids\":[{\"fluid\":\"gtceu:soldering_alloy\",\"amount\":576}]}",
-        "sourceSha256": "a66d863e859294357b3986c1306ec969d3297b89e11a661c66c81de822a3b152",
+        "sourceSha256": "80334ae318aa3ee6f75c2dca1c9075af489a981f5e0bd1bcebfafbc21efb751f",
         "status": "voltage-confirmed",
         "directTier": 2
       },
@@ -4415,7 +4415,7 @@
         "kind": "project-construction-tier",
         "source": "src/main/resources/data/gtl_enhancedcore/equipment_recipes.json",
         "excerpt": "{\"output\":\"universal_joint_factory\",\"tier\":\"mv\",\"method\":\"assembler\",\"duration\":800,\"ingredients\":[{\"item\":\"gtl_enhancedcore:processing_plus\",\"count\":1},{\"item\":\"gtl_enhancedcore:assembling_plus\",\"count\":1},{\"item\":\"gtl_enhancedcore:separating_plus\",\"count\":1},{\"item\":\"gtl_enhancedcore:mixing_plus\",\"count\":1},{\"tag\":\"gtceu:circuits/mv\",\"count\":8},{\"item\":\"gtceu:phenolic_circuit_board\",\"count\":16}],\"fluids\":[{\"fluid\":\"gtceu:soldering_alloy\",\"amount\":576}]}",
-        "sourceSha256": "a66d863e859294357b3986c1306ec969d3297b89e11a661c66c81de822a3b152",
+        "sourceSha256": "80334ae318aa3ee6f75c2dca1c9075af489a981f5e0bd1bcebfafbc21efb751f",
         "status": "voltage-confirmed",
         "controllerPrerequisites": [
           "gtl_enhancedcore:assembling_plus",
@@ -10265,7 +10265,7 @@
         "kind": "project-construction-tier",
         "source": "src/main/resources/data/gtl_enhancedcore/equipment_recipes.json",
         "excerpt": "{\"output\":\"hadron_catalytic_refinery\",\"tier\":\"iv\",\"method\":\"assembler\",\"duration\":1200,\"ingredients\":[{\"item\":\"gtceu:iv_mixer\",\"count\":4},{\"item\":\"gtceu:iv_autoclave\",\"count\":4},{\"item\":\"gtceu:iv_extractor\",\"count\":4},{\"item\":\"gtceu:iv_distillery\",\"count\":4},{\"item\":\"gtceu:iv_fluid_heater\",\"count\":4},{\"item\":\"gtceu:iv_robot_arm\",\"count\":8},{\"item\":\"gtceu:iv_field_generator\",\"count\":4},{\"tag\":\"gtceu:circuits/iv\",\"count\":16},{\"item\":\"gtceu:tungsten_steel_frame\",\"count\":8}],\"fluids\":[{\"fluid\":\"gtceu:soldering_alloy\",\"amount\":2304}]}",
-        "sourceSha256": "a66d863e859294357b3986c1306ec969d3297b89e11a661c66c81de822a3b152",
+        "sourceSha256": "80334ae318aa3ee6f75c2dca1c9075af489a981f5e0bd1bcebfafbc21efb751f",
         "status": "voltage-confirmed",
         "directTier": 5
       },
@@ -10339,7 +10339,7 @@
         "kind": "project-construction-tier",
         "source": "src/main/resources/data/gtl_enhancedcore/equipment_recipes.json",
         "excerpt": "{\"output\":\"plasma_machine_tool\",\"tier\":\"iv\",\"method\":\"assembler\",\"duration\":1200,\"ingredients\":[{\"item\":\"gtceu:iv_lathe\",\"count\":4},{\"item\":\"gtceu:iv_bender\",\"count\":4},{\"item\":\"gtceu:iv_cutter\",\"count\":4},{\"item\":\"gtceu:iv_wiremill\",\"count\":4},{\"item\":\"gtceu:iv_extruder\",\"count\":4},{\"item\":\"gtceu:iv_robot_arm\",\"count\":8},{\"item\":\"gtceu:iv_field_generator\",\"count\":4},{\"tag\":\"gtceu:circuits/iv\",\"count\":16},{\"item\":\"gtceu:tungsten_steel_frame\",\"count\":8}],\"fluids\":[{\"fluid\":\"gtceu:soldering_alloy\",\"amount\":2304}]}",
-        "sourceSha256": "a66d863e859294357b3986c1306ec969d3297b89e11a661c66c81de822a3b152",
+        "sourceSha256": "80334ae318aa3ee6f75c2dca1c9075af489a981f5e0bd1bcebfafbc21efb751f",
         "status": "voltage-confirmed",
         "directTier": 5
       },
@@ -10411,7 +10411,7 @@
         "kind": "project-construction-tier",
         "source": "src/main/resources/data/gtl_enhancedcore/equipment_recipes.json",
         "excerpt": "{\"output\":\"platinum_refining_matrix\",\"tier\":\"iv\",\"method\":\"assembler\",\"duration\":1200,\"ingredients\":[{\"item\":\"gtceu:iv_chemical_bath\",\"count\":3},{\"item\":\"gtceu:iv_electrolyzer\",\"count\":2},{\"item\":\"gtceu:hv_dehydrator\",\"count\":1},{\"item\":\"gtceu:ev_centrifuge\",\"count\":2},{\"item\":\"gtceu:nano_processor_computer\",\"count\":5},{\"tag\":\"gtceu:circuits/iv\",\"count\":4}],\"fluids\":[{\"fluid\":\"gtceu:soldering_alloy\",\"amount\":288}]}",
-        "sourceSha256": "a66d863e859294357b3986c1306ec969d3297b89e11a661c66c81de822a3b152",
+        "sourceSha256": "80334ae318aa3ee6f75c2dca1c9075af489a981f5e0bd1bcebfafbc21efb751f",
         "status": "voltage-confirmed",
         "directTier": 5
       },
@@ -10478,7 +10478,7 @@
         "kind": "project-construction-tier",
         "source": "src/main/resources/data/gtl_enhancedcore/equipment_recipes.json",
         "excerpt": "{\"output\":\"quantum_mass_spectrum_array\",\"tier\":\"iv\",\"method\":\"assembler\",\"duration\":1200,\"ingredients\":[{\"item\":\"gtceu:iv_macerator\",\"count\":4},{\"item\":\"gtceu:iv_centrifuge\",\"count\":4},{\"item\":\"gtceu:iv_electrolyzer\",\"count\":4},{\"item\":\"gtceu:iv_sifter\",\"count\":4},{\"item\":\"gtceu:iv_ore_washer\",\"count\":4},{\"item\":\"gtceu:iv_robot_arm\",\"count\":8},{\"item\":\"gtceu:iv_field_generator\",\"count\":4},{\"tag\":\"gtceu:circuits/iv\",\"count\":16},{\"item\":\"gtceu:tungsten_steel_frame\",\"count\":8}],\"fluids\":[{\"fluid\":\"gtceu:soldering_alloy\",\"amount\":2304}]}",
-        "sourceSha256": "a66d863e859294357b3986c1306ec969d3297b89e11a661c66c81de822a3b152",
+        "sourceSha256": "80334ae318aa3ee6f75c2dca1c9075af489a981f5e0bd1bcebfafbc21efb751f",
         "status": "voltage-confirmed",
         "directTier": 5
       },
@@ -10552,7 +10552,7 @@
         "kind": "project-construction-tier",
         "source": "src/main/resources/data/gtl_enhancedcore/equipment_recipes.json",
         "excerpt": "{\"output\":\"superconducting_fusion_assembler\",\"tier\":\"iv\",\"method\":\"assembler\",\"duration\":1200,\"ingredients\":[{\"item\":\"gtceu:iv_arc_furnace\",\"count\":4},{\"item\":\"gtceu:iv_lightning_processor\",\"count\":4},{\"item\":\"gtceu:iv_assembler\",\"count\":4},{\"item\":\"gtceu:iv_circuit_assembler\",\"count\":4},{\"item\":\"gtceu:iv_forming_press\",\"count\":4},{\"item\":\"gtceu:iv_robot_arm\",\"count\":8},{\"item\":\"gtceu:iv_field_generator\",\"count\":4},{\"tag\":\"gtceu:circuits/iv\",\"count\":16},{\"item\":\"gtceu:tungsten_steel_frame\",\"count\":8}],\"fluids\":[{\"fluid\":\"gtceu:soldering_alloy\",\"amount\":2304}]}",
-        "sourceSha256": "a66d863e859294357b3986c1306ec969d3297b89e11a661c66c81de822a3b152",
+        "sourceSha256": "80334ae318aa3ee6f75c2dca1c9075af489a981f5e0bd1bcebfafbc21efb751f",
         "status": "voltage-confirmed",
         "directTier": 5
       },
@@ -11806,7 +11806,7 @@
         "kind": "project-construction-tier",
         "source": "src/main/resources/data/gtl_enhancedcore/equipment_recipes.json",
         "excerpt": "{\"output\":\"lanthanide_refining_hub\",\"tier\":\"luv\",\"method\":\"assembly_line\",\"duration\":2400,\"ingredients\":[{\"item\":\"gtceu:luv_machine_hull\",\"count\":1},{\"item\":\"gtceu:computer_casing\",\"count\":8},{\"item\":\"gtceu:europium_foil\",\"count\":64},{\"tag\":\"gtceu:circuits/luv\",\"count\":8},{\"item\":\"gtceu:luv_electric_pump\",\"count\":4},{\"item\":\"gtceu:luv_sensor\",\"count\":2},{\"item\":\"gtceu:luv_emitter\",\"count\":2},{\"item\":\"gtceu:polytetrafluoroethylene_large_fluid_pipe\",\"count\":8},{\"item\":\"gtceu:niobium_titanium_quadruple_cable\",\"count\":4}],\"fluids\":[{\"fluid\":\"gtceu:europium\",\"amount\":2304},{\"fluid\":\"gtceu:soldering_alloy\",\"amount\":4608},{\"fluid\":\"gtceu:polytetrafluoroethylene\",\"amount\":2304}]}",
-        "sourceSha256": "a66d863e859294357b3986c1306ec969d3297b89e11a661c66c81de822a3b152",
+        "sourceSha256": "80334ae318aa3ee6f75c2dca1c9075af489a981f5e0bd1bcebfafbc21efb751f",
         "status": "voltage-confirmed",
         "registeredOperatingTier": 6,
         "runtimeInventory": "tools/fixtures/planned_campus_runtime_inventory.json",
@@ -13515,7 +13515,7 @@
         "kind": "project-construction-tier",
         "source": "src/main/resources/data/gtl_enhancedcore/equipment_recipes.json",
         "excerpt": "{\"output\":\"neutron_control_factory\",\"tier\":\"zpm\",\"method\":\"assembly_line\",\"duration\":2400,\"ingredients\":[{\"item\":\"gtceu:neutron_activator\",\"count\":4},{\"item\":\"gtceu:zpm_machine_hull\",\"count\":4},{\"item\":\"gtceu:zpm_field_generator\",\"count\":16},{\"item\":\"gtceu:zpm_electric_pump\",\"count\":8},{\"item\":\"gtceu:zpm_robot_arm\",\"count\":8},{\"tag\":\"gtceu:circuits/zpm\",\"count\":16},{\"item\":\"gtceu:naquadah_alloy_frame\",\"count\":16},{\"item\":\"gtceu:zpm_muffler_hatch\",\"count\":1},{\"item\":\"gtceu:hssg_coil_block\",\"count\":8}],\"fluids\":[{\"fluid\":\"gtceu:soldering_alloy\",\"amount\":9216}]}",
-        "sourceSha256": "a66d863e859294357b3986c1306ec969d3297b89e11a661c66c81de822a3b152",
+        "sourceSha256": "80334ae318aa3ee6f75c2dca1c9075af489a981f5e0bd1bcebfafbc21efb751f",
         "status": "voltage-confirmed",
         "controllerPrerequisites": [
           "gtceu:neutron_activator"
@@ -13580,7 +13580,7 @@
         "kind": "project-construction-tier",
         "source": "src/main/resources/data/gtl_enhancedcore/equipment_recipes.json",
         "excerpt": "{\"output\":\"void_constrained_mining_field\",\"tier\":\"zpm\",\"method\":\"assembler\",\"duration\":2400,\"ingredients\":[{\"item\":\"gtceu:large_void_miner\",\"count\":5},{\"item\":\"gtceu:wetware_processor_mainframe\",\"count\":7},{\"item\":\"gtceu:zpm_field_generator\",\"count\":32},{\"item\":\"gtceu:enriched_naquadah_trinium_europium_duranide_quadruple_wire\",\"count\":12},{\"item\":\"gtceu:dense_naquadah_alloy_plate\",\"count\":25},{\"tag\":\"gtceu:circuits/zpm\",\"count\":8}],\"fluids\":[{\"fluid\":\"gtceu:uranium\",\"amount\":255}]}",
-        "sourceSha256": "a66d863e859294357b3986c1306ec969d3297b89e11a661c66c81de822a3b152",
+        "sourceSha256": "80334ae318aa3ee6f75c2dca1c9075af489a981f5e0bd1bcebfafbc21efb751f",
         "status": "voltage-confirmed",
         "controllerPrerequisites": [
           "gtceu:large_void_miner"
@@ -13655,7 +13655,7 @@
         "kind": "project-construction-tier",
         "source": "src/main/resources/data/gtl_enhancedcore/equipment_recipes.json",
         "excerpt": "{\"output\":\"weather_anchor\",\"tier\":\"zpm\",\"method\":\"assembly_line\",\"duration\":2400,\"ingredients\":[{\"item\":\"gtceu:weather_control\",\"count\":4},{\"item\":\"gtceu:zpm_machine_hull\",\"count\":4},{\"item\":\"gtceu:zpm_field_generator\",\"count\":8},{\"item\":\"gtceu:zpm_sensor\",\"count\":8},{\"item\":\"gtceu:zpm_emitter\",\"count\":8},{\"tag\":\"gtceu:circuits/zpm\",\"count\":16},{\"item\":\"gtceu:naquadah_alloy_frame\",\"count\":16},{\"item\":\"minecraft:nether_star\",\"count\":16}],\"fluids\":[{\"fluid\":\"gtceu:soldering_alloy\",\"amount\":9216}]}",
-        "sourceSha256": "a66d863e859294357b3986c1306ec969d3297b89e11a661c66c81de822a3b152",
+        "sourceSha256": "80334ae318aa3ee6f75c2dca1c9075af489a981f5e0bd1bcebfafbc21efb751f",
         "status": "voltage-confirmed",
         "controllerPrerequisites": [
           "gtceu:weather_control"
@@ -14824,72 +14824,6 @@
         "materials": [
           "gtceu:ruridit_frame",
           "gtlcore:iridium_casing"
-        ]
-      }
-    },
-    {
-      "id": "gtl_enhancedcore:cloud_pattern_library",
-      "stage": "mid",
-      "size": [
-        49,
-        33,
-        45
-      ],
-      "controller": [
-        24,
-        16,
-        44
-      ],
-      "frontFacing": "north",
-      "upwardsFacing": "up",
-      "flipped": false,
-      "groundOffset": [
-        24,
-        16,
-        0
-      ],
-      "controllerForward": [
-        0,
-        0,
-        -1
-      ],
-      "patternResource": "/data/gtl_enhancedcore/structures/cloud_pattern_library.pattern.gz",
-      "patternSha256": "1373cb475821945c53a702c2cadc2757111d2431358871ab6966f2dccd3f0358",
-      "sourceManifest": "cloud_pattern_library.json",
-      "controllerSymbol": "C",
-      "repetitions": {
-        "mode": "fixed",
-        "sourceAisles": 45,
-        "minimum": 45,
-        "maximum": 45
-      },
-      "planningTier": 8,
-      "tierEvidence": {
-        "kind": "project-construction-tier",
-        "source": "src/main/resources/data/gtl_enhancedcore/equipment_recipes.json",
-        "excerpt": "{\"output\":\"cloud_pattern_library\",\"tier\":\"uv\",\"method\":\"assembler\",\"duration\":1200,\"ingredients\":[{\"item\":\"gtceu:uv_machine_hull\",\"count\":1},{\"item\":\"ae2:pattern_provider\",\"count\":4},{\"item\":\"ae2:blank_pattern\",\"count\":16},{\"tag\":\"gtceu:circuits/uv\",\"count\":4},{\"item\":\"gtceu:uv_sensor\",\"count\":2}],\"fluids\":[{\"fluid\":\"gtceu:soldering_alloy\",\"amount\":2304}]}",
-        "sourceSha256": "a66d863e859294357b3986c1306ec969d3297b89e11a661c66c81de822a3b152",
-        "status": "voltage-confirmed",
-        "registeredOperatingTier": 8,
-        "runtimeInventory": "tools/fixtures/planned_campus_runtime_inventory.json",
-        "directTier": 8
-      },
-      "allocation": "dedicated",
-      "copies": 1,
-      "sourceInventorySha256": "7a1d929b7a435b7d97de237e500321db711c88c8fe9170ee9f9532dd7ff1de93",
-      "theme": "logistics",
-      "themeEvidence": {
-        "registryKeywords": [
-          "cloud_pattern"
-        ],
-        "recipeTypes": [],
-        "materials": [
-          "gtceu:light_blue_lamp",
-          "gtceu:sterilizing_filter_casing",
-          "gtceu:white_lamp",
-          "gtlcore:iridium_casing",
-          "gtlcore:molecular_casing",
-          "gtlcore:naquadah_alloy_casing"
         ]
       }
     },
@@ -16236,7 +16170,7 @@
         "kind": "project-construction-tier",
         "source": "src/main/resources/data/gtl_enhancedcore/equipment_recipes.json",
         "excerpt": "{\"output\":\"high_flux_breeder_reactor\",\"tier\":\"uhv\",\"method\":\"assembly_line\",\"duration\":6000,\"ingredients\":[{\"item\":\"gtceu:uhv_machine_hull\",\"count\":8},{\"item\":\"gtlcore:fission_reactor_casing\",\"count\":64},{\"item\":\"gtlcore:supercritical_turbine_casing\",\"count\":32},{\"item\":\"gtceu:uhv_field_generator\",\"count\":16},{\"item\":\"gtceu:uhv_emitter\",\"count\":16},{\"item\":\"gtceu:uhv_sensor\",\"count\":16},{\"item\":\"gtceu:uhv_electric_pump\",\"count\":16},{\"item\":\"gtceu:uhv_robot_arm\",\"count\":16},{\"item\":\"gtceu:uhv_electric_motor\",\"count\":16},{\"tag\":\"gtceu:circuits/uhv\",\"count\":16},{\"item\":\"gtceu:neutronium_plate\",\"count\":32},{\"item\":\"gtlcore:iridium_casing\",\"count\":32}],\"fluids\":[{\"fluid\":\"gtceu:soldering_alloy\",\"amount\":18432}]}",
-        "sourceSha256": "a66d863e859294357b3986c1306ec969d3297b89e11a661c66c81de822a3b152",
+        "sourceSha256": "80334ae318aa3ee6f75c2dca1c9075af489a981f5e0bd1bcebfafbc21efb751f",
         "status": "voltage-confirmed",
         "directTier": 9
       },
@@ -16304,7 +16238,7 @@
         "kind": "project-construction-tier",
         "source": "src/main/resources/data/gtl_enhancedcore/equipment_recipes.json",
         "excerpt": "{\"output\":\"star_core_stripper\",\"tier\":\"uhv\",\"method\":\"assembly_line\",\"duration\":4800,\"ingredients\":[{\"item\":\"gtceu:large_fragment_world_collection_machine\",\"count\":4},{\"item\":\"gtceu:uhv_machine_hull\",\"count\":8},{\"item\":\"gtceu:uhv_field_generator\",\"count\":16},{\"item\":\"gtceu:uhv_sensor\",\"count\":16},{\"item\":\"gtceu:uhv_emitter\",\"count\":16},{\"item\":\"gtceu:uhv_electric_pump\",\"count\":16},{\"item\":\"gtceu:uhv_robot_arm\",\"count\":16},{\"item\":\"gtceu:uhv_electric_motor\",\"count\":16},{\"tag\":\"gtceu:circuits/uhv\",\"count\":16},{\"item\":\"gtceu:neutronium_plate\",\"count\":64},{\"item\":\"gtlcore:iridium_casing\",\"count\":64},{\"item\":\"gtceu:fusion_coil\",\"count\":32}],\"fluids\":[{\"fluid\":\"gtceu:soldering_alloy\",\"amount\":18432}]}",
-        "sourceSha256": "a66d863e859294357b3986c1306ec969d3297b89e11a661c66c81de822a3b152",
+        "sourceSha256": "80334ae318aa3ee6f75c2dca1c9075af489a981f5e0bd1bcebfafbc21efb751f",
         "status": "voltage-confirmed",
         "controllerPrerequisites": [
           "gtceu:large_fragment_world_collection_machine"
@@ -18292,7 +18226,7 @@
         "kind": "project-construction-tier",
         "source": "src/main/resources/data/gtl_enhancedcore/equipment_recipes.json",
         "excerpt": "{\"output\":\"dragon_field_proliferation_core\",\"tier\":\"uev\",\"method\":\"assembly_line\",\"duration\":600,\"ingredients\":[{\"item\":\"kubejs:exotic_mainframe\",\"count\":23},{\"item\":\"gtceu:holy_separator\",\"count\":1},{\"item\":\"gtceu:large_chemical_plant\",\"count\":1},{\"item\":\"gtceu:mega_alloy_blast_smelter\",\"count\":1},{\"item\":\"kubejs:draconic_core\",\"count\":5},{\"item\":\"minecraft:dragon_egg\",\"count\":128},{\"item\":\"minecraft:dragon_head\",\"count\":1},{\"tag\":\"gtceu:circuits/uev\",\"count\":8}],\"fluids\":[]}",
-        "sourceSha256": "a66d863e859294357b3986c1306ec969d3297b89e11a661c66c81de822a3b152",
+        "sourceSha256": "80334ae318aa3ee6f75c2dca1c9075af489a981f5e0bd1bcebfafbc21efb751f",
         "status": "voltage-confirmed",
         "controllerPrerequisites": [
           "gtceu:holy_separator",
@@ -18363,7 +18297,7 @@
         "kind": "project-construction-tier",
         "source": "src/main/resources/data/gtl_enhancedcore/equipment_recipes.json",
         "excerpt": "{\"output\":\"hydrothermal_leaching_complex\",\"tier\":\"uev\",\"method\":\"assembly_line\",\"duration\":7200,\"ingredients\":[{\"item\":\"gtceu:digestion_tank\",\"count\":4},{\"item\":\"gtceu:dissolving_tank\",\"count\":4},{\"item\":\"gtceu:uev_machine_hull\",\"count\":8},{\"item\":\"gtceu:uev_electric_pump\",\"count\":32},{\"item\":\"gtceu:uev_electric_motor\",\"count\":16},{\"item\":\"gtceu:uev_robot_arm\",\"count\":16},{\"item\":\"gtceu:uev_sensor\",\"count\":16},{\"item\":\"gtceu:uev_field_generator\",\"count\":8},{\"item\":\"gtlcore:iridium_casing\",\"count\":64},{\"item\":\"gtceu:ptfe_pipe_casing\",\"count\":64},{\"item\":\"gtceu:tungstensteel_gearbox\",\"count\":32},{\"item\":\"gtceu:osmium_plate\",\"count\":64},{\"tag\":\"gtceu:circuits/uev\",\"count\":16}],\"fluids\":[{\"fluid\":\"gtceu:soldering_alloy\",\"amount\":36864},{\"fluid\":\"gtceu:polytetrafluoroethylene\",\"amount\":9216}]}",
-        "sourceSha256": "a66d863e859294357b3986c1306ec969d3297b89e11a661c66c81de822a3b152",
+        "sourceSha256": "80334ae318aa3ee6f75c2dca1c9075af489a981f5e0bd1bcebfafbc21efb751f",
         "status": "voltage-confirmed",
         "registeredOperatingTier": 10,
         "runtimeInventory": "tools/fixtures/planned_campus_runtime_inventory.json",
@@ -18446,7 +18380,7 @@
         "kind": "project-construction-tier",
         "source": "src/main/resources/data/gtl_enhancedcore/equipment_recipes.json",
         "excerpt": "{\"output\":\"hyperstructural_chemical_distorter\",\"tier\":\"uev\",\"method\":\"assembly_line\",\"duration\":3600,\"ingredients\":[{\"item\":\"gtceu:chemical_distort\",\"count\":4},{\"item\":\"gtceu:uev_machine_hull\",\"count\":16},{\"item\":\"gtceu:uev_field_generator\",\"count\":32},{\"item\":\"gtceu:uev_electric_pump\",\"count\":32},{\"item\":\"gtceu:uev_robot_arm\",\"count\":16},{\"item\":\"gtceu:uev_emitter\",\"count\":16},{\"item\":\"gtceu:uev_sensor\",\"count\":16},{\"item\":\"gtlcore:uev_hermetic_casing\",\"count\":32},{\"item\":\"gtceu:tritanium_frame\",\"count\":16},{\"item\":\"kubejs:containment_field_generator\",\"count\":8},{\"item\":\"kubejs:exotic_mainframe\",\"count\":16},{\"tag\":\"gtceu:circuits/uev\",\"count\":8}],\"fluids\":[{\"fluid\":\"gtceu:soldering_alloy\",\"amount\":4608},{\"fluid\":\"gtceu:polyetheretherketone\",\"amount\":2304}]}",
-        "sourceSha256": "a66d863e859294357b3986c1306ec969d3297b89e11a661c66c81de822a3b152",
+        "sourceSha256": "80334ae318aa3ee6f75c2dca1c9075af489a981f5e0bd1bcebfafbc21efb751f",
         "status": "voltage-confirmed",
         "controllerPrerequisites": [
           "gtceu:chemical_distort"
@@ -19618,7 +19552,7 @@
         "kind": "project-construction-tier",
         "source": "src/main/resources/data/gtl_enhancedcore/equipment_recipes.json",
         "excerpt": "{\"output\":\"infinity_singularity_compressor\",\"tier\":\"uiv\",\"method\":\"assembly_line\",\"duration\":6000,\"ingredients\":[{\"item\":\"gtceu:electric_implosion_compressor\",\"count\":4},{\"item\":\"gtceu:uiv_machine_hull\",\"count\":8},{\"item\":\"gtceu:uiv_field_generator\",\"count\":16},{\"item\":\"gtceu:uiv_electric_piston\",\"count\":16},{\"tag\":\"gtceu:circuits/uiv\",\"count\":32},{\"item\":\"kubejs:suprachronal_mainframe_complex\",\"count\":8},{\"item\":\"kubejs:dimension_creation_casing\",\"count\":16},{\"item\":\"ae2:singularity\",\"count\":64},{\"item\":\"gtceu:adamantium_frame\",\"count\":32}],\"fluids\":[{\"fluid\":\"gtceu:soldering_alloy\",\"amount\":18432}]}",
-        "sourceSha256": "a66d863e859294357b3986c1306ec969d3297b89e11a661c66c81de822a3b152",
+        "sourceSha256": "80334ae318aa3ee6f75c2dca1c9075af489a981f5e0bd1bcebfafbc21efb751f",
         "status": "voltage-confirmed",
         "controllerPrerequisites": [
           "gtceu:electric_implosion_compressor"
@@ -19692,7 +19626,7 @@
         "kind": "project-construction-tier",
         "source": "src/main/resources/data/gtl_enhancedcore/equipment_recipes.json",
         "excerpt": "{\"output\":\"stellar_confinement_fusion_reactor\",\"tier\":\"uiv\",\"method\":\"assembly_line\",\"duration\":7200,\"ingredients\":[{\"item\":\"gtceu:uev_fusion_reactor\",\"count\":4},{\"item\":\"gtceu:uiv_machine_hull\",\"count\":16},{\"item\":\"gtceu:uiv_field_generator\",\"count\":32},{\"item\":\"gtceu:uiv_electric_pump\",\"count\":32},{\"item\":\"gtceu:uiv_emitter\",\"count\":16},{\"item\":\"gtceu:uiv_sensor\",\"count\":16},{\"item\":\"gtceu:uiv_robot_arm\",\"count\":16},{\"item\":\"gtlcore:fusion_casing_mk5\",\"count\":32},{\"item\":\"gtlcore:fusion_coil_mk2\",\"count\":32},{\"item\":\"gtceu:tritanium_frame\",\"count\":32},{\"item\":\"kubejs:containment_field_generator\",\"count\":16},{\"item\":\"kubejs:cosmic_mainframe\",\"count\":16},{\"tag\":\"gtceu:circuits/uiv\",\"count\":8}],\"fluids\":[{\"fluid\":\"gtceu:soldering_alloy\",\"amount\":9216},{\"fluid\":\"gtceu:polyetheretherketone\",\"amount\":4608}]}",
-        "sourceSha256": "a66d863e859294357b3986c1306ec969d3297b89e11a661c66c81de822a3b152",
+        "sourceSha256": "80334ae318aa3ee6f75c2dca1c9075af489a981f5e0bd1bcebfafbc21efb751f",
         "status": "voltage-confirmed",
         "controllerPrerequisites": [
           "gtceu:uev_fusion_reactor"
@@ -21302,7 +21236,7 @@
         "kind": "project-construction-tier",
         "source": "src/main/resources/data/gtl_enhancedcore/equipment_recipes.json",
         "excerpt": "{\"output\":\"extreme_reactor\",\"tier\":\"uxv\",\"method\":\"assembly_line\",\"duration\":9600,\"ingredients\":[{\"item\":\"gtceu:advanced_hyper_reactor\",\"count\":4},{\"item\":\"gtceu:uxv_machine_hull\",\"count\":16},{\"item\":\"gtceu:uxv_field_generator\",\"count\":32},{\"item\":\"gtceu:uxv_electric_pump\",\"count\":32},{\"item\":\"gtceu:uxv_emitter\",\"count\":16},{\"item\":\"gtceu:uxv_sensor\",\"count\":16},{\"item\":\"gtceu:uxv_robot_arm\",\"count\":16},{\"item\":\"gtlcore:supercritical_turbine_casing\",\"count\":64},{\"item\":\"gtlcore:ultimate_stellar_containment_casing\",\"count\":64},{\"item\":\"gtlcore:uxv_hermetic_casing\",\"count\":32},{\"item\":\"gtlcore:fusion_coil_mk2\",\"count\":64},{\"item\":\"gtceu:neutronium_frame\",\"count\":32},{\"tag\":\"gtceu:circuits/uxv\",\"count\":16}],\"fluids\":[{\"fluid\":\"gtceu:soldering_alloy\",\"amount\":36864},{\"fluid\":\"gtceu:polyetheretherketone\",\"amount\":18432}]}",
-        "sourceSha256": "a66d863e859294357b3986c1306ec969d3297b89e11a661c66c81de822a3b152",
+        "sourceSha256": "80334ae318aa3ee6f75c2dca1c9075af489a981f5e0bd1bcebfafbc21efb751f",
         "status": "voltage-confirmed",
         "controllerPrerequisites": [
           "gtceu:advanced_hyper_reactor"
@@ -22131,7 +22065,7 @@
         "kind": "project-construction-tier",
         "source": "src/main/resources/data/gtl_enhancedcore/equipment_recipes.json",
         "excerpt": "{\"output\":\"stellar_vortex_space_station\",\"tier\":\"opv\",\"method\":\"assembly_line\",\"duration\":24000,\"ingredients\":[{\"item\":\"kubejs:hypercube\",\"count\":4},{\"item\":\"gtceu:opv_machine_hull\",\"count\":16},{\"item\":\"gtceu:opv_field_generator\",\"count\":32},{\"item\":\"gtceu:opv_emitter\",\"count\":64},{\"item\":\"gtceu:opv_sensor\",\"count\":64},{\"item\":\"kubejs:stabilized_wormhole_generator\",\"count\":32},{\"item\":\"gtlcore:dimensionally_transcendent_casing\",\"count\":64},{\"tag\":\"gtceu:circuits/max\",\"count\":32},{\"tag\":\"gtceu:circuits/opv\",\"count\":64}],\"fluids\":[{\"fluid\":\"gtceu:super_mutated_living_solder\",\"amount\":288000},{\"fluid\":\"gtceu:infinity\",\"amount\":64000}]}",
-        "sourceSha256": "a66d863e859294357b3986c1306ec969d3297b89e11a661c66c81de822a3b152",
+        "sourceSha256": "80334ae318aa3ee6f75c2dca1c9075af489a981f5e0bd1bcebfafbc21efb751f",
         "status": "voltage-confirmed",
         "directTier": 13
       },
@@ -22884,7 +22818,7 @@
         "kind": "project-construction-tier",
         "source": "src/main/resources/data/gtl_enhancedcore/equipment_recipes.json",
         "excerpt": "{\"output\":\"causality_terminal\",\"tier\":\"max\",\"method\":\"assembly_line\",\"duration\":12000,\"ingredients\":[{\"item\":\"gtl_enhancedcore:infinity_singularity_compressor\",\"count\":4},{\"item\":\"gtceu:max_machine_hull\",\"count\":8},{\"item\":\"gtlcore:max_field_generator\",\"count\":32},{\"item\":\"gtlcore:max_sensor\",\"count\":16},{\"item\":\"gtlcore:max_emitter\",\"count\":16},{\"tag\":\"gtceu:circuits/max\",\"count\":32},{\"item\":\"kubejs:suprachronal_mainframe_complex\",\"count\":32},{\"item\":\"kubejs:dimension_creation_casing\",\"count\":64},{\"item\":\"gtceu:chaos_plate\",\"count\":64},{\"item\":\"expatternprovider:fishbig\",\"count\":16}],\"fluids\":[{\"fluid\":\"gtceu:soldering_alloy\",\"amount\":36864}]}",
-        "sourceSha256": "a66d863e859294357b3986c1306ec969d3297b89e11a661c66c81de822a3b152",
+        "sourceSha256": "80334ae318aa3ee6f75c2dca1c9075af489a981f5e0bd1bcebfafbc21efb751f",
         "status": "voltage-confirmed",
         "controllerPrerequisites": [
           "gtl_enhancedcore:infinity_singularity_compressor"

@@ -82,6 +82,11 @@ final class PlotPreviewRegression {
                 throw new AssertionError("Raster allocation must be bounded");
             } catch (IllegalArgumentException expected) { checks++; }
         }
+        try {
+            PlotPreviewRaster.renderCampus(PlotSettings.plannedCampus(), 2, 2,
+                    new PlotPreviewRaster.CampusViewport(0, 0, 1, 1), 1, () -> true);
+            throw new AssertionError("Replaced campus previews must stop before another raster row");
+        } catch (java.util.concurrent.CancellationException expected) { checks++; }
         return checks;
     }
 

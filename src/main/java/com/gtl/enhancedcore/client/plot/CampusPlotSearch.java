@@ -1,6 +1,6 @@
 package com.gtl.enhancedcore.client.plot;
 
-import com.gtl.enhancedcore.client.cloud.CloudSearchMatcher;
+import com.gtl.enhancedcore.client.search.PhoneticSearchMatcher;
 import java.text.Normalizer;
 import java.util.Collection;
 import java.util.LinkedHashSet;
@@ -22,7 +22,7 @@ public final class CampusPlotSearch {
             if (literal.indexOf(':') > 0 && literal.indexOf(' ') < 0) identifiers.add(literal);
             names.add(normalize(literal));
         }
-        return new Aliases(List.copyOf(identifiers), names.stream().map(CloudSearchMatcher::prepare).toList());
+        return new Aliases(List.copyOf(identifiers), names.stream().map(PhoneticSearchMatcher::prepare).toList());
     }
 
     /** One query compilation per input update, shared by every indexed destination. */
@@ -30,7 +30,7 @@ public final class CampusPlotSearch {
         String literal = canonical(query).strip();
         if (literal.contains(":")) return new Query(literal, List.of());
         var terms = WHITESPACE.splitAsStream(normalize(literal)).filter(term -> !term.isEmpty())
-                .map(CloudSearchMatcher::compile).toList();
+                .map(PhoneticSearchMatcher::compile).toList();
         return new Query(null, terms);
     }
 
@@ -41,16 +41,16 @@ public final class CampusPlotSearch {
 
     public static final class Aliases {
         private final List<String> identifiers;
-        private final List<CloudSearchMatcher.SearchText> names;
-        private Aliases(List<String> identifiers, List<CloudSearchMatcher.SearchText> names) {
+        private final List<PhoneticSearchMatcher.SearchText> names;
+        private Aliases(List<String> identifiers, List<PhoneticSearchMatcher.SearchText> names) {
             this.identifiers = identifiers; this.names = names;
         }
     }
 
     public static final class Query {
         private final String identifier;
-        private final List<CloudSearchMatcher> terms;
-        private Query(String identifier, List<CloudSearchMatcher> terms) {
+        private final List<PhoneticSearchMatcher> terms;
+        private Query(String identifier, List<PhoneticSearchMatcher> terms) {
             this.identifier = identifier; this.terms = terms;
         }
         public boolean matches(Aliases aliases) {

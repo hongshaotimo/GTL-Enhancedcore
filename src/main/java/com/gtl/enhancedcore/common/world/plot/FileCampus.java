@@ -22,6 +22,7 @@ public final class FileCampus {
     private static final Map<String, FileCampus> CACHE = new ConcurrentHashMap<>();
     private final CampusPresetRegistry.Definition definition;
     private final FactoryArchitecture.Renderer renderer;
+    private final CampusScene scene;
     private final boolean physicalSigns;
     private final String QUARTZ,DARK,FLOOR,ROAD,LIGHT,YELLOW,GREEN,LEAVES,SLAB,IRON,COLUMN,ACCENT;
     private final PlannedCampus.Bounds BOUNDS,AE;
@@ -33,24 +34,30 @@ public final class FileCampus {
     }
     public FileCampus(CampusPresetRegistry.Definition definition) {
         this.definition=definition;
-        if(!definition.engine().equals("quartz_factory"))
+        if(!Set.of("quartz_factory", "file_scene").contains(definition.engine()))
             throw new IllegalArgumentException("Unknown campus engine: "+definition.engine());
         JsonObject layout=read(definition.layoutResource());
         JsonObject architecture=read(definition.architectureResource());
         physicalSigns=!architecture.has("physicalSigns") || architecture.get("physicalSigns").getAsBoolean();
-        renderer=FactoryArchitecture.forResource(definition.architectureResource());
+        renderer=definition.engine().equals("quartz_factory")
+                ? FactoryArchitecture.forResource(definition.architectureResource()) : null;
+        scene=definition.engine().equals("file_scene") ? new CampusScene(architecture) : null;
         var m=definition.materials();
         QUARTZ=m.get("quartz");DARK=m.get("dark");FLOOR=m.get("floor");ROAD=m.get("road");
         LIGHT=m.get("light");YELLOW=m.get("yellow");GREEN=m.get("green");LEAVES=m.get("leaves");
         SLAB=m.get("slab");IRON=m.get("iron");COLUMN=m.get("column");ACCENT=m.get("accent");
-        Set<String> palette=new LinkedHashSet<>(renderer.materials());
+        Set<String> palette=new LinkedHashSet<>();
+        if(renderer!=null) palette.addAll(renderer.materials());
+        if(scene!=null) palette.addAll(scene.materials());
         palette.addAll(m.values());MATERIALS=Set.copyOf(palette);
         BOUNDS=readBounds(layout,"bounds");AE=readBounds(layout,"aeBounds");
         plan=build(read(definition.catalogResource()),layout);
-        gardens=buildGardens();
+        gardens=renderer==null?List.of():buildGardens();
     }
     private static PlannedCampus.Bounds readBounds(JsonObject layout,String key) {
-        var b=layout.getAsJsonArray(key);
+        return readBounds(layout.getAsJsonArray(key));
+    }
+    private static PlannedCampus.Bounds readBounds(com.google.gson.JsonArray b) {
         return new PlannedCampus.Bounds(b.get(0).getAsInt(),b.get(1).getAsInt(),b.get(2).getAsInt(),b.get(3).getAsInt());
     }
     private int dimension(String key) { return definition.dimensions().get(key); }
@@ -85,7 +92,7 @@ public final class FileCampus {
     }
     public int sharedMachineCount() { return plan.shared; }
     public int planningTier(String id) { return plan.tiers.get(id); }
-    public int maxHeight() { return plan.height; }
+    public int maxHeight() { return scene==null?plan.height:Math.max(plan.height,scene.maxHeight()); }
     public boolean fitsHeight(PlotSettings settings) { return settings.surfaceY()+maxHeight()<=319; }
     public boolean hasTerrain(int x, int z) { return BOUNDS.contains(x,z); }
     private long key(int x,int z) { return (long)x << 32 ^ z & 0xffffffffL; }
@@ -122,6 +129,19 @@ public final class FileCampus {
     }
     public String surfaceBlock(PlotSettings settings,int x,int z) {
         if (!hasTerrain(x,z)) return "minecraft:air";
+        if(scene!=null) {
+            String authored=scene.blockAt(x,0,z);
+            if(authored!=null) return authored;
+            if(AE.contains(x,z)) return QUARTZ;
+            var hall=hallAt(x,z);
+            if(hall!=null) return FLOOR;
+            int edgeX=Math.min(x-BOUNDS.minX(),BOUNDS.maxX()-x),edgeZ=Math.min(z-BOUNDS.minZ(),BOUNDS.maxZ()-z);
+            int walk=dimension("boundaryWalkWidth"),inset=dimension("outerRoadInset"),halfRoad=dimension("mainRoadHalfWidth");
+            if(edgeX<walk||edgeZ<walk) return QUARTZ;
+            if(Math.abs(x)<halfRoad||Math.abs(z)<halfRoad||edgeX<inset||edgeZ<inset) return ROAD;
+            for(var candidate:nearby(x,z)) if(siteDistance(candidate,x,z)<dimension("serviceRingWidth")) return ROAD;
+            return GREEN;
+        }
         if (AE.contains(x,z)) return coreFloor(x,z);
         var hall = hallAt(x,z);
         if (hall != null) return renderer.surface(hall,x,z);
@@ -165,6 +185,7 @@ public final class FileCampus {
     }
     public String foundationBlockAt(int x,int y,int z) {
         if (y>=0 || !hasTerrain(x,z)) return null;
+        if(scene!=null) return scene.blockAt(x,y,z);
         // Two walkable service galleries beneath the dispatch hub, with real floors and ceilings.
         if (Math.abs(x)<=4 || Math.abs(z)<=4) {
             if (y==-7) return FLOOR;
@@ -177,6 +198,7 @@ public final class FileCampus {
     }
     public String blockAboveAt(PlotSettings settings,int x,int y,int z) {
         if (!hasTerrain(x,z) || y<1) return null;
+        if(scene!=null) return scene.blockAt(x,y,z);
         var hall=hallAt(x,z);
         if (hall!=null) return renderer.above(hall,x,y,z);
         if (AE.contains(x,z)) return coreAbove(x,y,z);
@@ -213,6 +235,7 @@ public final class FileCampus {
     }
     public int maxDecorationYAt(PlotSettings settings,int x,int z) {
         if (!hasTerrain(x,z)) return 0;
+        if(scene!=null) return scene.topAt(x,z);
         var hall=hallAt(x,z);
         if (hall!=null) return renderer.top(hall,x,z);
         if (AE.contains(x,z)) return 25;
@@ -220,6 +243,14 @@ public final class FileCampus {
     }
     public int previewColorAt(int x,int z) {
         if (!hasTerrain(x,z)) return preview("background");
+        if(scene!=null) {
+            int top=scene.topAt(x,z);
+            for(int y=top;y>=0;y--) {
+                String block=scene.blockAt(x,y,z);
+                if(block!=null&&!block.equals("minecraft:air")) return preview(sceneColor(block));
+            }
+            return preview(previewColorForSurface(surfaceBlock(null,x,z)));
+        }
         var hall=hallAt(x,z);
         if (hall!=null) {
             int u=x-hall.x(),v=z-hall.z();
@@ -236,6 +267,32 @@ public final class FileCampus {
     }
     private int preview(String name) { return 0xff000000 | definition.previewColors().get(name); }
 
+    private String sceneColor(String block) {
+        for(var entry:definition.materials().entrySet()) if(entry.getValue().equals(block)) {
+            String key=entry.getKey();
+            return switch(key) {
+                case "quartz", "column", "slab" -> "quartz";
+                case "dark", "iron", "accent" -> "dark";
+                case "floor" -> "floor";
+                case "road" -> "road";
+                case "green", "leaves" -> "green";
+                case "light", "yellow" -> "yellow";
+                default -> "facade";
+            };
+        }
+        if(block.contains("cherry_leaves")||block.contains("azalea_leaves")||block.contains("grass")||block.contains("flower")) return "green";
+        if(block.contains("water")) return "background";
+        return "facade";
+    }
+
+    private String previewColorForSurface(String block) {
+        if(block.equals(ROAD)) return "road";
+        if(block.equals(GREEN)) return "green";
+        if(block.equals(FLOOR)) return "floor";
+        if(block.equals(DARK)) return "dark";
+        return "quartz";
+    }
+
     private JsonObject read(String resource) {
         var stream=FileCampus.class.getResourceAsStream(resource);
         if (stream==null) throw new IllegalStateException("Missing factory resource "+resource);
@@ -251,16 +308,17 @@ public final class FileCampus {
         }
         List<FactoryArchitecture.Hall> halls=new ArrayList<>();
         List<PlannedCampus.Workshop> workshops=new ArrayList<>();
-        Map<Long,List<FactoryArchitecture.Hall>> tiles=new HashMap<>(); int height=25;
+        Map<Long,List<FactoryArchitecture.Hall>> tiles=new HashMap<>(); int height=renderer==null?0:25;
         for(var element:layout.getAsJsonArray("halls")) {
             var h=element.getAsJsonObject();
             var hall=new FactoryArchitecture.Hall(h.get("id").getAsString(),h.get("department").getAsString(),
                     h.get("stage").getAsString(),h.get("x").getAsInt(),h.get("z").getAsInt(),
                     h.get("width").getAsInt(),h.get("depth").getAsInt(),h.get("clearHeight").getAsInt(),h.get("variant").getAsInt(),
                     h.get("outdoor").getAsBoolean(),h.has("entranceFacing")?h.get("entranceFacing").getAsString():"north");
-            halls.add(hall); height=Math.max(height,renderer.maxHeight(hall));
+            halls.add(hall); height=Math.max(height, renderer!=null ? renderer.maxHeight(hall) : hall.clearHeight());
             if(h.get("shared").getAsBoolean()) {
-                var floor=hall.productionBounds();
+                var floor=h.has("productionBounds")
+                        ? readBounds(h.getAsJsonArray("productionBounds")) : hall.productionBounds();
                 workshops.add(new PlannedCampus.Workshop(hall.stage(),floor.minX(),floor.minZ(),floor.width(),floor.depth()));
             }
             for(int tx=Math.floorDiv(hall.x()-10,64);tx<=Math.floorDiv(hall.maxX()+10,64);tx++)

@@ -19,7 +19,6 @@ public final class ForeignMachineMixinPolicy {
     private static final Set<String> ENHANCEMENT_MIXINS = Set.of(
             "gtlcore.HarmonyAddRecipesMixin", "gtladditions.ArcanicAddRecipesMixin",
             "jade.HarmonyAddParallelProviderMixin",
-            "gtceu.PrimitiveCloudPatternMixin",
             "gtladditions.IvNativeForgeStateAccessor", "gtladditions.IvNativeForgeRecipeAccessor",
             "gtladditions.IvNativeAntientropyAccessor",
             "gtladditions.IvNativeTaixuAccessor", "gtladditions.IvNativeApocalypticAccessor",

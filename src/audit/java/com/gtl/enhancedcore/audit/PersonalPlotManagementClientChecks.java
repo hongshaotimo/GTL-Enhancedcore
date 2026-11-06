@@ -59,11 +59,7 @@ public final class PersonalPlotManagementClientChecks {
                 require(directory.startsWith(ROOT) && !directory.equals(ROOT)
                         && Files.isRegularFile(directory.resolve("personal-plot-management.marker")), "Explicit isolated management fixture");
                 require(mc.level == null && mc.getSingleplayerServer() == null && mc.getConnection() == null, "No world or server connection is open");
-                try { CloudChemicalModesRuntimeChecks.run(directory, checks); }
-                catch (Throwable failure) { failures.add(failure.toString()); failure.printStackTrace(); }
                 try { HarmonyAddRuntimeChecks.run(directory, checks); }
-                catch (Throwable failure) { failures.add(failure.toString()); failure.printStackTrace(); }
-                try { CloudModifierCapacityRuntimeChecks.run(directory, checks); }
                 catch (Throwable failure) { failures.add(failure.toString()); failure.printStackTrace(); }
                 Files.createDirectories(directory.resolve("screenshots")); openDashboard(mc); return;
             }

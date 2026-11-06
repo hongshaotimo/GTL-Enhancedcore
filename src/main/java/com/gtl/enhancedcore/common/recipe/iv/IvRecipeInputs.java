@@ -94,29 +94,6 @@ public final class IvRecipeInputs {
         return patternOperations(recipe.inputs, recipe.outputs, input, virtual, expected);
     }
 
-    /**
-     * Classification-only sizing for cloud publication. Reusable recipe inputs (GT
-     * catalysts/tools, represented by chance 0) may be absent, but integrated
-     * circuits remain mandatory recipe selectors. The real dispatch path still
-     * calls {@link #patternOperations(GTRecipe, Map, Map, Map)} and requires every
-     * physical catalyst.
-     */
-    public static long patternOperationsIgnoringReusableInputs(GTRecipe recipe, Map<AEKey, Long> input,
-                                                                Map<AEKey, Long> virtual, Map<AEKey, Long> expected) {
-        Map<RecipeCapability<?>, List<Content>> required = new LinkedHashMap<>();
-        recipe.inputs.forEach((cap, contents) -> {
-            var kept = contents.stream().filter(content -> {
-                if (content.chance > 0) return true;
-                if (cap != ItemRecipeCapability.CAP) return false;
-                ItemStack[] choices = ItemRecipeCapability.CAP.of(content.content).getItems();
-                return choices.length > 0 && Arrays.stream(choices).allMatch(
-                        com.gregtechceu.gtceu.common.item.IntCircuitBehaviour::isIntegratedCircuit);
-            }).toList();
-            if (!kept.isEmpty()) required.put(cap, kept);
-        });
-        return patternOperations(required, recipe.outputs, input, virtual, expected);
-    }
-
     private static long patternOperations(Map<RecipeCapability<?>, List<Content>> inputs,
                                           Map<RecipeCapability<?>, List<Content>> outputs,
                                           Map<AEKey, Long> input, Map<AEKey, Long> virtual,

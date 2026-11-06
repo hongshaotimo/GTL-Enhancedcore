@@ -6,8 +6,8 @@
   "patternHashDefinition": "SHA-256 of uncompressed ASCII pattern including dimensions and line endings",
   "generator": "tools/generate_planned_campus_catalog.py",
   "runtimeCoverage": {
-    "registered": 290,
-    "included": 284,
+    "registered": 289,
+    "included": 283,
     "inventorySha256": "7a1d929b7a435b7d97de237e500321db711c88c8fe9170ee9f9532dd7ff1de93",
     "sourceCoreSha256": "17dce9afab5688d8736cab466689a94f2ec77352edc285d95238c088b468f671",
     "dependencies": {
@@ -13437,60 +13437,6 @@
         "materials": [
           "gtceu:ruridit_frame",
           "gtlcore:iridium_casing"
-        ]
-      }
-    },
-    {
-      "id": "gtl_enhancedcore:cloud_pattern_library",
-      "stage": "mid",
-      "size": [
-        49,
-        33,
-        45
-      ],
-      "controller": [
-        24,
-        16,
-        44
-      ],
-      "frontFacing": "north",
-      "upwardsFacing": "up",
-      "flipped": false,
-      "groundOffset": [
-        24,
-        16,
-        0
-      ],
-      "controllerForward": [
-        0,
-        0,
-        -1
-      ],
-      "patternResource": "/data/gtl_enhancedcore/structures/cloud_pattern_library.pattern.gz",
-      "patternSha256": "1373cb475821945c53a702c2cadc2757111d2431358871ab6966f2dccd3f0358",
-      "sourceManifest": "cloud_pattern_library.json",
-      "controllerSymbol": "C",
-      "repetitions": {
-        "mode": "fixed",
-        "sourceAisles": 45,
-        "minimum": 45,
-        "maximum": 45
-      },
-      "copies": 1,
-      "sourceInventorySha256": "7a1d929b7a435b7d97de237e500321db711c88c8fe9170ee9f9532dd7ff1de93",
-      "theme": "logistics",
-      "themeEvidence": {
-        "registryKeywords": [
-          "cloud_pattern"
-        ],
-        "recipeTypes": [],
-        "materials": [
-          "gtceu:light_blue_lamp",
-          "gtceu:sterilizing_filter_casing",
-          "gtceu:white_lamp",
-          "gtlcore:iridium_casing",
-          "gtlcore:molecular_casing",
-          "gtlcore:naquadah_alloy_casing"
         ]
       }
     },

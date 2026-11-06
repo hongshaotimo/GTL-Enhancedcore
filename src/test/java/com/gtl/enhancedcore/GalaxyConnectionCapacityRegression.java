@@ -8,6 +8,30 @@ import java.util.Set;
 final class GalaxyConnectionCapacityRegression {
     static int run() throws Exception {
         int capacityChecks = 0;
+        for (boolean isolated : new boolean[]{false, true}) {
+            check(GalaxyLinks.temporaryNativeModeAllowed(isolated) == !isolated,
+                    "native stellar mode is available outside explicit IV isolation");
+            capacityChecks++;
+        }
+        for (int arrays : new int[]{0, 1, 63}) {
+            check(GalaxyLinks.connectionThreads(true, false, arrays, 1) == 10001,
+                    "an unfinished station retains its finite native thread grant");
+            capacityChecks++;
+        }
+        String modeMixin = Files.readString(java.nio.file.Path.of(
+                "src/main/java/com/gtl/enhancedcore/mixin/gtladditions/GalaxyMutableModeMixin.java"));
+        check(modeMixin.contains("GalaxyLinks.temporaryNativeModeAllowed(")
+                        && modeMixin.contains("&& GalaxyLinks.crossRecipeEnabledByConnection(machine)")
+                        && !modeMixin.contains("jobs.isEmpty()"),
+                "transformed ADD mode follows actual connection and isolation gates");
+        capacityChecks++;
+        String scope = Files.readString(java.nio.file.Path.of(
+                "src/main/java/com/gtl/enhancedcore/common/recipe/iv/IvMachineScope.java"));
+        check(scope.contains("return grantGalaxyThreads(machine, batching(machine) ? upstreamBatchThreads(modifier) : nativeThreads(modifier))")
+                        && scope.contains("return Math.max(1, mutable.getMultipleThreads())")
+                        && scope.contains("return Math.max(1, gtlAdd.getMultipleThreads())"),
+                "GTLCore gains stellar threads while ADD transformed getters are not granted twice");
+        capacityChecks++;
         for (int arrays = 0; arrays <= 64; arrays++) {
             for (boolean active : new boolean[]{false, true}) {
                 for (boolean modifier : new boolean[]{false, true}) {
@@ -45,7 +69,7 @@ final class GalaxyConnectionCapacityRegression {
                 "gtl_enhancedcore:void_constrained_mining_field", "gtl_enhancedcore:dragon_field_proliferation_core")),
                 "previously omitted own electric controllers are explicitly configurable");
         check(GalaxyConnectionConfig.defaults().stream().noneMatch(id -> Set.of(
-                "gtl_enhancedcore:weather_anchor", "gtl_enhancedcore:cloud_pattern_library",
+                "gtl_enhancedcore:weather_anchor",
                 "gtl_enhancedcore:stellar_vortex_space_station", "gtl_enhancedcore:extreme_reactor",
                 "gtl_enhancedcore:stellar_confinement_fusion_reactor").contains(id)),
                 "no-input receivers, storage and source station are not targets");

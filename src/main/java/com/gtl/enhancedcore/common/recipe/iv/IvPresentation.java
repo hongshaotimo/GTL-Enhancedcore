@@ -34,6 +34,10 @@ public final class IvPresentation {
             var row=rows.getCompound(i); String type=row.getString("type").replace(':','.');
             text.add(Component.translatable("gtl_enhancedcore.gui.iv_order",row.getInt("slot"),Component.translatable(type).withStyle(ChatFormatting.AQUA),
                     value(row.getLong("delivered"),ChatFormatting.GREEN),value(row.getLong("total"),ChatFormatting.WHITE)).withStyle(ChatFormatting.GRAY));
+            if (row.getLong("completed") != row.getLong("delivered"))
+                text.add(Component.translatable("gtl_enhancedcore.gui.iv_processed", value(row.getLong("completed"), ChatFormatting.AQUA),
+                        value(row.getLong("total"), ChatFormatting.WHITE), value(row.getLong("delivered"), ChatFormatting.GREEN),
+                        value(row.getLong("total"), ChatFormatting.WHITE)).withStyle(ChatFormatting.DARK_GRAY));
             if (row.getBoolean("recoveredTail")) text.add(Component.translatable("gtl_enhancedcore.gui.iv_recovered_tail").withStyle(ChatFormatting.DARK_GRAY));
             if (row.getLong("cancelled")>0) text.add(Component.translatable("gtl_enhancedcore.gui.iv_cancelled_count",value(row.getLong("cancelled"),ChatFormatting.YELLOW)).withStyle(ChatFormatting.GRAY));
             if (row.getLong("running")>0)

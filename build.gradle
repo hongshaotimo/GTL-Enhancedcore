@@ -125,7 +125,18 @@ tasks.register("regressionTest", JavaExec) {
     }
 }
 
-tasks.named("check") { dependsOn "regressionTest" }
+// Run the real block-state parser in its own registry bootstrap JVM; no client or world is started.
+tasks.register("campusMaterialRegistryTest", JavaExec) {
+    dependsOn regressionClasses
+    classpath = sourceSets.regression.runtimeClasspath
+    mainClass = "com.gtl.enhancedcore.CampusSceneMaterialRegistryRegression"
+    workingDir = projectDir
+    javaLauncher = javaToolchains.launcherFor {
+        languageVersion = JavaLanguageVersion.of(21)
+    }
+}
+
+tasks.named("check") { dependsOn "regressionTest", "campusMaterialRegistryTest" }
 
 // Explicit opt-in helper, never included in the production jar or the normal build.
 tasks.register("auditRuntimeJar", Jar) {

@@ -3,8 +3,11 @@ package com.gtl.enhancedcore.client.plot;
 import com.gtl.enhancedcore.common.world.plot.PlotLayout;
 import com.gtl.enhancedcore.common.world.plot.PlotSettings;
 import com.gtl.enhancedcore.common.world.plot.CampusPresetRegistry;
+import com.mojang.logging.LogUtils;
 import java.util.*;
 import java.util.function.*;
+import java.util.concurrent.CompletableFuture;
+import net.minecraft.Util;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractButton;
 import net.minecraft.client.gui.components.AbstractWidget;
@@ -20,6 +23,7 @@ import net.minecraft.resources.ResourceLocation;
 
 /** A local recipe workbench. No terrain or creation state is changed before confirmation. */
 public final class CreateWorldPlotScreen extends Screen {
+    private static final org.slf4j.Logger LOGGER = LogUtils.getLogger();
     private static final String KEY = "gtl_enhancedcore.create_world_plot.";
     private static final String[] PAGES = {"page_presets", "page_layout", "page_roads", "page_materials", "page_height"};
     private static final String[] MATERIAL_KEYS = {"ground", "plot_edge_block", "road_block", "border_block", "line_block", "marker_block"};
@@ -44,7 +48,11 @@ public final class CreateWorldPlotScreen extends Screen {
     private final int[] pageScroll = new int[PAGES.length];
     private Component error = CommonComponents.EMPTY;
     private FlatButton done, share;
-    private boolean building, grid;
+    private boolean building, grid, presetLoading, presetLoadFailed;
+    private int presetLoadGeneration;
+    private String campusCountKey = "";
+    private int campusCount = -1, campusCountGeneration;
+    private boolean campusCountLoading, campusCountFailed;
     private record Label(Component text, int x, int y, int maxWidth, boolean heading) {}
 
     public CreateWorldPlotScreen(CreateWorldScreen parent) {
@@ -109,8 +117,8 @@ public final class CreateWorldPlotScreen extends Screen {
         int y = hint(tr("campus_preset_hint"), 39);
         for (var definition : CampusPresetRegistry.definitions()) {
             edit(() -> Component.translatable(definition.nameKey()), editorX, y + 8, editorWidth, 30,
-                    () -> selectTerrainPreset(settingsFor(definition)),
-                    () -> draft.campusKey().equals(settingsFor(definition).campusKey()))
+                    () -> selectTerrainPreset(definition),
+                    () -> selectedPreset(definition))
                     .setTooltip(Tooltip.create(Component.translatable(definition.descriptionKey())));
             y = hint(Component.translatable(definition.descriptionKey()), y + 47);
         }
@@ -119,6 +127,7 @@ public final class CreateWorldPlotScreen extends Screen {
         return y + 40;
     }
     private void selectTerrainPreset(PlotSettings settings) {
+        presetLoadFailed = false;
         draft = settings; validatedPreview = draft; resetInputs();
         pageScroll[page] = scroll; page = 1; pageScroll[page] = 0; rebuildWidgets();
     }
@@ -126,11 +135,13 @@ public final class CreateWorldPlotScreen extends Screen {
         var definition = selectedDefinition();
         boolean authored = definition != null;
         edit(() -> authored ? Component.translatable(definition.nameKey()) : tr("campus_preset"), editorX, 0, editorWidth, 30,
-                () -> { draft = authored ? settingsFor(definition) : PlotSettings.plannedCampus(); validatedPreview = draft; resetInputs(); rebuildWidgets(); }, draft::isCampus)
+                () -> { if (authored) selectTerrainPreset(definition);
+                    else { draft = PlotSettings.plannedCampus(); validatedPreview = draft; resetInputs(); rebuildWidgets(); } }, draft::isCampus)
                 .setTooltip(Tooltip.create(authored ? Component.translatable(definition.descriptionKey()) : tr("campus_preset_hint")));
         if (draft.isCampus()) {
+            int count = campusCountForDisplay(draft);
             int y = hint(authored ? Component.translatable(definition.descriptionKey())
-                    : tr("campus_description", draft.campusPlotCount()), 39);
+                    : tr("campus_description", count < 0 ? "…" : count), 39);
             y = heading("campus_ae", y + 8);
             y = hint(presetHint(definition, "ae_hint"), y);
             y = heading("campus_districts", y + 6);
@@ -174,6 +185,70 @@ public final class CreateWorldPlotScreen extends Screen {
     private static PlotSettings settingsFor(CampusPresetRegistry.Definition definition) {
         return PlotSettings.fileCampus(definition.id());
     }
+    private boolean selectedPreset(CampusPresetRegistry.Definition definition) {
+        return draft.roadStyle() == PlotSettings.RoadStyle.CAMPUS_FILE
+                ? draft.campusPresetId().equals(definition.id())
+                : draft.roadStyle() == PlotSettings.RoadStyle.CAMPUS_FACTORY && definition.id().equals("quartz_works");
+    }
+    private void selectTerrainPreset(CampusPresetRegistry.Definition definition) {
+        if (presetLoading) return;
+        presetLoading = true;
+        setFocused(null);
+        int generation = ++presetLoadGeneration;
+        presetLoadFailed = false;
+        error = CommonComponents.EMPTY;
+        if (done != null) done.active = false;
+        if (share != null) share.active = false;
+        CompletableFuture.supplyAsync(() -> settingsFor(definition), Util.backgroundExecutor())
+                .whenComplete((settings, failure) -> minecraft.execute(() -> {
+                    if (generation != presetLoadGeneration || minecraft.screen != this) return;
+                    presetLoading = false;
+                    if (failure != null) {
+                        LOGGER.error("Failed to load campus preset {}", definition.id(), failure);
+                        presetLoadFailed = true;
+                        error = tr("preset_load_failed");
+                        validate();
+                        return;
+                    }
+                    error = CommonComponents.EMPTY;
+                    campusCountKey = settings.campusKey();
+                    campusCount = settings.campusPlotCount();
+                    campusCountLoading = false;
+                    campusCountFailed = false;
+                    campusCountGeneration++;
+                    draft = settings; validatedPreview = settings; resetInputs();
+                    pageScroll[page] = scroll; page = 1; pageScroll[page] = 0; rebuildWidgets();
+                }));
+    }
+    private int campusCountForDisplay(PlotSettings settings) {
+        if (settings.roadStyle() != PlotSettings.RoadStyle.CAMPUS_FILE) return settings.campusPlotCount();
+        String key = settings.campusKey();
+        if (key.equals(campusCountKey) && campusCount >= 0) return campusCount;
+        if (!key.equals(campusCountKey)) {
+            campusCountKey = key;
+            campusCount = -1;
+            campusCountFailed = false;
+            campusCountLoading = false;
+            campusCountGeneration++;
+        }
+        if (!campusCountLoading && !campusCountFailed) {
+            campusCountLoading = true;
+            int generation = ++campusCountGeneration;
+            CompletableFuture.supplyAsync(settings::campusPlotCount, Util.backgroundExecutor())
+                    .whenComplete((count, failure) -> minecraft.execute(() -> {
+                        if (generation != campusCountGeneration || minecraft.screen != this) return;
+                        campusCountLoading = false;
+                        if (failure != null) {
+                            LOGGER.error("Failed to read campus preview count for {}", settings.campusPresetId(), failure);
+                            campusCountFailed = true;
+                            return;
+                        }
+                        campusCount = count;
+                        if (page == 1) rebuildWidgets();
+                    }));
+        }
+        return -1;
+    }
     private CampusPresetRegistry.Definition selectedDefinition() {
         if (draft.roadStyle() == PlotSettings.RoadStyle.CAMPUS_FACTORY) return CampusPresetRegistry.get("quartz_works");
         return draft.roadStyle() == PlotSettings.RoadStyle.CAMPUS_FILE ? CampusPresetRegistry.get(draft.campusPresetId()) : null;
@@ -181,6 +256,7 @@ public final class CreateWorldPlotScreen extends Screen {
     private static Component presetHint(CampusPresetRegistry.Definition definition, String suffix) {
         String prefix = definition == null ? "campus" : switch (definition.engine()) {
             case "quartz_factory" -> "factory";
+            case "file_scene" -> definition.id();
             default -> "file";
         };
         return tr(prefix + "_" + suffix);
@@ -344,12 +420,12 @@ public final class CreateWorldPlotScreen extends Screen {
                 inputs.get("plot_edge_block"),number("plot_edge_width"),draft.showMachineFrames());
     }
     private void validate() {
-        if(building) return; error=CommonComponents.EMPTY;
+        if(building) return; error=presetLoadFailed ? tr("preset_load_failed") : CommonComponents.EMPTY;
         try { draft=candidate(); validatedPreview=draft; }
-        catch(RuntimeException invalid) { error=tr("invalid_settings"); }
-        boolean valid=error.equals(CommonComponents.EMPTY);
-        if(done!=null) done.active=valid && (state == null || CreateWorldPlotState.isSkyblock(state));
-        if(share!=null) share.active=valid;
+        catch(RuntimeException invalid) { if (!presetLoadFailed) error=tr("invalid_settings"); }
+        boolean valid=!presetLoadFailed && error.equals(CommonComponents.EMPTY);
+        if(done!=null) done.active=!presetLoading && valid && (state == null || CreateWorldPlotState.isSkyblock(state));
+        if(share!=null) share.active=!presetLoading && valid;
     }
     private void commit() {
         validate(); if(!done.active) return;
@@ -362,7 +438,7 @@ public final class CreateWorldPlotScreen extends Screen {
         minecraft.setScreen(new PlotPresetShareScreen(this,draft,settings -> { draft=settings; validatedPreview=settings; resetInputs(); }));
     }
     @Override public void onClose() { minecraft.setScreen(parent); }
-    @Override public void removed() { single.close(); four.close(); thumbnails.values().forEach(PlotPreviewRenderer.Cached::close); }
+    @Override public void removed() { presetLoadGeneration++; campusCountGeneration++; presetLoading=false; campusCountLoading=false; single.close(); four.close(); thumbnails.values().forEach(PlotPreviewRenderer.Cached::close); }
     @Override public void tick() { for(var child:editorWidgets) if(child instanceof EditBox box) box.tick(); }
     private void updateScroll(int value) {
         scroll=Math.max(0,Math.min(value,Math.max(0,contentHeight-(editorBottom-editorY)))); pageScroll[page]=scroll;
@@ -379,7 +455,8 @@ public final class CreateWorldPlotScreen extends Screen {
     private boolean inEditor(double mx,double my) { return mx>=editorX && mx<editorX+editorWidth && my>=editorY && my<editorBottom; }
     @Override public boolean mouseClicked(double mx,double my,int button) {
         List<AbstractWidget> widgets=inEditor(mx,my) ? editorWidgets : fixedWidgets;
-        for(var widget:widgets) if(widget.visible && widget.active && widget.mouseClicked(mx,my,button)) {
+        for(var widget:widgets) if(widget.visible && widget.active
+                && (!presetLoading || widget == fixedWidgets.get(PAGES.length + 1)) && widget.mouseClicked(mx,my,button)) {
             // A button may have rebuilt the screen. Never restore focus to its discarded instance.
             if(editorWidgets.contains(widget) || fixedWidgets.contains(widget)) setFocused(widget);
             if(button==0) setDragging(true); return true;
@@ -401,6 +478,7 @@ public final class CreateWorldPlotScreen extends Screen {
     }
     @Override public boolean keyPressed(int key,int scan,int modifiers) {
         if(key==256) { onClose(); return true; }
+        if(presetLoading) return true;
         if(key==258) {
             List<AbstractWidget> order=new ArrayList<>(fixedWidgets.subList(0,PAGES.length)); order.addAll(editorWidgets);
             order.addAll(fixedWidgets.subList(PAGES.length,fixedWidgets.size())); order.removeIf(widget -> !widget.active);
@@ -462,8 +540,9 @@ public final class CreateWorldPlotScreen extends Screen {
         }
         drawPreviews(g);
         int statusY=top+bodyHeight-40;
-        Component status=error.equals(CommonComponents.EMPTY) ? validatedPreview.isCampus()
-                ? tr("campus_status",validatedPreview.campusPlotCount(),validatedPreview.surfaceY())
+        int displayedCampusCount = validatedPreview.isCampus() ? campusCountForDisplay(validatedPreview) : 0;
+        Component status=presetLoading ? tr("preset_loading") : error.equals(CommonComponents.EMPTY) ? validatedPreview.isCampus()
+                ? tr("campus_status",displayedCampusCount < 0 ? "…" : displayedCampusCount,validatedPreview.surfaceY())
                 : tr("live_status",validatedPreview.plotBlocks(),validatedPreview.surfaceY()) : error;
         g.drawString(font,font.plainSubstrByWidth(status.getString(),bodyWidth-24),left+12,statusY,error.equals(CommonComponents.EMPTY)?MUTED:0xffffa69c,false);
         for(var widget:fixedWidgets) widget.render(g,mx,my,partial);
@@ -511,7 +590,8 @@ public final class CreateWorldPlotScreen extends Screen {
         int x = previewX + (previewWidth - size) / 2, y = previewY + 2;
         single.draw(g, validatedPreview, x, y, size, 1, false);
         g.drawString(font, font.plainSubstrByWidth(tr("campus_core_preview").getString(), previewWidth - 6), previewX + 3, y + size + 4, INK, false);
-        g.drawString(font, font.plainSubstrByWidth(tr("campus_plan_count", validatedPreview.campusPlotCount()).getString(), previewWidth - 6),
+        int count = campusCountForDisplay(validatedPreview);
+        g.drawString(font, font.plainSubstrByWidth(tr("campus_plan_count", count < 0 ? "…" : count).getString(), previewWidth - 6),
                 previewX + 3, y + size + 17, MUTED, false);
     }
     private static void panel(GuiGraphics g,int x,int y,int w,int h,int fill) {

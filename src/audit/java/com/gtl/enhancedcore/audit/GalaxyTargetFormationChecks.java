@@ -246,8 +246,10 @@ public final class GalaxyTargetFormationChecks {
                 appeng.api.stacks.AEItemKey.of(net.minecraft.world.item.Items.DIAMOND.getDefaultInstance()), 1L);
         check(com.gtl.enhancedcore.common.recipe.iv.IvRecipeInputs.patternOperations(recipe, Map.of(), Map.of(), expected) == 0,
                 "Strict execution matching still requires physical reusable catalyst");
-        check(com.gtl.enhancedcore.common.recipe.iv.IvRecipeInputs.patternOperationsIgnoringReusableInputs(recipe, Map.of(), Map.of(), expected) == 1,
-                "Classification publishes reusable catalyst pattern without catalyst stock");
+        var stock = Map.<appeng.api.stacks.AEKey, Long>of(
+                appeng.api.stacks.AEItemKey.of(net.minecraft.world.item.Items.APPLE), 1L);
+        check(com.gtl.enhancedcore.common.recipe.iv.IvRecipeInputs.patternOperations(recipe, stock, Map.of(), expected) == 1,
+                "Execution matching admits one output when the reusable catalyst is physically present");
     }
     private static Stream<SimplePredicate> parts(TraceabilityPredicate rule) {
         return Stream.concat(rule.common.stream(), rule.limited.stream());

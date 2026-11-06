@@ -17,7 +17,6 @@ import com.gregtechceu.gtceu.common.recipe.condition.ResearchCondition;
 import com.gtl.enhancedcore.common.util.FairRecipeSelector;
 import com.gtl.enhancedcore.common.recipe.GridEnergyInputs;
 import com.gtl.enhancedcore.common.recipe.MachineDiagnostics;
-import com.gtl.enhancedcore.common.cloud.CloudPowerAccess;
 import com.gtladd.gtladditions.api.machine.IWirelessElectricMultiblockMachine;
 import com.gtladd.gtladditions.api.machine.trait.IWirelessNetworkEnergyHandler;
 import org.gtlcore.gtlcore.common.machine.multiblock.part.ae.MEPatternBufferPartMachine;
@@ -37,8 +36,7 @@ import org.gtlcore.gtlcore.api.machine.computation.ComputationRecipes;
 
 /**
  * Orders own all material state. The original machine/trait still owns coils, energy, research,
- * computation, maintenance and modules. Explicit IV registrations retain their enhanced limits;
- * other machines opt in only while an actual cloud endpoint is attached, at their native limits.
+ * computation, maintenance and modules. Explicit IV registrations retain their enhanced limits.
  */
 public final class IvNativeEngine {
     private final WorkableMultiblockMachine machine;
@@ -54,20 +52,16 @@ public final class IvNativeEngine {
     private boolean advanced;
     private boolean fault;
     private int powerRotation;
-    private BigInteger startedParallel = BigInteger.ZERO;
-    private int startedCryotheumCost;
     private final Map<UUID, Component> rejectionDetails = new HashMap<>();
     private final List<Component> machineDetails = new ArrayList<>();
 
     public IvNativeEngine(WorkableMultiblockMachine machine, RecipeLogic logic, IvNativeAccess access) {
         this.machine = machine; this.logic = logic; this.access = access;
-        if (!IvMachineScope.nativeTarget(machine) && !IvBuffers.genericCloudTarget(machine))
-            throw new IllegalArgumentException("Not an isolated native or cloud-adapted machine");
+        if (!IvMachineScope.nativeTarget(machine))
+            throw new IllegalArgumentException("Not an isolated native machine");
     }
-    public void tick() { tick(true); }
-    /** Stop admitting new batches while a native-input turn waits for committed cloud work. */
-    public void tick(boolean allowStarts) {
-        if (machine.isRemote() || access.iv$nativeInputsActive()) return;
+    public void tick() {
+        if (machine.isRemote()) return;
         if (!machine.isRecipeLogicAvailable() || !machine.hasProxies()) {
             invalidateRuntime();
             var summary = access.iv$summary();
@@ -79,7 +73,7 @@ public final class IvNativeEngine {
                             ? RecipeLogic.Status.WAITING : RecipeLogic.Status.SUSPEND);
             return;
         }
-        try { tickOrders(allowStarts); }
+        try { tickOrders(); }
         catch (RuntimeException failure) {
             fault = true; logic.setWorkingEnabled(false);
             var summary = access.iv$summary();
@@ -170,7 +164,6 @@ public final class IvNativeEngine {
     private long inputPower() {
         if (!(machine instanceof WorkableElectricMultiblockMachine)) return 0;
         if (com.gtl.enhancedcore.common.machine.galaxy.GalaxyLinks.active((WorkableElectricMultiblockMachine) machine)) return Long.MAX_VALUE;
-        if (machine instanceof CloudPowerAccess power) return Math.max(0, power.cloudPowerLimit());
         if (GridEnergyInputs.find((WorkableElectricMultiblockMachine) machine) != null) return Long.MAX_VALUE;
         var sources = new ArrayList<IvNativeRecoveryState.PowerInput>();
         for (var energy : GridEnergyInputs.energyInputs((WorkableElectricMultiblockMachine) machine))
@@ -180,12 +173,6 @@ public final class IvNativeEngine {
     }
     private boolean powerReady(Ref ref, BigInteger payment, IWirelessNetworkEnergyHandler wireless, long availablePower) {
         if (!(machine instanceof WorkableElectricMultiblockMachine)) return payment.signum() == 0;
-        if (machine instanceof CloudPowerAccess power) {
-            if ((wireless != null || payment.compareTo(BigInteger.valueOf(Math.max(0, availablePower))) <= 0)
-                    && power.cloudPowerReady(payment)) return true;
-            waiting(ref, "gtl_enhancedcore.diagnostic.power");
-            return false;
-        }
         if (wireless != null) {
             if (!wireless.isOnline()) {
                 waiting(ref, "gtl_enhancedcore.diagnostic.power", nativeDetail("wireless_offline"));
@@ -213,12 +200,7 @@ public final class IvNativeEngine {
         }
         return true;
     }
-    public boolean hasActiveBatches() {
-        for (var buffer : IvBuffers.collect(machine))
-            for (var job : IvBuffers.jobs(buffer, machine)) if (job.active() && !job.halted) return true;
-        return false;
-    }
-    private void tickOrders(boolean allowStarts) {
+    private void tickOrders() {
         if (fault && !logic.isWorkingEnabled()) return;
         fault = false; clearDiagnostics();
         // Do not adopt a legacy, already-paid recipe as a new order.
@@ -242,7 +224,7 @@ public final class IvNativeEngine {
                 machineDetails.add(Component.translatable(reason));
                 continue;
             }
-            for (var job : IvBuffers.jobs(buffer, machine)) {
+            for (var job : IvBuffers.jobs(buffer)) {
                 var ref = new Ref(buffer, job);
                 try { validateNativeJob(job); }
                 catch (RuntimeException failure) {
@@ -265,13 +247,13 @@ public final class IvNativeEngine {
         for (var ref : IvWorkBudget.deliveries(pending, deliverySelector, ref -> ref.job.id.toString())) flush(ref);
         all.removeIf(ref -> {
             if (ref.job.halted || !ref.job.done()) return false;
-            IvBuffers.state(ref.buffer).jobs.remove(ref.job); ref.buffer.markDirty();
+            IvBuffers.state(ref.buffer).removeJob(ref.job); ref.buffer.markDirty();
             IvTaskLog.event(ref.buffer, ref.job, "RETIRE", "FULLY_DELIVERED",
                     "totalOperations", ref.job.totalOperations, "deliveredOperations", ref.job.deliveredOperations,
                     "cancelledOperations", ref.job.cancelledOperations);
             return true;
         });
-        if (logic.isWorkingEnabled()) { if (allowStarts) start(all); advance(all); }
+        if (logic.isWorkingEnabled()) { start(all); advance(all); }
         if (all.stream().noneMatch(ref -> !ref.job.halted && (ref.job.active() || ref.job.remaining > 0)))
             ComputationNetwork.forget(machine);
         publish(all);
@@ -337,13 +319,10 @@ public final class IvNativeEngine {
         return true;
     }
     private void start(List<Ref> all) {
-        startedParallel = BigInteger.ZERO;
-        startedCryotheumCost = 0;
         long budget = IvMachineScope.budget(machine);
-        boolean independent = IvNativeCapacity.independentRecipeParallel(machine);
         int slots = IvMachineScope.activeThreads(machine);
         for (var ref : all) if (ref.job.active() && !ref.job.halted) {
-            if (!independent) budget = Math.max(0, budget - ref.job.nativeCapacity);
+            budget = Math.max(0, budget - ref.job.nativeCapacity);
             slots--;
         }
         if (slots <= 0) {
@@ -355,7 +334,7 @@ public final class IvNativeEngine {
         for (var ref : all) {
             var job = ref.job;
             if (!job.halted && !job.active() && job.pending.isEmpty() && job.remaining > 0
-                    && IvBuffers.cloudAllowsRecipeType(machine, job.recipe.recipeType) && allowed(ref)) {
+                    && allowed(ref)) {
                 ready.add(ref);
             }
         }
@@ -366,48 +345,29 @@ public final class IvNativeEngine {
             waiting(ref, "gtl_enhancedcore.diagnostic.iv_parallel", nativeDetail("threads", scheduledSlots, IvMachineScope.threads(machine)));
         long[] wants = new long[chosen.size()];
         long[] freeParallel = new long[chosen.size()];
-        IvNativeChancePlan[] chancePlans = new IvNativeChancePlan[chosen.size()];
         for (int i = 0; i < wants.length; i++) {
             var ref = chosen.get(i);
-            var virtual = IvBuffers.availableVirtual(ref.buffer, ref.job, machine);
+            var virtual = IvBuffers.availableVirtual(ref.buffer, ref.job);
             if (IvMachineScope.unmeteredBatch(machine, ref.job.recipe)) {
                 freeParallel[i] = IvRecipeInputs.maxParallel(ref.job.recipe, ref.job.inventory, virtual, ref.job.remaining);
             } else {
                 long limit = Math.min(IvNativeCapacity.candidateCapacity(machine, ref.job.recipe, budget), ref.job.remaining);
-                GTRecipe prepared = IvNativeBatchRecipe.prepare(machine, ref.job.recipe);
-                if (machine instanceof com.gtladd.gtladditions.common.machine.multiblock.controller.ApocalypticTorsionQuantumMatrix) {
-                    chancePlans[i] = new IvNativeChancePlan((WorkableElectricMultiblockMachine)machine, ref.job.inventory);
-                    wants[i] = chancePlans[i].maximum((WorkableElectricMultiblockMachine)machine, prepared, limit);
-                } else wants[i] = IvRecipeInputs.maxParallel(prepared, ref.job.inventory, virtual, limit);
+                wants[i] = IvRecipeInputs.maxParallel(ref.job.recipe, ref.job.inventory, virtual, limit);
             }
             if (wants[i] == 0 && freeParallel[i] == 0)
                 waiting(ref, budget == 0 ? "gtl_enhancedcore.diagnostic.iv_parallel" : "gtl_enhancedcore.diagnostic.iv_catalyst");
         }
-        long[] grants = independent ? wants : FairBudget.divide(budget, wants, 0);
+        long[] grants = FairBudget.divide(budget, wants, 0);
         String cycle = UUID.randomUUID().toString();
         for (int i = 0; i < grants.length; i++) {
             var ref = chosen.get(i);
             if (!lockAllows(ref)) continue;
-            if (freeParallel[i] > 0) prepare(ref, freeParallel[i], 0, cycle, chancePlans[i]);
-            else if (grants[i] > 0) prepare(ref, grants[i], grants[i], cycle, chancePlans[i]);
+            if (freeParallel[i] > 0) prepare(ref, freeParallel[i], 0, cycle);
+            else if (grants[i] > 0) prepare(ref, grants[i], grants[i], cycle);
             if (ref.job.active() && !ref.job.halted
                     && logic instanceof org.gtlcore.gtlcore.api.machine.trait.ILockRecipe lock
-                    && (lock.isLock() || IvNativeCapacity.singleRecipe(machine)) && lock.getLockRecipe() == null) {
+                    && lock.isLock() && lock.getLockRecipe() == null) {
                 lock.setLock(true); lock.setLockRecipe(ref.job.recipe); machine.markDirty();
-            }
-        }
-        if (machine instanceof com.gtladd.gtladditions.common.machine.multiblock.controller.ApocalypticTorsionQuantumMatrix matrix) {
-            var committed = chosen.stream().filter(ref -> ref.job.active() && ref.job.cycle.equals(cycle)).toList();
-            long total = committed.stream().mapToLong(ref -> ref.job.parallel).sum();
-            if (total > 0) {
-                double boost = matrix.consumeTSDAndGetMultiplier(total);
-                if (boost > 1) for (var ref : committed) {
-                    // Input/output chances were already settled at successful admission.
-                    IvNativeBatchRecipe.apocalyptic().iv$multiplyOutputs(List.of(ref.job.nativeRecipe), boost);
-                    ref.job.completion.clear();
-                    ref.job.completion.putAll(IvRecipeInputs.outputs(ref.job.nativeRecipe.outputs));
-                    ref.buffer.markDirty();
-                }
             }
         }
     }
@@ -422,10 +382,10 @@ public final class IvNativeEngine {
         return logic instanceof com.gtl.enhancedcore.mixin.gtceu.IvNativeMutableAccessor mutable
                 ? mutable.iv$recipeEUt(recipe) : RecipeHelper.getInputEUt(recipe);
     }
-    private void prepare(Ref ref, long granted, long capacity, String cycle, IvNativeChancePlan chancePlan) {
+    private void prepare(Ref ref, long granted, long capacity, String cycle) {
         var job = ref.job;
         try {
-            var virtual = IvBuffers.availableVirtual(ref.buffer, job, machine);
+            var virtual = IvBuffers.availableVirtual(ref.buffer, job);
             GTRecipe scaled;
             GTRecipe timing;
             var wireless = wireless();
@@ -435,26 +395,16 @@ public final class IvNativeEngine {
             // Research duration is paid work, not a fixed-energy batch window.
             if (IvMachineScope.batching(machine) && !job.recipe.data.getBoolean("duration_is_total_cwu")) {
                 parallel = granted;
-                GTRecipe scaleSource = IvNativeBatchRecipe.selected(machine, job.recipe);
-                if (chancePlan != null) {
-                    // An earlier selected order may have advanced the native chance
-                    // cache. Re-plan this admission from that successful state.
-                    chancePlan = new IvNativeChancePlan((WorkableElectricMultiblockMachine)machine, job.inventory);
-                    parallel = chancePlan.maximum((WorkableElectricMultiblockMachine)machine, scaleSource, granted);
-                    if (parallel == 0) { waiting(ref, "gtl_enhancedcore.diagnostic.iv_catalyst"); return; }
-                    capacity = parallel;
-                }
+                GTRecipe scaleSource = job.recipe;
                 if (wireless != null) {
                     scaleSource = scaleSource.copy(); scaleSource.data = scaleSource.data.copy();
                     scaleSource.tickInputs.remove(EURecipeCapability.CAP);
                 }
                 if (wireless != null) {
-                    scaled = IvNativeBatchRecipe.scale(machine, scaleSource, parallel);
+                    scaled = RecipeCalculationHelper.INSTANCE.multipleRecipe(scaleSource, parallel);
                     BigInteger cost = BigDecimal.valueOf(job.recipe.duration * multiplier())
                             .multiply(BigDecimal.valueOf(batchEUt(job.recipe)))
                             .multiply(BigDecimal.valueOf(parallel)).toBigInteger();
-                    var fixed = IvNativeBatchRecipe.fixedBatchEnergy(machine);
-                    if (fixed != null) cost = fixed;
                     if (wireless.getMaxAvailableEnergy().compareTo(cost) < 0) {
                         waiting(ref, "gtl_enhancedcore.diagnostic.power"); return;
                     }
@@ -472,11 +422,10 @@ public final class IvNativeEngine {
                     double baseCost = logic instanceof MultipleRecipesLogic
                             ? ((com.gtl.enhancedcore.mixin.gtlcore.IvNativeMultipleAccessor)logic).iv$totalEu(job.recipe)
                             : batchEUt(job.recipe) * (double)job.recipe.duration;
-                    var fixed = IvNativeBatchRecipe.fixedBatchEnergy(machine);
-                    double operationCost = fixed == null ? baseCost * multiplier() : 0;
+                    double operationCost = baseCost * multiplier();
                     if (!Double.isFinite(operationCost) || operationCost < 0)
                         throw new ArithmeticException("Invalid native operation cost");
-                    // A long cloud order can exceed the native int-duration window.
+                    // A long order can exceed the native int-duration window.
                     // Keep its remaining stock queued and admit the largest payable
                     // time window instead of halting the entire order.
                     if (operationCost > 0) {
@@ -487,8 +436,8 @@ public final class IvNativeEngine {
                         if (parallel == 0) { waiting(ref, "gtl_enhancedcore.diagnostic.power"); return; }
                         if (capacity != 0) capacity = parallel;
                     }
-                    double cost = fixed == null ? operationCost * parallel : fixed.doubleValue();
-                    scaled = IvNativeBatchRecipe.scale(machine, scaleSource, parallel);
+                    double cost = operationCost * parallel;
+                    scaled = RecipeCalculationHelper.INSTANCE.multipleRecipe(scaleSource, parallel);
                     timing = RecipeCalculationHelper.INSTANCE.buildNormalRecipe(List.of(), List.of(), cost, power, 20);
                 }
             } else {
@@ -530,8 +479,7 @@ public final class IvNativeEngine {
                     wirelessTotal = wirelessEUt.multiply(BigInteger.valueOf(timing.duration));
                 }
             }
-            if (chancePlan == null ? IvRecipeInputs.plan(scaled, job.inventory, virtual, 1) == null
-                    : !IvNativeChancePlan.guaranteedInputsFit(scaled, job.inventory, virtual)) {
+            if (IvRecipeInputs.plan(scaled, job.inventory, virtual, 1) == null) {
                 waiting(ref, "gtl_enhancedcore.diagnostic.iv_catalyst"); return;
             }
             var conditions = scaled.checkConditions(logic);
@@ -539,11 +487,7 @@ public final class IvNativeEngine {
                 waiting(ref, "gtl_enhancedcore.diagnostic.conditions", resultDetail(conditions, "gtl_enhancedcore.diagnostic.conditions"));
                 return;
             }
-            // Steam pays its fixed startup cost, not the recipe's nominal EU tick demand.
-            // Keep the original EU in the modified recipe for voltage and timing checks.
-            long eut = wireless == null
-                    && !(machine instanceof com.gtl.enhancedcore.common.machine.IndustrialSteamPlatformMachine)
-                    ? RecipeHelper.getInputEUt(timing) : 0;
+            long eut = wireless == null ? RecipeHelper.getInputEUt(timing) : 0;
             if (eut < 0 || timing.duration < 1) throw new IllegalStateException("Invalid native timing");
             // Keep the actual modified recipe for upstream lifecycle callbacks, including
             // fusion heat/color and recipe-dependent machine logic. Native tick IO gets
@@ -565,23 +509,12 @@ public final class IvNativeEngine {
             BigInteger firstPayment = wireless == null ? BigInteger.valueOf(eut) : wirelessEUt;
             if (!powerReady(ref, firstPayment, wireless, inputPower())) return;
             GTRecipeSerializer.CODEC.encodeStart(NbtOps.INSTANCE, committed).getOrThrow(false, ignored -> {});
-            if (machine instanceof com.gtladd.gtladditions.common.machine.multiblock.controller.AntientropyCondensationCenter) {
-                var coolant = (com.gtl.enhancedcore.mixin.gtladditions.IvNativeAntientropyAccessor)(Object)machine;
-                int due = Math.max(0, coolant.iv$cryotheumCost(startedParallel.add(BigInteger.valueOf(parallel))) - startedCryotheumCost);
-                var dust = org.gtlcore.gtlcore.utils.Registries.getItemStack("kubejs:dust_cryotheum", due);
-                if (due > 0 && !org.gtlcore.gtlcore.utils.MachineIO.notConsumableItem(machine, dust)) {
-                    waiting(ref, "gtl_enhancedcore.diagnostic.conditions", Component.translatable(
-                            "gtceu.recipe.fail.no.input.item", dust.getHoverName()));
-                    return;
-                }
-            }
             try (var callback = access.iv$recipeContext(scaled, job.recipe, 0, timing.duration)) {
                 if (!machine.beforeWorking(scaled)) {
                     waiting(ref, "gtl_enhancedcore.diagnostic.conditions", nativeDetail("startup", job.recipe.id.toString()));
                     return;
                 }
             }
-            if (chancePlan != null) chancePlan.commit((WorkableElectricMultiblockMachine)machine);
             GTRecipe outputs = IParallelLogic.getRecipeOutputChance(machine, scaled);
             GTRecipe inputRoll = scaled.copy(); inputRoll.outputs.clear();
             scaled.inputs.forEach((cap, contents) -> {
@@ -593,23 +526,6 @@ public final class IvNativeEngine {
             var produced = IvRecipeInputs.outputs(outputs.outputs);
             BigInteger totalEnergy = research ? firstPayment : wirelessTotal != null ? wirelessTotal
                     : firstPayment.multiply(BigInteger.valueOf(timing.duration));
-            // The native antientropy planner pays coolant once for the combined
-            // successful parallel batch. Charge incremental cost so isolated jobs
-            // keep that same nonlinear total, without paying on failed admission.
-            if (machine instanceof com.gtladd.gtladditions.common.machine.multiblock.controller.AntientropyCondensationCenter) {
-                var coolant = (com.gtl.enhancedcore.mixin.gtladditions.IvNativeAntientropyAccessor)(Object)machine;
-                BigInteger combined = startedParallel.add(BigInteger.valueOf(parallel));
-                int totalCost = coolant.iv$cryotheumCost(combined);
-                int due = Math.max(0, totalCost - startedCryotheumCost);
-                var dust = org.gtlcore.gtlcore.utils.Registries.getItemStack("kubejs:dust_cryotheum", due);
-                if (due > 0 && !org.gtlcore.gtlcore.utils.MachineIO.inputItem(machine, dust)) {
-                    waiting(ref, "gtl_enhancedcore.diagnostic.conditions", Component.translatable(
-                            "gtceu.recipe.fail.no.input.item", dust.getHoverName()));
-                    return;
-                }
-                startedParallel = combined; startedCryotheumCost = totalCost;
-                coolant.iv$lastCryotheumCost(totalCost);
-            }
             IvRecipeInputs.subtract(job.inventory, consumed);
             job.completion.putAll(produced); job.remaining -= parallel; job.parallel = parallel;
             job.nativeRecipe = committed; job.nativeWireless = wireless != null; job.nativeWirelessEUt = wirelessEUt;
@@ -619,8 +535,6 @@ public final class IvNativeEngine {
             job.energyTotal = totalEnergy;
             job.energyLeft = job.energyTotal; job.supplyPower = Math.max(0, overclockVoltage());
             job.cycle = cycle; job.error = ""; job.validateAccounting();
-            if (machine instanceof com.gtl.enhancedcore.common.machine.IndustrialSteamPlatformMachine steam)
-                steam.chargeSteamForSuccessfulBatch();
             ref.buffer.markDirty();
             IvTaskLog.event(ref.buffer, job, "NATIVE_START", "COMMITTED",
                     "parallel", parallel, "capacity", capacity, "remaining", job.remaining, "eut", eut, "duration", job.duration,
@@ -642,11 +556,7 @@ public final class IvNativeEngine {
         return repeated;
     }
     private void advance(List<Ref> all) {
-        if (machine instanceof com.gtladd.gtladditions.common.machine.multiblock.controller.TaixuTurbidArray) {
-            advanceFixedCycles(all); return;
-        }
         long parallelBudget = IvMachineScope.budget(machine);
-        boolean independent = IvNativeCapacity.independentRecipeParallel(machine);
         long powerBudget = inputPower();
         var running = new ArrayList<>(runningSelector.select(all.stream().filter(ref -> ref.job.active() && !ref.job.halted).toList(),
                 IvMachineScope.activeThreads(machine), ref -> ref.job.id.toString()));
@@ -654,10 +564,8 @@ public final class IvNativeEngine {
         boolean callbacks = false;
         for (var ref : running) {
             var job = ref.job;
-            if (!independent) {
-                if (job.nativeCapacity > parallelBudget) { waiting(ref, "gtl_enhancedcore.diagnostic.iv_parallel"); continue; }
-                parallelBudget -= job.nativeCapacity;
-            }
+            if (job.nativeCapacity > parallelBudget) { waiting(ref, "gtl_enhancedcore.diagnostic.iv_parallel"); continue; }
+            parallelBudget -= job.nativeCapacity;
             if (!allowed(ref)) continue;
             if (job.nativeRecipe == null) throw new IllegalStateException("Missing native batch tick snapshot");
             GTRecipe tick = IvNativeRecipeContext.tickRecipe(job.nativeRecipe);
@@ -700,14 +608,7 @@ public final class IvNativeEngine {
                     waiting(ref, "gtl_enhancedcore.diagnostic.conditions", resultDetail(tickResult, "gtl_enhancedcore.diagnostic.conditions"));
                     continue;
                 }
-                if (machine instanceof CloudPowerAccess power) {
-                    var receipt = power.cloudPowerPay(payment);
-                    if (receipt == null) {
-                        waiting(ref, "gtl_enhancedcore.diagnostic.power");
-                        continue;
-                    }
-                    if (payment.signum() > 0) ComputationRecipes.undoOnFailure(receipt::refund);
-                } else if (job.nativeWireless) {
+                if (job.nativeWireless) {
                     if (payment.signum() > 0 && !wireless.consumeEnergy(payment.negate())) {
                         waiting(ref, "gtl_enhancedcore.diagnostic.power", nativeDetail("wireless_energy", payment.toString(), wireless.getMaxAvailableEnergy().toString()));
                         continue;
@@ -771,121 +672,18 @@ public final class IvNativeEngine {
             ref.buffer.markDirty();
         }
     }
-    /** A Taixu batch has one fixed native energy bill for all selected recipes.
-     * Every surviving order carries the same complete debt snapshot, so removing
-     * one order or restoring NBT cannot orphan or divide that shared bill. */
-    private void advanceFixedCycles(List<Ref> all) {
-        var cycles = new LinkedHashMap<String, List<Ref>>();
-        for (var ref : all) if (ref.job.active())
-            cycles.computeIfAbsent(ref.job.cycle, ignored -> new ArrayList<>()).add(ref);
-        long powerBudget = inputPower();
-        long parallelBudget = IvMachineScope.budget(machine);
-        int availableSlots = IvMachineScope.activeThreads(machine);
-        boolean callbacks = false;
-        for (var group : cycles.values()) {
-            var first = group.getFirst(); var representative = first.job;
-            if (group.stream().anyMatch(ref -> ref.job.halted)) continue;
-            long occupied = 0;
-            for (var ref : group) occupied = Math.addExact(occupied, ref.job.nativeCapacity);
-            if (occupied > parallelBudget || group.size() > availableSlots) {
-                for (var ref : group) waiting(ref, "gtl_enhancedcore.diagnostic.iv_parallel");
-                continue;
-            }
-            parallelBudget -= occupied; availableSlots -= group.size();
-            for (var ref : group) {
-                var job = ref.job;
-                if (job.elapsed != representative.elapsed || job.duration != representative.duration
-                        || job.eut != representative.eut || job.nativeWireless != representative.nativeWireless
-                        || !job.nativeWirelessEUt.equals(representative.nativeWirelessEUt)
-                        || !job.energyTotal.equals(representative.energyTotal) || !job.energyLeft.equals(representative.energyLeft))
-                    throw new IllegalStateException("Inconsistent native fixed-cycle debt snapshots");
-            }
-            boolean ready = true;
-            for (var ref : group) {
-                if (!allowed(ref)) { ready = false; break; }
-                var result = ref.job.nativeRecipe.checkConditions(logic);
-                if (!result.isSuccess()) {
-                    waiting(ref, "gtl_enhancedcore.diagnostic.conditions", resultDetail(result, "gtl_enhancedcore.diagnostic.conditions"));
-                    ready = false; break;
-                }
-            }
-            if (!ready) continue;
-            var wireless = representative.nativeWireless ? wireless() : null;
-            if (representative.nativeWireless && wireless == null) continue;
-            BigInteger payment = (representative.nativeWireless ? representative.nativeWirelessEUt
-                    : BigInteger.valueOf(representative.eut)).min(representative.energyLeft);
-            if (!powerReady(first, payment, wireless, powerBudget)) continue;
-            try (var callback = access.iv$recipeContext(representative.nativeRecipe, representative.recipe,
-                    representative.elapsed, representative.duration)) {
-                if (!callbacks) {
-                    if (!access.iv$onWorking() || !logic.isWorkingEnabled()) return;
-                    callbacks = true;
-                }
-            }
-            for (var ref : group) {
-                var job = ref.job;
-                try (var callback = access.iv$recipeContext(job.nativeRecipe, job.recipe, job.elapsed, job.duration)) {
-                    var tick = IvNativeRecipeContext.tickRecipe(job.nativeRecipe);
-                    var match = tick.matchTickRecipe(machine);
-                    if (!match.isSuccess()) { ready = false; break; }
-                }
-            }
-            if (!ready) continue;
-            // Taixu's selected native helper removes all tick IO. Preserve the
-            // real handler callbacks, after every member passed simulation.
-            for (var ref : group) {
-                var job = ref.job;
-                try (var callback = access.iv$recipeContext(job.nativeRecipe, job.recipe, job.elapsed, job.duration)) {
-                    if (!logic.handleTickRecipe(IvNativeRecipeContext.tickRecipe(job.nativeRecipe)).isSuccess()) {
-                        ready = false; break;
-                    }
-                }
-            }
-            if (!ready) continue;
-            if (wireless != null) {
-                if (payment.signum() > 0 && !wireless.consumeEnergy(payment.negate())) continue;
-            } else if (payment.signum() > 0) {
-                long due = payment.longValueExact();
-                var electric = (WorkableElectricMultiblockMachine)machine;
-                var grid = GridEnergyInputs.find(electric);
-                long removed = GridEnergyInputs.remove(electric.getEnergyContainer(), grid, due);
-                if (removed != due) {
-                    if (removed < 0 || removed > due || removed > 0 && GridEnergyInputs.refund(electric.getEnergyContainer(), grid, removed) != removed)
-                        throw new IllegalStateException("Invalid native fixed-cycle energy refund");
-                    continue;
-                }
-                if (grid == null || !grid.gridEnergyUnboundedPower()) powerBudget -= due;
-                currentGridEUt = currentGridEUt.add(payment);
-                currentEUt = com.gtl.enhancedcore.common.recipe.GridRecipePayment.availableAsLong(currentGridEUt);
-            }
-            var next = IvNativeRecoveryState.paid(representative.energyLeft, payment, representative.elapsed, representative.duration);
-            for (var ref : group) {
-                var job = ref.job;
-                job.energyLeft = next.energyLeft(); job.elapsed = next.elapsed(); job.error = "";
-                rejectionDetails.remove(job.id); advanced = true;
-                if (next.complete()) {
-                    job.completeBatch(); job.nativeRecipe = null;
-                    job.nativeWireless = false; job.nativeWirelessEUt = BigInteger.ZERO; job.nativeCapacity = 0;
-                    job.validateAccounting();
-                    IvTaskLog.event(ref.buffer, job, "BATCH_COMPLETE", "FIXED_CYCLE_PAID",
-                            "completedOperations", job.completedOperations, "pending", IvTaskLog.stock(job.pending));
-                }
-                ref.buffer.markDirty();
-            }
-            if (next.complete()) {
-                try (var callback = access.iv$recipeContext(representative.recipe, representative.recipe,
-                        representative.elapsed, representative.duration)) { machine.afterWorking(); }
-            }
-        }
-    }
     private void flush(Ref ref) {
-        if (!IvBuffers.mayUseNetwork(ref.buffer)) { waiting(ref, "gtl_enhancedcore.cloud.status.origin"); return; }
         var job = ref.job;
         boolean hadPending = !job.pending.isEmpty();
+        var grid = hadPending ? ref.buffer.getGrid() : null;
+        if (hadPending && (grid == null || !ref.buffer.getMainNode().isActive())) {
+            job.clearOutputRetry(); waiting(ref, "gtl_enhancedcore.diagnostic.iv_ae"); return;
+        }
+        long gameTick = ref.buffer.getLevel().getGameTime();
+        if (hadPending && !job.canRetryOutput(gameTick, grid)) return;
         Component outputDetail = null;
+        boolean madeProgress = false;
         if (!job.pending.isEmpty()) {
-            var grid = ref.buffer.getGrid();
-            if (grid == null || !ref.buffer.getMainNode().isActive()) { waiting(ref, "gtl_enhancedcore.diagnostic.iv_ae"); return; }
             int budget = IvWorkBudget.TRANSFERS_PER_JOB;
             var iterator = job.pending.entrySet().iterator();
             while (iterator.hasNext() && budget-- > 0) {
@@ -893,6 +691,7 @@ public final class IvNativeEngine {
                 var transfer = IvOutputTransfer.transfer(grid.getEnergyService(), grid.getStorageService().getInventory(),
                         entry.getKey(), offered, IActionSource.ofMachine(ref.buffer));
                 long inserted = transfer.inserted();
+                if (inserted > 0) madeProgress = true;
                 if (transfer.remaining() > 0 && outputDetail == null) {
                     outputDetail = transfer.detail(entry.getKey());
                     if (inserted == 0 && (!job.error.equals("gtl_enhancedcore.diagnostic.output")
@@ -910,8 +709,10 @@ public final class IvNativeEngine {
         }
         acknowledgeDelivery(ref);
         if (!job.pending.isEmpty()) {
+            if (!madeProgress) job.deferOutputRetry(gameTick, grid); else job.clearOutputRetry();
             waiting(ref, "gtl_enhancedcore.diagnostic.output", outputDetail != null ? outputDetail : nativeDetail("output", job.pending.size()));
         } else if (hadPending) {
+            job.clearOutputRetry();
             job.error = ""; rejectionDetails.remove(job.id);
         }
     }

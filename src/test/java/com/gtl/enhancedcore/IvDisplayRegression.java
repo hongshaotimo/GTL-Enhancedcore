@@ -60,17 +60,6 @@ public final class IvDisplayRegression {
 
         var lines = new ArrayList<>(List.of(tier, mode, parallel, thread, thread, diagnostic));
 
-        var cloudLines = new ArrayList<>(List.of(tier, mode, parallel, thread, diagnostic));
-        var cloudSummary = new CompoundTag();
-        cloudSummary.putInt("active", 1);
-        cloudSummary.putInt("count", 2);
-        cloudSummary.putString("remaining", "128");
-        cloudSummary.putString("running", "64");
-        IvMachineDisplay.nativeCloud(cloudLines, cloudSummary);
-        check(cloudLines.get(1) == mode && cloudLines.get(2) == parallel && cloudLines.get(3) == thread,
-                "generic cloud orders preserve the host's original mode, parallel and thread rows");
-        check(cloudLines.contains(diagnostic) && count(cloudLines, "gtl_enhancedcore.gui.iv_queue") == 1,
-                "generic cloud orders add their ledger without replacing native diagnostics");
 
         canonical.invoke(null, lines, "gtceu.gui.machinemode",
                 Component.translatable("gtceu.gui.machinemode", Component.translatable("gtl_enhancedcore.gui.iv_mode")));

@@ -27,7 +27,6 @@ public class GTLEnhancedcoreJadePlugin implements IWailaPlugin {
         registration.registerBlockDataProvider(new SingleRecipeParallelProvider(), MetaMachineBlockEntity.class);
         registration.registerBlockDataProvider(new IvOrderInfoProvider(), MetaMachineBlockEntity.class);
         registration.registerBlockDataProvider(new IvBufferInfoProvider(), MetaMachineBlockEntity.class);
-        registration.registerBlockDataProvider(new CloudPatternInfoProvider(), MetaMachineBlockEntity.class);
         registration.registerBlockDataProvider(new WeatherAnchorInfoProvider(), MetaMachineBlockEntity.class);
     }
 
@@ -40,7 +39,6 @@ public class GTLEnhancedcoreJadePlugin implements IWailaPlugin {
         registration.registerBlockComponent(new SingleRecipeParallelProvider(), MetaMachineBlock.class);
         registration.registerBlockComponent(new IvOrderInfoProvider(), MetaMachineBlock.class);
         registration.registerBlockComponent(new IvBufferInfoProvider(), MetaMachineBlock.class);
-        registration.registerBlockComponent(new CloudPatternInfoProvider(), MetaMachineBlock.class);
         registration.registerBlockComponent(new WeatherAnchorInfoProvider(), MetaMachineBlock.class);
     }
 }

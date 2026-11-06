@@ -4,6 +4,9 @@ import appeng.api.crafting.*;
 import appeng.api.networking.crafting.ICraftingProvider;
 import appeng.api.stacks.*;
 import com.gregtechceu.gtceu.api.capability.recipe.EURecipeCapability;
+import com.gregtechceu.gtceu.api.capability.recipe.CWURecipeCapability;
+import com.gregtechceu.gtceu.api.capability.recipe.ItemRecipeCapability;
+import com.gregtechceu.gtceu.api.capability.recipe.FluidRecipeCapability;
 import com.gregtechceu.gtceu.api.recipe.GTRecipe;
 import com.gregtechceu.gtceu.api.recipe.GTRecipeType;
 import com.gregtechceu.gtceu.common.item.IntCircuitBehaviour;
@@ -22,7 +25,6 @@ import org.gtlcore.gtlcore.common.machine.multiblock.part.ae.MEPatternBufferPart
 import org.gtlcore.gtlcore.integration.ae2.pattern.PatternQuickUploadMetadata;
 import org.gtlcore.gtlcore.common.data.GTLItems;
 import org.gtlcore.gtlcore.common.item.VirtualIngredientBehavior;
-import com.gtl.enhancedcore.common.cloud.CloudPatternBufferMachine;
 
 /** Runtime guards are deliberately instance-local; no global current-controller or recipe cache. */
 public final class IvBuffers {
@@ -43,65 +45,18 @@ public final class IvBuffers {
         // server-owned input, not a model-render query (including Embeddium workers).
         if (machine.isRemote()) return List.of();
         return machine.getParts().stream().filter(IvBuffers::compatible)
-                .filter(part -> !genericCloudTarget(machine) || part instanceof CloudPatternBufferMachine)
                 .map(part -> (MEPatternBufferPartMachine)part).toList();
     }
-    public static boolean hasActiveBatches(WorkableMultiblockMachine machine) {
-        for (var buffer : collect(machine))
-            for (var job : jobs(buffer, machine)) if (job.active() && !job.halted) return true;
-        return false;
-    }
-    public static boolean legacyTargetController(Object controller) {
+    public static boolean targetController(Object controller) {
         return controller instanceof TieredParallelMachine machine && CONTROLLERS.contains(machine.getDefinition().getId().toString())
                 || IvMachineScope.nativeTarget(controller);
     }
-    /** Cloud adapters opt in by their actual attached part, never by broadening the super-buffer whitelist. */
-    public static boolean genericCloudTarget(Object controller) {
-        if (!(controller instanceof WorkableMultiblockMachine machine)) return false;
-        if (!(machine instanceof com.gregtechceu.gtceu.api.machine.multiblock.WorkableElectricMultiblockMachine)
-                && !(machine instanceof com.gregtechceu.gtceu.common.machine.multiblock.primitive.PrimitiveBlastFurnaceMachine)) return false;
-        if (machine.isRemote()) return ((IvNativeAccess) machine.getRecipeLogic()).iv$genericCloudTarget();
-        return com.gtl.enhancedcore.common.config.MachineOverrideConfig.current().enhanceOriginalMachines()
-                && !legacyTargetController(controller)
-                && machine.getParts().stream().anyMatch(CloudPatternBufferMachine.class::isInstance);
-    }
-    /** Physical input assemblies and stock buses retain their native recipe executor. */
-    public static boolean genericCloudNativeInputs(WorkableMultiblockMachine machine) {
-        if (machine.isRemote() || machine.getParts().stream().noneMatch(CloudPatternBufferMachine.class::isInstance)) return false;
-        return machine.getTraits().stream().filter(com.gregtechceu.gtceu.api.machine.trait.IRecipeHandlerTrait.class::isInstance)
-                .map(com.gregtechceu.gtceu.api.machine.trait.IRecipeHandlerTrait.class::cast)
-                .anyMatch(handler -> (handler.getHandlerIO() == com.gregtechceu.gtceu.api.capability.recipe.IO.IN
-                        || handler.getHandlerIO() == com.gregtechceu.gtceu.api.capability.recipe.IO.BOTH)
-                        && (handler.getCapability() == com.gregtechceu.gtceu.api.capability.recipe.ItemRecipeCapability.CAP
-                        || handler.getCapability() == com.gregtechceu.gtceu.api.capability.recipe.FluidRecipeCapability.CAP))
-                || machine.getParts().stream().filter(part -> !(part instanceof CloudPatternBufferMachine))
-                .anyMatch(part -> part instanceof MEPatternBufferPartMachineBase pattern && !isolated(pattern)
-                        || part.getRecipeHandlers().stream().anyMatch(handler ->
-                        handler.getHandlerIO() == com.gregtechceu.gtceu.api.capability.recipe.IO.IN
-                        && (handler.getCapability() == com.gregtechceu.gtceu.api.capability.recipe.ItemRecipeCapability.CAP
-                        || handler.getCapability() == com.gregtechceu.gtceu.api.capability.recipe.FluidRecipeCapability.CAP)));
-    }
-    public static boolean targetController(Object controller) {
-        return legacyTargetController(controller) || genericCloudTarget(controller);
-    }
-    /** Steam orders follow the native selector; other cloud machines retain independent mode claims. */
-    public static List<GTRecipeType> cloudRecipeTypes(WorkableMultiblockMachine machine) {
-        if (machine instanceof com.gtl.enhancedcore.common.machine.IndustrialSteamPlatformMachine)
-            return machine.getRecipeType() == null ? List.of() : List.of(machine.getRecipeType());
-        return Arrays.asList(machine.getDefinition().getRecipeTypes());
-    }
-    /** Only admission and new batches use this gate; already committed batches retain their type. */
-    public static boolean cloudAllowsRecipeType(WorkableMultiblockMachine machine, GTRecipeType type) {
-        return cloudRecipeTypes(machine).stream().anyMatch(supported ->
-                com.gtl.enhancedcore.common.cloud.CloudChemicalModes.equivalent(supported.registryName.toString(), type.registryName.toString()));
-    }
     public static boolean isolated(MEPatternBufferPartMachineBase buffer) {
-        if (buffer instanceof CloudPatternBufferMachine) return true;
         IvBufferState state = state(buffer);
         if (state == null) return false;
         if(buffer.isRemote() && ((IvBufferAccess)buffer).iv$isDedicatedDisplay())return true;
         if (state.dedicated()) return true;
-        return loadedControllers(buffer).stream().anyMatch(IvBuffers::legacyTargetController);
+        return loadedControllers(buffer).stream().anyMatch(IvBuffers::targetController);
     }
     /** AE may query patterns while chunks are unloading; never load a controller chunk here. */
     private static List<IMultiController> loadedControllers(MEPatternBufferPartMachineBase buffer) {
@@ -122,44 +77,14 @@ public final class IvBuffers {
     public static String ownerKey(WorkableMultiblockMachine machine) {
         return machine.getLevel().dimension().location() + "/" + machine.getPos().asLong() + "/" + machine.getDefinition().getId();
     }
-    /** Several executors share a lease view, but each accepted order has exactly one executor. */
-    public static List<WorkableMultiblockMachine> cloudControllers(CloudPatternBufferMachine buffer) {
-        return loadedControllers(buffer).stream().filter(WorkableMultiblockMachine.class::isInstance)
-                .map(WorkableMultiblockMachine.class::cast).filter(machine -> machine.isFormed() && targetController(machine))
-                .filter(machine -> buffer.cloudMode() == null || Arrays.stream(machine.getDefinition().getRecipeTypes())
-                        .anyMatch(type -> buffer.cloudAcceptsMode(type.registryName)))
-                .sorted(Comparator.comparing(IvBuffers::ownerKey)).toList();
-    }
-    public static List<IvJob> jobs(MEPatternBufferPartMachine buffer, WorkableMultiblockMachine machine) {
+    public static List<IvJob> jobs(MEPatternBufferPartMachine buffer) {
         var state = state(buffer);
-        if (state == null) return List.of();
-        if (!(buffer instanceof CloudPatternBufferMachine cloud)) return state.jobs;
-        UUID instance = ((com.gtl.enhancedcore.common.cloud.store.CloudMachineIdentity)machine).cloud$machineInstance(false);
-        return state.jobs.stream().filter(job -> com.gtl.enhancedcore.common.cloud.CloudEndpointPolicy.ownsJob(
-                job.cloudMachine, instance, cloud.cloudNode() == null ? null : cloud.cloudNode().machineInstance(),
-                state.owner.equals(ownerKey(machine)))).toList();
+        return state == null ? List.of() : state.jobs;
     }
     public static WorkableMultiblockMachine controller(MEPatternBufferPartMachineBase buffer) {
-        if (buffer instanceof CloudPatternBufferMachine cloud) {
-            var controllers = cloudControllers(cloud);
-            if (controllers.size() == 1) return controllers.getFirst();
-            WorkableMultiblockMachine selected = null;
-            int leastJobs = Integer.MAX_VALUE;
-            var state = cloud.iv$getState(); var node = cloud.cloudNode();
-            for (var machine : controllers) {
-                UUID instance = ((com.gtl.enhancedcore.common.cloud.store.CloudMachineIdentity)machine).cloud$machineInstance(false);
-                boolean legacyOwner = state.owner.equals(ownerKey(machine));
-                int count = 0;
-                for (var job : state.jobs) if (com.gtl.enhancedcore.common.cloud.CloudEndpointPolicy.ownsJob(
-                        job.cloudMachine, instance, node == null ? null : node.machineInstance(), legacyOwner)) count++;
-                // cloudControllers is already in owner-key order, so the first equal count wins.
-                if (selected == null || count < leastJobs) { selected = machine; leastJobs = count; }
-            }
-            return selected;
-        }
         if (!controllersLoaded(buffer)) return null;
         var controllers = loadedControllers(buffer);
-        if (controllers.size() != 1 || !(buffer instanceof CloudPatternBufferMachine ? targetController(controllers.get(0)) : legacyTargetController(controllers.get(0)))
+        if (controllers.size() != 1 || !targetController(controllers.get(0))
                 || !(controllers.get(0) instanceof WorkableMultiblockMachine machine) || !machine.isFormed()) return null;
         if (!buffer.getBoundProxyPositions().isEmpty()) return null;
         return machine;
@@ -167,20 +92,7 @@ public final class IvBuffers {
     public static boolean bind(MEPatternBufferPartMachine buffer, WorkableMultiblockMachine machine) {
         IvBufferState state = state(buffer);
         if (state == null || !state.healthy()) return false;
-        if (buffer instanceof com.gtl.enhancedcore.common.cloud.transfer.CloudImportSourceAccess source && source.cloud$importQuarantined())
-            return rejectBind(buffer, "gtl_enhancedcore.cloud.status.review");
-        if (buffer instanceof CloudPatternBufferMachine cloud) {
-            String failure = cloud.cloudReadyFailure(true);
-            if (!failure.isEmpty()) return rejectBind(buffer, failure);
-        }
         if (((IvBufferAccess)buffer).iv$isFoaEnabled()) return rejectBind(buffer, "gtl_enhancedcore.diagnostic.iv_foa");
-        if (buffer instanceof CloudPatternBufferMachine cloud) {
-            if (!cloudControllers(cloud).contains(machine))
-                return rejectBind(buffer, "gtl_enhancedcore.diagnostic.iv_exclusive");
-            cloud.cloudClearReadinessMessage();
-            ((IvBufferAccess)buffer).iv$syncDedicated(true);
-            refresh(buffer); return true;
-        }
         if (controller(buffer) != machine) return rejectBind(buffer, "gtl_enhancedcore.diagnostic.iv_exclusive");
         String key = ownerKey(machine);
         if (!state.owner.isEmpty() && !state.owner.equals(key)) return rejectBind(buffer, "gtl_enhancedcore.diagnostic.iv_owner");
@@ -210,10 +122,6 @@ public final class IvBuffers {
     }
     public static void refresh(MEPatternBufferPartMachineBase buffer) {
         IvBufferState state = state(buffer);
-        if (buffer instanceof CloudPatternBufferMachine cloud) {
-            if (state != null && state.refreshNeeded) { state.refreshNeeded = false; cloud.refreshPublished(); }
-            return;
-        }
         if (!buffer.isRemote() && state != null && state.dedicated() && state.healthy() && state.jobs.isEmpty()
                 && controllersLoaded(buffer) && loadedControllers(buffer).stream().noneMatch(IvBuffers::targetController)) {
             state.owner = ""; state.refreshNeeded = true; buffer.markDirty();
@@ -234,17 +142,11 @@ public final class IvBuffers {
         return PatternDetailsHelper.decodePattern(definition, buffer.getLevel());
     }
     public static Map<AEKey, Long> virtual(MEPatternBufferPartMachine buffer, int slot) {
-        return virtual(buffer, slot, controller(buffer));
-    }
-    public static Map<AEKey, Long> virtual(MEPatternBufferPartMachine buffer, int slot, WorkableMultiblockMachine machine) {
         Map<AEKey, Long> result = slotVirtual(buffer, slot);
-        sharedCatalysts(buffer, machine).forEach((key, amount) -> addCatalyst(result, key, amount));
-        if (buffer instanceof CloudPatternBufferMachine cloud)
-            cloud.cloudPatternCatalysts(slot).forEach((key, amount) -> addCatalyst(result, key, amount));
+        sharedCatalysts(buffer).forEach((key, amount) -> addCatalyst(result, key, amount));
         return result;
     }
     private static Map<AEKey, Long> slotVirtual(MEPatternBufferPartMachine buffer, int slot) {
-        if (buffer instanceof CloudPatternBufferMachine cloud) return new LinkedHashMap<>(cloud.cloudSlotVirtual(slot));
         Object[] slots = buffer.getInternalInventory();
         Map<AEKey, Long> result = new LinkedHashMap<>(((IvSlotAccess)slots[slot]).iv$virtualStock());
         ItemStack circuit = buffer.getCircuitForRecipe(slot);
@@ -253,7 +155,6 @@ public final class IvBuffers {
     }
     /** Physical catalysts remain in this buffer, never in a task's saved inventory or virtual tokens. */
     public static Map<AEKey, Long> sharedCatalysts(MEPatternBufferPartMachine buffer) {
-        if (buffer instanceof CloudPatternBufferMachine cloud) return cloud.cloudCatalysts();
         Map<AEKey, Long> result = new LinkedHashMap<>();
         if (!isolated(buffer)) return result;
         var items = buffer.getSharedCatalystInventory();
@@ -268,24 +169,13 @@ public final class IvBuffers {
         }
         return result;
     }
-    public static Map<AEKey, Long> sharedCatalysts(MEPatternBufferPartMachine buffer, WorkableMultiblockMachine machine) {
-        return buffer instanceof CloudPatternBufferMachine cloud ? cloud.cloudCatalysts(machine) : sharedCatalysts(buffer);
-    }
     private static void addCatalyst(Map<AEKey, Long> target, AEKey key, long amount) {
         if (amount > 0) target.merge(key, amount, (a, b) -> a > Long.MAX_VALUE - b ? Long.MAX_VALUE : a + b);
     }
     public static Map<AEKey, Long> availableVirtual(MEPatternBufferPartMachine buffer, IvJob job) {
-        var machine = buffer instanceof CloudPatternBufferMachine cloud
-                ? cloudControllers(cloud).stream().filter(peer -> jobs(buffer, peer).contains(job)).findFirst().orElse(null)
-                : controller(buffer);
-        return availableVirtual(buffer, job, machine);
-    }
-    public static Map<AEKey, Long> availableVirtual(MEPatternBufferPartMachine buffer, IvJob job, WorkableMultiblockMachine machine) {
-        Map<AEKey, Long> result = buffer instanceof CloudPatternBufferMachine ? new LinkedHashMap<>(job.virtual) : slotVirtual(buffer, job.slot);
+        Map<AEKey, Long> result = slotVirtual(buffer, job.slot);
         result.keySet().removeIf(IvBuffers::isCircuit);
-        sharedCatalysts(buffer, machine).forEach((key, amount) -> addCatalyst(result, key, amount));
-        if (buffer instanceof CloudPatternBufferMachine cloud)
-            cloud.cloudPatternCatalysts(job).forEach((key, amount) -> addCatalyst(result, key, amount));
+        sharedCatalysts(buffer).forEach((key, amount) -> addCatalyst(result, key, amount));
         return IvPatternAdmission.virtualStock(result, job.virtual, IvBuffers::isCircuit);
     }
     private static Map<AEKey, Long> virtualToken(AEKey key) {
@@ -307,10 +197,7 @@ public final class IvBuffers {
         }
         return result;
     }
-    private record DispatchMatch(WorkableMultiblockMachine machine, GTRecipe recipe, long scale, Map<AEKey, Long> virtual) {}
     public static boolean push(MEPatternBufferPartMachine buffer, IPatternDetails details, KeyCounter[] holders) {
-        if (buffer instanceof CloudPatternBufferMachine && IvDispatchContext.operations(buffer, details) == 0
-                && org.gtlcore.gtlcore.integration.ae2.graph.GraphDispatchContext.selectedInputs() == null) return false;
         IvBufferState state = state(buffer);
         if (state == null) return false;
         WorkableMultiblockMachine machine = controller(buffer);
@@ -325,22 +212,13 @@ public final class IvBuffers {
             CompoundTag definition = details.getDefinition().getTag();
             if (definition == null || !definition.contains(ROUTE_KEY)) return reject(buffer, request, "gtl_enhancedcore.diagnostic.iv_route");
             CompoundTag route = definition.getCompound(ROUTE_KEY);
-            if (buffer instanceof CloudPatternBufferMachine cloud && !cloud.cloudRouteValid(route))
+            int slot = route.getInt("slot");
+            if (!route.hasUUID("buffer") || !state.identity.equals(route.getUUID("buffer"))
+                    || slot < 0 || slot >= buffer.getPatternInventory().getSlots())
                 return reject(buffer, request, "gtl_enhancedcore.diagnostic.iv_changed");
-            int slot;
-            if (buffer instanceof CloudPatternBufferMachine cloud) {
-                slot = cloud.cloudRouteSlot(route);
-                if (slot < 0) return reject(buffer, request, "gtl_enhancedcore.diagnostic.iv_changed");
-            } else {
-                slot = route.getInt("slot");
-                if (!route.hasUUID("buffer") || !state.identity.equals(route.getUUID("buffer"))
-                        || slot < 0 || slot >= buffer.getPatternInventory().getSlots())
-                    return reject(buffer, request, "gtl_enhancedcore.diagnostic.iv_changed");
-            }
             ItemStack original = buffer.getPatternInventory().getStackInSlot(slot);
             if (!route.getCompound("original").equals(original.save(new CompoundTag()))) return reject(buffer, request, "gtl_enhancedcore.diagnostic.iv_changed");
-            IPatternDetails current = buffer instanceof CloudPatternBufferMachine cloud ? cloud.cloudRealPattern(slot, original)
-                    : ((IvBufferMethods)(Object)buffer).iv$realPattern(slot, original);
+            IPatternDetails current = ((IvBufferMethods)(Object)buffer).iv$realPattern(slot, original);
             if (current == null || !current.equals(details)) return reject(buffer, request, "gtl_enhancedcore.diagnostic.iv_changed");
             Map<AEKey, Long> received = new LinkedHashMap<>();
             for (KeyCounter holder : holders) for (var entry : holder) {
@@ -354,14 +232,8 @@ public final class IvBuffers {
                 unit.merge(possible[0].what(), input.getMultiplier(), Math::addExact);
             }
             long multiplier = IvDispatchContext.operations(buffer, details);
-            if (buffer instanceof CloudPatternBufferMachine
-                    && org.gtlcore.gtlcore.integration.ae2.graph.GraphDispatchContext.selectedInputs() != null)
-                multiplier = org.gtlcore.gtlcore.integration.ae2.graph.GraphDispatchContext.operations();
             for (var input : unit.entrySet()) {
                 if (isCircuit(input.getKey())) continue;
-                // Graph sends selector/configuration tokens once per dispatch, independently of its batch size.
-                if (buffer instanceof CloudPatternBufferMachine && input.getKey() instanceof AEItemKey item
-                        && GTLItems.VIRTUAL_INGREDIENT.isIn(item.toStack())) continue;
                 long count = received.getOrDefault(input.getKey(), 0L);
                 if (count <= 0 || count % input.getValue() != 0) throw new IllegalArgumentException("投料与样板倍率不一致");
                 long ratio = count / input.getValue();
@@ -373,8 +245,6 @@ public final class IvBuffers {
             IvTaskLog.event(buffer, null, "VALIDATE_DISPATCH", "OK", "request", request, "slot", slot, "multiplier", multiplier, "received", IvTaskLog.stock(received));
             Map<AEKey, Long> intrinsicVirtual = IvPatternAdmission.circuits(slotVirtual(buffer, slot),
                     declaredCircuits(buffer, original), IvBuffers::isCircuit);
-            if (buffer instanceof CloudPatternBufferMachine cloud)
-                cloud.cloudSlotVirtual(slot).forEach((key, amount) -> { if (!isCircuit(key)) intrinsicVirtual.put(key, amount); });
             // GTL virtual ingredient tokens belong to this dispatch, not the old slot's cumulative inventory.
             for (AEKey key : new ArrayList<>(received.keySet())) if (key instanceof AEItemKey item && GTLItems.VIRTUAL_INGREDIENT.isIn(item.toStack())) {
                 intrinsicVirtual.putAll(virtualToken(key));
@@ -383,78 +253,38 @@ public final class IvBuffers {
             Set<ResourceLocation> types = PatternQuickUploadMetadata.readRecipeTypeIds(original);
             Map<AEKey, Long> expected = new LinkedHashMap<>();
             for (GenericStack output : details.getOutputs()) expected.merge(output.what(), output.amount(), Math::addExact);
-            var candidates = new ArrayList<>(buffer instanceof CloudPatternBufferMachine cloud ? cloudControllers(cloud) : List.of(machine));
-            candidates.remove(machine); candidates.addFirst(machine);
-            var admitted = new ArrayList<DispatchMatch>(); var matchIds = new LinkedHashSet<String>(); boolean ambiguous = false;
-            for (var executor : candidates) {
-                Map<AEKey, Long> virtual = IvPatternAdmission.virtualStock(virtual(buffer, slot, executor), intrinsicVirtual, IvBuffers::isCircuit);
-                List<GTRecipe> matches = new ArrayList<>(); Map<GTRecipe, Long> scales = new IdentityHashMap<>();
-                for (var type : buffer instanceof CloudPatternBufferMachine ? cloudRecipeTypes(executor)
-                        : Arrays.asList(executor.getDefinition().getRecipeTypes())) {
-                    if (buffer instanceof CloudPatternBufferMachine cloud && !cloud.cloudAcceptsMode(type.registryName)) continue;
-                    if (buffer instanceof CloudPatternBufferMachine
-                            ? !com.gtl.enhancedcore.common.cloud.CloudChemicalModes.allows(types, type.registryName)
-                            : !IvPatternAdmission.allowsType(types, type.registryName)) continue;
-                    var recipes = buffer instanceof CloudPatternBufferMachine
-                            ? com.gtl.enhancedcore.common.cloud.CloudPatternMatching.candidates(executor.getLevel(), type, expected)
-                            : com.gtl.enhancedcore.common.cloud.CloudPatternMatching.recipes(executor.getLevel(), type);
-                    for (GTRecipe recipe : recipes) {
-                        if (!supported(recipe, executor)) continue;
-                        long scale = IvRecipeInputs.patternOperations(recipe, unit, virtual, expected);
-                        if (scale > 0) {
-                            if (buffer instanceof CloudPatternBufferMachine && !matches.isEmpty()
-                                    && recipe.recipeType != matches.getFirst().recipeType
-                                    && com.gtl.enhancedcore.common.cloud.CloudChemicalModes.equivalent(
-                                            matches.getFirst().recipeType.registryName.toString(), recipe.recipeType.registryName.toString())) continue;
-                            matches.add(recipe); scales.put(recipe, scale); matchIds.add(recipe.id.toString());
-                        }
-                    }
+            Map<AEKey, Long> virtual = IvPatternAdmission.virtualStock(virtual(buffer, slot), intrinsicVirtual, IvBuffers::isCircuit);
+            List<GTRecipe> matches = new ArrayList<>();
+            Map<GTRecipe, Long> scales = new IdentityHashMap<>();
+            for (var type : machine.getDefinition().getRecipeTypes()) {
+                if (!IvPatternAdmission.allowsType(types, type.registryName)) continue;
+                for (GTRecipe recipe : recipes(machine.getLevel(), type)) {
+                    if (!supported(recipe, machine)) continue;
+                    long scale = IvRecipeInputs.patternOperations(recipe, unit, virtual, expected);
+                    if (scale > 0) { matches.add(recipe); scales.put(recipe, scale); }
                 }
-                if (matches.size() == 1) admitted.add(new DispatchMatch(executor, matches.getFirst(), scales.get(matches.getFirst()), virtual));
-                else if (matches.size() > 1) ambiguous = true;
             }
-            IvTaskLog.event(buffer, null, "MATCH_RECIPE", admitted.isEmpty() ? "MISS" : "OK", "request", request,
-                    "types", types.stream().map(Object::toString).toList(), "matches", matchIds,
-                    "virtual", admitted.isEmpty() ? Map.of() : IvTaskLog.stock(admitted.getFirst().virtual),
-                    "sharedCatalysts", IvTaskLog.stock(sharedCatalysts(buffer, machine)), "patternInputs", IvTaskLog.stock(unit),
-                    "declaredOutputs", IvTaskLog.stock(expected), "inputOperations", admitted.stream().map(match -> match.recipe.id + "=" + match.scale).toList());
-            if (admitted.isEmpty()) return reject(buffer, request, ambiguous ? "gtl_enhancedcore.diagnostic.iv_ambiguous" : "gtl_enhancedcore.diagnostic.iv_match");
-            var selectedMatch = admitted.getFirst(); GTRecipe recipe = selectedMatch.recipe;
-            long operations = Math.multiplyExact(selectedMatch.scale, multiplier);
+            IvTaskLog.event(buffer, null, "MATCH_RECIPE", matches.size() == 1 ? "OK" : "MISS", "request", request,
+                    "types", types.stream().map(Object::toString).toList(), "matches", matches.stream().map(recipe -> recipe.id.toString()).toList(),
+                    "virtual", IvTaskLog.stock(virtual), "sharedCatalysts", IvTaskLog.stock(sharedCatalysts(buffer)),
+                    "patternInputs", IvTaskLog.stock(unit), "declaredOutputs", IvTaskLog.stock(expected));
+            if (matches.size() != 1) return reject(buffer, request, matches.isEmpty()
+                    ? "gtl_enhancedcore.diagnostic.iv_match" : "gtl_enhancedcore.diagnostic.iv_ambiguous");
+            GTRecipe recipe = matches.getFirst();
+            long scale = scales.get(recipe);
+            long operations = Math.multiplyExact(scale, multiplier);
             IvTaskLog.event(buffer, null, "SIZE_ORDER", "OK", "request", request, "recipe", recipe.id.toString(),
                     "basis", IvRecipeInputs.hasConsumedInputs(recipe) ? "PHYSICAL_INPUTS" : "INPUT_FREE_OUTPUT_RATIO",
-                    "operationsPerPattern", selectedMatch.scale, "dispatchMultiplier", multiplier, "operations", operations,
+                    "operationsPerPattern", scale, "dispatchMultiplier", multiplier, "operations", operations,
                     "declaredOutputs", IvTaskLog.stock(expected));
-            var acceptedJobs = new ArrayList<IvJob>();
-            if (buffer instanceof CloudPatternBufferMachine cloud) {
-                var eligible = admitted.stream().filter(match -> match.recipe == recipe && match.scale == selectedMatch.scale)
-                        .map(DispatchMatch::machine).toList();
-                var executors=com.gtl.enhancedcore.common.cloud.CloudDispatchFairness.recipients(
-                        eligible,MAX_QUEUED_DISPATCHES-state.jobs.size(),state.cloudDispatchCursor);
-                if (executors.isEmpty()) return reject(buffer, request, "gtl_enhancedcore.diagnostic.iv_queue");
-                long[] shares = com.gtl.enhancedcore.common.cloud.CloudDispatchFairness.shares(
-                        multiplier, executors.size(), 0);
-                var stocks = com.gtl.enhancedcore.common.cloud.CloudDispatchFairness.stock(received, multiplier, shares);
-                for(int i=0;i<executors.size();i++)if(shares[i]>0){
-                    var part = new IvJob(slot, recipe.copy(), original.save(new CompoundTag()), stocks.get(i),
-                            intrinsicVirtual, Math.multiplyExact(selectedMatch.scale, shares[i]));
-                    part.cloudPattern=cloud.entry(slot).id();
-                    part.cloudPatternOperations=selectedMatch.scale;
-                    part.cloudMachine=((com.gtl.enhancedcore.common.cloud.store.CloudMachineIdentity)executors.get(i)).cloud$machineInstance(true);
-                    acceptedJobs.add(part);
-                }
-            } else acceptedJobs.add(new IvJob(slot, recipe.copy(), original.save(new CompoundTag()), received, intrinsicVirtual, operations));
-            for(var part:acceptedJobs)part.save(); // Validate every partition before accepting anything from AE.
+            var acceptedJob = new IvJob(slot, recipe.copy(), original.save(new CompoundTag()), received, intrinsicVirtual, operations);
+            acceptedJob.save();
             var acceptedStock = IvTaskLog.stock(received);
-            if (buffer instanceof CloudPatternBufferMachine cloud && !cloud.cloudCaptureOrigin())
-                return reject(buffer, request, "gtl_enhancedcore.cloud.status.origin");
             buffer.markDirty();
-            state.jobs.addAll(acceptedJobs); state.message = "";
-            state.cloudDispatchCursor = state.cloudDispatchCursor == Integer.MAX_VALUE ? 0 : state.cloudDispatchCursor+1;
-            // Nothing after the commit may turn this acknowledgement into a failed AE dispatch.
-            return com.gtl.enhancedcore.common.cloud.CloudDispatchFairness.acknowledged(() ->
-                    IvTaskLog.event(buffer, acceptedJobs.getFirst(), "ACCEPT", "OK", "request", request, "operations", operations,
-                            "partitions",acceptedJobs.size(), "queueSize", state.jobs.size(), "input", acceptedStock));
+            state.jobs.add(acceptedJob); state.message = "";
+            IvTaskLog.event(buffer, acceptedJob, "ACCEPT", "OK", "request", request, "operations", operations,
+                    "queueSize", state.jobs.size(), "input", acceptedStock);
+            return true;
         } catch (RuntimeException failure) {
             state.message = "gtl_enhancedcore.diagnostic.iv_receive"; IvTaskLog.error(buffer, null, "RECEIVE", failure); return false;
         }
@@ -470,11 +300,19 @@ public final class IvBuffers {
         return false;
     }
     public static boolean isCircuit(AEKey key) { return key instanceof AEItemKey item && IntCircuitBehaviour.isIntegratedCircuit(item.toStack()); }
-    /** Recheck at the actual external transfer boundary, including cancellation without a controller. */
-    public static boolean mayUseNetwork(MEPatternBufferPartMachineBase buffer) {
-        return !(buffer instanceof CloudPatternBufferMachine cloud) || cloud.cloudMayUseNetwork();
+    /** Includes GTCEu's converted vanilla recipes alongside directly registered GT recipes. */
+    private static List<GTRecipe> recipes(net.minecraft.world.level.Level level, GTRecipeType type) {
+        var recipes = new LinkedHashMap<ResourceLocation, GTRecipe>();
+        level.getRecipeManager().getAllRecipesFor(type).forEach(recipe -> recipes.put(recipe.id, recipe));
+        type.getProxyRecipes().values().forEach(proxy -> proxy.forEach(recipe -> recipes.putIfAbsent(recipe.id, recipe)));
+        return List.copyOf(recipes.values());
     }
     private static boolean supported(GTRecipe recipe, WorkableMultiblockMachine machine) {
-        return com.gtl.enhancedcore.common.cloud.CloudPatternMatching.supported(recipe, machine);
+        return recipe.ingredientActions.isEmpty() && recipe.tickOutputs.isEmpty()
+                && recipe.inputs.keySet().stream().allMatch(cap -> cap == ItemRecipeCapability.CAP || cap == FluidRecipeCapability.CAP)
+                && recipe.outputs.keySet().stream().allMatch(cap -> cap == ItemRecipeCapability.CAP || cap == FluidRecipeCapability.CAP)
+                && recipe.tickInputs.keySet().stream().allMatch(cap -> cap == EURecipeCapability.CAP
+                || IvMachineScope.nativeTarget(machine) && cap == CWURecipeCapability.CAP);
     }
+
 }

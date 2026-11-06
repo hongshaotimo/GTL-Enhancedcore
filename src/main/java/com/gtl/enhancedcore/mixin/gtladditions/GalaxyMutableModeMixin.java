@@ -18,9 +18,8 @@ public abstract class GalaxyMutableModeMixin implements com.gtl.enhancedcore.com
     @Unique @Persisted private boolean galaxy$ownsBatch;
     @Unique private boolean galaxy$active() {
         var machine = ((MutableRecipesLogic<?>)(Object)this).getMachine();
-        // Isolated orders already have their own capacity and scheduler. A temporary ADD
-        // mode would change native timing and make GTLCore reject the batch configurator.
-        return !com.gtl.enhancedcore.common.recipe.iv.IvMachineScope.crossRecipeEnabled(machine)
+        return GalaxyLinks.temporaryNativeModeAllowed(
+                com.gtl.enhancedcore.common.recipe.iv.IvMachineScope.crossRecipeEnabled(machine))
                 && GalaxyLinks.crossRecipeEnabledByConnection(machine);
     }
     @ModifyExpressionValue(method="findAndHandleRecipe",at=@At(value="FIELD",target="Lcom/gtladd/gtladditions/api/machine/logic/MutableRecipesLogic;useMultipleRecipes:Z"),require=1)

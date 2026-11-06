@@ -59,7 +59,6 @@ public final class IvRecipeLogic extends GTLAddMultipleRecipesLogic {
 
     public IvRecipeLogic(TieredParallelMachine machine) { super(machine); }
     @Override public int getMultipleThreads() {
-        if (((IvNativeAccess)(Object)this).iv$nativeInputExecution() || ((IvNativeAccess)(Object)this).iv$nativeInputsActive()) return 1;
         TieredParallelMachine machine = (TieredParallelMachine)getMachine();
         return IvMachineScope.unlimited(machine) ? Integer.MAX_VALUE
                 : IvMachineScope.crossRecipeEnabled(machine) ? machine.getThreadsForTier() : 1;
@@ -110,12 +109,10 @@ public final class IvRecipeLogic extends GTLAddMultipleRecipesLogic {
             IvTaskLog.event(buffer, null, "WORKING_ENABLED", enabled ? "RESUME" : "PAUSE");
     }
     @Override public void findAndHandleRecipe() {
-        if (((IvNativeAccess)(Object)this).iv$nativeInputExecution()
-                || !IvMachineScope.crossRecipeEnabled((TieredParallelMachine)getMachine())) super.findAndHandleRecipe();
+        if (!IvMachineScope.crossRecipeEnabled((TieredParallelMachine)getMachine())) super.findAndHandleRecipe();
     }
     @Override public void onRecipeFinish() {
-        if (((IvNativeAccess)(Object)this).iv$nativeInputExecution()
-                || !IvMachineScope.crossRecipeEnabled((TieredParallelMachine)getMachine())) super.onRecipeFinish();
+        if (!IvMachineScope.crossRecipeEnabled((TieredParallelMachine)getMachine())) super.onRecipeFinish();
     }
     @Override public void resetRecipeLogic() {
         // All real tasks live in their buffers. A structural reset only clears the display.
@@ -132,12 +129,11 @@ public final class IvRecipeLogic extends GTLAddMultipleRecipesLogic {
             super.serverTick();
             return;
         }
-        ((IvNativeAccess)(Object)this).iv$runMixedInputs(() -> super.serverTick(), this::tickIsolatedOrders,
-                () -> IvBuffers.hasActiveBatches((TieredParallelMachine)getMachine()));
+        tickIsolatedOrders();
     }
-    private void tickIsolatedOrders(boolean allowStarts) {
+    private void tickIsolatedOrders() {
         if (!fault.isEmpty()) return;
-        try { tickTasks(allowStarts); }
+        try { tickTasks(); }
         catch (RuntimeException failure) {
             fault = "gtl_enhancedcore.diagnostic.iv_failure";
             currentEUt = 0; currentGridEUt = BigInteger.ZERO;
@@ -151,7 +147,7 @@ public final class IvRecipeLogic extends GTLAddMultipleRecipesLogic {
         serverTick();
         return advancedThisTick;
     }
-    private void tickTasks(boolean allowStarts) {
+    private void tickTasks() {
         TieredParallelMachine machine = (TieredParallelMachine)getMachine();
         if (machine.isRemote()) return;
         boolean enabled = isWorkingEnabled();
@@ -171,7 +167,7 @@ public final class IvRecipeLogic extends GTLAddMultipleRecipesLogic {
         diagnosticJson = "";
         for (var buffer : buffers) {
             if (!IvBuffers.bind(buffer, machine)) { message = IvBuffers.state(buffer).message; continue; }
-            for (IvJob job : IvBuffers.jobs(buffer, machine)) all.add(new Ref(buffer, job));
+            for (IvJob job : IvBuffers.jobs(buffer)) all.add(new Ref(buffer, job));
         }
         waitingReasons.keySet().retainAll(all.stream().map(ref -> ref.job.id).collect(java.util.stream.Collectors.toSet()));
         for (Ref ref : all) ref.job.validateAccounting();
@@ -202,7 +198,7 @@ public final class IvRecipeLogic extends GTLAddMultipleRecipesLogic {
         for (Ref ref : IvWorkBudget.deliveries(pendingDeliveries, deliverySelector, ref -> ref.job.id.toString())) flush(ref);
         for (var buffer : buffers) {
             IvBufferState state = IvBuffers.state(buffer);
-            if (state != null && state.jobs.removeIf(job -> {
+            if (state != null && state.removeJobsIf(job -> {
                 if (!job.done()) return false;
                 waitingReasons.remove(job.id);
                 IvTaskLog.event(buffer, job, "RETIRE", job.cancelled?"CANCELLED_AND_DRAINED":"FULLY_DELIVERED", "cancelledOperations",job.cancelledOperations,"completedOperations",job.completedOperations,
@@ -218,7 +214,7 @@ public final class IvRecipeLogic extends GTLAddMultipleRecipesLogic {
                     MachineDiagnostics.power(machine, ref.job.active() ? ref.job.eut : RecipeHelper.getInputEUt(ref.job.recipe)));
         }
         if (enabled && (inputPower > 0 || GalaxyLinks.active(machine)) && !buffers.isEmpty()) {
-            if (allowStarts) start(all, machine);
+            start(all, machine);
             advance(all, machine);
         }
         Ref shown = all.stream().filter(ref -> ref.job.active()).findFirst().orElse(null);
@@ -475,23 +471,28 @@ public final class IvRecipeLogic extends GTLAddMultipleRecipesLogic {
         }
     }
     private void flush(Ref ref) {
-        if (!IvBuffers.mayUseNetwork(ref.buffer)) { waiting(ref, "gtl_enhancedcore.cloud.status.origin"); return; }
-        if (ref.job.pending.isEmpty()) {
+        IvJob job = ref.job;
+        if (job.pending.isEmpty()) {
             acknowledgeDelivery(ref); return;
         }
         var grid = ref.buffer.getGrid();
         if (grid == null || !ref.buffer.getMainNode().isActive()) {
-            if (!ref.job.pending.isEmpty()) waiting(ref, "gtl_enhancedcore.diagnostic.iv_ae");
+            job.clearOutputRetry();
+            waiting(ref, "gtl_enhancedcore.diagnostic.iv_ae");
             return;
         }
+        long gameTick = ref.buffer.getLevel().getGameTime();
+        if (!job.canRetryOutput(gameTick, grid)) return;
         Component outputDetail = null;
+        boolean madeProgress = false;
         int transfers = 0;
-        var iterator = ref.job.pending.entrySet().iterator();
+        var iterator = job.pending.entrySet().iterator();
         while (iterator.hasNext() && transfers++ < IvWorkBudget.TRANSFERS_PER_JOB) {
             var entry = iterator.next();
             var transfer = IvOutputTransfer.transfer(grid.getEnergyService(), grid.getStorageService().getInventory(),
                     entry.getKey(), entry.getValue(), IActionSource.ofMachine(ref.buffer));
             long inserted = transfer.inserted();
+            if (inserted > 0) madeProgress = true;
             if (transfer.remaining() > 0 && outputDetail == null) {
                 outputDetail = transfer.detail(entry.getKey());
                 if (inserted == 0 && (!outputDetail.equals(waitingReasons.get(ref.job.id)) || IvTaskLog.TRACE_TICKS))
@@ -506,9 +507,14 @@ public final class IvRecipeLogic extends GTLAddMultipleRecipesLogic {
             if (inserted == entry.getValue()) iterator.remove(); else entry.setValue(entry.getValue() - inserted);
             ref.buffer.markDirty();
         }
-        if (ref.job.pending.isEmpty()) acknowledgeDelivery(ref);
-        else waiting(ref, "gtl_enhancedcore.diagnostic.output", outputDetail != null ? outputDetail
+        if (job.pending.isEmpty()) {
+            job.clearOutputRetry();
+            acknowledgeDelivery(ref);
+        } else {
+            if (!madeProgress) job.deferOutputRetry(gameTick, grid); else job.clearOutputRetry();
+            waiting(ref, "gtl_enhancedcore.diagnostic.output", outputDetail != null ? outputDetail
                 : Component.translatable("gtl_enhancedcore.diagnostic.output"));
+        }
     }
     private void acknowledgeDelivery(Ref ref) {
         if (ref.job.pendingOperations == 0) return;
@@ -563,6 +569,6 @@ public final class IvRecipeLogic extends GTLAddMultipleRecipesLogic {
                 : Component.translatable("gtl_enhancedcore.diagnostic.condition_detail", detail));
     }
     private Map<AEKey, Long> availableVirtual(Ref ref) {
-        return IvBuffers.availableVirtual(ref.buffer, ref.job, (TieredParallelMachine)getMachine());
+        return IvBuffers.availableVirtual(ref.buffer, ref.job);
     }
 }

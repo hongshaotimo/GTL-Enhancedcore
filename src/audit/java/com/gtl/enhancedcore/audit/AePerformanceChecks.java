@@ -9,8 +9,6 @@ import appeng.api.stacks.AEItemKey;
 import appeng.client.gui.me.common.Repo;
 import appeng.client.gui.widgets.ISortSource;
 import appeng.menu.me.common.GridInventoryEntry;
-import com.gtl.enhancedcore.client.cloud.CloudPatternNameSearch;
-import com.gtl.enhancedcore.client.cloud.CloudTerminalViewState;
 import com.gtl.enhancedcore.client.performance.RepoRebuildControl;
 import java.math.BigInteger;
 import java.nio.file.Files;
@@ -84,38 +82,6 @@ public final class AePerformanceChecks {
         require(repo.size() == 0 && repo.getAllEntries().isEmpty() && !pending.getBoolean(repo),
                 "AE clear releases view/cache without retaining pending inventory", checks);
 
-        var candidates = new BitSet();
-        int ironId = BuiltInRegistries.ITEM.getId(Items.IRON_INGOT);
-        int goldId = BuiltInRegistries.ITEM.getId(Items.GOLD_INGOT);
-        candidates.set(ironId); candidates.set(goldId);
-        var cancelled = CloudPatternNameSearch.start("minecraft:iron_ingot", candidates, new BitSet());
-        cancelled.advance(1, Long.MAX_VALUE);
-        require(!cancelled.done(), "Cloud localized search honors a one-ID slice", checks);
-        cancelled.cancel();
-        require(cancelled.cancelled(), "Cloud superseded search can be cancelled", checks);
-        var current = CloudPatternNameSearch.start("minecraft:iron_ingot", candidates, new BitSet());
-        while (!current.done()) current.advance(1, Long.MAX_VALUE);
-        require(current.result().items().get(ironId) && !current.result().items().get(goldId),
-                "Cloud sliced search retains exact candidate/result semantics", checks);
-        CloudPatternNameSearch.clearCache();
-        require(current.cancelled(), "Cloud language/resource generation rejects stale completed results", checks);
-        var empty = CloudPatternNameSearch.start("");
-        require(empty.done() && empty.result().items().isEmpty(), "Cloud empty query completes without dictionary scan", checks);
-
-        var directory = Files.createTempDirectory(FMLPaths.GAMEDIR.get(), "ae-view-audit-");
-        var file = directory.resolve("views.json");
-        try {
-            var preferences = new CloudTerminalViewState(file);
-            for (int i = 0; i < 50; i++) preferences.saveDeferred("audit/player/terminal",
-                    new CloudTerminalViewState.View("library", "query-" + i, "gold"));
-            require(new CloudTerminalViewState(file).load("audit/player/terminal").input().equals("query-49"),
-                    "Cloud deferred preference changes survive immediate screen reopen", checks);
-            CloudTerminalViewState.flushPending();
-            require(Files.readString(file).contains("query-49"), "Cloud dirty preference flush persists latest value", checks);
-        } finally {
-            CloudTerminalViewState.flushPending(); Files.deleteIfExists(file);
-            Files.deleteIfExists(directory.resolve("views.json.tmp")); Files.deleteIfExists(directory);
-        }
         patternSlotCapacities(checks);
     }
 

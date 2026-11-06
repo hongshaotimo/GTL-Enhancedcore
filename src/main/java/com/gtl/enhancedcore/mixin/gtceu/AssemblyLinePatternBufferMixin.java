@@ -5,6 +5,8 @@ import com.gregtechceu.gtceu.api.machine.multiblock.PartAbility;
 import com.gregtechceu.gtceu.api.pattern.BlockPattern;
 import com.gregtechceu.gtceu.api.pattern.Predicates;
 import com.gregtechceu.gtceu.api.pattern.TraceabilityPredicate;
+import java.util.Arrays;
+import java.util.IdentityHashMap;
 import java.util.function.Supplier;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -46,7 +48,7 @@ public abstract class AssemblyLinePatternBufferMixin {
         }
         Supplier<BlockPattern> original = supplier;
         ((MultiblockMachineDefinitionAccessor) (Object) self).gtlEnhancedcore$setPatternFactory(com.google.common.base.Suppliers.memoize(() -> {
-            BlockPattern pattern = com.gtl.enhancedcore.common.structure.AssemblyLineCloudPorts.copy(original.get());
+            BlockPattern pattern = copyPattern(original.get());
             if (isAssemblyLine) {
                 patchAssemblyLinePattern(pattern);
             } else {
@@ -55,6 +57,26 @@ public abstract class AssemblyLinePatternBufferMixin {
             return pattern;
         }));
         ci.cancel();
+    }
+
+    /** Copy slot rules while retaining shared simple predicates and their count identity. */
+    private static BlockPattern copyPattern(BlockPattern source) {
+        var access = (BlockPatternAccessor) source;
+        var sourceMatches = access.gtlEnhancedcore$getBlockMatches();
+        var matches = Arrays.copyOf(sourceMatches, sourceMatches.length);
+        var rules = new IdentityHashMap<TraceabilityPredicate, TraceabilityPredicate>();
+        for (int z = 0; z < matches.length; z++) {
+            matches[z] = Arrays.copyOf(matches[z], matches[z].length);
+            for (int y = 0; y < matches[z].length; y++) {
+                matches[z][y] = Arrays.copyOf(matches[z][y], matches[z][y].length);
+                for (int x = 0; x < matches[z][y].length; x++) {
+                    matches[z][y][x] = rules.computeIfAbsent(matches[z][y][x], TraceabilityPredicate::new);
+                }
+            }
+        }
+        var center = access.enhanced$getCenterOffset();
+        return new BlockPattern(matches, source.structureDir, source.aisleRepetitions,
+                Arrays.copyOf(center, center.length));
     }
 
     /** 把普通 IMPORT_FLUIDS 能力并入装配线 F 位（所有 aisle 的 row0 col0/col2）谓词，原 F 位功能保留。 */

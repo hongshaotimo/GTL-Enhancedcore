@@ -16,10 +16,6 @@ final class RequestedStructuresRegression {
                         && dragon.contains("block/casings/extreme_strength_tritanium_casing"), "dragon native texture reference");
         String structures = Files.readString(javaRoot.resolve("common/data/machines/multiblock/GTLStructures.java"));
         check(structures.contains(".where('X', block(\"gtlcore:dragon_strength_tritanium_casing\")"), "dragon empty ports");
-        String cloud = Files.readString(javaRoot.resolve("common/registration/CloudPatternRegistration.java"));
-        String library = method(cloud, "library");
-        check(library.contains("gtlcore:molecular_casing") && library.contains("block/molecular_casing"), "cloud appearance and renderer");
-        check(!library.contains("PartAbility.") && !library.contains(".or("), "cloud has no hatch slots");
         String machine = Files.readString(javaRoot.resolve("common/machine/BasicOreProcessingPlantMachine.java"));
         check(machine.contains("BASE_THREADS = 1") && machine.contains("THREADS_PER_TIER = 4"), "ore plant gains four threads per tier");
         Path root = Path.of("src/main/resources/data/gtl_enhancedcore/structures");
@@ -46,8 +42,7 @@ final class RequestedStructuresRegression {
                 && !skeleton.has("appearance"), "skeleton retains appearance and requested port fallback");
         var targets = Map.of("dragon_field_proliferation_core", new int[]{252,108,120,24},
                 "high_flux_breeder_reactor", new int[]{47,55,48,112},
-                "skeleton_shift_rift_engine", new int[]{31,31,48,80},
-                "cloud_pattern_library", new int[]{49,33,45,0});
+                "skeleton_shift_rift_engine", new int[]{31,31,48,80});
         for (var target : targets.entrySet()) {
             String name = target.getKey();
             var spec = name.equals("skeleton_shift_rift_engine") ? skeleton

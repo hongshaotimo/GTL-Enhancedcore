@@ -14,12 +14,6 @@ public final class IvJob {
     public final int slot;
     public final GTRecipe recipe;
     public final CompoundTag pattern;
-    /** Central original identity, independent of a replacement buffer's local slot assignment. */
-    public UUID cloudPattern;
-    /** Shared endpoints retain the exact accepting controller instance per order. */
-    public UUID cloudMachine;
-    /** Frozen conversion between AE pattern shares and GT operations for routing load. */
-    public long cloudPatternOperations = 1;
     public boolean ivGalaxy;
     public BigInteger ivGalaxyEUt = BigInteger.ZERO;
     public final Map<AEKey, Long> inventory;
@@ -45,6 +39,9 @@ public final class IvJob {
     public String error = "";
     public boolean halted;
     public String cycle = "";
+    /** Transient cooldown after ME rejects an output; retried immediately after any delivered progress. */
+    private long outputRetryAfterTick;
+    private Object outputRetryGrid;
     /** Native machines persist their exact modified tick requirements with the paid batch. */
     public GTRecipe nativeRecipe;
     public long nativeCapacity;
@@ -65,6 +62,15 @@ public final class IvJob {
     }
     public boolean active() { return parallel > 0; }
     public boolean done() { return remaining == 0 && !active() && pending.isEmpty() && completion.isEmpty() && inventory.isEmpty() && refunds.isEmpty(); }
+    public boolean canRetryOutput(long gameTick, Object grid) {
+        if (outputRetryGrid != grid) { outputRetryGrid = grid; outputRetryAfterTick = 0; }
+        return gameTick >= outputRetryAfterTick;
+    }
+    public void deferOutputRetry(long gameTick, Object grid) {
+        outputRetryGrid = grid;
+        outputRetryAfterTick = gameTick + IvWorkBudget.OUTPUT_RETRY_TICKS;
+    }
+    public void clearOutputRetry() { outputRetryGrid = null; outputRetryAfterTick = 0; }
     /** Stop immediately. Only inventory/refunds and already completed output still belong to the player. */
     public void cancel() {
         validateAccounting();
@@ -75,6 +81,7 @@ public final class IvJob {
         // completion contains rolled, unfinished output, not refundable ingredients.
         completion.clear(); parallel=0; eut=0; duration=0; elapsed=0;
         energyLeft=BigInteger.ZERO; energyTotal=BigInteger.ZERO; supplyPower=0;
+        clearOutputRetry();
         nativeRecipe=null; nativeCapacity=0; nativeWireless=false; nativeWirelessEUt=BigInteger.ZERO;
         nativeComputation.reset();
         cycle=""; error=""; halted=false;
@@ -102,13 +109,9 @@ public final class IvJob {
     }
 
     public CompoundTag save() {
-        if (cloudPatternOperations < 1) throw new IllegalStateException("Invalid pattern operation scale");
         CompoundTag tag = new CompoundTag();
         tag.putUUID("id", id); tag.putInt("slot", slot);
         tag.putBoolean("ivGalaxy", ivGalaxy); tag.putString("ivGalaxyEUt", ivGalaxyEUt.toString());
-        if (cloudPattern != null) tag.putUUID("cloudPattern", cloudPattern);
-        if (cloudMachine != null) tag.putUUID("cloudMachine", cloudMachine);
-        tag.putLong("cloudPatternOperations", cloudPatternOperations);
         tag.put("recipe", GTRecipeSerializer.CODEC.encodeStart(NbtOps.INSTANCE, recipe).getOrThrow(false, ignored -> {}));
         tag.putString("recipeId", recipe.id.toString()); tag.put("pattern", pattern.copy());
         tag.put("input", saveStock(inventory)); tag.put("virtual", saveStock(virtual));
@@ -129,25 +132,41 @@ public final class IvJob {
         return tag;
     }
     public static IvJob load(CompoundTag tag) {
+        if (!tag.hasUUID("id") || !tag.contains("slot", Tag.TAG_INT)
+                || !tag.contains("recipe", Tag.TAG_COMPOUND) || !tag.contains("recipeId", Tag.TAG_STRING)
+                || !tag.contains("pattern", Tag.TAG_COMPOUND))
+            throw new IllegalArgumentException("Incomplete isolated order");
+        String[] strings = {"ivGalaxyEUt", "energyLeft", "error", "cycle", "nativeWirelessEUt"};
+        for (String key : strings) requireTypeIfPresent(tag, key, Tag.TAG_STRING);
+        String[] flags = {"ivGalaxy", "recoveredTail", "cancelled", "nativeWireless", "halted"};
+        for (String key : flags) requireTypeIfPresent(tag, key, Tag.TAG_BYTE);
+        String[] counters = {"remaining", "parallel", "eut", "totalOperations", "completedOperations",
+                "deliveredOperations", "pendingOperations", "cancelledOperations", "duration", "elapsed", "energyTotal",
+                "supplyPower", "nativeCapacity", "nativeComputation"};
+        for (String key : counters) {
+            int type = key.equals("duration") || key.equals("elapsed") ? Tag.TAG_INT
+                    : key.equals("energyTotal") ? Tag.TAG_STRING : Tag.TAG_LONG;
+            requireTypeIfPresent(tag, key, type);
+        }
+        if (tag.contains("totalOperations") && (!tag.contains("completedOperations", Tag.TAG_LONG)
+                || !tag.contains("deliveredOperations", Tag.TAG_LONG) || !tag.contains("pendingOperations", Tag.TAG_LONG)))
+            throw new IllegalArgumentException("Incomplete isolated order totals");
+        if (!tag.contains("totalOperations") && (tag.contains("completedOperations") || tag.contains("deliveredOperations")
+                || tag.contains("pendingOperations")))
+            throw new IllegalArgumentException("Incomplete legacy isolated order totals");
         GTRecipe recipe = GTRecipeSerializer.CODEC.parse(NbtOps.INSTANCE, tag.get("recipe")).getOrThrow(false, ignored -> {});
         recipe.id = new ResourceLocation(tag.getString("recipeId"));
         IvJob job = new IvJob(tag.getUUID("id"), tag.getInt("slot"), recipe, tag.getCompound("pattern"),
-                loadStock(tag.getList("input", Tag.TAG_COMPOUND)), loadStock(tag.getList("virtual", Tag.TAG_COMPOUND)), tag.getLong("remaining"));
-        job.cloudPattern = tag.hasUUID("cloudPattern") ? tag.getUUID("cloudPattern") : null;
-        job.cloudMachine = tag.hasUUID("cloudMachine") ? tag.getUUID("cloudMachine") : null;
-        if (tag.contains("cloudPatternOperations") && !tag.contains("cloudPatternOperations", Tag.TAG_LONG))
-            throw new IllegalArgumentException("Invalid pattern operation scale type");
-        job.cloudPatternOperations = tag.contains("cloudPatternOperations", Tag.TAG_LONG) ? tag.getLong("cloudPatternOperations") : 1;
-        if (job.cloudPatternOperations < 1) throw new IllegalArgumentException("Invalid pattern operation scale");
+                loadStockField(tag, "input"), loadStockField(tag, "virtual"), tag.getLong("remaining"));
         job.ivGalaxy = tag.getBoolean("ivGalaxy");
         job.ivGalaxyEUt = tag.contains("ivGalaxyEUt") ? new BigInteger(tag.getString("ivGalaxyEUt")) : BigInteger.ZERO;
         if (job.ivGalaxyEUt.signum() < 0) throw new IllegalArgumentException("Invalid stellar IV rate");
-        job.pending.putAll(loadStock(tag.getList("pending", Tag.TAG_COMPOUND)));
-        job.completion.putAll(loadStock(tag.getList("completion", Tag.TAG_COMPOUND)));
+        job.pending.putAll(loadStockField(tag, "pending"));
+        job.completion.putAll(loadStockField(tag, "completion"));
         job.parallel = tag.getLong("parallel"); job.eut = tag.getLong("eut");
         job.cancelled=tag.getBoolean("cancelled"); job.cancelledOperations=tag.getLong("cancelledOperations");
-        job.refunds.putAll(loadStock(tag.getList("refunds",Tag.TAG_COMPOUND)));
-        if (tag.contains("totalOperations", Tag.TAG_LONG)) {
+        job.refunds.putAll(loadStockField(tag, "refunds"));
+        if (tag.contains("totalOperations")) {
             job.totalOperations = tag.getLong("totalOperations"); job.completedOperations = tag.getLong("completedOperations");
             job.deliveredOperations = tag.getLong("deliveredOperations"); job.pendingOperations = tag.getLong("pendingOperations");
             job.recoveredTail = tag.getBoolean("recoveredTail");
@@ -195,4 +214,21 @@ public final class IvJob {
         }
         return result;
     }
+    private static Map<AEKey, Long> loadStockField(CompoundTag tag, String field) {
+        if (!tag.contains(field)) return new LinkedHashMap<>();
+        if (!tag.contains(field, Tag.TAG_LIST)) throw new IllegalArgumentException("Invalid isolated stock list: " + field);
+        ListTag list = (ListTag) tag.get(field);
+        if (list.size() > 0 && list.getElementType() != Tag.TAG_COMPOUND)
+            throw new IllegalArgumentException("Invalid isolated stock entry: " + field);
+        for (int index = 0; index < list.size(); index++) {
+            CompoundTag entry = list.getCompound(index);
+            if (!entry.contains("key", Tag.TAG_COMPOUND) || !entry.contains("amount", Tag.TAG_LONG))
+                throw new IllegalArgumentException("Invalid isolated stock record: " + field);
+        }
+        return loadStock(list);
+    }
+    private static void requireTypeIfPresent(CompoundTag tag, String key, int type) {
+        if (tag.contains(key) && !tag.contains(key, type)) throw new IllegalArgumentException("Invalid isolated order field: " + key);
+    }
+
 }

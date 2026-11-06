@@ -61,7 +61,7 @@ final class MachineOverrideConfigRegression {
                 "gtladditions.client.HeartOfTheUniverseEffectSizeMixin",
                 "gtladditions.client.HeartOfTheUniverseEffectBoundsMixin",
                 "gtladditions.ArcanicAstrographCollectionAnchorMixin");
-        Set<String> shared = Set.of("gtceu.IvNativeRecipeLogicMixin", "gtlcore.IvNativeMultipleGuardMixin", "gtceu.IvNativeParallelMixin", "gtceu.GalaxyRecipeLogicMixin", "gtceu.GalaxyMachineDisplayMixin", "gtceu.GalaxyConnectionHatchUiMixin", "gtladditions.GalaxyMutableModeMixin", "gtceu.RetiredLightHunterDefinitionMixin",
+        Set<String> shared = Set.of("gtceu.IvNativeRecipeLogicMixin", "gtceu.IvNativeParallelMixin", "gtceu.GalaxyRecipeLogicMixin", "gtceu.GalaxyMachineDisplayMixin", "gtceu.GalaxyConnectionHatchUiMixin", "gtladditions.GalaxyMutableModeMixin", "gtceu.RetiredLightHunterDefinitionMixin",
                 // These hooks also serve our own machines; foreign targets are guarded inside the panel palette.
                 "gtceu.StructurePanelAppearanceMixin", "gtceu.client.StructurePanelRendererMixin",
                 "gtceu.client.GtRecipeGridMixin",
@@ -91,7 +91,6 @@ final class MachineOverrideConfigRegression {
                 "gtlcore.TerminalDismantlePatternAccessor",
                 "gtlcore.AdaptiveMaintenanceGravityConditionMixin",
                 "gtladditions.BiosphereModulePowerMixin",
-                "gtladditions.BiosphereHostEnergyInvoker",
                 "gtladditions.GridNetworkTerminalBigIntegerMixin",
                 "gtmadvancedhatch.GridEnergyRecipeInputMixin", "gtceu.EnergyContainerListAccessor");
         var config = JsonParser.parseString(Files.readString(Path.of(
@@ -103,7 +102,6 @@ final class MachineOverrideConfigRegression {
                         || name.startsWith("gtceu.RetiredMachine") || name.equals("mc.RetiredMachineRecipesMixin")
                         || name.startsWith("gtceu.Galaxy") || name.equals("gtladditions.GalaxyWirelessPowerBudgetMixin")
                         || name.equals("gtlcore.client.ChamberPreviewWidgetMixin")
-                        || name.equals("gtceu.CloudMachineIdentityMixin") || name.startsWith("gtlcore.Cloud")
                         || name.startsWith("extendedae.client.") || name.startsWith("ftblibrary.client.")
                         || name.startsWith("ftbquests.client.")
                         || name.startsWith("jei.") || name.startsWith("jer.")

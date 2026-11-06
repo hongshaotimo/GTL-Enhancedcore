@@ -29,8 +29,7 @@ public abstract class IvParallelProviderMixin {
             return;
         }
         if (!IvMachineScope.crossRecipeEnabled(machine)
-                || !(IvMachineScope.nativeTarget(machine) || machine instanceof TieredParallelMachine
-                || com.gtl.enhancedcore.common.recipe.iv.IvBuffers.genericCloudTarget(machine))) return;
+                || !(IvMachineScope.nativeTarget(machine) || machine instanceof TieredParallelMachine)) return;
         data.putLong("parallel", IvMachineScope.unlimitedParallel(machine) ? -114514L : IvMachineScope.parallel(machine, null));
         if (IvMachineScope.unlimitedThreads(machine)) data.putLong("threads", -114514L);
         else if (IvMachineScope.threads(machine) > 1) data.putLong("threads", IvMachineScope.threads(machine));

@@ -8,6 +8,7 @@ import java.util.function.Function;
 public final class IvWorkBudget {
     public static final int DELIVERY_JOBS_PER_TICK = 16;
     public static final int TRANSFERS_PER_JOB = 4;
+    public static final int OUTPUT_RETRY_TICKS = 5;
 
     private IvWorkBudget() {}
 

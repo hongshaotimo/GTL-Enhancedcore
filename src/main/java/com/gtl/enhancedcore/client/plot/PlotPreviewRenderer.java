@@ -10,6 +10,7 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.atomic.AtomicBoolean;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
@@ -71,39 +72,111 @@ public final class PlotPreviewRenderer {
         private int count, rasterSize;
         private ResourceLocation location;
         private DynamicTexture texture;
+        private PlotSettings requested;
+        private int requestedCount, requestedSize, requestGeneration;
+        private CompletableFuture<int[]> pendingRaster;
+        private AtomicBoolean pendingCancelled;
+        private int[] completedRaster;
+        private Throwable rasterFailure;
 
         public void draw(GuiGraphics g, PlotSettings settings, int left, int top, int pixels, int plots, boolean grid) {
             int actual = Math.max(1, pixels), size = Math.min(actual, PlotPreviewRaster.MAX_PIXELS);
             var manager = Minecraft.getInstance().getTextureManager();
             if (location != null && manager.getTexture(location) != texture) close();
+            if (settings.isCampus()) {
+                drawCampus(g, settings, left, top, actual, size, plots, grid);
+                return;
+            }
+            if (pendingRaster != null || requested != null) {
+                requestGeneration++;
+                cancelPendingRaster();
+                requested = null; completedRaster = null; rasterFailure = null;
+            }
             if (!settings.equals(previous) || plots != count || size != rasterSize || location == null) {
                 int[] raster = PlotPreviewRaster.render(settings, size, plots, palette(settings));
-                NativeImage image = new NativeImage(size, size, false);
-                for (int z = 0; z < size; z++) for (int x = 0; x < size; x++) {
-                    int rgb = raster[z * size + x];
-                    image.setPixelRGBA(x, z, 0xff000000 | ((rgb & 255) << 16) | (rgb & 0xff00) | ((rgb >>> 16) & 255));
-                }
-                if (texture != null && size == rasterSize) {
-                    texture.setPixels(image); // closes the previous NativeImage
-                    texture.upload();
-                } else {
-                    close();
-                    texture = new DynamicTexture(image);
-                    texture.setFilter(false, false);
-                    location = manager.register("plot_preview", texture);
-                }
-                previous = settings; count = plots; rasterSize = size;
+                upload(manager, settings, plots, size, raster);
             }
             // Explicit source and target sizes: the full texture is used even at the safety bound.
             g.blit(location, left, top, actual, actual, 0.0f, 0.0f, size, size, size, size);
             finish(g, settings, left, top, actual, plots, grid);
         }
 
-        @Override public void close() {
-            var manager = Minecraft.getInstance().getTextureManager();
+        private void drawCampus(GuiGraphics g, PlotSettings settings, int left, int top,
+                                int actual, int size, int plots, boolean grid) {
+            boolean textureReady = settings.equals(previous) && plots == count && size == rasterSize && location != null;
+            boolean requestMatches = settings.equals(requested) && plots == requestedCount && size == requestedSize;
+            if (!textureReady && !requestMatches) {
+                requested = settings; requestedCount = plots; requestedSize = size; completedRaster = null; rasterFailure = null;
+                int generation = ++requestGeneration;
+                cancelPendingRaster();
+                AtomicBoolean cancelled = new AtomicBoolean();
+                pendingCancelled = cancelled;
+                int[] colors = palette(settings);
+                CompletableFuture<int[]> work = CompletableFuture.supplyAsync(
+                        () -> PlotPreviewRaster.render(settings, size, plots, colors, cancelled::get), Util.backgroundExecutor());
+                pendingRaster = work;
+                work.whenComplete((raster, failure) -> Minecraft.getInstance().execute(() -> {
+                    if (generation != requestGeneration) return;
+                    pendingRaster = null; pendingCancelled = null;
+                    if (failure != null) rasterFailure = failure;
+                    else completedRaster = raster;
+                }));
+            }
+            if (completedRaster != null && settings.equals(requested) && plots == requestedCount && size == requestedSize) {
+                upload(Minecraft.getInstance().getTextureManager(), settings, plots, size, completedRaster);
+                completedRaster = null;
+                textureReady = true;
+            }
+            if (textureReady) {
+                g.blit(location, left, top, actual, actual, 0.0f, 0.0f, size, size, size, size);
+            } else {
+                g.fill(left, top, left + actual, top + actual, 0xff242a30);
+                Component message = rasterFailure == null
+                        ? Component.translatable("gtl_enhancedcore.create_world_plot.preview_loading")
+                        : Component.translatable("gtl_enhancedcore.create_world_plot.preview_failed");
+                g.drawCenteredString(Minecraft.getInstance().font, message, left + actual / 2, top + actual / 2 - 4,
+                        rasterFailure == null ? 0xffdce3e8 : 0xffffa69c);
+            }
+            finish(g, settings, left, top, actual, plots, grid);
+        }
+
+        private void upload(net.minecraft.client.renderer.texture.TextureManager manager, PlotSettings settings,
+                            int plots, int size, int[] raster) {
+            NativeImage image = new NativeImage(size, size, false);
+            for (int z = 0; z < size; z++) for (int x = 0; x < size; x++) {
+                int rgb = raster[z * size + x];
+                image.setPixelRGBA(x, z, 0xff000000 | ((rgb & 255) << 16) | (rgb & 0xff00) | ((rgb >>> 16) & 255));
+            }
+            if (texture != null && size == rasterSize) {
+                texture.setPixels(image);
+                texture.upload();
+            } else {
+                closeTexture(manager);
+                texture = new DynamicTexture(image);
+                texture.setFilter(false, false);
+                location = manager.register("plot_preview", texture);
+            }
+            previous = settings; count = plots; rasterSize = size;
+        }
+
+        private void closeTexture(net.minecraft.client.renderer.texture.TextureManager manager) {
             if (location != null && manager.getTexture(location) == texture) manager.release(location);
             else if (texture != null) texture.close();
             location = null; texture = null; previous = null; rasterSize = 0; count = 0;
+        }
+
+        private void cancelPendingRaster() {
+            if (pendingCancelled != null) pendingCancelled.set(true);
+            if (pendingRaster != null) pendingRaster.cancel(false);
+            pendingRaster = null; pendingCancelled = null;
+        }
+
+        @Override public void close() {
+            var manager = Minecraft.getInstance().getTextureManager();
+            requestGeneration++;
+            cancelPendingRaster();
+            requested = null; completedRaster = null; rasterFailure = null;
+            closeTexture(manager);
         }
     }
 

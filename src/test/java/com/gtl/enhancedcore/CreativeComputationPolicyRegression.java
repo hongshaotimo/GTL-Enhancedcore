@@ -40,7 +40,7 @@ final class CreativeComputationPolicyRegression {
         var owner = new Object();
         var other = new Object();
         check(scheduler.offer(owner, List.of(source, source), 1_400_000_000L, 1_400_000_000L) == 1_400_000_000L,
-                "duplicate direct, wired or cloud routes reserve one physical source");
+                "duplicate direct or wired routes reserve one physical source");
         check(source.gtlcore$availableComputation() == 2_100_000_000L, "offering computation is non-consuming");
         check(scheduler.available(other, List.of(source)) == 700_000_000L,
                 "other controllers cannot claim reserved computation");
