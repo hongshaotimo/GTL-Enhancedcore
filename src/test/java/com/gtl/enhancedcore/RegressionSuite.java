@@ -25,6 +25,8 @@ public final class RegressionSuite {
 
     public static void main(String[] args) throws Exception {
         configParsing();
+        assertions += PrimitiveVoidOreRoutingRegression.run();
+        assertions += AeGridNodeLifecycleRegression.run();
         assertions += CloudRemovalRegression.run();
         assertions += CampusPlotSearchRegression.run();
         assertions += CampusMapImageRegression.run();
@@ -41,6 +43,7 @@ public final class RegressionSuite {
         assertions += GalaxyWirelessHandlerRegression.run();
         assertions += com.gtl.enhancedcore.client.renderer.StellarVortexSpinRegression.run();
         assertions += CelestialEffectAnchorRegression.run();
+        assertions += CelestialVfxRegression.run();
         assertions += MapImagePacingRegression.run();
         assertions += FtbClaimMapRegression.run();
         assertions += BloomPacingRegression.run();
@@ -124,6 +127,7 @@ public final class RegressionSuite {
         assertions += GridRecipePaymentRegression.run();
         assertions += GridNetworkTerminalBigIntegerRegression.run();
         assertions += SuperBufferWideInventoryRegression.run();
+        assertions += ProcessingDispatchRegression.run();
         assertions += ChunkUnloadRegression.run();
         assertions += ActiveBlockSnapshotRegression.run();
         assertions += CellPersistenceRegression.run();

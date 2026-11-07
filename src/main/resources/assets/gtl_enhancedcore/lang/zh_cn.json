@@ -1,4 +1,8 @@
 {
+  "tooltip.gtl_enhancedcore.primitive_void_ore.output": "运行时每tick随机产出所选维度的一组64个粗矿。",
+  "tooltip.gtl_enhancedcore.primitive_void_ore.dimension": "可在任意维度运行，由输入电路选择采矿维度。",
+  "tooltip.gtl_enhancedcore.primitive_void_ore.circuits": "1号电路采主世界，2号采下界，3号采末地。",
+  "tooltip.gtl_enhancedcore.primitive_void_ore.input": "物品输入仓放入对应电路，电路不消耗；切换后下一批生效。",
   "gtl_enhancedcore.preview.visibility_all": "全部",
   "gtl_enhancedcore.preview.visibility_controller": "主控",
   "gtl_enhancedcore.preview.visibility_replaceable": "可替换",

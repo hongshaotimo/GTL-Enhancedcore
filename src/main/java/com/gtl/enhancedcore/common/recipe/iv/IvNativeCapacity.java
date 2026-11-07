@@ -12,6 +12,9 @@ public final class IvNativeCapacity {
         long perRecipe = IvMachineScope.parallel(machine, recipe);
         if (recipe.recipeType == org.gtlcore.gtlcore.common.data.GTLRecipeTypes.PRECISION_LASER_ENGRAVER_RECIPES)
             return Math.min(1, budget);
+        // Native batch schedulers allocate their whole long parallel-times-thread pool.
+        // The int getter describes one lane, not an additional per-order ceiling.
+        if (IvMachineScope.batching(machine) && modifierParallel(machine) <= 0) return budget;
         return Math.min(budget, perRecipe);
     }
 

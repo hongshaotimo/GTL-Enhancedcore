@@ -15,8 +15,12 @@ public final class ForeignMachineMixinPolicy {
             "gtladditions.client.ArcanicAstrographEffectAnchorMixin",
             "gtladditions.client.HeartOfTheUniverseEffectSizeMixin",
             "gtladditions.client.HeartOfTheUniverseEffectBoundsMixin",
+            "gtladditions.client.HeartOfTheUniverseShaderMixin",
             "gtladditions.ArcanicAstrographCollectionAnchorMixin");
     private static final Set<String> ENHANCEMENT_MIXINS = Set.of(
+            "gtlcore.PrimitiveVoidOreRecipeMixin", "gtlcore.PrimitiveVoidOreDimensionMixin",
+            "gtlcore.PrimitiveVoidOreRecipeTypeMixin", "gtlcore.PrimitiveVoidOreStructureMixin",
+            "gtlcore.PrimitiveVoidOreTooltipMixin",
             "gtlcore.HarmonyAddRecipesMixin", "gtladditions.ArcanicAddRecipesMixin",
             "jade.HarmonyAddParallelProviderMixin",
             "gtladditions.IvNativeForgeStateAccessor", "gtladditions.IvNativeForgeRecipeAccessor",

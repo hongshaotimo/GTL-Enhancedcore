@@ -31,6 +31,9 @@ public final class TooltipPolicy {
     /** Minecraft colour/format codes; allowed inline in tips and stripped before width checks. */
     private static final Pattern FORMAT_CODE = Pattern.compile("\u00a7[0-9a-fk-orA-FK-OR]");
     private static final Map<String, Layout<String>> PAGES = Map.ofEntries(
+            Map.entry("primitive_void_ore", page(
+                    List.of("primitive_void_ore.output", "primitive_void_ore.dimension", "primitive_void_ore.circuits",
+                            "primitive_void_ore.input"), List.of())),
             // 用户 2026-10-25 指定文案（item_tooltips.json 优化版）。
             Map.entry("large_furnace", page(
                     List.of("large_furnace.efficient", "large_furnace.base_parallel", "large_furnace.base_threads",
@@ -236,6 +239,8 @@ public final class TooltipPolicy {
 
     public static Set<String> replacedKeys(String page) {
         return switch (page) {
+            case "primitive_void_ore" -> Set.of("tooltip.gtlcore.primitive_void_ore_random_output",
+                    "tooltip.gtlcore.supports_dimensions");
             case "suprachronal_module_host" -> Set.of("gtceu.machine.suprachronal_assembly_line.tooltip.1");
             case "suprachronal_module" -> Set.of("gtceu.machine.suprachronal_assembly_line_module.tooltip.0",
                     "gtceu.machine.available_recipe_map_1.tooltip", "gtceu.machine.available_recipe_map_2.tooltip",

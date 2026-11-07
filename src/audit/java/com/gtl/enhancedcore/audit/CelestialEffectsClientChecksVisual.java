@@ -1,6 +1,7 @@
 package com.gtl.enhancedcore.audit;
 
 import com.gregtechceu.gtceu.api.block.MetaMachineBlock;
+import com.google.gson.GsonBuilder;
 import com.gregtechceu.gtceu.api.machine.IMachineBlockEntity;
 import com.gregtechceu.gtceu.api.machine.MultiblockMachineDefinition;
 import com.gregtechceu.gtceu.api.machine.multiblock.MultiblockControllerMachine;
@@ -23,6 +24,8 @@ import java.lang.reflect.Field;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.Screenshot;
 import net.minecraft.core.BlockPos;
@@ -35,10 +38,12 @@ import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.fml.util.ObfuscationReflectionHelper;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
+import org.gtlcore.gtlcore.config.ConfigHolder;
 
 /** Real native renderer pixels in an isolated client. No saved world or additional @Mod entry. */
 public final class CelestialEffectsClientChecksVisual {
-    private static final int SIZE = 640;
+    private static final int SIZE = 960;
+    private static final long[] TIMES = {10_000, 10_040, 10_080};
     private CelestialEffectsClientChecksVisual() {}
 
     public static void run(List<String> checks, Path directory) throws Exception {
@@ -52,6 +57,8 @@ public final class CelestialEffectsClientChecksVisual {
         modelView.pushPose();
         modelView.setIdentity();
         RenderSystem.applyModelViewMatrix();
+        boolean smooth = ConfigHolder.INSTANCE.enableSmoothAnimations;
+        ConfigHolder.INSTANCE.enableSmoothAnimations = false;
         try {
             // This isolated fixture supplies matching depth/stencil attachments.
             // It does not change any production framebuffer setup or world rendering.
@@ -60,24 +67,12 @@ public final class CelestialEffectsClientChecksVisual {
             require(target.isStencilEnabled(), "Isolated visual main target has compatible stencil", checks);
             RenderSystem.setProjectionMatrix(new Matrix4f().perspective((float) Math.toRadians(55), 1, .1F, 1500),
                     VertexSorting.DISTANCE_TO_ORIGIN);
-            for (String id : List.of("gtceu:eye_of_harmony", "gtladditions:arcanic_astrograph")) {
+            for (String id : List.of("gtceu:eye_of_harmony", "gtladditions:arcanic_astrograph",
+                    "gtladditions:heart_of_the_universe")) {
                 renderMachine(id, checks, directory);
             }
-            try {
-                var heartTargets = HeartBlackHolePostTargets.INSTANCE.ensure(SIZE, SIZE);
-                for (var depthTarget : List.of(heartTargets.getEffect(), heartTargets.getMask())) {
-                    depthTarget.enableStencil();
-                    depthTarget.resize(SIZE, SIZE, Minecraft.ON_OSX);
-                    require(depthTarget.isStencilEnabled(), "Isolated heart depth target has compatible stencil", checks);
-                }
-                // Blur targets have useDepth=false; there is no depth/stencil attachment to share or query.
-                renderMachine("gtladditions:heart_of_the_universe", checks, directory);
-            } catch (Throwable failure) {
-                Files.writeString(directory.resolve("heart-visual-gap.txt"), failure.toString());
-                checks.add("Heart actual pixels NOT VERIFIED: " + failure);
-                failure.printStackTrace();
-            }
         } finally {
+            ConfigHolder.INSTANCE.enableSmoothAnimations = smooth;
             mc.renderBuffers().bufferSource().endBatch();
             target.resize(width, height, Minecraft.ON_OSX);
             target.bindWrite(true);
@@ -116,47 +111,98 @@ public final class CelestialEffectsClientChecksVisual {
                     : eye ? CelestialEffectAnchors.eye(machine) : CelestialEffectAnchors.astrograph(machine);
             var renderer = Minecraft.getInstance().getBlockEntityRenderDispatcher().getRenderer(entity);
             require(renderer != null, id + " registered real BER for pixels", checks);
-            for (String angle : List.of("front", "diagonal")) {
-                var camera = center.add(angle.equals("front") ? new Vec3(0, 0, 100) : new Vec3(68, 37, 58));
-                var view = new Matrix4f().lookAt(camera.toVector3f(), center.toVector3f(), new Vector3f(0, 1, 0));
-                var pose = new PoseStack();
-                pose.last().pose().set(view);
-                pose.last().normal().set(view).invert().transpose();
-                var mc = Minecraft.getInstance();
-                var target = mc.getMainRenderTarget();
-                target.setClearColor(.008F, .012F, .02F, 1);
-                RenderSystem.colorMask(true, true, true, true);
-                RenderSystem.depthMask(true);
-                target.clear(Minecraft.ON_OSX);
-                target.bindWrite(true);
-                RenderSystem.setShaderColor(1, 1, 1, 1);
-                RenderSystem.enableDepthTest();
-                RenderSystem.enableCull();
-                var buffers = mc.renderBuffers().bufferSource();
-                renderer.render(entity, .25F, pose, buffers, 0xF000F0, 0);
-                buffers.endBatch();
-                if (heart) {
-                    var entry = queue.remove(0);
-                    require(entry instanceof HeartBlackHoleRenderEntry, "Heart real BER enqueues actual volume", checks);
-                    // Deferred renderer already subtracts the camera position from each entry.
-                    var deferredPose = new PoseStack();
-                    deferredPose.last().pose().set(view).setTranslation(0, 0, 0);
-                    deferredPose.last().normal().set(deferredPose.last().pose()).invert().transpose();
-                    entry.render(new DeferredRenderContext(camera, deferredPose, null));
-                    target.bindWrite(true);
-                    HeartBlackHoleRenderer.renderPendingComposite(SIZE, SIZE);
-                }
-                String filename = id.substring(id.indexOf(':') + 1) + "-" + angle + "-actual.png";
-                try (var picture = Screenshot.takeScreenshot(target)) {
-                    picture.writeToFile(directory.resolve(filename));
-                    int lit = 0;
-                    for (int y = 0; y < SIZE; y += 2) for (int x = 0; x < SIZE; x += 2) {
-                        int pixel = picture.getPixelRGBA(x, y);
-                        if ((pixel & 255) > 28 || (pixel >> 8 & 255) > 28 || (pixel >> 16 & 255) > 28) lit++;
+            var frames = new ArrayList<LinkedHashMap<String, Object>>();
+            for (String angle : List.of("front", "diagonal", "near", "close")) {
+                var camera = center.add(switch (angle) {
+                    case "front" -> new Vec3(0, 0, 100);
+                    case "near" -> new Vec3(43, 18, 43);
+                    case "close" -> new Vec3(12, 8, 12);
+                    default -> new Vec3(68, 37, 58);
+                });
+                var hashes = new java.util.HashSet<Long>();
+                for (long time : TIMES) {
+                    world.time = time;
+                    var view = new Matrix4f().lookAt(camera.toVector3f(), center.toVector3f(), new Vector3f(0, 1, 0));
+                    if (!heart) {
+                        // Match the direct production shader: global model-view * parent BER pose.
+                        // The fixture global matrix is identity; lookAt must be applied exactly once.
+                        var fieldView = new Matrix4f(RenderSystem.getModelViewMatrix()).mul(view)
+                                .translate((float) center.x, (float) center.y, (float) center.z).scale(2.75F);
+                        var origin = fieldView.transformPosition(new Vector3f());
+                        require(Math.abs(origin.x) < 1E-4 && Math.abs(origin.y) < 1E-4
+                                        && Math.abs(origin.z + camera.distanceTo(center)) < 1E-4,
+                                id + " " + angle + " direct shader field center matches camera view", checks);
                     }
-                    require(lit > 100, id + " " + angle + " real native renderer has " + lit + " lit samples", checks);
+                    var pose = new PoseStack();
+                    pose.last().pose().set(view);
+                    pose.last().normal().set(view).invert().transpose();
+                    var mc = Minecraft.getInstance();
+                    var target = mc.getMainRenderTarget();
+                    target.setClearColor(.008F, .012F, .02F, 1);
+                    RenderSystem.colorMask(true, true, true, true);
+                    RenderSystem.depthMask(true);
+                    target.clear(Minecraft.ON_OSX);
+                    target.bindWrite(true);
+                    RenderSystem.setShaderColor(1, 1, 1, 1);
+                    RenderSystem.enableDepthTest();
+                    RenderSystem.enableCull();
+                    var buffers = mc.renderBuffers().bufferSource();
+                    renderer.render(entity, .25F, pose, buffers, 0xF000F0, 0);
+                    buffers.endBatch();
+                    if (!heart) {
+                        var entry = queue.remove(0);
+                        require(entry != null && entry.getClass().getName().contains("CelestialVfxDeferred"),
+                                id + " real BER enqueues the complete celestial effect", checks);
+                        // Title-page artwork fixture: manually consume the real
+                        // entry. World identity/stage scheduling is tested by
+                        // AstrographWorldClientChecks in a fresh actual world.
+                        entry.render(new DeferredRenderContext(camera, new PoseStack(), null));
+                    }
+                    if (heart && queue.containsKey(0)) {
+                        var heartTargets = HeartBlackHolePostTargets.INSTANCE.ensure(SIZE, SIZE);
+                        for (var depthTarget : List.of(heartTargets.getEffect(), heartTargets.getMask())) {
+                            depthTarget.enableStencil();
+                            depthTarget.resize(SIZE, SIZE, Minecraft.ON_OSX);
+                            require(depthTarget.isStencilEnabled(), "Isolated heart compatible stencil", checks);
+                        }
+                        var entry = queue.remove(0);
+                        require(entry instanceof HeartBlackHoleRenderEntry, "Heart real BER enqueues actual volume", checks);
+                        // Deferred renderer already subtracts the camera position from each entry.
+                        var deferredPose = new PoseStack();
+                        deferredPose.last().pose().set(view).setTranslation(0, 0, 0);
+                        deferredPose.last().normal().set(deferredPose.last().pose()).invert().transpose();
+                        entry.render(new DeferredRenderContext(camera, deferredPose, null));
+                        target.bindWrite(true);
+                        HeartBlackHoleRenderer.renderPendingComposite(SIZE, SIZE);
+                    }
+                    String filename = id.substring(id.indexOf(':') + 1) + "-" + angle + "-t" + time + "-actual.png";
+                    try (var picture = Screenshot.takeScreenshot(target)) {
+                        picture.writeToFile(directory.resolve(filename));
+                        int lit = 0;
+                        long hash = 0xcbf29ce484222325L;
+                        for (int y = 0; y < SIZE; y += 2) for (int x = 0; x < SIZE; x += 2) {
+                            int pixel = picture.getPixelRGBA(x, y);
+                            hash = (hash ^ pixel) * 0x100000001b3L;
+                            if ((pixel & 255) > 28 || (pixel >> 8 & 255) > 28 || (pixel >> 16 & 255) > 28) lit++;
+                        }
+                        require(lit > 100, id + " " + angle + " t" + time + " real renderer has " + lit + " lit samples", checks);
+                        hashes.add(hash);
+                        var frame = new LinkedHashMap<String, Object>();
+                        frame.put("file", filename);
+                        frame.put("machine", id);
+                        frame.put("angle", angle);
+                        frame.put("gameTime", time);
+                        frame.put("litSamples", lit);
+                        frame.put("pixelHash", Long.toUnsignedString(hash, 16));
+                        frame.put("camera", camera.toString());
+                        frame.put("center", center.toString());
+                        frames.add(frame);
+                    }
                 }
+                require(hashes.size() > 1, id + " " + angle + " production animation changes across world times", checks);
             }
+            Files.writeString(directory.resolve(id.substring(id.indexOf(':') + 1) + "-frames.json"),
+                    new GsonBuilder().setPrettyPrinting().create().toJson(frames));
         } finally {
             queue.remove(0);
             entity.setLevel(null);
@@ -186,8 +232,9 @@ public final class CelestialEffectsClientChecksVisual {
     private static final class AuditLevel extends DummyWorld {
         BlockState state;
         BlockEntity entity;
+        long time;
         private AuditLevel() { super(null); }
-        @Override public long getGameTime() { return 10_000; }
+        @Override public long getGameTime() { return time; }
         @Override public BlockState getBlockState(BlockPos pos) { return state; }
         @Override public BlockEntity getBlockEntity(BlockPos pos) { return entity; }
     }

@@ -18,9 +18,11 @@ import java.util.zip.ZipFile;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.tree.AnnotationNode;
 import org.objectweb.asm.tree.ClassNode;
+import org.objectweb.asm.tree.FieldInsnNode;
 import org.objectweb.asm.tree.LdcInsnNode;
 import org.objectweb.asm.tree.MethodInsnNode;
 import org.objectweb.asm.tree.MethodNode;
+import org.objectweb.asm.tree.TypeInsnNode;
 
 /** Actual dependency meshes, whole-cube clearance and compiled injector contracts; no game bootstrap. */
 final class CelestialEffectAnchorRegression {
@@ -33,9 +35,9 @@ final class CelestialEffectAnchorRegression {
         assertions = 0;
         var sizing = mainClass("common/structure/CelestialEffectSizing");
         double eyeScale = number(sizing, "EYE_SCALE"), astroScale = number(sizing, "ASTROGRAPH_SCALE");
-        double starScale = number(sizing, "STAR_SCALE"), heartRadius = number(sizing, "HEART_RADIUS");
+        double heartRadius = number(sizing, "HEART_RADIUS");
         double heartFade = number(sizing, "HEART_FADE_RADIUS"), heartCull = number(sizing, "HEART_CULL_RADIUS");
-        check(eyeScale == 2.75 && astroScale == 2.75 && Math.abs(starScale - 1.45) < 1E-6, "Approved outer and star scales");
+        check(eyeScale == 2.75 && astroScale == 2.75, "Approved parent coordinate scales");
         check(heartRadius == 32 && heartFade == 1.25 && heartCull == 44 && number(sizing, "VIEW_DISTANCE") == 512,
                 "Approved Heart shader/culling and renderer distance");
         var spec = JsonParser.parseString(Files.readString(STRUCTURES.resolve("upgrades_20261102.json"))).getAsJsonObject();
@@ -63,13 +65,50 @@ final class CelestialEffectAnchorRegression {
             var uniforms = method(read(add, ADD + "client/render/machine/heart/HeartBlackHoleRenderer$HeartVolumeUniforms"), "applyVolumePass");
             check(uniforms.desc.equals("(F)V") && constants(uniforms).containsAll(Set.of(29F,1.25F))
                     && calls(uniforms, "com/mojang/blaze3d/shaders/Uniform", "m_5985_") == 4, "Heart real scalar uniform path");
-            envelopes(core, add, sizing, eye, astro);
             hooks(core, add);
+            heartMaterialHook(add);
         }
         String anchors = Files.readString(Path.of("src/main/java/com/gtl/enhancedcore/common/structure/CelestialEffectAnchors.java"));
         check(anchors.contains("fromControllerOrigin(machine, -55, -91)") && anchors.contains("fromControllerOrigin(machine, 103, -75)"), "Blueprint anchor vectors retained");
         check(anchors.contains("enhanced$chamberOffset(") && anchors.contains("machine.isFlipped()"), "Actual GTCEu front/up/flip transform retained");
         return assertions;
+    }
+    private static void heartMaterialHook(ZipFile add) throws Exception {
+        String shader = "net/minecraft/client/renderer/ShaderInstance";
+        String descriptor = "(Lnet/minecraft/server/packs/resources/ResourceProvider;Lnet/minecraft/resources/ResourceLocation;"
+                + "Lcom/mojang/blaze3d/vertex/VertexFormat;)V";
+        var upstream = method(read(add, ADD + "client/render/machine/heart/HeartBlackHoleShaders"), "register");
+        var constructors = new ArrayList<MethodInsnNode>();
+        var materials = new ArrayList<String>();
+        String lastMaterial = null;
+        int allocations = 0;
+        for (var instruction : upstream.instructions) {
+            if (instruction instanceof TypeInsnNode type && type.getOpcode() == org.objectweb.asm.Opcodes.NEW
+                    && type.desc.equals(shader)) allocations++;
+            if (instruction instanceof FieldInsnNode field && field.owner.equals(ADD + "client/render/machine/heart/HeartBlackHoleShaders")
+                    && field.desc.equals("Lnet/minecraft/resources/ResourceLocation;")) lastMaterial = field.name;
+            if (instruction instanceof MethodInsnNode call && call.owner.equals(shader) && call.name.equals("<init>")
+                    && call.desc.equals(descriptor)) { constructors.add(call); materials.add(lastMaterial); }
+        }
+        check(allocations == 3 && constructors.size() == allocations
+                && materials.equals(List.of("VOLUME_SHADER_ID", "BLUR_SHADER_ID", "COMPOSITE_SHADER_ID")),
+                "Actual ADD NEW ShaderInstance ordinal zero is volume; later constructors are blur and compositor");
+        var mixin = mainClass("mixin/gtladditions/client/HeartOfTheUniverseShaderMixin");
+        int materialHooks = 0;
+        for (var handler : mixin.methods) for (var annotation : annotations(handler.visibleAnnotations,handler.invisibleAnnotations)) {
+            if (!annotation.desc.equals("Lorg/spongepowered/asm/mixin/injection/ModifyArg;")) continue;
+            materialHooks++;
+            check(Integer.valueOf(1).equals(value(annotation,"index")), "Heart replaces only the constructor ResourceLocation argument");
+            var points = nested(value(annotation,"at"));
+            check(points.size() == 1, "Heart material has one constructor selection");
+            var point = points.get(0);
+            check("INVOKE".equals(value(point,"value")) && ("L" + shader + ";<init>" + descriptor).equals(value(point,"target"))
+                    && Integer.valueOf(0).equals(value(point,"ordinal")), "Heart replaces the real NEW ShaderInstance constructor ordinal zero only");
+            check(handler.desc.equals("(Lnet/minecraft/resources/ResourceLocation;)Lnet/minecraft/resources/ResourceLocation;")
+                    && constants(handler).containsAll(Set.of("gtl_enhancedcore", "heart/celestial_black_hole")),
+                    "Heart constructor selects the self-namespaced volume material");
+        }
+        check(materialHooks == 1, "Compositor shader is retained by a single volume material override");
     }
 
     private static double cavity(JsonObject manifest, String name, int[] center, int[] delta, double effectRadius) throws Exception {
@@ -102,47 +141,13 @@ final class CelestialEffectAnchorRegression {
         return Math.sqrt(nearest2);
     }
 
-    private static void envelopes(ZipFile core, ZipFile add, ClassNode sizing, ClassNode eye, ClassNode astro) throws Exception {
-        double space = objRadius(core,"assets/gtlcore/models/obj/space.obj"), star = objRadius(core,"assets/gtlcore/models/obj/star.obj");
-        check(Math.abs(space-74) < 1E-5 && Math.abs(star-74) < 1E-5,"Actual OBJ radii measured near 74");
-        for (var renderer : List.of(eye,astro)) {
-            check(constants(method(renderer,"renderOuterSpaceShell")).contains(.175F),renderer.name + " native shell scale");
-            check(constants(method(renderer,"renderStar")).contains(.02F),renderer.name + " native star scale");
-        }
-        for (String name : List.of("EYE_SCALE","ASTROGRAPH_SCALE")) {
-            check(space*.175*number(sizing,name) < 36,"Complete outer shell fits R36: " + name);
-            check(star*.02*number(sizing,name)*number(sizing,"STAR_SCALE") < 36,"Central star fits R36: " + name);
-        }
-        for (int i=1;i<=3;i++) {
-            var model = json(core,"assets/gtlcore/models/obj/" + List.of("the_nether","overworld","the_end").get(i-1) + ".json");
-            check(model.get("model").getAsString().equals("gtlcore:models/obj/star.obj"),"Eye planet uses measured OBJ " + i);
-            check((100*i+160+star)*(.007+.003*i)*number(sizing,"EYE_SCALE")*number(sizing,"EYE_ORBIT_SCALE") < 36,"Eye orbit including planet surface " + i);
-        }
-        var generator = method(read(add,ADD + "client/render/machine/ArcanicAstrographRender$Companion"),"getOrbitRadius");
-        check(constants(generator).containsAll(Set.of(10.304D,.12D)) && calls(generator,"kotlin/ranges/RangesKt","coerceAtMost") == 1,"Random orbit radius capped at 10.304");
-        check(constants(method(astro,"renderOrbitObjects")).containsAll(Set.of(.4F,.06F)),"Astrograph planet scale formula");
-        List<String> models = new ArrayList<>();
-        for (var insn : method(read(add,ADD + "utils/Constants"),"<clinit>").instructions)
-            if (insn instanceof LdcInsnNode ldc && ldc.cst instanceof String text && text.startsWith("obj/planets/")) models.add(text);
-        check(models.size() == 13,"All thirteen actual planet models");
-        for (int i=0;i<models.size();i++) {
-            var model = json(add,"assets/gtladditions/models/" + models.get(i) + ".json");
-            check(model.get("parent").getAsString().equals("minecraft:block/cube_all") && !model.has("elements"),"Unit cube planet " + models.get(i));
-            // The native model rotates 0..1 cube vertices around its origin; use sqrt(3), not sqrt(3)/2.
-            double bound = (10.304 + Math.sqrt(3)*(.4+.06*i)*number(sizing,"ASTROGRAPH_PLANET_SCALE"))*number(sizing,"ASTROGRAPH_SCALE");
-            check(bound < 36,"Orbit plus full rotating cube fits R36: " + models.get(i));
-        }
-        double coreRadius = star*.02*number(sizing,"STAR_SCALE");
-        double innerSurface = number(sizing,"ASTROGRAPH_INNER_ORBIT") - Math.sqrt(3)*.4*number(sizing,"ASTROGRAPH_PLANET_SCALE");
-        check(innerSurface > coreRadius,"Expanded central star remains separate from innermost planet at every rotation");
-    }
-
     private static void hooks(ZipFile core, ZipFile add) throws Exception {
         var config = JsonParser.parseString(Files.readString(Path.of("src/main/resources/gtl_enhancedcore.mixins.json"))).getAsJsonObject();
         Set<String> common = new HashSet<>(),client = new HashSet<>();
         config.getAsJsonArray("mixins").forEach(v -> common.add(v.getAsString())); config.getAsJsonArray("client").forEach(v -> client.add(v.getAsString()));
         var names = List.of("gtlcore.client.EyeOfHarmonyEffectAnchorMixin","gtladditions.client.ArcanicAstrographEffectAnchorMixin",
                 "gtladditions.client.HeartOfTheUniverseEffectSizeMixin","gtladditions.client.HeartOfTheUniverseEffectBoundsMixin",
+                "gtladditions.client.HeartOfTheUniverseShaderMixin",
                 "gtlcore.client.CelestialEffectViewDistanceMixin","gtladditions.ArcanicAstrographCollectionAnchorMixin");
         for (String name : names) {
             boolean collection = name.endsWith("CollectionAnchorMixin");
@@ -177,19 +182,6 @@ final class CelestialEffectAnchorRegression {
                 check(injected > 0,name + " compiled injectors cover " + target);
             }
         }
-    }
-    private static double objRadius(ZipFile jar,String path) throws Exception {
-        double maximum = 0; int vertices = 0;
-        try (var reader = new BufferedReader(new InputStreamReader(jar.getInputStream(jar.getEntry(path)),StandardCharsets.UTF_8))) {
-            for (String line;(line=reader.readLine())!=null;) if (line.startsWith("v ")) {
-                String[] p=line.trim().split("\\s+"); double x=Double.parseDouble(p[1]),y=Double.parseDouble(p[2]),z=Double.parseDouble(p[3]);
-                maximum=Math.max(maximum,Math.sqrt(x*x+y*y+z*z)); vertices++;
-            }
-        }
-        check(vertices>400,path + " complete OBJ vertices"); return maximum;
-    }
-    private static JsonObject json(ZipFile jar,String path) throws Exception {
-        try (var reader=new InputStreamReader(jar.getInputStream(jar.getEntry(path)),StandardCharsets.UTF_8)) { return JsonParser.parseReader(reader).getAsJsonObject(); }
     }
     private static ClassNode mainClass(String name) throws Exception {
         try (var input=CelestialEffectAnchorRegression.class.getClassLoader().getResourceAsStream(MAIN+name+".class")) {

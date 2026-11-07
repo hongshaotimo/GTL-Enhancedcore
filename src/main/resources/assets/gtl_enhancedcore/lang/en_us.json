@@ -1,4 +1,8 @@
 {
+  "tooltip.gtl_enhancedcore.primitive_void_ore.output": "While running, randomly outputs 64 raw ores per tick from the selected dimension.",
+  "tooltip.gtl_enhancedcore.primitive_void_ore.dimension": "Works in any dimension; the input circuit selects the mining dimension.",
+  "tooltip.gtl_enhancedcore.primitive_void_ore.circuits": "Circuit 1 mines the Overworld, 2 the Nether, and 3 the End.",
+  "tooltip.gtl_enhancedcore.primitive_void_ore.input": "Place the circuit in an item input bus; it is not consumed. Changes apply to the next batch.",
   "gtl_enhancedcore.preview.visibility_all": "All",
   "gtl_enhancedcore.preview.visibility_controller": "Main",
   "gtl_enhancedcore.preview.visibility_replaceable": "Parts",

@@ -10,6 +10,7 @@ import appeng.api.stacks.AEItemKey;
 import appeng.api.config.Actionable;
 import appeng.crafting.CraftingLink;
 import appeng.crafting.inv.ListCraftingInventory;
+import appeng.crafting.inv.ICraftingInventory;
 import com.gtl.enhancedcore.common.recipe.iv.*;
 import org.gtlcore.gtlcore.common.machine.multiblock.part.ae.MEPatternBufferPartMachine;
 import net.minecraft.nbt.CompoundTag;
@@ -24,11 +25,13 @@ import org.spongepowered.asm.mixin.injection.callback.*;
 @Mixin(value=TransfiniteCraftingLogic.class,remap=false)
 public abstract class IvTransfiniteCraftingMixin {
     @Unique private boolean iv$requiresProducedOutput;
+    @Unique private final ProcessingInitialInputs iv$initialInputs = new ProcessingInitialInputs();
     @Shadow @Final private TransfiniteCraftingCPU cpu;
     @Shadow @Final private ListCraftingInventory inventory;
     @Inject(method="trySubmitJob",at=@At("RETURN"))
     private void iv$submitted(IGrid grid,ICraftingPlan plan,IActionSource source,ICraftingRequester requester,CallbackInfoReturnable<ICraftingSubmitResult> cir){
         if(cir.getReturnValue().successful()){
+            iv$initialInputs.submitted(plan);
             iv$requiresProducedOutput=plan.patternTimes().keySet().stream().anyMatch(IvTransfiniteCraftingMixin::iv$routed);
             if(iv$requiresProducedOutput)IvTaskLog.event(null,null,"CPU_SUBMIT","AWAIT_REAL_OUTPUT","cpu",cpu.getId(),"output",String.valueOf(plan.finalOutput()),"patterns",plan.patternTimes().size());
         }
@@ -64,9 +67,13 @@ public abstract class IvTransfiniteCraftingMixin {
         if(iv$requiresProducedOutput)IvTaskLog.event(null,null,"CPU_FINISH",success?"COMPLETE":"CANCELLED","cpu",cpu.getId());
     }
     @Inject(method="writeToNbt",at=@At("TAIL"))
-    private void iv$save(CompoundTag tag,CallbackInfo ci){if(iv$requiresProducedOutput)tag.putBoolean("gtlEnhancedcoreIvAwaitProduction",true);}
+    private void iv$save(CompoundTag tag,CallbackInfo ci){
+        if(iv$requiresProducedOutput)tag.putBoolean("gtlEnhancedcoreIvAwaitProduction",true);
+        iv$initialInputs.write(tag);
+    }
     @Inject(method="readFromNbt",at=@At("TAIL"))
     private void iv$load(CompoundTag tag,CallbackInfo ci){
+        iv$initialInputs.read(tag);
         iv$requiresProducedOutput=tag.getBoolean("gtlEnhancedcoreIvAwaitProduction");
         // Recover the scope from old persisted plans that have not yet been dispatched.
         var tasks=tag.getCompound("job").getList("tasks",10);
@@ -78,10 +85,21 @@ public abstract class IvTransfiniteCraftingMixin {
     @Redirect(method="executeCrafting",at=@At(value="INVOKE",target="Lorg/gtlcore/gtlcore/integration/ae2/crafting/CraftingPatternAutoExpand;getOperations(ZLappeng/api/networking/crafting/ICraftingProvider;Lappeng/api/crafting/IPatternDetails;J)J"))
     private long iv$remember(boolean processing,ICraftingProvider provider,IPatternDetails pattern,long requested){
         IvDispatchContext.clear();long operations=CraftingPatternAutoExpand.getOperations(processing,provider,pattern,requested);
+        if(processing && provider instanceof MEPatternBufferPartMachine && !iv$initialInputs.isEmpty())
+            iv$initialInputs.replenish(pattern,operations,inventory,cpu.getGrid(),cpu.getActionSource(),cpu::markDirty);
+        if(processing)operations=Math.max(1,ProcessingDispatchBatch.limit(pattern,operations,inventory,((TransfiniteCraftingLogic)(Object)this)::getWaitingFor));
         if(provider instanceof MEPatternBufferPartMachine buffer && IvBuffers.isolated(buffer)){
             iv$requiresProducedOutput=true;IvDispatchContext.set(provider,pattern,operations);
         }
         return operations;
+    }
+    @Redirect(method="executeCrafting",at=@At(value="INVOKE",target="Lorg/gtlcore/gtlcore/integration/ae2/AEUtils;extractForProcessingPattern(Lappeng/api/crafting/IPatternDetails;Lappeng/crafting/inv/ICraftingInventory;Lappeng/api/stacks/KeyCounter;J)[Lappeng/api/stacks/KeyCounter;"),require=1,allow=1)
+    private KeyCounter[] iv$extractBatch(IPatternDetails pattern,ICraftingInventory source,KeyCounter expected,long operations){
+        return ProcessingDispatchBatch.extract(pattern,source,expected,operations,((TransfiniteCraftingLogic)(Object)this)::getWaitingFor);
+    }
+    @Redirect(method="executeCrafting",at=@At(value="INVOKE",target="Lorg/gtlcore/gtlcore/integration/ae2/AEUtils;extractForProcessingPattern(Lappeng/api/crafting/IPatternDetails;Lappeng/crafting/inv/ICraftingInventory;Lappeng/api/stacks/KeyCounter;)[Lappeng/api/stacks/KeyCounter;"),require=1,allow=1)
+    private KeyCounter[] iv$extractSingle(IPatternDetails pattern,ICraftingInventory source,KeyCounter expected){
+        return ProcessingDispatchBatch.extract(pattern,source,expected,1,((TransfiniteCraftingLogic)(Object)this)::getWaitingFor);
     }
     @Redirect(method="executeCrafting",at=@At(value="INVOKE",target="Lappeng/api/networking/crafting/ICraftingProvider;pushPattern(Lappeng/api/crafting/IPatternDetails;[Lappeng/api/stacks/KeyCounter;)Z"))
     private boolean iv$dispatch(ICraftingProvider provider,IPatternDetails pattern,KeyCounter[] input){

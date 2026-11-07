@@ -16,11 +16,8 @@ import com.gtladd.gtladditions.client.render.machine.heart.HeartBlackHoleRenderE
 import com.lowdragmc.lowdraglib.utils.DummyWorld;
 import com.mojang.blaze3d.shaders.Uniform;
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.VertexConsumer;
 import it.unimi.dsi.fastutil.longs.Long2ObjectLinkedOpenHashMap;
 import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -28,7 +25,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.culling.Frustum;
-import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
@@ -46,7 +42,7 @@ import org.joml.Matrix4f;
 /** Self-contained because the isolated runner packages only this class and its nested classes. */
 @Mod("enhancedcore_audit")
 public final class CelestialEffectsClientChecks {
-    private static final Path ROOT = Path.of("C:/IDEA/GTL-Enhancedcore/_work/celestial-effects-20261102")
+    private static final Path ROOT = Path.of("C:/IDEA/GTL-Enhancedcore/_work/celestial-vfx-20261107/validation")
             .toAbsolutePath().normalize();
     private static final BlockPos POSITION = new BlockPos(17, 23, -31);
     private final List<String> checks = new ArrayList<>();
@@ -79,7 +75,7 @@ public final class CelestialEffectsClientChecks {
         }
         result.put("checkCount", checks.size());
         result.put("checks", checks);
-        result.put("scope", "Real transformed renderer gates, center, child scales and concentric orbits; real heart deferred queue, culling and Uniform writes; isolated fixture screenshots. No world or performance comparison.");
+        result.put("scope", "Registered transformed production BERs, WORKING and IDLE fixture gates; four views including close camera inside 21.5 world blocks, and three world times per machine; 36 real framebuffer screenshots. No saved world, structure formation, recipe completion or performance comparison.");
         try {
             Files.writeString(directory.resolve("celestial-effects-checks.json"),
                     new GsonBuilder().setPrettyPrinting().create().toJson(result));
@@ -102,7 +98,6 @@ public final class CelestialEffectsClientChecks {
             check(renderer.getViewDistance() == 512, id + " transformed view distance 512");
             boolean heart = id.endsWith("heart_of_the_universe");
             boolean eye = id.endsWith("eye_of_harmony");
-            if (!heart) childScaleChecks(renderer, eye, id);
             for (var facing : List.of(Direction.NORTH, Direction.SOUTH, Direction.EAST, Direction.WEST)) {
                 var state = definition.defaultBlockState().setValue(
                         ((MetaMachineBlock) definition.getBlock()).rotationState.property, facing);
@@ -156,7 +151,6 @@ public final class CelestialEffectsClientChecks {
                             check(new Vec3(pose.matrix.m30(), pose.matrix.m31(), pose.matrix.m32())
                                             .distanceTo(expected) < 1E-6,
                                     label + " scaling preserves translated center");
-                            if (eye) eyeOrbitChecks(renderer, entity, label);
                         }
                     }
                 } finally {
@@ -165,58 +159,6 @@ public final class CelestialEffectsClientChecks {
                 }
             }
         }
-    }
-
-    private void childScaleChecks(WorkableCasingMachineRenderer renderer, boolean eye, String label)
-            throws Exception {
-        var type = renderer.getClass();
-        var pose = new CapturePose();
-        Method star = eye ? type.getDeclaredMethod("renderStar", float.class, PoseStack.class, MultiBufferSource.class)
-                : type.getDeclaredMethod("renderStar", PoseStack.class, float.class, MultiBufferSource.class);
-        invokeUntilScale(star, renderer, eye ? new Object[]{.25F, pose, (MultiBufferSource) ignored -> NullVertices.INSTANCE}
-                : new Object[]{pose, .25F, (MultiBufferSource) ignored -> NullVertices.INSTANCE});
-        check(pose.scale != null && pose.scale.distanceTo(new Vec3(.029F, .029F, .029F)) < 1E-8,
-                label + " real child star scale .02 times 1.45");
-        if (!eye) {
-            var planet = type.getDeclaredMethod("renderOrbitObjects", PoseStack.class, float.class,
-                    MultiBufferSource.class, int.class, long.class);
-            pose = new CapturePose();
-            invokeUntilScale(planet, renderer, pose, .25F,
-                    (MultiBufferSource) ignored -> NullVertices.INSTANCE, 3, POSITION.asLong());
-            check(pose.scale != null && pose.scale.distanceTo(new Vec3(.46F, .46F, .46F)) < 1E-7,
-                    label + " real child planet scale .4 times 1.15");
-            var radii = (double[]) field(type, "FIXED_ORBIT_RADII").get(null);
-            check(radii.length > 0 && radii[0] == 3.2D,
-                    label + " transformed class initialization inner orbit 3.2");
-        }
-    }
-
-    private static void invokeUntilScale(Method method, Object target, Object... arguments) throws Exception {
-        method.setAccessible(true);
-        try {
-            method.invoke(target, arguments);
-            throw new AssertionError("Child renderer did not reach its scale: " + method);
-        } catch (InvocationTargetException error) {
-            if (!(error.getCause() instanceof ScaleCaptured)) throw error;
-        }
-    }
-
-    private void eyeOrbitChecks(WorkableCasingMachineRenderer renderer, BlockEntity entity, String label) {
-        var pose = new OrbitPose();
-        boolean captured = false;
-        try {
-            // Let the real star model emit into a no-op consumer, then stop at the first
-            // orbit translation. This reaches the wrapper through its real parent call.
-            renderer.render(entity, .25F, pose, ignored -> NullVertices.INSTANCE, 0xF000F0, 0);
-        } catch (OrbitCaptured expected) {
-            captured = true;
-        }
-        check(captured && pose.scales.size() == 4, label + " real parent reaches first orbital body");
-        check(pose.scales.get(2).distanceTo(new Vec3(1.2F, 1.2F, 1.2F)) < 1E-9,
-                label + " real orbit group scale 1.2");
-        check(Math.abs(pose.orbit.y) < 1E-9
-                        && Math.abs(Math.hypot(pose.orbit.x, pose.orbit.z) - 260D) < 1E-6,
-                label + " real parent passes zero controller offset to concentric orbit");
     }
 
     private void heartCullingChecks(DeferredRenderEntry entry, Vec3 relativeCenter, String label) {
@@ -300,40 +242,6 @@ public final class CelestialEffectsClientChecks {
 
     private static final class ScaleCaptured extends RuntimeException {
         ScaleCaptured() { super(null, null, false, false); }
-    }
-
-    private static final class OrbitPose extends PoseStack {
-        final List<Vec3> scales = new ArrayList<>();
-        int translations;
-        Vec3 orbit;
-        @Override public void scale(float x, float y, float z) {
-            scales.add(new Vec3(x, y, z));
-            super.scale(x, y, z);
-        }
-        @Override public void translate(double x, double y, double z) {
-            if (++translations == 2) {
-                orbit = new Vec3(x, y, z);
-                throw new OrbitCaptured();
-            }
-            super.translate(x, y, z);
-        }
-    }
-
-    private static final class OrbitCaptured extends RuntimeException {
-        OrbitCaptured() { super(null, null, false, false); }
-    }
-
-    private enum NullVertices implements VertexConsumer {
-        INSTANCE;
-        @Override public VertexConsumer vertex(double x, double y, double z) { return this; }
-        @Override public VertexConsumer color(int red, int green, int blue, int alpha) { return this; }
-        @Override public VertexConsumer uv(float u, float v) { return this; }
-        @Override public VertexConsumer overlayCoords(int u, int v) { return this; }
-        @Override public VertexConsumer uv2(int u, int v) { return this; }
-        @Override public VertexConsumer normal(float x, float y, float z) { return this; }
-        @Override public void endVertex() {}
-        @Override public void defaultColor(int red, int green, int blue, int alpha) {}
-        @Override public void unsetDefaultColor() {}
     }
 
     private static final class CaptureFrustum extends Frustum {

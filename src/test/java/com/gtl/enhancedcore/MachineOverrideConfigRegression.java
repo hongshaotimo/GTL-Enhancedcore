@@ -60,6 +60,7 @@ final class MachineOverrideConfigRegression {
                 "gtladditions.client.ArcanicAstrographEffectAnchorMixin",
                 "gtladditions.client.HeartOfTheUniverseEffectSizeMixin",
                 "gtladditions.client.HeartOfTheUniverseEffectBoundsMixin",
+                "gtladditions.client.HeartOfTheUniverseShaderMixin",
                 "gtladditions.ArcanicAstrographCollectionAnchorMixin");
         Set<String> shared = Set.of("gtceu.IvNativeRecipeLogicMixin", "gtceu.IvNativeParallelMixin", "gtceu.GalaxyRecipeLogicMixin", "gtceu.GalaxyMachineDisplayMixin", "gtceu.GalaxyConnectionHatchUiMixin", "gtladditions.GalaxyMutableModeMixin", "gtceu.RetiredLightHunterDefinitionMixin",
                 // These hooks also serve our own machines; foreign targets are guarded inside the panel palette.
