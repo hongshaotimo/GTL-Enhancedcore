@@ -25,7 +25,7 @@ final class ActiveBlockSnapshotRegression {
         concurrentMatcher();
         upstreamContract("libs/gtceu-1.20.1-1.4.4.jar",
                 "com/gregtechceu/gtceu/api/machine/multiblock/WorkableMultiblockMachine");
-        upstreamContract("libs/gtlcore-1.2.3.2-fix4.jar",
+        upstreamContract("libs/gtlcore-1.2.3.3-fix3.jar",
                 "org/gtlcore/gtlcore/mixin/gtm/api/machine/WorkableMultiblockMachineMixin");
         mergedMethodPriority();
         return assertions;
@@ -157,7 +157,7 @@ final class ActiveBlockSnapshotRegression {
             new ClassReader(input).accept(patch, 0);
         }
         var upstream = new ClassNode();
-        try (var jar = new JarFile("libs/gtlcore-1.2.3.2-fix4.jar");
+        try (var jar = new JarFile("libs/gtlcore-1.2.3.3-fix3.jar");
              var input = jar.getInputStream(jar.getJarEntry(
                      "org/gtlcore/gtlcore/mixin/gtm/api/machine/WorkableMultiblockMachineMixin.class"))) {
             new ClassReader(input).accept(upstream, 0);

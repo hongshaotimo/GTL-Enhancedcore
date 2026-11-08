@@ -87,6 +87,7 @@ build_log.txt
 !/libs/*.jar
 /libs/gtladditions-3.2.8Custom-fix2.jar
 /libs/gtlcore-1.2.3.2-fix3.jar
+/libs/gtlcore-1.2.3.2-fix4.jar
 /libs/gtmadvancedhatch-0.1.10-fix2.jar
 /libs/ldlib-forge-1.20.1-1.0.33.jar
 /libs/README.txt
@@ -95,6 +96,7 @@ build_log.txt
 /javac.*.args
 /.workbuddy/
 
-# Internal working notes; not part of the published project
+# Internal working notes and exported reports; not part of the published project
 /TODO.md
 /.learnings/
+/导出/

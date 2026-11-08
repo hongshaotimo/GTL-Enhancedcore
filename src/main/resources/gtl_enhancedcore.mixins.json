@@ -5,6 +5,10 @@
   "compatibilityLevel": "JAVA_17",
   "plugin": "com.gtl.enhancedcore.common.performance.PerformanceMixinPlugin",
   "mixins": [
+    "gtladditions.AddConfigFieldCompatibilityMixin",
+    "gtladditions.SliderTextFieldSideCompatibilityMixin",
+    "gtmadvancedhatch.AdvancedHatchLaserRecipeCompatibilityMixin",
+    "gtceu.DataItemBehaviorCompatibilityMixin",
     "gtlcore.PrimitiveVoidOreRecipeMixin",
     "gtlcore.PrimitiveVoidOreDimensionMixin",
     "gtlcore.PrimitiveVoidOreRecipeTypeMixin",
@@ -16,6 +20,7 @@
     "gtceu.StructureSearchWakeMixin",
     "gtlcore.ClientPatternSlotCapacityMixin",
     "gtceu.EmptyRecipeContentsMixin",
+    "gtceu.IdleRecipeSearchMixin",
     "gtladditions.ArcanicAstrographCollectionAnchorMixin",
     "gtceu.GalaxyConnectionPatternMixin",
     "ae2.PatternEncodingTerminalActionsMixin",

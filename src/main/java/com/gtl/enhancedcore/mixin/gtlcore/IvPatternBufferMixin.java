@@ -6,6 +6,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.nbt.CompoundTag;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.gtlcore.gtlcore.common.machine.multiblock.part.ae.MEPatternBufferPartMachine;
+import org.gtlcore.gtlcore.common.item.manipulator.ManipulatorSnapshot;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.gen.Invoker;
 import org.spongepowered.asm.mixin.injection.*;
@@ -14,6 +15,15 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 /** Applied after GTLAdditions' getRealPattern overwrite; ordinary buffers return the original result. */
 @Mixin(value = MEPatternBufferPartMachine.class, priority = 1200, remap = false)
 public abstract class IvPatternBufferMixin implements IvBufferMethods {
+    @Inject(method = "captureManipulatorContents", at = @At("HEAD"))
+    private void iv$protectManipulator(java.util.Map<appeng.api.stacks.AEKey, Long> cost,
+                                      CallbackInfoReturnable<CompoundTag> cir) {
+        // The upstream MOVE scan and commit catch this exception before removing the block.
+        // An empty return value would still allow removal and discard our independent order ledger.
+        if (!IvBufferTransfer.allowCut((MEPatternBufferPartMachine)(Object)this))
+            throw new ManipulatorSnapshot.UnsupportedBlockEntityException("gtl_enhancedcore.diagnostic.iv_cut");
+    }
+
     @Invoker("refreshAllByProduct") public abstract void iv$refreshPatterns();
     @Invoker("onPatternChange") public abstract void iv$patternChanged(int slot);
     @Invoker("getRealPattern") public abstract IPatternDetails iv$realPattern(int slot, ItemStack stack);

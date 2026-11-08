@@ -58,7 +58,7 @@ public final class BiosphereModulePowerRegression {
                 "com/gregtechceu/gtceu/api/machine/multiblock/WorkableElectricMultiblockMachine");
         check(calls(method(electric, "getMaxVoltage"), null, "getHighestInputVoltage"),
                 "The unpatched maximum voltage consults local hatches");
-        ClassNode recipe = upstream("gtlcore-1.2.3.2-fix4.jar",
+        ClassNode recipe = upstream("gtlcore-1.2.3.3-fix3.jar",
                 "org/gtlcore/gtlcore/mixin/gtm/api/recipe/GTRecipeMixin");
         check(calls(method(recipe, "matchTickRecipe"), null, "getMaxVoltage"),
                 "Core's general tick matching consumes maximum voltage, not overclock power");

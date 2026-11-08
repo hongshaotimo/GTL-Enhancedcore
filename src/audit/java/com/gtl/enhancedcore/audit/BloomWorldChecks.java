@@ -22,7 +22,7 @@ public final class BloomWorldChecks {
         if (!RenderSystem.isOnRenderThread()) throw new IllegalStateException("Bloom audit requires render thread");
         var level = Minecraft.getInstance().level;
         if (level == null) throw new IllegalStateException("Bloom audit requires a real client world");
-        var options = ConfigHolder.INSTANCE.bloom;
+        var options = ConfigHolder.INSTANCE.graphics.bloom;
         var previousMode = options.bloomMode;
         var meshes = new SectionMeshes();
         var entries = (Map<Long, Object>) field(SectionMeshes.class, "entries").get(meshes);

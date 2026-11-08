@@ -171,7 +171,7 @@ public final class UpstreamPreviewContractRegression {
                 check(jar.getEntry(mixinPackage + "/" + mixin.replace('.', '/') + ".class") != null,
                         "Upstream preview integration is packaged: " + mixin);
             }
-            for (String type : List.of("FullscreenPreviewScreen", "PreviewControls", "PreviewPan",
+            for (String type : List.of("FullscreenPreviewScreen", "PreviewControls", "PreviewNavigation",
                     "PreviewMesh", "PreviewScenes", "PreviewLifecycle", "PreviewMaterialHighlights", "WorldPreview")) {
                 check(jar.getEntry("org/gtlcore/gtlcore/client/preview/" + type + ".class") != null,
                         "Upstream owns the required preview component: " + type);
@@ -179,7 +179,7 @@ public final class UpstreamPreviewContractRegression {
             checkGtlCoreFactoryStub(jar);
             checkReference(jar, "api/gui/PatternPreviewWidget", "client/preview/PreviewControls");
             checkReference(jar, "api/gui/PatternPreviewWidget", "client/preview/PreviewScenes");
-            checkReference(jar, "client/preview/FullscreenPreviewScreen", "client/preview/PreviewPan");
+            checkReference(jar, "client/preview/FullscreenPreviewScreen", "client/preview/PreviewNavigation");
             checkReference(jar, "integration/jei/SlotRecipeWidget", "client/preview/PreviewMaterialHighlights");
             checkReference(jar, "api/pattern/AdvancedBlockPattern", "integration/terminal/StableBlockCandidates");
             checkReference(jar, "mixin/gtmt/TerminalPatternPerformanceMixin", "integration/terminal/StableBlockCandidates");

@@ -45,7 +45,7 @@ final class CelestialEffectAnchorRegression {
         cavity(spec, "arcanic_astrograph", new int[]{145,145,73}, new int[]{0,103,-75}, 36);
         double clearance = cavity(spec, "heart_of_the_universe", new int[]{120,118,108}, new int[]{0,36,-39}, heartRadius * heartFade);
         check(heartCull > heartRadius * heartFade && heartCull < clearance, "Heart cull envelope covers shader volume inside real chamber");
-        try (var core = new ZipFile("libs/gtlcore-1.2.3.2-fix4.jar"); var add = new ZipFile("libs/gtladditions-3.3.1Custom.jar")) {
+        try (var core = new ZipFile("libs/gtlcore-1.2.3.3-fix3.jar"); var add = new ZipFile("libs/gtladditions-3.3.1Custom.jar")) {
             var eye = read(core, CORE + "client/renderer/machine/EyeOfHarmonyRenderer");
             check(calls(method(eye, "render"), "com/mojang/blaze3d/vertex/PoseStack", "m_85837_") == 1, "Eye has one parent translation");
             for (String child : Set.of("renderStar", "renderOrbitObjects", "renderOuterSpaceShell"))

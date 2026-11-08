@@ -86,7 +86,7 @@ final class TerminalDismantleRegression {
     private static void upstreamAccessors() throws Exception {
         // Inspect the shipped dependency, not a synthetic class matching the implementation.
         ClassNode advanced = new ClassNode();
-        try (JarFile jar = new JarFile("libs/gtlcore-1.2.3.2-fix4.jar")) {
+        try (JarFile jar = new JarFile("libs/gtlcore-1.2.3.3-fix3.jar")) {
             try (var input = jar.getInputStream(jar.getJarEntry(
                     "org/gtlcore/gtlcore/api/pattern/AdvancedBlockPattern.class"))) {
                 new ClassReader(input).accept(advanced, 0);

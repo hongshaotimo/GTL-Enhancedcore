@@ -71,7 +71,7 @@ public final class LanthanideRecipeRuntimeChecks {
         JsonObject receipt = new JsonObject();
         receipt.addProperty("LuV_VA", GTValues.VA[GTValues.LuV]);
         receipt.addProperty("LuV_V", GTValues.V[GTValues.LuV]);
-        receipt.addProperty("gtlcoreDurationMultiplier", ConfigHolder.INSTANCE.durationMultiplier);
+        receipt.addProperty("gtlcoreDurationMultiplier", ConfigHolder.INSTANCE.content.durationMultiplier);
         receipt.addProperty("processingBaseDuration", 1200);
         receipt.addProperty("processingExpectedSerializedDuration", adjustedDuration(1200));
         receipt.addProperty("acquisitionBaseDuration", 2400);
@@ -156,14 +156,14 @@ public final class LanthanideRecipeRuntimeChecks {
                 phase + " has no tick output contents", recipe, checks);
     }
 
-    /** GTLCore fix4 GTRecipeBuilderMixin.toJson applies this multiplier to ordinary consuming recipes. */
+    /** GTLCore 1.2.3.3-fix3 GTRecipeBuilderMixin applies this multiplier to ordinary consuming recipes. */
     private static int adjustedDuration(int base) {
-        return (int) Math.min(Integer.MAX_VALUE, Math.max(1.0, Math.abs(base * ConfigHolder.INSTANCE.durationMultiplier)));
+        return (int) Math.min(Integer.MAX_VALUE, Math.max(1.0, Math.abs(base * ConfigHolder.INSTANCE.content.durationMultiplier)));
     }
 
     private static String diagnostics(GTRecipe recipe) {
         return "actual duration=" + recipe.duration + ", EUt=" + eut(recipe)
-                + ", GTLCore durationMultiplier=" + ConfigHolder.INSTANCE.durationMultiplier
+                + ", GTLCore durationMultiplier=" + ConfigHolder.INSTANCE.content.durationMultiplier
                 + ", tickInputs=" + recipe.tickInputs + ", tickOutputs=" + recipe.tickOutputs
                 + ", json=" + GTRecipeSerializer.CODEC.encodeStart(JsonOps.INSTANCE, recipe)
                 .getOrThrow(false, message -> { throw new AssertionError(message); });

@@ -19,7 +19,7 @@ public final class PreviewMaterialRowsRegression {
 
     static int run() throws Exception {
         assertions = 0;
-        try (var jar = new ZipFile("libs/gtlcore-1.2.3.2-fix4.jar")) {
+        try (var jar = new ZipFile("libs/gtlcore-1.2.3.3-fix3.jar")) {
             var pattern = read(jar, "org/gtlcore/gtlcore/api/gui/PatternPreviewWidget$MBPattern");
             for (var field : new String[]{"blockMap", "predicateMap", "controllerBase", "moduleOnlyBlocks"}) {
                 check(pattern.fields.stream().anyMatch(candidate -> candidate.name.equals(field)),
@@ -78,6 +78,10 @@ public final class PreviewMaterialRowsRegression {
                 "Page changes reset stale selections");
         check(source.contains("item.equals(selected) ? null : item"), "Clicking the same material clears selection");
         check(source.contains("countLabel(simple.minCount, simple.maxCount)"), "Badges use GTL global count limits");
+        check(source.contains("labels.isEmpty() ? String.valueOf(positions)"),
+                "Unbounded alternatives retain their actual preview group count");
+        check(source.contains("requirements.computeIfAbsent(material,") && source.contains("amounts.get(material)"),
+                "Counts stay scoped to material groups and also reach candidate rows");
         check(source.contains("lower == maximum ? String.valueOf(lower)"), "Exact counts use a single number");
         check(source.contains("simple.minLayerCount") && source.contains("simple.maxLayerCount"), "Layer limits remain in tooltips");
         var scene = Files.readString(Path.of("src/main/java/com/gtl/enhancedcore/mixin/ldlib/client/SceneWidgetRenderFilterMixin.java"));
@@ -93,7 +97,7 @@ public final class PreviewMaterialRowsRegression {
                 "Fullscreen layout preserves candidate expansion state");
         check(config.getAsJsonArray("client").asList().stream().anyMatch(entry -> entry.getAsString().equals(
                 "gtlcore.client.PreviewMaterialLayoutMixin")), "Fullscreen layout Mixin is client-only");
-        try (var jar = new ZipFile("libs/gtlcore-1.2.3.2-fix4.jar")) {
+        try (var jar = new ZipFile("libs/gtlcore-1.2.3.3-fix3.jar")) {
             var controls = read(jar, "org/gtlcore/gtlcore/client/preview/PreviewControls");
             check(controls.methods.stream().anyMatch(method -> method.name.equals("layout") && method.desc.equals("()V")),
                     "Installed fullscreen layout hook exists");

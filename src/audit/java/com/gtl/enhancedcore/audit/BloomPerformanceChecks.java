@@ -15,7 +15,7 @@ import org.gtlcore.gtlcore.config.ConfigHolder;
 public final class BloomPerformanceChecks {
     @SuppressWarnings("unchecked")
     public static void run(List<String> checks) throws Exception {
-        var options = ConfigHolder.INSTANCE.bloom;
+        var options = ConfigHolder.INSTANCE.graphics.bloom;
         var previous = options.bloomMode;
         SectionMeshes meshes = new SectionMeshes();
         Field pending = SectionMeshes.class.getDeclaredField("pending");

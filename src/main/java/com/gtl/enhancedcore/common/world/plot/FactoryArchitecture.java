@@ -16,7 +16,7 @@ public final class FactoryArchitecture {
     public record Hall(String id, String department, String stage, int x, int z, int width, int depth,
                        int clearHeight, int variant, boolean outdoor, String entranceFacing) {
         public Hall {
-            if (width < 40 || depth < 48 || clearHeight < 20)
+            if (width < (outdoor ? 32 : 40) || depth < (outdoor ? 32 : 48) || clearHeight < 20)
                 throw new IllegalArgumentException("Factory hall is too small: " + id);
             if (!Set.of("south", "north", "east", "west").contains(entranceFacing))
                 throw new IllegalArgumentException("Unknown factory entrance facing: " + entranceFacing);
@@ -36,6 +36,9 @@ public final class FactoryArchitecture {
         public boolean contains(int px, int pz) { return px >= x && px <= maxX() && pz >= z && pz <= maxZ(); }
         public PlannedCampus.Bounds bounds() { return new PlannedCampus.Bounds(x, z, maxX(), maxZ()); }
         public PlannedCampus.Bounds productionBounds() {
+            // Small file-scene courts have no industrial loading annex; explicit layout bounds take precedence.
+            if (outdoor && (width < 40 || depth < 48))
+                return new PlannedCampus.Bounds(x + 12, z + 12, maxX() - 12, maxZ() - 12);
             return switch (entranceFacing) {
                 case "south" -> new PlannedCampus.Bounds(x + 12, z + 12, maxX() - 12, maxZ() - 22);
                 case "east" -> new PlannedCampus.Bounds(x + 12, z + 12, maxX() - 22, maxZ() - 12);

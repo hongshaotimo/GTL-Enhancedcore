@@ -21,6 +21,11 @@ final class CampusPresetRegistryRegression {
         rejects(() -> CampusPresetRegistry.get("missing_preset"), "Unknown identities cannot fall back to another preset");
         check(!CampusPresetRegistry.contains("celestial_megastructure"), "The removed celestial preset has no registry entry");
         rejects(() -> CampusPresetRegistry.get("celestial_megastructure"), "The removed celestial identity is rejected as unknown");
+        check(!CampusPresetRegistry.contains("woodland_lake_v2"), "The withdrawn woodland V2 has no creation-menu entry");
+        rejects(() -> CampusPresetRegistry.get("woodland_lake_v2"), "Withdrawn woodland V2 is rejected without aliasing another preset");
+        for (String resource : new String[] {"woodland_v2_machines.json", "woodland_v2_layout.json", "woodland_v2_architecture.json"})
+            check(CampusPresetRegistry.class.getResource("/data/gtl_enhancedcore/worldgen/" + resource) == null,
+                    "Withdrawn woodland V2 resource is absent: " + resource);
         immutable(() -> CampusPresetRegistry.definitions().clear(), "Registry menu ordering is immutable");
         immutable(() -> quartz.materials().put("quartz", "minecraft:stone"), "A caller cannot recolor a shared definition");
         immutable(() -> quartz.dimensions().put("gridPeriod", 1), "A caller cannot move a shared definition's dimensions");

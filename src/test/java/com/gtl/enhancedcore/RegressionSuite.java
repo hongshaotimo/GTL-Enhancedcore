@@ -63,6 +63,7 @@ public final class RegressionSuite {
         assertions += FileCampusEngineRegression.run();
         assertions += CampusSceneRegression.run();
         assertions += PinkDreamHomeRegression.run();
+        assertions += CampusPresetTranslationsRegression.run();
         assertions += PlotRoadAlignmentRegression.run();
         assertions += PlotPreviewRegression.run();
         assertions += PlotPresetShareRegression.run();
@@ -84,6 +85,8 @@ public final class RegressionSuite {
         assertions += HydrothermalStructuresRegression.run();
         assertions += CopyKeysRegression.run();
         assertions += TerminalExtrasRegression.run();
+        assertions += DataItemBehaviorCompatibilityRegression.run();
+        assertions += IvManipulatorTransferRegression.run();
         assertions += RemoteProviderRangeRegression.run();
         assertions += RemoteProviderMixinRegression.run();
         assertions += TravelAnchorsRegression.run();
@@ -124,6 +127,12 @@ public final class RegressionSuite {
         assertions += FlightStateConcurrencyRegression.run();
         assertions += CoilDebugToolRegression.run();
         assertions += RecipeRecoveryRegression.run();
+        assertions += IdleRecipeSearchRegression.run();
+        assertions += AddConfigFieldCompatibilityRegression.run();
+        assertions += SliderTextFieldSideCompatibilityRegression.run();
+        assertions += AdvancedHatchLaserRecipeCompatibilityRegression.run();
+        assertions += AdvancedHatchExGtlRecipeCompatibilityRegression.run();
+        assertions += IvIdleOrderPollingRegression.run();
         assertions += GridRecipePaymentRegression.run();
         assertions += GridNetworkTerminalBigIntegerRegression.run();
         assertions += SuperBufferWideInventoryRegression.run();

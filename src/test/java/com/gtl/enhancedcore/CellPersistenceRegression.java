@@ -82,7 +82,7 @@ final class CellPersistenceRegression {
     }
 
     private static void upstreamNotificationContract() throws Exception {
-        try (JarFile jar = new JarFile(Path.of("libs/gtlcore-1.2.3.2-fix4.jar").toFile())) {
+        try (JarFile jar = new JarFile(Path.of("libs/gtlcore-1.2.3.3-fix3.jar").toFile())) {
             ClassNode node = new ClassNode();
             new ClassReader(jar.getInputStream(jar.getJarEntry(
                     "org/gtlcore/gtlcore/integration/ae2/storage/FastInfinityCellInventory.class")))

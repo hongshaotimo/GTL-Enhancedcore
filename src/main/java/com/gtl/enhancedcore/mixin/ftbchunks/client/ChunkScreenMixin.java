@@ -27,7 +27,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
  * FTB Chunks 2001.3.8 claim screen: fixed 31x31 chunks instead of 15x15.
  * Constants are matched by ordinal against the upstream bytecode (see FtbClaimMapRegression).
  */
-@Mixin(value = ChunkScreen.class, remap = false)
+// Apply after GTLCore's priority-1000 release hook so our plugin can disable that overlap.
+@Mixin(value = ChunkScreen.class, priority = 900, remap = false)
 public abstract class ChunkScreenMixin {
     @Inject(method = "addWidgets", at = @At("HEAD"))
     private void gtlEnhancedcore$configureLayout(CallbackInfo ci) {

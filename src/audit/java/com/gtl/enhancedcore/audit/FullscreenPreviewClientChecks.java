@@ -308,7 +308,8 @@ public final class FullscreenPreviewClientChecks {
         var mc = Minecraft.getInstance();
         check(mc.screen instanceof FullscreenPreviewScreen && controls.fullscreen(), "Fullscreen state lost");
         check(scene.getSizeWidth() == mc.screen.width - 8, "Scene did not use available width");
-        check(scene.getPositionY() >= controls.headerHeight() && scene.getPositionY() + scene.getSizeHeight() <= mc.screen.height - 28,
+        // GTLCore fix3 uses a fixed CONTENT_TOP=32 instead of the removed headerHeight().
+        check(scene.getPositionY() >= 32 && scene.getPositionY() + scene.getSizeHeight() <= mc.screen.height - 28,
                 "Scene overlaps header/materials");
         for (var child : widget.widgets) {
             check(child.getPositionX() >= 0 && child.getPositionY() >= 0

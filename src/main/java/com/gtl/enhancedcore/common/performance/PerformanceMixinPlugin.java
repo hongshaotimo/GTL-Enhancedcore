@@ -3,6 +3,11 @@ package com.gtl.enhancedcore.common.performance;
 import com.gtl.enhancedcore.common.config.ForeignMachineMixinPolicy;
 import com.gtl.enhancedcore.common.config.MachineOverrideConfig;
 import com.gtl.enhancedcore.common.integration.GtlTerminalExtras;
+import com.gtl.enhancedcore.common.integration.DataItemBehaviorCompatibility;
+import com.gtl.enhancedcore.common.integration.AddConfigFieldCompatibility;
+import com.gtl.enhancedcore.common.integration.AdvancedHatchLaserRecipeCompatibility;
+import com.gtl.enhancedcore.common.integration.SliderTextFieldSideCompatibility;
+import com.gtl.enhancedcore.common.integration.GtlFtbRectangleClaim;
 import com.gtl.enhancedcore.common.integration.ExPatternTerminalExtras;
 import com.gtl.enhancedcore.common.integration.JerMobWorldLaziness;
 import com.gtl.enhancedcore.common.integration.MultiblockPreviewLaziness;
@@ -42,7 +47,8 @@ public final class PerformanceMixinPlugin implements IMixinConfigPlugin {
             return PerformanceMixinPlugin.class.getClassLoader().getResource(targetClassName.replace('.', '/') + ".class") != null;
         if (JEI_RECIPE_COPY.equals(mixinClassName)) return jeiPresent();
         if (mixinClassName.startsWith("com.gtl.enhancedcore.mixin.jei.")) return jeiPresent();
-        if (GRID_HATCH_MIXIN.equals(mixinClassName))
+        if (GRID_HATCH_MIXIN.equals(mixinClassName)
+                || AdvancedHatchLaserRecipeCompatibility.MARKER.equals(mixinClassName))
             return PerformanceMixinPlugin.class.getClassLoader().getResource(targetClassName.replace('.', '/') + ".class") != null;
         if (mixinClassName.startsWith("com.gtl.enhancedcore.mixin.ae2.remote."))
             return PerformanceMixinPlugin.class.getClassLoader().getResource(
@@ -69,14 +75,21 @@ public final class PerformanceMixinPlugin implements IMixinConfigPlugin {
 
     @Override
     public void preApply(String targetClassName, ClassNode targetClass, String mixinClassName, IMixinInfo mixinInfo) {
+        DataItemBehaviorCompatibility.preApply(targetClassName, targetClass, mixinClassName);
         if (targetClassName.equals("net.minecraft.Util")) ClientThreadSettings.configureBackground();
     }
 
     @Override
     public void postApply(String targetClassName, ClassNode targetClass, String mixinClassName, IMixinInfo mixinInfo) {
+        AddConfigFieldCompatibility.postApply(targetClassName, targetClass, mixinClassName);
+        if (AdvancedHatchLaserRecipeCompatibility.MARKER.equals(mixinClassName))
+            AdvancedHatchLaserRecipeCompatibility.transform(targetClass);
+        if (SliderTextFieldSideCompatibility.MARKER.equals(mixinClassName))
+            SliderTextFieldSideCompatibility.transform(targetClass);
         GtlTerminalExtras.postApply(targetClassName, targetClass, mixinClassName);
         ExPatternTerminalExtras.postApply(targetClassName, targetClass, mixinClassName);
         MultiblockPreviewLaziness.postApply(targetClassName, targetClass, mixinClassName);
         JerMobWorldLaziness.postApply(targetClassName, targetClass, mixinClassName);
+        GtlFtbRectangleClaim.postApply(targetClassName, targetClass, mixinClassName);
     }
 }

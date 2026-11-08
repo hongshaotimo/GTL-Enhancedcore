@@ -53,6 +53,14 @@ final class StagedPreviewContractRegression {
         var drop = transformed.methods.stream().filter(method -> method.name.equals("enhanced$gatherDrop")).findFirst().orElseThrow();
         check(calls(drop, "java/util/Map", "computeIfAbsent") == 1,
                 "Native candidate material accumulation retained");
+        check(drop.desc.equals("(Ljava/util/Map;Ljava/util/Map;Ljava/util/Map$Entry;)V"),
+                "Staged material extraction receives the upstream position-to-item map");
+        check(calls(drop, "java/util/Map", "put") == 1,
+                "The extracted native drop loop retains its material-map write");
+        check(finish.instructions.iterator().hasNext() && finish.desc.equals(
+                "(Ljava/util/Map;Ljava/util/Set;Lcom/gregtechceu/gtceu/api/machine/feature/multiblock/IMultiController;"
+                        + "Ljava/util/Map;Ljava/util/Map;Ljava/util/Map;)Ljava/lang/Object;"),
+                "Staged finalization forwards the new MBPattern materials argument");
         boolean duplicateRejected = false;
         try { MultiblockPreviewLaziness.postApply(TARGET, transformed, MARKER); }
         catch (IllegalStateException expected) { duplicateRejected = true; }
@@ -70,7 +78,7 @@ final class StagedPreviewContractRegression {
     }
 
     private static ClassNode read() throws Exception {
-        try (var jar = new ZipFile(Path.of("libs/gtlcore-1.2.3.2-fix4.jar").toFile())) {
+        try (var jar = new ZipFile(Path.of("libs/gtlcore-1.2.3.3-fix3.jar").toFile())) {
             ClassNode result = new ClassNode();
             new ClassReader(jar.getInputStream(jar.getEntry(ENTRY)).readAllBytes()).accept(result, 0);
             return result;

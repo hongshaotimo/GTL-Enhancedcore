@@ -128,8 +128,8 @@ public final class CelestialRenderStateChecks {
         var projection = new Matrix4f(RenderSystem.getProjectionMatrix());
         var mv = RenderSystem.getModelViewStack();
         mv.pushPose(); mv.setIdentity(); RenderSystem.applyModelViewMatrix();
-        boolean smooth = ConfigHolder.INSTANCE.enableSmoothAnimations;
-        ConfigHolder.INSTANCE.enableSmoothAnimations = false;
+        boolean smooth = ConfigHolder.INSTANCE.graphics.enableSmoothAnimations;
+        ConfigHolder.INSTANCE.graphics.enableSmoothAnimations = false;
         try {
             // Keep the production attachment configuration: do not enable stencil here.
             target.resize(SIZE, SIZE, Minecraft.ON_OSX);
@@ -139,7 +139,7 @@ public final class CelestialRenderStateChecks {
             if (stage.equals("initial")) for (boolean active : List.of(false, true))
                 for (boolean day : List.of(true, false)) capture(directory, "eye", active, day, false);
         } finally {
-            ConfigHolder.INSTANCE.enableSmoothAnimations = smooth;
+            ConfigHolder.INSTANCE.graphics.enableSmoothAnimations = smooth;
             target.resize(width, height, Minecraft.ON_OSX); target.bindWrite(true);
             RenderSystem.setProjectionMatrix(projection, VertexSorting.DISTANCE_TO_ORIGIN);
             mv.popPose(); RenderSystem.applyModelViewMatrix();

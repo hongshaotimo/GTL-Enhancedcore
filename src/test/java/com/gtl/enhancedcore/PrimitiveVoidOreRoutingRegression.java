@@ -22,7 +22,7 @@ import org.objectweb.asm.tree.MethodNode;
 /** Pins the three circuit routes to the installed GTLCore and GTCEu ABI. */
 final class PrimitiveVoidOreRoutingRegression {
     private static int assertions;
-    private static final String GTL = "libs/gtlcore-1.2.3.2-fix4.jar";
+    private static final String GTL = "libs/gtlcore-1.2.3.3-fix3.jar";
     private static final String GTCEU = "libs/gtceu-1.20.1-1.4.4.jar";
 
     static int run() throws Exception {

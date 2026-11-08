@@ -50,7 +50,7 @@ side = "BOTH"
 [[dependencies.gtl_enhancedcore]]
 modId = "gtlcore"
 mandatory = true
-versionRange = "[1.2.3.2-fix4,)"
+versionRange = "[1.2.3.3-fix3,)"
 ordering = "AFTER"
 side = "BOTH"
 

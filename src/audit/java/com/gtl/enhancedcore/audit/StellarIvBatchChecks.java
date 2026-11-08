@@ -27,7 +27,7 @@ public final class StellarIvBatchChecks {
     private StellarIvBatchChecks() {}
     public static List<String> run() throws Exception {
         var checks = new ArrayList<String>();
-        int previousWindow = ConfigHolder.INSTANCE.batchProcessingTimeLimitTicks;
+        int previousWindow = ConfigHolder.INSTANCE.machines.batchProcessingTimeLimitTicks;
         try {
             for (String id : List.of("gtceu:suprachronal_assembly_line", "gtl_enhancedcore:platinum_refining_matrix")) {
                 var fixture = StellarIvGuiChecks.fixture(id, false, true, true);
@@ -55,7 +55,7 @@ public final class StellarIvBatchChecks {
                 Map<AEKey,Long> stock = Map.of(AEItemKey.of(Items.APPLE), 4096L);
                 for (int window : List.of(32, 64)) {
                     for (int i = 0; i < 64; i++) input.setStackInSlot(i, new ItemStack(Items.APPLE, 64));
-                    ConfigHolder.INSTANCE.batchProcessingTimeLimitTicks = window;
+                    ConfigHolder.INSTANCE.machines.batchProcessingTimeLimitTicks = window;
                     var origin = GTRecipeBuilder.of(new ResourceLocation("gtl_enhancedcore", "stellar_iv_batch_probe"), machine.getRecipeType())
                             .inputItems(Items.APPLE).chancedOutput(new ItemStack(Items.GOLD_NUGGET), 3000, 0)
                             .EUt(8).duration(2).buildRawRecipe();
@@ -177,7 +177,7 @@ public final class StellarIvBatchChecks {
                     new com.google.gson.GsonBuilder().setPrettyPrinting().create().toJson(report)); }
             catch (Exception writeFailure) { failure.addSuppressed(writeFailure); }
             throw failure;
-        } finally { ConfigHolder.INSTANCE.batchProcessingTimeLimitTicks = previousWindow; }
+        } finally { ConfigHolder.INSTANCE.machines.batchProcessingTimeLimitTicks = previousWindow; }
         return checks;
     }
     private static String describe(GTRecipe recipe) {

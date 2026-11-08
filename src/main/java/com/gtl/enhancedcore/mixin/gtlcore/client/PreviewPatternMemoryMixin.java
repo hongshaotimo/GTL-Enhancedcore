@@ -29,6 +29,7 @@ import org.spongepowered.asm.mixin.Unique;
 @Mixin(targets = "org.gtlcore.gtlcore.api.gui.PatternPreviewWidget$MBPattern", remap = false)
 public abstract class PreviewPatternMemoryMixin implements PreviewPatternMemory, PreviewMaterialAccess {
     @Shadow @Final List<List<ItemStack>> parts;
+    @Shadow @Final Map<BlockPos, AEItemKey> materials;
     @Shadow @Final Map<BlockPos, TraceabilityPredicate> predicateMap;
     @Shadow @Final Map<BlockPos, BlockInfo> blockMap;
     @Shadow @Final Set<BlockPos> moduleOnlyBlocks;
@@ -91,6 +92,7 @@ public abstract class PreviewPatternMemoryMixin implements PreviewPatternMemory,
         // Do not touch a controller attached to a real level.
         if (!(controllerBase.self().getLevel() instanceof TrackedDummyWorld)) return;
         parts.clear();
+        materials.clear();
         enhanced$chambers = null;
         if (enhanced$materials != null) enhanced$materials.clear();
         if (enhanced$candidateCache != null) enhanced$candidateCache.clear();

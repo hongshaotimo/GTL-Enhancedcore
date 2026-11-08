@@ -27,7 +27,7 @@ final class HarmonyAddRecipesRegression {
     static int run() throws Exception {
         assertions = 0;
         try (var additions = new ZipFile("libs/gtladditions-3.3.1Custom.jar");
-             var core = new ZipFile("libs/gtlcore-1.2.3.2-fix4.jar")) {
+             var core = new ZipFile("libs/gtlcore-1.2.3.3-fix3.jar")) {
             String kotlin = "kotlinforforge-4.11.0-all.jar";
             var dependencies = JsonParser.parseString(Files.readString(Path.of("gradle/local-dependencies.json"))).getAsJsonObject();
             check(dependencies.getAsJsonArray("compileOnly").asList().stream().anyMatch(value -> value.getAsString().equals(kotlin))

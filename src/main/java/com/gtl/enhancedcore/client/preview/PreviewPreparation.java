@@ -298,7 +298,7 @@ public final class PreviewPreparation {
                 }
                 case MATERIALS -> {
                     while (entries.hasNext()) {
-                        access.enhanced$gatherDrop(parts, entries.next());
+                        access.enhanced$gatherDrop(parts, materialKeys, entries.next());
                         if (++work % CHECK_INTERVAL == 0 && System.nanoTime() >= deadline) return false;
                     }
                     phase = Phase.MODULES;
@@ -360,7 +360,7 @@ public final class PreviewPreparation {
                     phase = Phase.FINISH;
                 }
                 case FINISH -> {
-                    result = access.enhanced$finishPattern(blockMap, moduleBlocks, controller, predicates, parts);
+                    result = access.enhanced$finishPattern(blockMap, moduleBlocks, controller, predicates, parts, materialKeys);
                     if (result instanceof PreviewMaterialAccess material) {
                         material.enhanced$cacheMaterials(materialKeys, materialChoices, replaceable);
                     }

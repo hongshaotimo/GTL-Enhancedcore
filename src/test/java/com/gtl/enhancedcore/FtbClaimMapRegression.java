@@ -1,6 +1,9 @@
 package com.gtl.enhancedcore;
 
 import com.gtl.enhancedcore.client.ftbchunks.ChunkMapLayout;
+import com.gtl.enhancedcore.common.integration.GtlFtbRectangleClaim;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.jar.JarFile;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.tree.AbstractInsnNode;
@@ -8,6 +11,7 @@ import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.IntInsnNode;
 import org.objectweb.asm.tree.MethodInsnNode;
 import org.objectweb.asm.tree.MethodNode;
+import org.objectweb.asm.tree.AnnotationNode;
 
 /** Upstream constant counts behind the fixed 31x31 FTB claim map Mixins, plus layout maths. */
 final class FtbClaimMapRegression {
@@ -34,6 +38,7 @@ final class FtbClaimMapRegression {
         ClassNode button = read(SCREEN + "$ChunkButton");
         check(ints(method(button, "<init>"), 16) == 2, "ChunkButton setSize(16, 16)");
         check(ints(method(button, "lambda$drawBackground$0"), 16) == 2, "force-load icon drawn 16x16");
+        upstreamRectangleOverride();
 
         check(ChunkMapLayout.CHUNKS == 31 && ChunkMapLayout.RADIUS == 15, "fixed 31x31 with radius 15");
         check(ChunkMapLayout.tileFor(960, 540) == 16, "GUI scale 2 at 1080p keeps 16 px tiles");
@@ -45,6 +50,45 @@ final class FtbClaimMapRegression {
             check(31 * tile <= s[1] - 40 && 31 * tile <= s[0] - 40, "map fits inside margins");
         }
         return assertions;
+    }
+
+    private static void upstreamRectangleOverride() throws Exception {
+        String owner = "org.gtlcore.gtlcore.mixin.ftbchunks.ChunkScreenMixin";
+        ClassNode upstream = new ClassNode();
+        try (JarFile jar = new JarFile("libs/gtlcore-1.2.3.3-fix3.jar");
+                var input = jar.getInputStream(jar.getJarEntry(owner.replace('.', '/') + ".class"))) {
+            new ClassReader(input).accept(upstream, 0);
+        }
+        MethodNode hook = method(upstream, "gtlcore$rectClaimOnRelease");
+        check(calls(hook, "sendToServer") == 1 && calls(hook, "clear") == 2,
+                "Actual GTLCore release hook sends its own rectangle and clears native selection");
+        AnnotationNode merged = new AnnotationNode("Lorg/spongepowered/asm/mixin/transformer/meta/MixinMerged;");
+        merged.values = new ArrayList<>(List.of("mixin", owner));
+        hook.visibleAnnotations = new ArrayList<>(List.of(merged));
+        hook.name = "handler$test$gtlcore$rectClaimOnRelease";
+        ClassNode target = read(SCREEN);
+        MethodNode nativeRelease = method(target, "mouseReleased");
+        int nativeSize = nativeRelease.instructions.size();
+        target.methods.add(hook);
+        GtlFtbRectangleClaim.postApply(SCREEN.replace('/', '.'), target, "unrelated.Mixin");
+        check(hook.instructions.size() > 1, "Other mixins cannot trigger the replacement");
+        GtlFtbRectangleClaim.postApply(SCREEN.replace('/', '.'), target, GtlFtbRectangleClaim.CLIENT_MIXIN);
+        check(hook.instructions.size() == 1 && hook.instructions.getFirst().getOpcode() == org.objectweb.asm.Opcodes.RETURN,
+                "Only the provenance-verified GTLCore Ctrl callback becomes a no-op");
+        check(nativeRelease.instructions.size() == nativeSize && calls(nativeRelease, "sendToServer") == 1,
+                "Native release sends the Enhancedcore selection exactly once");
+        GtlFtbRectangleClaim.postApply(SCREEN.replace('/', '.'), target, GtlFtbRectangleClaim.CLIENT_MIXIN);
+        check(hook.instructions.size() == 1, "Repeated callback application is harmless");
+        hook.desc = "()V";
+        try {
+            GtlFtbRectangleClaim.postApply(SCREEN.replace('/', '.'), target, GtlFtbRectangleClaim.CLIENT_MIXIN);
+            throw new AssertionError("Changed upstream signature must fail explicitly");
+        } catch (IllegalStateException expected) { assertions++; }
+        ClassNode marker = new ClassNode();
+        new ClassReader(FtbClaimMapRegression.class.getClassLoader().getResourceAsStream(
+                GtlFtbRectangleClaim.CLIENT_MIXIN.replace('.', '/') + ".class")).accept(marker, 0);
+        check(marker.invisibleAnnotations.stream().filter(a -> a.desc.endsWith("/Mixin;"))
+                .anyMatch(a -> a.values.contains(900)), "Claim marker applies after the priority-1000 GTLCore hook");
     }
 
     public static void main(String[] args) throws Exception {

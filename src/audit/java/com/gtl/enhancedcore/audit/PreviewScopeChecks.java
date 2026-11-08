@@ -75,7 +75,7 @@ final class PreviewScopeChecks {
                 || !access.gtlcore$previewKey().machine().equals(definition.getId())) {
             throw new AssertionError("Future namespace was not attached to the shared preview renderer");
         }
-        var options = org.gtlcore.gtlcore.config.ConfigHolder.INSTANCE.multiblockPreview;
+        var options = org.gtlcore.gtlcore.config.ConfigHolder.INSTANCE.graphics.multiblockPreview;
         boolean enabled = options.enabled;
         try {
             options.enabled = false;

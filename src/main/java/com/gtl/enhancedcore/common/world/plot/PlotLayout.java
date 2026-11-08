@@ -155,7 +155,9 @@ public final class PlotLayout {
         if (y == settings.bedrockY()) return "minecraft:bedrock";
         if (y == settings.surfaceY()) return surfaceBlock(settings, worldX, worldZ);
         if (settings.isCampus()) {
-            String service = campusFoundationAt(worldX, y - settings.surfaceY(), worldZ);
+            boolean authoredTerrain = settings.roadStyle() == PlotSettings.RoadStyle.CAMPUS_FILE
+                    && FileCampus.of(settings.campusPresetId()).authoritativeTerrain();
+            String service = authoredTerrain ? null : campusFoundationAt(worldX, y - settings.surfaceY(), worldZ);
             if (service != null) return service;
             String facing = switch (settings.roadStyle()) {
                 case CAMPUS -> LegacyPlannedCampus.foundationBlockAt(worldX, y - settings.surfaceY(), worldZ);

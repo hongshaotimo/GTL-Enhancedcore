@@ -36,6 +36,24 @@ public final class MemoryAuditEnvironmentAgent {
                     public MethodVisitor visitMethod(int access, String method, String descriptor,
                             String signature, String[] exceptions) {
                         MethodVisitor visitor = super.visitMethod(access, method, descriptor, signature, exceptions);
+                        if (glfw && Boolean.getBoolean("gtl.enhancedcore.ftbClaimAudit")
+                                && (method.equals("glfwGetMouseButton") || method.equals("glfwGetKey"))
+                                && descriptor.equals("(JI)I")) {
+                            visitor.visitCode();
+                            visitor.visitLdcInsn("gtl.enhancedcore.ftbAudit."
+                                    + (method.equals("glfwGetKey") ? "key." : "mouse."));
+                            visitor.visitVarInsn(Opcodes.ILOAD, 2);
+                            visitor.visitMethodInsn(Opcodes.INVOKESTATIC, "java/lang/Integer", "toString", "(I)Ljava/lang/String;", false);
+                            visitor.visitMethodInsn(Opcodes.INVOKEVIRTUAL, "java/lang/String", "concat", "(Ljava/lang/String;)Ljava/lang/String;", false);
+                            visitor.visitInsn(Opcodes.ICONST_0);
+                            visitor.visitMethodInsn(Opcodes.INVOKESTATIC, "java/lang/Integer", "getInteger", "(Ljava/lang/String;I)Ljava/lang/Integer;", false);
+                            visitor.visitMethodInsn(Opcodes.INVOKEVIRTUAL, "java/lang/Integer", "intValue", "()I", false);
+                            visitor.visitInsn(Opcodes.IRETURN);
+                            visitor.visitMaxs(2, 3);
+                            visitor.visitEnd();
+                            changed[0] = true;
+                            return null;
+                        }
                         if (glfw && (method.equals("glfwShowWindow") || method.equals("glfwFocusWindow"))
                                 && descriptor.equals("(J)V")
                                 || recipeTick && method.equals("serverTick") && descriptor.equals("()V")) {

@@ -59,7 +59,8 @@ public final class PlotChunkGenerator extends ChunkGenerator {
     private final Map<String, BlockState> palette;
     private final Map<Long, List<CampusSign>> signsByChunk;
     private final Map<Long, Integer> signHeights;
-    private final Map<Long, CampusDevice> devicesByColumn;
+    private final Map<Long, CampusDevice> devicesByPosition;
+    private final Map<Long, Integer> deviceHeights;
     private final Map<Long, List<CampusDevice>> devicesByChunk;
     private record CampusSign(BlockPos position, List<Component> lines) {}
     private record CampusDevice(BlockPos position, PlannedCampus.Plot plot) {}
@@ -76,15 +77,14 @@ public final class PlotChunkGenerator extends ChunkGenerator {
                 id -> settings.isCampus() && campusMaterials().contains(id)
                         ? authoredScene ? resolveSceneMaterial(id) : resolveCampusMaterial(id) : resolveMaterial(id)));
         this.signsByChunk = new HashMap<>(); this.signHeights = new HashMap<>();
-        this.devicesByColumn = new HashMap<>(); this.devicesByChunk = new HashMap<>();
+        this.devicesByPosition = new HashMap<>(); this.deviceHeights = new HashMap<>(); this.devicesByChunk = new HashMap<>();
         if (settings.isCampus()) {
-            for (var plot : campusPlots()) {
-                addDevice(plot.controllerX(), plot.controllerY(), plot.controllerZ(), plot);
-            }
-            addDevice(0, 1, 0, null);
             var fileCampus = settings.roadStyle() == PlotSettings.RoadStyle.CAMPUS_FACTORY
                     || settings.roadStyle() == PlotSettings.RoadStyle.CAMPUS_FILE
                     ? FileCampus.of(settings.roadStyle() == PlotSettings.RoadStyle.CAMPUS_FILE ? settings.campusPresetId() : "quartz_works") : null;
+            var markerPlots = fileCampus == null ? campusPlots() : fileCampus.markers().stream().map(FileCampus.ControllerMarker::plot).toList();
+            for (var plot : markerPlots) addDevice(plot.controllerX(), plot.controllerY(), plot.controllerZ(), plot);
+            addDevice(0, 1, 0, null);
             if (fileCampus == null || fileCampus.physicalSigns()) {
             addSign(0, 1, 18, Component.translatable("gtl_enhancedcore.campus.sign.ae"),
                     Component.translatable("gtl_enhancedcore.campus.sign.ae_space"),
@@ -196,8 +196,7 @@ public final class PlotChunkGenerator extends ChunkGenerator {
             case CAMPUS_FILE -> FileCampus.of(settings.campusPresetId()).maxDecorationYAt(settings, x, z);
             default -> 0;
         };
-        CampusDevice device = devicesByColumn.get(net.minecraft.world.level.ChunkPos.asLong(x, z));
-        return device == null ? ceiling : Math.max(ceiling, device.position().getY() - settings.surfaceY());
+        return Math.max(ceiling, deviceHeights.getOrDefault(net.minecraft.world.level.ChunkPos.asLong(x, z), 0));
     }
     private static BlockState resolveCampusMaterial(String id) {
         try {
@@ -229,8 +228,8 @@ public final class PlotChunkGenerator extends ChunkGenerator {
     @Override public int getSeaLevel() { return -63; }
     @Override public int getSpawnHeight(LevelHeightAccessor height) { return settings.surfaceY() + 1; }
     private BlockState stateAt(int x, int y, int z) {
-        CampusDevice device = devicesByColumn.get(net.minecraft.world.level.ChunkPos.asLong(x, z));
-        if (device != null && device.position().getY() == y)
+        CampusDevice device = devicesByPosition.get(BlockPos.asLong(x, y, z));
+        if (device != null)
             return device.plot() == null ? CampusDeviceBlocks.CENTRAL_TELEPORTER.get().defaultBlockState()
                     : CampusDeviceBlocks.VIRTUAL_MARKER.get().defaultBlockState();
         if (settings.isCampus() && signHeights.getOrDefault(net.minecraft.world.level.ChunkPos.asLong(x, z), Integer.MIN_VALUE) == y)
@@ -273,7 +272,9 @@ public final class PlotChunkGenerator extends ChunkGenerator {
     private void addDevice(int x, int relativeY, int z, PlannedCampus.Plot plot) {
         BlockPos pos = new BlockPos(x, settings.surfaceY() + relativeY, z);
         CampusDevice device = new CampusDevice(pos, plot);
-        devicesByColumn.put(net.minecraft.world.level.ChunkPos.asLong(x, z), device);
+        if (devicesByPosition.putIfAbsent(pos.asLong(), device) != null)
+            throw new IllegalArgumentException("Overlapping campus devices at " + pos);
+        deviceHeights.merge(net.minecraft.world.level.ChunkPos.asLong(x, z), relativeY, Math::max);
         devicesByChunk.computeIfAbsent(net.minecraft.world.level.ChunkPos.asLong(x >> 4, z >> 4), key -> new ArrayList<>()).add(device);
     }
 

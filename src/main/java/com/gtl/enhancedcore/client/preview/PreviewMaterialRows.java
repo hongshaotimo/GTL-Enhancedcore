@@ -71,7 +71,7 @@ public final class PreviewMaterialRows {
         return lower == maximum ? String.valueOf(lower) : lower + "~" + (maximum < 0 ? "∞" : maximum);
     }
 
-    private static String requirement(PreviewMaterialAccess pattern, AEItemKey item) {
+    public static String requirement(PreviewMaterialAccess pattern, AEItemKey item, int positions) {
         var labels = new LinkedHashSet<String>();
         pattern.enhanced$predicates().values().stream().distinct().forEach(predicate -> {
             var simplePredicates = new LinkedHashSet<>(predicate.common);
@@ -83,7 +83,9 @@ public final class PreviewMaterialRows {
                 if (!label.isEmpty()) labels.add(label);
             }
         });
-        return String.join(" / ", labels);
+        // Unbounded per-position predicates (notably heating coils) have no global
+        // min/max metadata. Their preview group still has a concrete block count.
+        return labels.isEmpty() ? String.valueOf(positions) : String.join(" / ", labels);
     }
 
     private static void addRequirements(PreviewMaterialAccess pattern, AEItemKey item, List<Component> tips) {
@@ -147,7 +149,7 @@ public final class PreviewMaterialRows {
         });
         var entries = new ArrayList<>(amounts.entrySet());
         entries.sort(Comparator.comparingInt(entry -> entry.getKey().section()));
-        var requirements = new LinkedHashMap<AEItemKey, String>();
+        var requirements = new LinkedHashMap<Material, String>();
         var stacks = entries.stream().map(entry -> List.of(entry.getKey().item().toStack(
                 entry.getKey().section() == 1 ? 1 : entry.getValue()))).toList();
         var handler = new CycleItemStackHandler(stacks);
@@ -178,7 +180,8 @@ public final class PreviewMaterialRows {
                     drawBorder(graphics, getPositionX(), getPositionY(),
                             interaction.enhanced$materialSelection().borderColor(material.item()));
                     if (material.section() == 1) drawCount(graphics, getPositionX(), getPositionY(),
-                            requirements.computeIfAbsent(material.item(), item -> requirement(pattern, item)));
+                            requirements.computeIfAbsent(material,
+                                    key -> requirement(pattern, key.item(), amounts.get(key))));
                 }
 
                 @Override
@@ -192,7 +195,8 @@ public final class PreviewMaterialRows {
                         candidates.setActive(show);
                         interaction.enhanced$materialSelection().toggle(material.item());
                         interaction.enhanced$refreshVisibility();
-                        if (show) populateCandidates(candidates, material.alternatives(), interaction, pattern);
+                        if (show) populateCandidates(candidates, material.alternatives(), interaction, pattern,
+                                amounts.get(material));
                         return true;
                     }
                     return super.mouseClicked(mouseX, mouseY, button);
@@ -223,7 +227,8 @@ public final class PreviewMaterialRows {
     }
 
     private static void populateCandidates(DraggableScrollableWidgetGroup row, List<AEItemKey> alternatives,
-                                           PreviewMaterialAccess.Interaction interaction, PreviewMaterialAccess pattern) {
+                                           PreviewMaterialAccess.Interaction interaction, PreviewMaterialAccess pattern,
+                                           int positions) {
         var requirements = new LinkedHashMap<AEItemKey, String>();
         var handler = new CycleItemStackHandler(alternatives.stream().map(item -> List.of(item.toStack())).toList());
         for (int i = 0; i < alternatives.size(); i++) {
@@ -243,7 +248,7 @@ public final class PreviewMaterialRows {
                     drawBorder(graphics, getPositionX(), getPositionY(),
                             interaction.enhanced$materialSelection().borderColor(item));
                     drawCount(graphics, getPositionX(), getPositionY(),
-                            requirements.computeIfAbsent(item, key -> requirement(pattern, key)));
+                            requirements.computeIfAbsent(item, key -> requirement(pattern, key, positions)));
                 }
             }.setBackgroundTexture(GuiTextures.SLOT).setIngredientIO(IngredientIO.RENDER_ONLY)
                     .setOnAddedTooltips((slot, tips) -> addRequirements(pattern, item, tips)));

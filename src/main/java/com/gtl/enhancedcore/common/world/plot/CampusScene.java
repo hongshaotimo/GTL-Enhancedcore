@@ -68,7 +68,10 @@ public final class CampusScene {
                 buckets.computeIfAbsent(key(x, z), unused -> new ArrayList<>()).add(shape);
         }
         buckets.replaceAll((key, value) -> List.copyOf(value));
-        tiles = Map.copyOf(buckets);
+        // Packed X/Z keys share many Long hashes. Map.copyOf uses linear probing,
+        // turning large scene construction and every voxel lookup into long scans.
+        // The backing map is private and complete; its lists are already immutable.
+        tiles = java.util.Collections.unmodifiableMap(buckets);
         maxHeight = highest;
         shapeCount = placed.size();
     }

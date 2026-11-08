@@ -109,7 +109,7 @@ public final class ShanhaiPreviewReviewRegression {
 
     private static void releaseCaches() throws Exception {
         var type = fixture("PreviewPatternMemoryMixin", Set.of("<init>", "enhanced$releasePreviewMemory"),
-                Set.of("parts", "predicateMap", "blockMap", "moduleOnlyBlocks", "controllerBase",
+                Set.of("parts", "materials", "predicateMap", "blockMap", "moduleOnlyBlocks", "controllerBase",
                         "enhanced$chambers", "enhanced$materials", "enhanced$candidateCache", "enhanced$replaceable"));
         var instance = type.getDeclaredConstructor().newInstance();
         var machine = new Machine();
@@ -121,6 +121,8 @@ public final class ShanhaiPreviewReviewRegression {
         var materials = new HashMap<>(Map.of("position", "item"));
         var choices = new HashMap<>(Map.of("predicate", Set.of("item")));
         var replaceable = new HashSet<>(Set.of("position"));
+        var nativeMaterials = new HashMap<>(Map.of("native", "item"));
+        field(instance, "materials", nativeMaterials);
         field(instance, "enhanced$materials", materials);
         field(instance, "enhanced$candidateCache", choices);
         field(instance, "enhanced$replaceable", replaceable);
@@ -133,6 +135,7 @@ public final class ShanhaiPreviewReviewRegression {
         field(instance, "blockMap", new HashMap<>());
         field(instance, "moduleOnlyBlocks", new HashSet<>());
         invoke(instance, "enhanced$releasePreviewMemory");
+        check(nativeMaterials.isEmpty(), "Logout clears the new upstream material map retained by MBPattern");
         check(materials.isEmpty() && choices.isEmpty() && replaceable.isEmpty(),
                 "Logout clears material and predicate caches even when stale callbacks retain them");
         for (var name : List.of("enhanced$materials", "enhanced$candidateCache", "enhanced$replaceable")) {

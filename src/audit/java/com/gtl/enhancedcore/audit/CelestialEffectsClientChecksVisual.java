@@ -57,8 +57,8 @@ public final class CelestialEffectsClientChecksVisual {
         modelView.pushPose();
         modelView.setIdentity();
         RenderSystem.applyModelViewMatrix();
-        boolean smooth = ConfigHolder.INSTANCE.enableSmoothAnimations;
-        ConfigHolder.INSTANCE.enableSmoothAnimations = false;
+        boolean smooth = ConfigHolder.INSTANCE.graphics.enableSmoothAnimations;
+        ConfigHolder.INSTANCE.graphics.enableSmoothAnimations = false;
         try {
             // This isolated fixture supplies matching depth/stencil attachments.
             // It does not change any production framebuffer setup or world rendering.
@@ -72,7 +72,7 @@ public final class CelestialEffectsClientChecksVisual {
                 renderMachine(id, checks, directory);
             }
         } finally {
-            ConfigHolder.INSTANCE.enableSmoothAnimations = smooth;
+            ConfigHolder.INSTANCE.graphics.enableSmoothAnimations = smooth;
             mc.renderBuffers().bufferSource().endBatch();
             target.resize(width, height, Minecraft.ON_OSX);
             target.bindWrite(true);

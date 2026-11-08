@@ -113,7 +113,12 @@ public abstract class IvNativeRecipeLogicMixin implements IvNativeAccess {
     }
     @Inject(method = {"onMachineLoad", "resetRecipeLogic"}, at = @At("HEAD"))
     private void iv$beforeLifecycleReset(CallbackInfo ci) {
+        if (iv$engine != null) iv$engine.resetIdlePolling();
         if (iv$isCrossRecipeEnabled()) iv$restoreWorkingState();
+    }
+    @Inject(method = "loadCustomPersistedData", at = @At("HEAD"))
+    private void iv$beforePersistedLoad(CompoundTag tag, CallbackInfo ci) {
+        if (iv$engine != null) iv$engine.resetIdlePolling();
     }
     @Inject(method = "resetRecipeLogic", at = @At("TAIL"))
     private void iv$afterLifecycleReset(CallbackInfo ci) {
@@ -125,6 +130,7 @@ public abstract class IvNativeRecipeLogicMixin implements IvNativeAccess {
     private void iv$tick(Operation<Void> original) {
         var logic = (RecipeLogic)(Object)this;
         if (!IvMachineScope.crossRecipeEnabled(logic.getMachine())) {
+            if (iv$engine != null) iv$engine.resetIdlePolling();
             original.call();
             return;
         }

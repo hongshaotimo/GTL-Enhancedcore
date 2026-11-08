@@ -86,32 +86,34 @@ public final class RuntimeChamberClientChecks {
                 patterns.put(id,Map.of("size",List.of(grid[0][0].length,grid[0].length,grid.length),"chamberPositions",parts,"uniquePredicates",unique.size()));
             }
             result.put("patterns",patterns);
-            footprintHeight();
+            previewControlContract();
             ChamberPreviewUiChecks.run(this::check);
             result.put("chamberPreviewUi", "PASS");
             result.put("status","PASS");
         } catch(Throwable failure) { result.put("status","FAIL");result.put("error",failure.toString());failure.printStackTrace(); }
         result.put("checks",checks);result.put("worldOpened",false);
         result.put("visualScreenshotVerified",false);
-        result.put("scope","Title-screen transform, real palette/part candidates, inert factories and header-height logic; no world interaction or visual screenshot");
+        result.put("scope","Title-screen transform, real palette/part candidates, inert factories and native preview-control suppliers; no world interaction or visual screenshot");
         try { Files.writeString(directory.resolve("chamber-runtime.json"),new GsonBuilder().setPrettyPrinting().create().toJson(result),StandardCharsets.UTF_8); }
         catch(Exception failure) { failure.printStackTrace(); }
         mc.stop();
     }
-    private void footprintHeight() throws Exception {
-        var wrapper=(com.gtl.enhancedcore.client.preview.LazyMultiblockPreviewWidget)
-                com.gtl.enhancedcore.client.preview.LazyMultiblockPreviewWidget.create(null);
-        var footprint=wrapper.getClass().getDeclaredField("footprintText");footprint.setAccessible(true);
-        var widget=new com.lowdragmc.lowdraglib.gui.widget.WidgetGroup(0,0,160,160);wrapper.addWidget(widget);
-        var controls=new org.gtlcore.gtlcore.client.preview.PreviewControls(widget,null,()->5,
-                ()->new org.gtlcore.gtlcore.client.preview.PreviewHeight.Dimensions(5,5,5));
-        var fullscreen=controls.getClass().getDeclaredField("fullscreen");fullscreen.setAccessible(true);fullscreen.setBoolean(controls,true);
-        var width=controls.getClass().getDeclaredField("width");width.setAccessible(true);width.setInt(controls,320);
-        int base=controls.headerHeight();
-        footprint.set(wrapper,"Memory footprint line one and a deliberately longer second part for wrapping");
-        int extra=Minecraft.getInstance().font.split(net.minecraft.network.chat.Component.literal(wrapper.footprintText()),280).size()
-                *Minecraft.getInstance().font.lineHeight;
-        check(controls.headerHeight()==base+extra && extra>0,"Fullscreen header reserves every footprint line above native height/dimensions");
+    private void previewControlContract() {
+        var definition=(MultiblockMachineDefinition)GTRegistries.MACHINES.get(
+                new net.minecraft.resources.ResourceLocation("gtceu:electric_blast_furnace"));
+        check(definition!=null,"Registered native preview-control fixture");
+        var widget=new com.lowdragmc.lowdraglib.gui.widget.WidgetGroup(0,0,160,160);
+        var scene=new com.lowdragmc.lowdraglib.gui.widget.SceneWidget(0,0,150,104,
+                new com.lowdragmc.lowdraglib.utils.TrackedDummyWorld());
+        widget.addWidget(scene);
+        var dimensions=new org.gtlcore.gtlcore.client.preview.PreviewHeight.Dimensions(5,5,5);
+        var controls=new org.gtlcore.gtlcore.client.preview.PreviewControls(widget,scene,definition,()->5,
+                ()->dimensions,()->net.minecraft.core.BlockPos.ZERO,()->{},List::of,stack->{},stack->{});
+        check(controls.controllerHeight()==5 && controls.dimensions().equals(dimensions),
+                "Native preview controls retain supplied height and dimensions");
+        check(controls.widget()==widget && controls.scene()==scene,
+                "Native preview controls retain the current widget and scene");
+        scene.getRenderer().deleteCacheBuffer();
     }
     private void merged(String name,String... suffixes) throws Exception {
         Class<?> type=Class.forName(name);

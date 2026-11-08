@@ -4,7 +4,7 @@ GregTech Leisure Enhanced 整合包专用核心模组，扩展工业机器、仓
 
 - 模组 ID：`gtl_enhancedcore`
 - 环境：Minecraft 1.20.1 / Forge 47.x / Java 21
-- 当前版本：4.9.0（以 `gradle.properties` 为准）
+- 当前版本：5.0.1（以 `gradle.properties` 为准）
 - 许可：[LGPL-3.0](LICENSE)
 
 ## 主要功能
@@ -14,7 +14,7 @@ GregTech Leisure Enhanced 整合包专用核心模组，扩展工业机器、仓
 - 恒星约束聚变堆、超构化学扭曲仪、铂系精炼矩阵、龙式场约束增殖核心、虚空约束采矿场、中子控制工厂、星核剥离装置、热压浸解联合体、超级粒子对撞机、星璇号空间站等后期巨构。
 - 无线充能器（单方块机器）、末晶谐振器、ME 元件集成仓、量子数据访问仓、创造算力数据靶仓、电路编码仓和自适应维护仓。
 - 私人维度创建器与私人维度传送器：每位玩家拥有独立维度，支持高度自定义。
-- 园区预设：自然林湖、2000²石英工业城（45厂房/33露天广场）与1500²粉白主题「猛男梦幻家园」；独立预设身份、虚拟标记和中央传送器，支持中文、拼音全拼/首字母与机器ID搜索。
+- 园区预设：自然林湖、2000²石英工业城与1500²「猛男梦幻家园」；独立身份、虚拟标记和中央传送器，支持中文、拼音全拼/首字母与机器ID搜索。
 - 镧系精炼枢纽：自有镧系精炼配方与多方块结构。
 - 样板生成工具、气象锚点、因果重构终端、领地置换终端及第三方结构/配方适配。
 
@@ -22,7 +22,7 @@ GregTech Leisure Enhanced 整合包专用核心模组，扩展工业机器、仓
 
 ## 依赖
 
-需要 Forge 47.3.7+、Minecraft 1.20.1、GTCEu 1.4.4、GTLCore 1.2.3.2-fix4、GTLAdditions 3.3.1Custom、LDLib、GTMThings、AE2、ExtendedAE、FTB Chunks/Library/Teams 和 Architectury。JEI、Jade 为可选客户端依赖；准确版本以 `gradle/local-dependencies.json` 和整合包清单为准。
+需要 Forge 47.3.7+、Minecraft 1.20.1、GTCEu 1.4.4、GTLCore 1.2.3.3-fix3、GTLAdditions 3.3.1Custom、LDLib、GTMThings、AE2、ExtendedAE、FTB Chunks/Library/Teams 和 Architectury。JEI、Jade 为可选客户端依赖；准确版本以 `gradle/local-dependencies.json` 和整合包清单为准。
 
 ## 构建
 

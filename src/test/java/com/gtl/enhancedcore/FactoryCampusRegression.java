@@ -19,6 +19,33 @@ final class FactoryCampusRegression {
     private static int checks;
     static int run() throws Exception {
         checks = 0;
+        for (String facing : new String[] {"north", "south", "east", "west"}) {
+            var smallCourt = new FactoryArchitecture.Hall("small-court", "precision", "early", -32, 64,
+                    32, 32, 20, 0, true, facing);
+            check(smallCourt.productionBounds().equals(new PlannedCampus.Bounds(-20, 76, -13, 83)),
+                    "A 32-block open file-scene court has a non-inverted interior for every entrance");
+        }
+        for (int[] dimensions : new int[][] {{32,32}, {39,48}, {40,47}}) {
+            boolean rejected = false;
+            try { new FactoryArchitecture.Hall("small-roof", "precision", "early", 0, 0,
+                    dimensions[0], dimensions[1], 20, 0, false); }
+            catch (IllegalArgumentException expected) { rejected = true; }
+            check(rejected, "Indoor factory minimum dimensions remain 40 by 48");
+        }
+        for (int[] dimensions : new int[][] {{31,32,20}, {32,31,20}, {32,32,19}}) {
+            boolean rejected = false;
+            try { new FactoryArchitecture.Hall("invalid-court", "precision", "early", 0, 0,
+                    dimensions[0], dimensions[1], dimensions[2], 0, true); }
+            catch (IllegalArgumentException expected) { rejected = true; }
+            check(rejected, "Open courts retain the 32 by 32 footprint and 20-block height minimum");
+        }
+        var minimumHall = new FactoryArchitecture.Hall("minimum-hall", "precision", "early", 0, 0,
+                40, 48, 20, 0, false);
+        var existingCourt = new FactoryArchitecture.Hall("existing-court", "precision", "early", 0, 0,
+                40, 48, 20, 0, true);
+        check(minimumHall.productionBounds().equals(new PlannedCampus.Bounds(12, 22, 27, 35))
+                        && existingCourt.productionBounds().equals(minimumHall.productionBounds()),
+                "Existing indoor and outdoor production margins remain frozen");
         PlotSettings settings = PlotSettings.factoryCampus();
         check(settings.isCampus() && settings.roadStyle() == PlotSettings.RoadStyle.CAMPUS_FACTORY,
                 "The factory has its own campus identity");

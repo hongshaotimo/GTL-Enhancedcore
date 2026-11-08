@@ -169,7 +169,7 @@ final class BloomPacingRegression {
 
     private static void upstreamContract() throws Exception {
         ClassNode node = new ClassNode();
-        try (var jar = new JarFile(Path.of("libs/gtlcore-1.2.3.2-fix4.jar").toFile())) {
+        try (var jar = new JarFile(Path.of("libs/gtlcore-1.2.3.3-fix3.jar").toFile())) {
             try (var in = jar.getInputStream(jar.getJarEntry("org/gtlcore/gtlcore/client/bloom/SectionMeshes.class"))) {
                 new ClassReader(in).accept(node, 0);
             }

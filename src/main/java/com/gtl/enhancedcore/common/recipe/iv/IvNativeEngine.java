@@ -54,6 +54,7 @@ public final class IvNativeEngine {
     private int powerRotation;
     private final Map<UUID, Component> rejectionDetails = new HashMap<>();
     private final List<Component> machineDetails = new ArrayList<>();
+    private final IvIdleOrderPolling idlePolling = new IvIdleOrderPolling();
 
     public IvNativeEngine(WorkableMultiblockMachine machine, RecipeLogic logic, IvNativeAccess access) {
         this.machine = machine; this.logic = logic; this.access = access;
@@ -61,6 +62,7 @@ public final class IvNativeEngine {
             throw new IllegalArgumentException("Not an isolated native machine");
     }
     public void tick() {
+        advanced = false;
         if (machine.isRemote()) return;
         if (!machine.isRecipeLogicAvailable() || !machine.hasProxies()) {
             invalidateRuntime();
@@ -73,8 +75,13 @@ public final class IvNativeEngine {
                             ? RecipeLogic.Status.WAITING : RecipeLogic.Status.SUSPEND);
             return;
         }
-        try { tickOrders(); }
+        try {
+            boolean legacyPaid = !access.iv$managed() && logic.getLastRecipe() != null && logic.getDuration() > 0;
+            if (!idlePolling.shouldRun(machine.getOffsetTimer(), !legacyPaid && allOrdersEmpty(), logic.isWorkingEnabled())) return;
+            tickOrders();
+        }
         catch (RuntimeException failure) {
+            idlePolling.reset();
             fault = true; logic.setWorkingEnabled(false);
             var summary = access.iv$summary();
             storeReasons(summary, List.of(nativeDetail("fault", failure.getClass().getSimpleName())));
@@ -83,8 +90,23 @@ public final class IvNativeEngine {
         }
     }
     public void invalidateRuntime() {
+        idlePolling.reset();
         clearDiagnostics();
         ComputationNetwork.forget(machine);
+    }
+    /** Mode/load changes clear only polling; ordinary native execution keeps its own runtime state. */
+    public void resetIdlePolling() { idlePolling.reset(); }
+    private boolean allOrdersEmpty() {
+        var parts = machine.getParts();
+        boolean found = false;
+        for (int index = 0; index < parts.size(); index++) {
+            var part = parts.get(index);
+            if (!IvBuffers.compatible(part)) continue;
+            found = true;
+            var state = IvBuffers.state(part);
+            if (state == null || !state.jobs.isEmpty()) return false;
+        }
+        return found;
     }
     /** Keep energy, computation and output transactions on the normal order execution path. */
     public boolean accelerateTick() {

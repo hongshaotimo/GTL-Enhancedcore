@@ -49,6 +49,13 @@ public abstract class PreviewVisibilityMixin implements PreviewMaterialAccess.In
         enhanced$applyVisibility();
     }
 
+    /** The local three-mode visibility control already owns replaceable-material inspection. */
+    @Inject(method = "renderReplaceableHighlights", at = @At("HEAD"), cancellable = true, require = 1)
+    private void enhanced$disableDuplicateHighlights(com.mojang.blaze3d.vertex.PoseStack pose,
+            BlockPos controller, CallbackInfo ci) {
+        ci.cancel();
+    }
+
     @Inject(method = "onPosSelected", at = @At("TAIL"), require = 1)
     private void enhanced$highlightAllowed(BlockPos pos, Direction facing, CallbackInfo ci) {
         if (enhanced$pattern != null) {

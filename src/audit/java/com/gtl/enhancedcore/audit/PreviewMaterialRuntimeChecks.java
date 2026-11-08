@@ -2,6 +2,7 @@ package com.gtl.enhancedcore.audit;
 
 import appeng.api.stacks.AEItemKey;
 import com.gtl.enhancedcore.client.preview.PreviewMaterialAccess;
+import com.gtl.enhancedcore.client.preview.PreviewMaterialRows;
 import com.lowdragmc.lowdraglib.gui.widget.ButtonWidget;
 import com.lowdragmc.lowdraglib.gui.widget.DraggableScrollableWidgetGroup;
 import com.lowdragmc.lowdraglib.gui.widget.SceneWidget;
@@ -54,6 +55,7 @@ public final class PreviewMaterialRuntimeChecks {
             case 0 -> {
                 require(pattern.enhanced$materials() == pattern.enhanced$materials()
                                 && !pattern.enhanced$materials().isEmpty(), "Prepared material index is reused");
+                coilCounts(pattern);
                 compact(scene, primary, candidates);
                 full = new HashSet<>(scene.getCore());
                 require(full.size() > 1, "Default mode renders the complete preview");
@@ -93,6 +95,7 @@ public final class PreviewMaterialRuntimeChecks {
             }
             case 4 -> {
                 fullscreen(scene, primary, candidates);
+                duplicateHighlights(preview);
                 capture("fullscreen-expanded");
                 var patterns = (Object[]) field(PatternPreviewWidget.class, "patterns").get(preview);
                 require(patterns.length > 1, "Fullscreen fixture includes multiple native structure variants");
@@ -162,6 +165,44 @@ public final class PreviewMaterialRuntimeChecks {
     private SlotWidget expandable(DraggableScrollableWidgetGroup row) {
         return row.widgets.stream().filter(SlotWidget.class::isInstance).map(SlotWidget.class::cast)
                 .filter(slot -> slot.getXEIIngredients().isEmpty()).findFirst().orElseThrow();
+    }
+
+    private void duplicateHighlights(PatternPreviewWidget preview) throws Exception {
+        var controls = preview.getPreviewControls();
+        var toggle = (Widget) field(controls.getClass(), "replaceableToggle").get(controls);
+        require(!preview.widgets.contains(toggle), "Upstream duplicate replaceable-highlight button is absent");
+        // Force the upstream mode on, then invoke the merged render entry with a null pose.
+        // The retained native body would reach the pose stack for this real coil preview;
+        // our precise HEAD cancellation must return before any highlight rendering begins.
+        var mode = field(controls.getClass(), "highlightReplaceable");
+        mode.setBoolean(controls, true);
+        var render = PatternPreviewWidget.class.getDeclaredMethod("renderReplaceableHighlights",
+                com.mojang.blaze3d.vertex.PoseStack.class, BlockPos.class);
+        render.setAccessible(true);
+        try {
+            render.invoke(preview, null, ((PreviewMaterialAccess) pattern(preview)).enhanced$controllerPosition());
+            require(true, "Merged upstream replaceable-highlight drawing is disabled independently of fullscreen");
+        } finally { mode.setBoolean(controls, false); }
+    }
+
+    private void coilCounts(PreviewMaterialAccess pattern) {
+        var coils = pattern.enhanced$materials().entrySet().stream()
+                .filter(entry -> net.minecraft.core.registries.BuiltInRegistries.ITEM
+                        .getKey(entry.getValue().getItem()).getPath().contains("coil"))
+                .collect(java.util.stream.Collectors.groupingBy(java.util.Map.Entry::getValue,
+                        java.util.stream.Collectors.toList()));
+        require(!coils.isEmpty(), "Real blast furnace preview contains heating coils");
+        coils.forEach((item, positions) -> {
+            int count = positions.size();
+            require(count > 1 && PreviewMaterialRows.requirement(pattern, item, count).equals(String.valueOf(count)),
+                    "Unbounded heating-coil group displays its actual count: " + count);
+            var predicate = pattern.enhanced$predicates().get(positions.get(0).getKey());
+            var options = pattern.enhanced$candidates(predicate);
+            require(options.size() > 1, "Heating-coil count also covers replaceable alternatives");
+            options.forEach(option -> require(PreviewMaterialRows.requirement(pattern, option, count)
+                            .equals(String.valueOf(count)),
+                    "Alternative coil retains the complete group count: " + count));
+        });
     }
 
     private void compact(SceneWidget scene, Widget primary, Widget candidates) {

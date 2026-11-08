@@ -10,7 +10,7 @@ import org.objectweb.asm.tree.MethodInsnNode;
 final class ProcessingDispatchRegression {
     static int run() throws Exception {
         int checks = 0;
-        try (var jar = new ZipFile("libs/gtlcore-1.2.3.2-fix4.jar")) {
+        try (var jar = new ZipFile("libs/gtlcore-1.2.3.3-fix3.jar")) {
             for (String name : List.of("org/gtlcore/gtlcore/mixin/ae2/logic/CraftingCpuLogicMixin",
                     "org/gtlcore/gtlcore/integration/ae2/crafting/transfinite/TransfiniteCraftingLogic")) {
                 var node = new ClassNode();

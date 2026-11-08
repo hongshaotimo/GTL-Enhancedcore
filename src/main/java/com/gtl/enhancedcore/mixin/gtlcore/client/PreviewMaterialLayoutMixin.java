@@ -15,12 +15,19 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public abstract class PreviewMaterialLayoutMixin {
     @Shadow @Final private WidgetGroup widget;
     @Shadow @Final private SceneWidget scene;
+    @Shadow @Final private com.lowdragmc.lowdraglib.gui.widget.ButtonWidget replaceableToggle;
     @Shadow private boolean fullscreen;
     @Shadow private int width;
     @Shadow private int screenHeight;
 
+    @Inject(method = "<init>", at = @At("TAIL"), require = 1)
+    private void enhanced$removeDuplicateHighlightControl(CallbackInfo ci) {
+        widget.removeWidget(replaceableToggle);
+    }
+
     @Inject(method = "layout", at = @At("TAIL"), require = 1)
     private void enhanced$layoutMaterialRows(CallbackInfo ci) {
+        widget.removeWidget(replaceableToggle);
         if (!fullscreen || !(widget instanceof PreviewMaterialAccess.Rows rows)) return;
         rows.enhanced$layoutRows(width, screenHeight);
         scene.setSize(Math.max(1, width - 8), Math.max(1, screenHeight - scene.getSelfPosition().y - 54));

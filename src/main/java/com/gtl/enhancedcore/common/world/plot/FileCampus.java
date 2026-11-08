@@ -20,10 +20,12 @@ import java.util.concurrent.ConcurrentHashMap;
 /** Shared file-backed terrain engine; every preset owns separate immutable geometry and material state. */
 public final class FileCampus {
     private static final Map<String, FileCampus> CACHE = new ConcurrentHashMap<>();
+    private static final Map<String,Integer> DIRECTION_AXES = Map.of("east",0,"west",0,"up",1,"down",1,"north",2,"south",2);
     private final CampusPresetRegistry.Definition definition;
     private final FactoryArchitecture.Renderer renderer;
     private final CampusScene scene;
     private final boolean physicalSigns;
+    private final boolean authoritativeSurface;
     private final String QUARTZ,DARK,FLOOR,ROAD,LIGHT,YELLOW,GREEN,LEAVES,SLAB,IRON,COLUMN,ACCENT;
     private final PlannedCampus.Bounds BOUNDS,AE;
     private final Set<String> MATERIALS;
@@ -39,6 +41,7 @@ public final class FileCampus {
         JsonObject layout=read(definition.layoutResource());
         JsonObject architecture=read(definition.architectureResource());
         physicalSigns=!architecture.has("physicalSigns") || architecture.get("physicalSigns").getAsBoolean();
+        authoritativeSurface=architecture.has("authoritativeSurface") && architecture.get("authoritativeSurface").getAsBoolean();
         renderer=definition.engine().equals("quartz_factory")
                 ? FactoryArchitecture.forResource(definition.architectureResource()) : null;
         scene=definition.engine().equals("file_scene") ? new CampusScene(architecture) : null;
@@ -65,6 +68,8 @@ public final class FileCampus {
     public String catalogResource() { return definition.catalogResource(); }
     public CampusPresetRegistry.Definition definition() { return definition; }
     public boolean physicalSigns() { return physicalSigns; }
+    /** Explicitly authored scenes also own their foundation instead of the legacy AE gallery. */
+    public boolean authoritativeTerrain() { return scene != null && authoritativeSurface; }
     public String resourceIdentity() {
         try {
             var digest=MessageDigest.getInstance("SHA-256");
@@ -76,11 +81,14 @@ public final class FileCampus {
             return HexFormat.of().formatHex(digest.digest());
         } catch(IOException | NoSuchAlgorithmException error) { throw new IllegalStateException("Cannot fingerprint preset resources",error); }
     }
-    private record Plan(List<PlannedCampus.Plot> plots, List<FactoryArchitecture.Hall> halls,
+    /** Marker-only metadata never becomes an independent reservation or travel destination. */
+    public record ControllerMarker(PlannedCampus.Plot plot, String host, String frontFacing, String upwardsFacing) {}
+    private record Plan(List<PlannedCampus.Plot> plots, List<ControllerMarker> markers, List<FactoryArchitecture.Hall> halls,
                         List<PlannedCampus.Workshop> workshops, Map<Long,List<FactoryArchitecture.Hall>> tiles,
                         Map<String,Integer> tiers, int shared, int height) {}
     public Set<String> materials() { return MATERIALS; }
     public List<PlannedCampus.Plot> plots() { return plan.plots; }
+    public List<ControllerMarker> markers() { return plan.markers; }
     public List<FactoryArchitecture.Hall> halls() { return plan.halls; }
     public List<FactoryArchitecture.Hall> coveredHalls() { return halls().stream().filter(h->!h.outdoor()).toList(); }
     public List<FactoryArchitecture.Hall> outdoorSites() { return halls().stream().filter(FactoryArchitecture.Hall::outdoor).toList(); }
@@ -132,6 +140,7 @@ public final class FileCampus {
         if(scene!=null) {
             String authored=scene.blockAt(x,0,z);
             if(authored!=null) return authored;
+            if(authoritativeSurface) return GREEN;
             if(AE.contains(x,z)) return QUARTZ;
             var hall=hallAt(x,z);
             if(hall!=null) return FLOOR;
@@ -326,18 +335,48 @@ public final class FileCampus {
                     tiles.computeIfAbsent(key(tx,tz),unused->new ArrayList<>()).add(hall);
         }
         List<PlannedCampus.Plot> plots=new ArrayList<>();
+        List<ControllerMarker> markers=new ArrayList<>();
         for(var element:layout.getAsJsonArray("plots")) {
             var p=element.getAsJsonObject();String id=p.get("id").getAsString();var m=machines.get(id);
             var size=m.getAsJsonArray("size");var anchor=m.getAsJsonArray("groundOffset");
             int x=p.get("x").getAsInt(),z=p.get("z").getAsInt();
-            plots.add(new PlannedCampus.Plot(id,p.get("stage").getAsString(),x,z,
+            var controller=p.has("controller")?p.getAsJsonArray("controller"):null;
+            if(controller!=null && controller.size()!=3
+                    || p.has("preplaceMarker") && (!p.get("preplaceMarker").isJsonPrimitive()
+                    || !p.get("preplaceMarker").getAsJsonPrimitive().isBoolean()))
+                throw new IllegalArgumentException("Invalid primary controller marker for "+id);
+            var plot=new PlannedCampus.Plot(id,p.get("stage").getAsString(),x,z,
                     size.get(0).getAsInt(),size.get(1).getAsInt(),size.get(2).getAsInt(),
-                    x+anchor.get(0).getAsInt(),1+anchor.get(1).getAsInt(),z+anchor.get(2).getAsInt(),
+                    controller==null?x+anchor.get(0).getAsInt():controller.get(0).getAsInt(),
+                    controller==null?1+anchor.get(1).getAsInt():controller.get(1).getAsInt(),
+                    controller==null?z+anchor.get(2).getAsInt():controller.get(2).getAsInt(),
                     m.get("patternResource").getAsString(),p.get("slotIndex").getAsInt(),m.get("theme").getAsString(),
-                    m.has("displayNameKey")?m.get("displayNameKey").getAsString():""));
+                    m.has("displayNameKey")?m.get("displayNameKey").getAsString():"");
+            plots.add(plot);
+            if(!p.has("preplaceMarker") || p.get("preplaceMarker").getAsBoolean())
+                markers.add(new ControllerMarker(plot,"","north","up"));
+            if(controller!=null) height=Math.max(height,plot.controllerY());
+            if(p.has("controllerMarkers")) for(var markerElement:p.getAsJsonArray("controllerMarkers")) {
+                var marker=markerElement.getAsJsonObject();
+                var markerSize=marker.getAsJsonArray("size");
+                var position=marker.getAsJsonArray("controller");
+                String front=marker.get("frontFacing").getAsString(),up=marker.get("upwardsFacing").getAsString();
+                if(markerSize.size()!=3 || position.size()!=3 || !DIRECTION_AXES.containsKey(front)
+                        || !DIRECTION_AXES.containsKey(up) || DIRECTION_AXES.get(front).equals(DIRECTION_AXES.get(up)))
+                    throw new IllegalArgumentException("Invalid attached controller marker for "+id);
+                int width=markerSize.get(0).getAsInt(),markerHeight=markerSize.get(1).getAsInt(),depth=markerSize.get(2).getAsInt();
+                if(width<1 || markerHeight<1 || depth<1)
+                    throw new IllegalArgumentException("Invalid attached controller dimensions for "+id);
+                int mx=position.get(0).getAsInt(),my=position.get(1).getAsInt(),mz=position.get(2).getAsInt();
+                var markerPlot=new PlannedCampus.Plot(marker.get("id").getAsString(),plot.stage(),mx,mz,
+                        width,markerHeight,depth,mx,my,mz,"",plot.slotIndex(),plot.theme(),
+                        marker.has("displayNameKey")?marker.get("displayNameKey").getAsString():"");
+                markers.add(new ControllerMarker(markerPlot,marker.get("host").getAsString(),front,up));
+                height=Math.max(height,my);
+            }
         }
         tiles.replaceAll((key,value)->List.copyOf(value));
-        return new Plan(List.copyOf(plots),List.copyOf(halls),List.copyOf(workshops),Map.copyOf(tiles),Map.copyOf(tiers),
+        return new Plan(List.copyOf(plots),List.copyOf(markers),List.copyOf(halls),List.copyOf(workshops),java.util.Collections.unmodifiableMap(tiles),Map.copyOf(tiers),
                 catalog.getAsJsonArray("effectiveSharedIds").size(),height);
     }
 }

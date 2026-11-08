@@ -55,6 +55,7 @@ public final class IvRecipeLogic extends GTLAddMultipleRecipesLogic {
     private boolean legacy;
     private boolean advancedThisTick;
     private boolean partsAvailable;
+    private final IvIdleOrderPolling idlePolling = new IvIdleOrderPolling();
     private record Ref(MEPatternBufferPartMachine buffer, IvJob job) {}
 
     public IvRecipeLogic(TieredParallelMachine machine) { super(machine); }
@@ -81,7 +82,7 @@ public final class IvRecipeLogic extends GTLAddMultipleRecipesLogic {
     public long getCurrentEUt() { return currentEUt; }
     public long getInputPower() { return inputPower; }
     public long getInputAmperage() { return inputAmperage; }
-    public void clearInputPower() { inputPower=0; inputAmperage=0; currentEUt=0; currentGridEUt=BigInteger.ZERO; partsAvailable=false; }
+    public void clearInputPower() { inputPower=0; inputAmperage=0; currentEUt=0; currentGridEUt=BigInteger.ZERO; partsAvailable=false; idlePolling.reset(); }
     public void refreshInputPower() {
         var machine=(TieredParallelMachine)getMachine();
         long power=0,amps=0;
@@ -101,6 +102,7 @@ public final class IvRecipeLogic extends GTLAddMultipleRecipesLogic {
     @Override public ManagedFieldHolder getFieldHolder() { return IV_FIELDS; }
     @Override public boolean isWorkingEnabled() { return ivWorkingEnabled; }
     @Override public void setWorkingEnabled(boolean enabled) {
+        idlePolling.reset();
         if (enabled) fault = "";
         ivWorkingEnabled = enabled;
         super.setWorkingEnabled(enabled);
@@ -115,17 +117,21 @@ public final class IvRecipeLogic extends GTLAddMultipleRecipesLogic {
         if (!IvMachineScope.crossRecipeEnabled((TieredParallelMachine)getMachine())) super.onRecipeFinish();
     }
     @Override public void resetRecipeLogic() {
+        idlePolling.reset();
         // All real tasks live in their buffers. A structural reset only clears the display.
         if (!IvMachineScope.crossRecipeEnabled((TieredParallelMachine)getMachine()) || !legacy) super.resetRecipeLogic();
     }
     @Override public void loadCustomPersistedData(CompoundTag tag) {
+        idlePolling.reset();
         super.loadCustomPersistedData(tag); legacy = !tag.getBoolean("ivManagedLogic");
     }
     @Override public void saveCustomPersistedData(CompoundTag tag, boolean forDrop) {
         super.saveCustomPersistedData(tag, forDrop); tag.putBoolean("ivManagedLogic", !legacy);
     }
     @Override public void serverTick() {
+        advancedThisTick = false;
         if (!IvMachineScope.crossRecipeEnabled((TieredParallelMachine)getMachine())) {
+            idlePolling.reset();
             super.serverTick();
             return;
         }
@@ -135,6 +141,7 @@ public final class IvRecipeLogic extends GTLAddMultipleRecipesLogic {
         if (!fault.isEmpty()) return;
         try { tickTasks(); }
         catch (RuntimeException failure) {
+            idlePolling.reset();
             fault = "gtl_enhancedcore.diagnostic.iv_failure";
             currentEUt = 0; currentGridEUt = BigInteger.ZERO;
             ivWorkingEnabled = false; setStatus(Status.SUSPEND); getMachine().markDirty();
@@ -154,12 +161,16 @@ public final class IvRecipeLogic extends GTLAddMultipleRecipesLogic {
         advancedThisTick = false;
         currentEUt = 0; currentGridEUt = BigInteger.ZERO;
         if (!machine.isRecipeLogicAvailable()) {
+            idlePolling.reset();
             partsAvailable = false;
             message = machine.isFormed() ? "gtl_enhancedcore.diagnostic.parts_unloaded" : "";
             diagnosticJson = "";
             return;
         }
-        if (!partsAvailable || Math.floorMod(machine.getOffsetTimer(), 20) == 0) refreshInputPower();
+        boolean legacyPaid = legacy && lastRecipe != null && duration > 0;
+        boolean emptyOrders = !legacyPaid && machine.hasProxies() && allOrdersEmpty(machine);
+        if (!idlePolling.shouldRun(machine.getOffsetTimer(), emptyOrders, enabled)) return;
+        if (emptyOrders || !partsAvailable || Math.floorMod(machine.getOffsetTimer(), 20) == 0) refreshInputPower();
         partsAvailable = true;
         List<MEPatternBufferPartMachine> buffers = IvBuffers.collect(machine);
         List<Ref> all = new ArrayList<>();
@@ -250,6 +261,18 @@ public final class IvRecipeLogic extends GTLAddMultipleRecipesLogic {
             break;
         }
         if (message.isEmpty()) for (var buffer : buffers) if (!IvBuffers.state(buffer).message.isEmpty()) { message = IvBuffers.state(buffer).message; break; }
+    }
+    private boolean allOrdersEmpty(TieredParallelMachine machine) {
+        var parts = machine.getParts();
+        boolean found = false;
+        for (int index = 0; index < parts.size(); index++) {
+            var part = parts.get(index);
+            if (!IvBuffers.compatible(part)) continue;
+            found = true;
+            var state = IvBuffers.state(part);
+            if (state == null || !state.jobs.isEmpty()) return false;
+        }
+        return found;
     }
     private void retime(Ref ref,TieredParallelMachine machine) {
         IvJob job=ref.job;

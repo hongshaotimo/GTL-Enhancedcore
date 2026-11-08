@@ -99,7 +99,7 @@ public final class TerminalExtrasRegression {
                 if (hasAnnotation(method, INJECT)) method.name = "handler$plus$" + method.name;
                 unchanged.put(method, bytes(method));
             }
-            try (ZipFile core = new ZipFile(Path.of("libs", "gtlcore-1.2.3.2-fix4.jar").toFile())) {
+            try (ZipFile core = new ZipFile(Path.of("libs", "gtlcore-1.2.3.3-fix3.jar").toFile())) {
                 ClassNode coreMenu = read(core, SOURCE + "PatternEncodingTermMenuMixin");
                 for (MethodNode method : coreMenu.methods) if (ACTIONS.contains(method.name)) {
                     method.visitAnnotation(MERGED, true).visit("mixin", SOURCE + "PatternEncodingTermMenuMixin");

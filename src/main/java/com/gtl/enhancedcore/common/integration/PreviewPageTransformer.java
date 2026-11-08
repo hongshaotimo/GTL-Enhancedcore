@@ -88,7 +88,7 @@ final class PreviewPageTransformer {
     }
 
     private static void extractDrop(ClassNode node) {
-        MethodNode original = method(node, "gatherBlockDrops", "(" + MAP + ")" + MAP);
+        MethodNode original = method(node, "gatherBlockDrops", "(" + MAP + MAP + ")" + MAP);
         AbstractInsnNode start = null, end = null;
         for (var insn : original.instructions) {
             if (insn instanceof MethodInsnNode call && call.owner.equals("java/util/Map$Entry")
@@ -102,15 +102,11 @@ final class PreviewPageTransformer {
                 end = insn.getNext();
             }
         }
-        require(start instanceof VarInsnNode load && load.getOpcode() == Opcodes.ALOAD && load.var == 4
+        require(start instanceof VarInsnNode load && load.getOpcode() == Opcodes.ALOAD && load.var == 5
                 && end != null, "drop loop signature changed");
-        MethodNode drop = bridge(node, "enhanced$gatherDrop", "(" + MAP + "Ljava/util/Map$Entry;)V");
-        // Keep the original locals (2=accumulator, 4=entry); argument copies must not overlap.
-        drop.instructions.add(new VarInsnNode(Opcodes.ALOAD, 2));
-        drop.instructions.add(new VarInsnNode(Opcodes.ASTORE, 4));
-        drop.instructions.add(new VarInsnNode(Opcodes.ALOAD, 1));
-        drop.instructions.add(new VarInsnNode(Opcodes.ASTORE, 2));
-        copyRange(original, drop, start, end, Map.of());
+        MethodNode drop = bridge(node, "enhanced$gatherDrop", "(" + MAP + MAP + "Ljava/util/Map$Entry;)V");
+        // New upstream map 2 records native material keys; preserve it alongside the drop count.
+        copyRange(original, drop, start, end, Map.of(2, 2, 3, 1, 5, 3, 6, 6, 7, 7, 8, 8, 9, 9));
         drop.instructions.add(new InsnNode(Opcodes.RETURN));
     }
 
@@ -126,8 +122,8 @@ final class PreviewPageTransformer {
         }
         require(start instanceof VarInsnNode load && load.var == 11, "pattern finish signature changed");
         MethodNode finish = bridge(node, "enhanced$finishPattern",
-                "(" + MAP + SET + CONTROLLER + MAP + MAP + ")Ljava/lang/Object;");
-        copyRange(original, finish, start, null, Map.of(2, 1, 3, 2, 4, 3, 10, 4, 11, 5, 12, 6));
+                "(" + MAP + SET + CONTROLLER + MAP + MAP + MAP + ")Ljava/lang/Object;");
+        copyRange(original, finish, start, null, Map.of(2, 1, 3, 2, 4, 3, 10, 4, 11, 5, 12, 6, 13, 7));
     }
 
     private static void copyRange(MethodNode original, MethodNode target, AbstractInsnNode start,

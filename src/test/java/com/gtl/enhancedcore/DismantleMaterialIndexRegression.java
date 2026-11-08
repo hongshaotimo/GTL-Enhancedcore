@@ -140,7 +140,7 @@ final class DismantleMaterialIndexRegression {
 
     private static void upstreamSemantics() throws Exception {
         ClassNode upstream = new ClassNode();
-        try (JarFile jar = new JarFile("libs/gtlcore-1.2.3.2-fix4.jar");
+        try (JarFile jar = new JarFile("libs/gtlcore-1.2.3.3-fix3.jar");
                 var input = jar.getInputStream(jar.getJarEntry("org/gtlcore/gtlcore/api/pattern/AdvancedBlockPattern.class"))) {
             new ClassReader(input).accept(upstream, 0);
         }
