@@ -129,6 +129,7 @@ public final class RegressionSuite {
         assertions += RecipeRecoveryRegression.run();
         assertions += IdleRecipeSearchRegression.run();
         assertions += AddConfigFieldCompatibilityRegression.run();
+        assertions += WorldLoadCompatibilityRegression.run();
         assertions += SliderTextFieldSideCompatibilityRegression.run();
         assertions += AdvancedHatchLaserRecipeCompatibilityRegression.run();
         assertions += AdvancedHatchExGtlRecipeCompatibilityRegression.run();

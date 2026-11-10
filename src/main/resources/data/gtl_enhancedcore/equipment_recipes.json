@@ -2,6 +2,19 @@
   "schema": 1,
   "recipes": [
     {
+      "output": "assembly_manager",
+      "tier": "hv",
+      "method": "crafting",
+      "pattern": ["PEP", "CTC", "PDP"],
+      "key": {
+        "P": { "item": "gtceu:steel_plate", "count": 1 },
+        "E": { "item": "minecraft:ender_pearl", "count": 1 },
+        "C": { "tag": "gtceu:circuits/hv", "count": 1 },
+        "T": { "item": "ae2:terminal", "count": 1 },
+        "D": { "item": "gtceu:data_stick", "count": 1 }
+      }
+    },
+    {
       "output": "industrial_steam_platform",
       "tier": "ulv",
       "method": "crafting",

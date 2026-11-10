@@ -76,7 +76,7 @@ public final class ServerConfigEditor {
         }
     }
     public static void applyCommon(String text) {
-        var values = ConfigCatalog.claimSettings(text);
+        var values = ConfigCatalog.commonSettings(text);
         GTLConfig.CLAIM_REPLACEMENT_ENABLED.set(values.enabled());
         GTLConfig.CLAIM_REPLACEMENT_INTERVAL_TICKS.set(values.interval());
     }

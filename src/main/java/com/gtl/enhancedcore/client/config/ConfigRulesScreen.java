@@ -23,7 +23,8 @@ final class ConfigRulesScreen extends ConfigPage {
             automatic = settings.autoThreads(); background = "" + settings.backgroundThreads();
             builder = "" + settings.builderThreads(); mapRaster = "" + settings.mapRasterThreads();
         } else if (kind == ConfigCatalog.COMMON) {
-            var settings = ConfigCatalog.claimSettings(text); enabled = settings.enabled(); interval = "" + settings.interval();
+            var settings = ConfigCatalog.commonSettings(text);
+            enabled = settings.enabled(); interval = "" + settings.interval();
         } else {
             previewLayers = com.gtl.enhancedcore.client.config.PreviewLayerConfig.parse(text);
         }
@@ -55,7 +56,8 @@ final class ConfigRulesScreen extends ConfigPage {
                 result = StartupConfig.update(original, new StartupConfig.Settings(structures, enhancements, automatic,
                         Integer.parseInt(background), Integer.parseInt(builder), Integer.parseInt(mapRaster)));
             } else if (kind == ConfigCatalog.COMMON) {
-                result = "[claim_replacement_terminal]\nenabled=" + enabled + "\nreplace_interval_ticks=" + Integer.parseInt(interval) + "\n";
+                result = "[claim_replacement_terminal]\nenabled=" + enabled + "\nreplace_interval_ticks="
+                        + Integer.parseInt(interval) + "\n";
             } else {
                 result = com.gtl.enhancedcore.client.config.PreviewLayerConfig.update(original, previewLayers);
             }
@@ -75,6 +77,8 @@ final class ConfigRulesScreen extends ConfigPage {
             g.drawString(font, tr("rule.background"), left, 101, 0xaaaaaa);
             g.drawString(font, tr("rule.builder"), left + (bodyWidth + 6) / 2, 101, 0xaaaaaa);
             g.drawString(font, tr("rule.map_raster"), left, 141, 0xaaaaaa);
-        } else if (kind == ConfigCatalog.COMMON) g.drawString(font, tr("rule.interval"), left, 81, 0xaaaaaa);
+        } else if (kind == ConfigCatalog.COMMON) {
+            g.drawString(font, tr("rule.interval"), left, 81, 0xaaaaaa);
+        }
     }
 }

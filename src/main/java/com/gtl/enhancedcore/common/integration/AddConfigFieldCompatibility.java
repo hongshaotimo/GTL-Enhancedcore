@@ -36,6 +36,7 @@ public final class AddConfigFieldCompatibility {
         if (!MARKER.equals(mixin)) return;
         if (!target.replace('.', '/').equals(node.name)) throw new IllegalStateException("ADD config target mismatch: " + target);
         transform(node, read(CONFIG), read(CONTENT));
+        if (AddSkyTearsRecipeCompatibility.TARGET.equals(node.name)) AddSkyTearsRecipeCompatibility.transform(node);
     }
 
     /** Bytecode-only entry used by the dependency regression; never reads or caches configuration values. */

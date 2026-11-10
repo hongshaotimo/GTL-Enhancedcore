@@ -1,0 +1,4 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": { "layer0": "gtl_enhancedcore:item/assembly_manager" }
+}

@@ -20,11 +20,16 @@ public final class GTLEnhancedcoreItems {
     /** 样板生成工具：gtlcore debug_pattern_test / 山海样板调试工具“生成”模块移植版（删分析、生成直接进背包）。 */
     public static ItemEntry<ComponentItem> PATTERN_GENERATOR;
     public static ItemEntry<com.gtl.enhancedcore.common.item.PlotWorldControllerItem> PLOT_WORLD_CONTROLLER;
+    public static ItemEntry<com.gtl.enhancedcore.common.item.AssemblyManagerItem> ASSEMBLY_MANAGER;
 
     private GTLEnhancedcoreItems() {
     }
 
     public static void init() {
+        ASSEMBLY_MANAGER = GTLEnhancedcore.REGISTRATE
+                .item("assembly_manager", com.gtl.enhancedcore.common.item.AssemblyManagerItem::new)
+                .model(com.tterrag.registrate.util.nullness.NonNullBiConsumer.noop())
+                .register();
         PLOT_WORLD_CONTROLLER = GTLEnhancedcore.REGISTRATE
                 .item("plot_world_controller", com.gtl.enhancedcore.common.item.PlotWorldControllerItem::new)
                 .properties(properties -> properties.stacksTo(1))

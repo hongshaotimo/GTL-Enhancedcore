@@ -5,6 +5,8 @@
   "compatibilityLevel": "JAVA_17",
   "plugin": "com.gtl.enhancedcore.common.performance.PerformanceMixinPlugin",
   "mixins": [
+    "gtceu.AssemblyManagerMachineLoadMixin",
+    "gtlcore.AssemblyManagerBufferIndexMixin",
     "gtladditions.AddConfigFieldCompatibilityMixin",
     "gtladditions.SliderTextFieldSideCompatibilityMixin",
     "gtmadvancedhatch.AdvancedHatchLaserRecipeCompatibilityMixin",

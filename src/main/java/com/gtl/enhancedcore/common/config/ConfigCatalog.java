@@ -26,6 +26,7 @@ public enum ConfigCatalog {
     ConfigCatalog(String file, String effect, boolean server) { this.file = file; this.effect = effect; this.server = server; }
     public String key() { return "files." + name().toLowerCase(java.util.Locale.ROOT); }
     public record ClaimSettings(boolean enabled, int interval) {}
+    public record CommonSettings(boolean enabled, int interval) {}
     public static ClaimSettings claimSettings(String text) {
         var config = new TomlParser().parse(new StringReader(text));
         Object enabled = config.get("claim_replacement_terminal.enabled");
@@ -35,6 +36,10 @@ public enum ConfigCatalog {
             throw new IllegalArgumentException("claim_replacement_terminal: enabled=true/false; replace_interval_ticks=1..200");
         return new ClaimSettings(on, n.intValue());
     }
+    public static CommonSettings commonSettings(String text) {
+        ClaimSettings claim = claimSettings(text);
+        return new CommonSettings(claim.enabled(), claim.interval());
+    }
     public void validate(String text) {
         if (text.length() > (server ? 8_000 : 2_000_000)) throw new IllegalArgumentException("Configuration too large");
         switch (this) {
@@ -42,7 +47,7 @@ public enum ConfigCatalog {
             case PREVIEW -> PreviewLayerSettings.parse(text);
             case DISMANTLE -> TerminalDismantleConfig.parse(text);
             case GALAXY -> GalaxyConnectionConfig.parse(text);
-            case COMMON -> claimSettings(text);
+            case COMMON -> commonSettings(text);
             case TIPS -> TooltipOverrides.parse(text);
             case COPY_KEYS -> {
                 var root = JsonParser.parseString(text).getAsJsonObject();
