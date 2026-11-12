@@ -100,6 +100,9 @@ public record PlotSettings(int plotChunks, String groundBlock, String roadBlock,
     public boolean isCampus() { return roadStyle == RoadStyle.CAMPUS || roadStyle == RoadStyle.CAMPUS_PARK
             || roadStyle == RoadStyle.CAMPUS_COMPACT || roadStyle == RoadStyle.CAMPUS_DENSE || roadStyle == RoadStyle.CAMPUS_WOODLAND
             || roadStyle == RoadStyle.CAMPUS_FACTORY || roadStyle == RoadStyle.CAMPUS_FILE; }
+    public boolean isAvailableForCreation() {
+        return roadStyle != RoadStyle.CAMPUS_FILE || CampusPresetRegistry.isAvailableForCreation(campusPresetId);
+    }
     public int campusPlotCount() {
         return switch (roadStyle) {
             case CAMPUS -> LegacyPlannedCampus.plots().size();

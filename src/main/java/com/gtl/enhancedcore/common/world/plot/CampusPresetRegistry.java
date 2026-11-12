@@ -40,8 +40,15 @@ public final class CampusPresetRegistry {
     private static final class Holder { private static final Registry REGISTRY = load(); }
     private CampusPresetRegistry() {}
 
-    /** Authored ordering is also the creation-menu ordering. */
+    /** All published identities, including retired presets needed by existing worlds. */
     public static List<Definition> definitions() { return Holder.REGISTRY.definitions; }
+    /** Creation ordering excludes retired identities while lookup and world loading retain them. */
+    public static List<Definition> creationDefinitions() {
+        return definitions().stream().filter(definition -> isAvailableForCreation(definition.id())).toList();
+    }
+    public static boolean isAvailableForCreation(String id) {
+        return contains(id) && !id.equals("pink_dream_home_v1");
+    }
     public static boolean contains(String id) { return Holder.REGISTRY.byId.containsKey(id); }
     public static Definition get(String id) {
         Definition definition = Holder.REGISTRY.byId.get(id);

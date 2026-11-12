@@ -76,7 +76,11 @@ public final class PlotPresetShareScreen extends Screen {
         if (rejectedPaste) status = tr("error.too_long");
         else if (text.isBlank()) status = tr("empty_hint");
         else {
-            try { parsed = PlotPresetShare.decode(text); status = tr("ready"); }
+            try {
+                var settings = PlotPresetShare.decode(text);
+                if (settings.isAvailableForCreation()) { parsed = settings; status = tr("ready"); }
+                else status = Component.translatable("gtl_enhancedcore.personal_plot.retired_preset");
+            }
             catch (PlotPresetShare.ShareException invalid) { status = tr("error." + invalid.errorKey()); }
         }
         if (copied) status = tr("copied");

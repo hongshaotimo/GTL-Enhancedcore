@@ -1,9 +1,8 @@
 package com.gtl.enhancedcore.mixin.gtlcore;
 
-import com.gregtechceu.gtceu.api.item.tool.ToolHelper;
 import com.gregtechceu.gtceu.api.machine.MetaMachine;
-import com.gtl.enhancedcore.common.recipe.iv.IvBufferTransfer;
-import com.gtl.enhancedcore.common.recipe.iv.IvBuffers;
+import com.gregtechceu.gtceu.api.machine.multiblock.WorkableMultiblockMachine;
+import com.gtl.enhancedcore.common.patterncut.PatternCutService;
 import java.util.List;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
@@ -23,30 +22,21 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 @Mixin(value = MEPatternBufferCutBehavior.class, remap = false)
 public abstract class IvPatternBufferCutToolMixin {
     @Inject(method = "onItemUseFirst", at = @At("HEAD"), cancellable = true)
-    private void iv$explainGuard(ItemStack stack, UseOnContext context,
+    private void iv$storedCut(ItemStack stack, UseOnContext context,
                                  CallbackInfoReturnable<InteractionResult> cir) {
-        if (!(context.getPlayer() instanceof ServerPlayer player)
-                || !(MetaMachine.getMachine(context.getLevel(), context.getClickedPos())
-                    instanceof MEPatternBufferPartMachine buffer)
-                || !IvBufferTransfer.guarded(buffer)) return;
-        boolean hasPayload = MEPatternBufferCutBehavior.hasCutData(stack);
-        boolean allowed;
-        if (player.isShiftKeyDown()) {
-            if (hasPayload) return; // Keep the upstream "tool already holds patterns" message.
-            allowed = IvBufferTransfer.allowCut(buffer);
-        } else {
-            if (!hasPayload) return;
-            allowed = IvBufferTransfer.allowPaste(buffer, ToolHelper.getBehaviorsTag(stack).getCompound("cut"));
-        }
-        if (!allowed) {
-            player.displayClientMessage(Component.translatable(IvBuffers.state(buffer).message), true);
-            cir.setReturnValue(InteractionResult.CONSUME);
-        }
+        var machine = MetaMachine.getMachine(context.getLevel(), context.getClickedPos());
+        if (!(machine instanceof MEPatternBufferPartMachine) && !(machine instanceof WorkableMultiblockMachine)) return;
+        if (context.getPlayer() instanceof ServerPlayer player)
+            PatternCutService.use(player, context.getHand(), context.getClickedPos());
+        cir.setReturnValue(InteractionResult.sidedSuccess(context.getLevel().isClientSide()));
     }
 
-    @Inject(method = "appendHoverText", at = @At("RETURN"))
+    @Inject(method = "appendHoverText", at = @At("HEAD"), cancellable = true)
     private void iv$transferTip(ItemStack stack, Level level, List<Component> tips, TooltipFlag flag,
                                CallbackInfo ci) {
+        tips.add(Component.translatable("gtl_enhancedcore.pattern_cut.hint"));
+        tips.add(Component.translatable("gtl_enhancedcore.pattern_cut.storage_hint"));
         tips.add(Component.translatable("tooltip.gtl_enhancedcore.pattern_buffer_cut.iv_idle_transfer"));
+        ci.cancel();
     }
 }

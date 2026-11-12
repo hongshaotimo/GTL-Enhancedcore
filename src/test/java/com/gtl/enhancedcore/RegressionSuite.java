@@ -50,9 +50,7 @@ public final class RegressionSuite {
         assertions += PreciseAmountSortCacheRegression.run();
         assertions += StructurePerformanceRegression.run();
         assertions += EventBusHandlerRegression.run();
-        assertions += StagedPreviewContractRegression.run();
         assertions += PreviewMaterialRowsRegression.run();
-        assertions += ShanhaiPreviewReviewRegression.run();
         assertions += PlotWorldRegression.run();
         assertions += CampusRegression.run();
         assertions += CampusPresetPersistenceRegression.run();

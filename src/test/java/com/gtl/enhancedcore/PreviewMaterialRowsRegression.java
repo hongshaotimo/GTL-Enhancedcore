@@ -3,118 +3,249 @@ package com.gtl.enhancedcore;
 import com.google.gson.JsonParser;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
 import java.util.zip.ZipFile;
 import org.objectweb.asm.ClassReader;
+import org.objectweb.asm.ClassWriter;
+import org.objectweb.asm.Opcodes;
+import org.objectweb.asm.tree.AnnotationNode;
 import org.objectweb.asm.tree.ClassNode;
+import org.objectweb.asm.tree.FieldInsnNode;
+import org.objectweb.asm.tree.FieldNode;
+import org.objectweb.asm.tree.InsnNode;
+import org.objectweb.asm.tree.MethodInsnNode;
+import org.objectweb.asm.tree.MethodNode;
+import org.objectweb.asm.tree.VarInsnNode;
 
+/** Contracts for the installed native preview and its small client extensions. */
 public final class PreviewMaterialRowsRegression {
+    private static final String WIDGET = "org/gtlcore/gtlcore/api/gui/PatternPreviewWidget";
+    private static final String CONTROLS = "org/gtlcore/gtlcore/client/preview/PreviewControls";
+    private static final String PANEL = "org/gtlcore/gtlcore/client/preview/PreviewCandidatePanel";
     private static int assertions;
 
     public static void main(String[] args) throws Exception {
-        System.out.println("Preview material contracts passed: " + run() + " assertions");
-        UpstreamPreviewContractRegression.main(args);
-        StagedPreviewContractRegression.main(args);
-        ShanhaiPreviewReviewRegression.main(args);
+        System.out.println("Native preview contracts passed: " + run() + " assertions");
     }
 
     static int run() throws Exception {
         assertions = 0;
         try (var jar = new ZipFile("libs/gtlcore-1.2.3.3-fix3.jar")) {
-            var pattern = read(jar, "org/gtlcore/gtlcore/api/gui/PatternPreviewWidget$MBPattern");
-            for (var field : new String[]{"blockMap", "predicateMap", "controllerBase", "moduleOnlyBlocks"}) {
-                check(pattern.fields.stream().anyMatch(candidate -> candidate.name.equals(field)),
-                        "Installed pattern exposes " + field);
-            }
-            var widget = read(jar, "org/gtlcore/gtlcore/api/gui/PatternPreviewWidget");
-            check(widget.methods.stream().anyMatch(method -> method.name.equals("setPage") && method.desc.equals(
-                    "(ILcom/lowdragmc/lowdraglib/gui/util/ClickData;)V")), "Installed page hook exists");
-            check(widget.methods.stream().anyMatch(method -> method.name.equals("setupScene") && method.desc.equals(
-                    "(Lorg/gtlcore/gtlcore/api/gui/PatternPreviewWidget$MBPattern;)V")), "Installed scene hook exists");
+            var widget = read(jar, WIDGET);
+            var controls = read(jar, CONTROLS);
+            var selected = method(widget, "onPosSelected",
+                    "(Lnet/minecraft/core/BlockPos;Lnet/minecraft/core/Direction;)V");
+            check(calls(selected, PANEL + "$Group", "of") > 0
+                            && calls(selected, CONTROLS, "setCandidates") == 1,
+                    "Native block selection forwards predicate candidate groups to fullscreen controls");
+            var candidates = method(controls, "setCandidates", "(Ljava/util/List;)V");
+            check(calls(candidates, PANEL, "setGroups") == 1,
+                    "Native controls update the candidate panel directly");
+            check(fieldRead(candidates, CONTROLS, "candidatePanel", "L" + PANEL + ";"),
+                    "Candidate groups reach the installed native panel");
+            method(controls, "showCandidates", "()V");
+            method(controls, "fullscreen", "()Z");
+            method(controls, "heightText", "()Lnet/minecraft/network/chat/Component;");
+            method(controls, "drawInfo", "(Lnet/minecraft/client/gui/GuiGraphics;)V");
+            method(controls, "dimensions", "()Lorg/gtlcore/gtlcore/client/preview/PreviewHeight$Dimensions;");
+            hooks("PreviewCandidateSelectionMixin", widget);
+            hooks("PreviewFootprintInfoMixin", controls);
+            candidatesClosedOnEntry(hooks("PreviewControlsBehaviorMixin", controls));
+            hooks("PreviewAppearanceMixin", controls);
+            hooks("PreviewCandidateAppearanceMixin", read(jar, PANEL));
+            hooks("PreviewTextControlAppearanceMixin", widget);
+            hooks("FullscreenPreviewAppearanceMixin", read(jar,
+                    "org/gtlcore/gtlcore/client/preview/FullscreenPreviewScreen"));
         }
-        var resources = Path.of("src/main/resources");
-        var config = JsonParser.parseString(Files.readString(resources.resolve("gtl_enhancedcore.mixins.json"))).getAsJsonObject();
-        check(config.getAsJsonArray("client").asList().stream().anyMatch(entry -> entry.getAsString().equals(
-                "gtlcore.client.PreviewMaterialRowsMixin")), "Material UI Mixin is client-only");
-        for (var locale : new String[]{"zh_cn", "en_us"}) {
-            var lang = JsonParser.parseString(Files.readString(resources.resolve(
-                    "assets/gtl_enhancedcore/lang/" + locale + ".json"))).getAsJsonObject();
-            check(lang.has("gtl_enhancedcore.preview.expand_material"), "Expand hint translated for " + locale);
+        var config = JsonParser.parseString(Files.readString(Path.of(
+                "src/main/resources/gtl_enhancedcore.mixins.json"))).getAsJsonObject();
+        var enabled = new HashSet<String>();
+        for (String section : List.of("mixins", "client", "server")) {
+            if (config.has(section)) config.getAsJsonArray(section).forEach(entry -> enabled.add(entry.getAsString()));
         }
-        var source = Files.readString(Path.of("src/main/java/com/gtl/enhancedcore/client/preview/PreviewMaterialRows.java"));
-        check(source.contains("predicates.addAll(predicate.limited)") && source.contains("predicate.common"),
-                "Both limited and common candidates are considered");
-        check(source.contains("options.contains(item)"), "Alternatives stay within the selected predicate group");
-        check(source.contains("record Material(AEItemKey item, List<AEItemKey> alternatives, int section)"),
-                "Equal items with different alternatives are not merged");
-        check(source.contains("material.section() == 1 ? List.of() : super.getXEIIngredients()"),
-                "JEI native recipe lookup cannot steal the expand click");
-        check(source.contains("return super.getXEIIngredientOverMouse(mouseX, mouseY);")
-                        && !source.contains("return material.section() == 1 ? null")
-                        && !source.contains("getXEIIngredientOverMouse(double mouseX, double mouseY) { return null; }"),
-                "Material and candidate hover ingredients remain available to JEI bookmark keys");
-        check(!source.contains("replacePatternMaterial") && !source.contains("materialReplacements"),
-                "Candidate expansion does not replace the preview");
-        check(config.getAsJsonArray("client").asList().stream().anyMatch(entry -> entry.getAsString().equals(
-                "gtlcore.client.PreviewVisibilityMixin")), "Visibility Mixin is client-only");
-        var visibility = Files.readString(Path.of(
-                "src/main/java/com/gtl/enhancedcore/mixin/gtlcore/client/PreviewVisibilityMixin.java"));
-        check(visibility.contains("(enhanced$visibilityMode + 1) % 3"), "Visibility cycles through three modes");
-        check(visibility.contains("new ButtonWidget(138, 70, 18, 18"), "Visibility button is below the layer button");
-        check(visibility.contains("List.copyOf(sceneWidget.getCore())"), "Visibility preserves native layer and render-mask filtering");
-        check(visibility.contains("sceneWidget.setRenderedCore(visible, null)"), "Rendering and picking share the filtered core");
-        check(visibility.contains("sceneWidget.setCenter(center)") && visibility.contains("sceneWidget.setZoom(zoom)"),
-                "Visibility restores pan and zoom after native mesh invalidation");
-        check(!visibility.contains("setPage(") && !visibility.contains("setCameraYawAndPitch"),
-                "Visibility changes do not reset the page, layer or camera");
-        check(visibility.contains("method = \"onPosSelected\"") && visibility.contains(".position(enhanced$pattern.enhanced$predicates().get(pos))"),
-                "Scene selection supplies the exact position predicate to material highlighting");
-        check(source.contains("borderColor(material.item())") && source.contains("borderColor(item)"),
-                "Both material rows share the highlight color policy");
-        check(source.contains("if (allowed.contains(item)) return 0xffff4040;")
-                        && source.contains("return item.equals(selected) ? 0xff80ff80 : 0;"),
-                "Position candidates are red before falling back to green material selection");
-        check(visibility.contains("enhanced$selectedPositions.contains(pos)"), "Selected material filters placeable positions");
-        check(visibility.contains("if (enhanced$pattern != access) enhanced$materialSelection().clear()"),
-                "Page changes reset stale selections");
-        check(source.contains("item.equals(selected) ? null : item"), "Clicking the same material clears selection");
-        check(source.contains("countLabel(simple.minCount, simple.maxCount)"), "Badges use GTL global count limits");
-        check(source.contains("labels.isEmpty() ? String.valueOf(positions)"),
-                "Unbounded alternatives retain their actual preview group count");
-        check(source.contains("requirements.computeIfAbsent(material,") && source.contains("amounts.get(material)"),
-                "Counts stay scoped to material groups and also reach candidate rows");
-        check(source.contains("lower == maximum ? String.valueOf(lower)"), "Exact counts use a single number");
-        check(source.contains("simple.minLayerCount") && source.contains("simple.maxLayerCount"), "Layer limits remain in tooltips");
-        var scene = Files.readString(Path.of("src/main/java/com/gtl/enhancedcore/mixin/ldlib/client/SceneWidgetRenderFilterMixin.java"));
-        check(scene.contains("button != 1") && scene.contains(".position(null)") && scene.contains("selectedPosFace = null"),
-                "Right-click clears scene selection without toggling the material selection");
-        var layout = Files.readString(Path.of("src/main/java/com/gtl/enhancedcore/mixin/gtlcore/client/PreviewMaterialLayoutMixin.java"));
-        var rows = Files.readString(Path.of("src/main/java/com/gtl/enhancedcore/mixin/gtlcore/client/PreviewMaterialRowsMixin.java"));
-        check(rows.contains("setSelfPosition(4, height - 50)") && rows.contains("setSelfPosition(4, height - 26)"),
-                "Fullscreen material and candidate rows occupy separate tracks");
-        check(layout.contains("screenHeight - scene.getSelfPosition().y - 54"),
-                "Fullscreen scene reserves space for both material rows");
-        check(layout.contains("if (!fullscreen") && !layout.contains("setVisible"),
-                "Fullscreen layout preserves candidate expansion state");
-        check(config.getAsJsonArray("client").asList().stream().anyMatch(entry -> entry.getAsString().equals(
-                "gtlcore.client.PreviewMaterialLayoutMixin")), "Fullscreen layout Mixin is client-only");
-        try (var jar = new ZipFile("libs/gtlcore-1.2.3.3-fix3.jar")) {
-            var controls = read(jar, "org/gtlcore/gtlcore/client/preview/PreviewControls");
-            check(controls.methods.stream().anyMatch(method -> method.name.equals("layout") && method.desc.equals("()V")),
-                    "Installed fullscreen layout hook exists");
-            for (var field : new String[]{"widget", "scene", "fullscreen", "width", "screenHeight"}) {
-                check(controls.fields.stream().anyMatch(candidate -> candidate.name.equals(field)),
-                        "Installed controls expose " + field);
+        var client = config.getAsJsonArray("client").asList().stream().map(entry -> entry.getAsString()).toList();
+        for (String extension : List.of("PreviewCandidateSelectionMixin", "PreviewFootprintInfoMixin",
+                "PreviewControlsBehaviorMixin", "PreviewAppearanceMixin", "PreviewCandidateAppearanceMixin",
+                "PreviewTextControlAppearanceMixin", "FullscreenPreviewAppearanceMixin")) {
+            check(client.contains("gtlcore.client." + extension), extension + " is enabled only on the client");
+            check(!config.getAsJsonArray("mixins").asList().stream()
+                    .anyMatch(entry -> entry.getAsString().equals("gtlcore.client." + extension)),
+                    extension + " is absent from common mixins");
+        }
+        for (String retired : List.of("PreviewMaterialRowsMixin", "PreviewMaterialLayoutMixin", "PreviewVisibilityMixin")) {
+            check(!enabled.contains("gtlcore.client." + retired), retired + " no longer overrides native UI");
+        }
+        return assertions + StagedPreviewContractRegression.run();
+    }
+
+    private static ClassNode hooks(String name, ClassNode target) throws Exception {
+        var entry = "com/gtl/enhancedcore/mixin/gtlcore/client/" + name + ".class";
+        var mixin = new ClassNode();
+        try (var input = PreviewMaterialRowsRegression.class.getClassLoader().getResourceAsStream(entry)) {
+            if (input == null) throw new AssertionError("Missing compiled Mixin: " + name);
+            new ClassReader(input).accept(mixin, 0);
+        }
+        for (var field : mixin.fields) {
+            if (annotations(field.visibleAnnotations, field.invisibleAnnotations).stream()
+                    .anyMatch(annotation -> annotation.desc.endsWith("/Shadow;"))) {
+                check(target.fields.stream().anyMatch(actual -> actual.name.equals(field.name) && actual.desc.equals(field.desc)),
+                        name + " shadow field exists: " + field.name);
             }
         }
-        return assertions;
+        int injections = 0;
+        for (var hook : mixin.methods) {
+            for (var annotation : annotations(hook.visibleAnnotations, hook.invisibleAnnotations)) {
+                if (annotation.desc.endsWith("/Shadow;")) method(target, hook.name, hook.desc);
+                if (!annotation.desc.endsWith("/Inject;") && !annotation.desc.endsWith("/ModifyExpressionValue;")
+                        && !annotation.desc.endsWith("/WrapOperation;") && !annotation.desc.endsWith("/Redirect;")) continue;
+                injections++;
+                for (Object selector : (List<?>) value(annotation, "method")) {
+                    var signature = (String) selector;
+                    int split = signature.indexOf('(');
+                    if (split >= 0) method(target, signature.substring(0, split), signature.substring(split));
+                    else check(target.methods.stream().filter(actual -> actual.name.equals(signature)).count() == 1,
+                            name + " injection target exists uniquely: " + signature);
+                }
+                Object points = value(annotation, "at");
+                for (Object point : points instanceof List<?> list ? list : List.of(points)) {
+                    var at = (AnnotationNode) point;
+                    if ((annotation.desc.endsWith("/WrapOperation;") || annotation.desc.endsWith("/Redirect;"))
+                            && "INVOKE".equals(value(at, "value"))) {
+                        String invocation = (String) value(at, "target");
+                        int ownerEnd = invocation.indexOf(';');
+                        int descriptorStart = invocation.indexOf('(', ownerEnd);
+                        long matches = 0;
+                        for (Object selector : (List<?>) value(annotation, "method")) {
+                            String signature = (String) selector;
+                            for (var actual : target.methods) {
+                                if (!(signature.equals(actual.name) || signature.equals(actual.name + actual.desc))) continue;
+                                for (var instruction : actual.instructions) if (instruction instanceof MethodInsnNode call
+                                        && call.owner.equals(invocation.substring(1, ownerEnd))
+                                        && call.name.equals(invocation.substring(ownerEnd + 1, descriptorStart))
+                                        && call.desc.equals(invocation.substring(descriptorStart))) matches++;
+                            }
+                        }
+                        int required = (Integer) value(annotation, "require");
+                        check(Integer.valueOf(required).equals(value(annotation, "allow")) && matches == required,
+                                name + " matches the real installed call count: " + invocation);
+                    }
+                    if (!"FIELD".equals(value(at, "value"))) continue;
+                    String field = (String) value(at, "target");
+                    int ownerEnd = field.indexOf(';');
+                    int separator = field.indexOf(':', ownerEnd);
+                    check(field.substring(1, ownerEnd).equals(target.name)
+                                    && target.fields.stream().anyMatch(actual -> actual.name.equals(field.substring(ownerEnd + 1, separator))
+                                    && actual.desc.equals(field.substring(separator + 1))),
+                            name + " injected field exists: " + field);
+                }
+            }
+        }
+        check(injections > 0, name + " contains checked injection targets");
+        return mixin;
+    }
+
+    private static void candidatesClosedOnEntry(ClassNode mixin) throws Exception {
+        var source = method(mixin, "enhanced$startWithCandidatesClosed",
+                "(IILorg/spongepowered/asm/mixin/injection/callback/CallbackInfo;)V");
+        var inject = annotations(source.visibleAnnotations, source.invisibleAnnotations).stream()
+                .filter(annotation -> annotation.desc.endsWith("/Inject;")).findFirst().orElseThrow();
+        var at = (AnnotationNode) ((List<?>) value(inject, "at")).getFirst();
+        check(((List<?>) value(inject, "method")).equals(List.of("enter"))
+                        && "HEAD".equals(value(at, "value")) && Integer.valueOf(1).equals(value(inject, "require")),
+                "Candidate default is applied at the native enter HEAD");
+        var axes = method(mixin, "enhanced$hideRotationOrigin",
+                "(Lnet/minecraft/client/gui/GuiGraphics;Lorg/spongepowered/asm/mixin/injection/callback/CallbackInfo;)V");
+        var hide = annotations(axes.visibleAnnotations, axes.invisibleAnnotations).stream()
+                .filter(annotation -> annotation.desc.endsWith("/Inject;")).findFirst().orElseThrow();
+        var axesAt = (AnnotationNode) ((List<?>) value(hide, "at")).getFirst();
+        check(((List<?>) value(hide, "method")).equals(List.of("drawRotationOrigin"))
+                        && "HEAD".equals(value(axesAt, "value"))
+                        && Boolean.TRUE.equals(value(hide, "cancellable"))
+                        && calls(axes, "org/spongepowered/asm/mixin/injection/callback/CallbackInfo", "cancel") == 1,
+                "The complete native rotation-origin drawing is cancelled");
+
+        var probe = new ClassNode();
+        probe.version = Opcodes.V17;
+        probe.access = Opcodes.ACC_PUBLIC;
+        probe.name = "com/gtl/enhancedcore/audit/PreviewControlsEntryProbe";
+        probe.superName = "java/lang/Object";
+        for (String field : List.of("fullscreen", "showCandidates")) {
+            probe.fields.add(new FieldNode(Opcodes.ACC_PUBLIC, field, "Z", null, null));
+        }
+        var constructor = new MethodNode(Opcodes.ACC_PUBLIC, "<init>", "()V", null, null);
+        constructor.instructions.add(new VarInsnNode(Opcodes.ALOAD, 0));
+        constructor.instructions.add(new MethodInsnNode(Opcodes.INVOKESPECIAL, "java/lang/Object", "<init>", "()V", false));
+        constructor.instructions.add(new InsnNode(Opcodes.RETURN));
+        probe.methods.add(constructor);
+        var entry = new MethodNode(Opcodes.ACC_PUBLIC, source.name, "(IILjava/lang/Object;)V", null, null);
+        source.accept(entry);
+        // Callback is unused; substitute Object to avoid loading the game or Mixin runtime.
+        entry.visibleAnnotations = entry.invisibleAnnotations = null;
+        entry.localVariables = null;
+        for (var instruction : entry.instructions) if (instruction instanceof FieldInsnNode field
+                && field.owner.equals(mixin.name)) field.owner = probe.name;
+        probe.methods.add(entry);
+        var writer = new ClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS);
+        probe.accept(writer);
+        byte[] bytes = writer.toByteArray();
+        Class<?> type = new ClassLoader(null) {
+            Class<?> define() { return defineClass(probe.name.replace('/', '.'), bytes, 0, bytes.length); }
+        }.define();
+        Object controls = type.getConstructor().newInstance();
+        var fullscreen = type.getField("fullscreen");
+        var candidates = type.getField("showCandidates");
+        var enter = type.getMethod(entry.name, int.class, int.class, Object.class);
+        candidates.setBoolean(controls, true);
+        enter.invoke(controls, 960, 600, null);
+        check(!candidates.getBoolean(controls), "Compiled production hook closes candidates on first fullscreen entry");
+        fullscreen.setBoolean(controls, true);
+        candidates.setBoolean(controls, true);
+        enter.invoke(controls, 1280, 720, null);
+        check(candidates.getBoolean(controls), "Compiled production hook keeps an open candidate panel when fullscreen resizes");
+    }
+
+    private static List<AnnotationNode> annotations(List<AnnotationNode> visible, List<AnnotationNode> invisible) {
+        var result = new ArrayList<AnnotationNode>();
+        if (visible != null) result.addAll(visible);
+        if (invisible != null) result.addAll(invisible);
+        return result;
+    }
+
+    private static Object value(AnnotationNode annotation, String key) {
+        if (annotation.values != null) for (int i = 0; i < annotation.values.size(); i += 2) {
+            if (key.equals(annotation.values.get(i))) return annotation.values.get(i + 1);
+        }
+        return null;
     }
 
     private static ClassNode read(ZipFile jar, String name) throws Exception {
         var node = new ClassNode();
         try (var stream = jar.getInputStream(jar.getEntry(name + ".class"))) {
-            new ClassReader(stream).accept(node, ClassReader.SKIP_CODE);
+            new ClassReader(stream).accept(node, 0);
         }
         return node;
+    }
+
+    private static MethodNode method(ClassNode owner, String name, String descriptor) {
+        var matches = owner.methods.stream().filter(candidate -> candidate.name.equals(name)
+                && candidate.desc.equals(descriptor)).toList();
+        check(matches.size() == 1, "Installed method exists uniquely: " + owner.name + "." + name + descriptor);
+        return matches.getFirst();
+    }
+
+    private static long calls(MethodNode method, String owner, String name) {
+        long count = 0;
+        for (var instruction : method.instructions) if (instruction instanceof MethodInsnNode call
+                && call.owner.equals(owner) && call.name.equals(name)) count++;
+        return count;
+    }
+
+    private static boolean fieldRead(MethodNode method, String owner, String name, String descriptor) {
+        for (var instruction : method.instructions) if (instruction instanceof FieldInsnNode field
+                && field.owner.equals(owner) && field.name.equals(name) && field.desc.equals(descriptor)) return true;
+        return false;
     }
 
     private static void check(boolean value, String message) {

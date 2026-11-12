@@ -22,6 +22,7 @@ public final class CommonProxy {
             com.gtl.enhancedcore.common.world.campus.CampusTeleportNetwork.register();
             com.gtl.enhancedcore.common.assembly.AssemblyManagerNetwork.register();
             com.gtl.enhancedcore.common.assembly.AssemblyMirrorNetwork.register();
+            com.gtl.enhancedcore.common.patterncut.PatternCutNetwork.register();
             FlightStateConcurrency.install();
         }));
     }

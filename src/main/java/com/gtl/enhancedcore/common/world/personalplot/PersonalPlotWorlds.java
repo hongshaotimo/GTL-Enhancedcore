@@ -64,7 +64,7 @@ public final class PersonalPlotWorlds {
             path = server.getWorldPath(LevelResource.ROOT);
             data = PersonalPlotStore.read(path); startupOwners = new java.util.HashSet<>(data.worlds().keySet());
             data.worlds().forEach((owner, settings) -> definitions.put(key(owner), settings));
-            activeTemplate = data.template();
+            activeTemplate = data.template() != null && data.template().isAvailableForCreation() ? data.template() : null;
         }
     }
     private PersonalPlotWorlds() {}
@@ -189,12 +189,11 @@ public final class PersonalPlotWorlds {
         }
         return level.players().isEmpty();
     }
-    private static void validate(PlotSettings settings) {
-        if (settings == null) throw new IllegalArgumentException("Missing plot settings");
-    }
     private static String template(ServerPlayer player, Session s, PlotSettings settings) throws IOException {
         if (!PersonalPlotPolicy.editTemplate(player.server.isDedicatedServer(), player.hasPermissions(2))) return PREFIX + "permission_denied";
-        validate(settings); PersonalPlotStore.Data next = s.data.withTemplate(settings);
+        if (settings == null) return PREFIX + "invalid_settings";
+        if (!settings.isAvailableForCreation()) return PREFIX + "retired_preset";
+        PersonalPlotStore.Data next = s.data.withTemplate(settings);
         PersonalPlotStore.write(s.path, next); s.data = next; s.templateSavedThisSession = true;
         return PREFIX + "template_saved";
     }
@@ -207,7 +206,9 @@ public final class PersonalPlotWorlds {
         if (s.data.worlds().containsKey(owner)) return PREFIX + "already_owned";
         if (!PersonalPlotPolicy.create(dedicated, player.server.isSingleplayerOwner(player.getGameProfile()), s.activeTemplate != null, false))
             return PREFIX + (dedicated ? "template_required" : "permission_denied");
-        PlotSettings settings = dedicated ? s.activeTemplate : proposed; validate(settings);
+        PlotSettings settings = dedicated ? s.activeTemplate : proposed;
+        if (settings == null) return PREFIX + "invalid_settings";
+        if (!settings.isAvailableForCreation()) return PREFIX + "retired_preset";
         if (player.server.getLevel(key(owner)) != null) return PREFIX + "dimension_conflict";
         PersonalPlotStore.Data next = s.data.create(owner, settings);
         PersonalPlotStore.write(s.path, next); s.data = next; s.definitions.put(key(owner), settings);

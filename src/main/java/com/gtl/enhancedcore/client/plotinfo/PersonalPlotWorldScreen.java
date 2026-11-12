@@ -131,10 +131,19 @@ public final class PersonalPlotWorldScreen extends Screen {
 
     private Component stateHint() {
         if (snapshot.state() == State.NONE && !snapshot.canCreatePersonal()) {
-            if (snapshot.dedicated() && !snapshot.templateReady()) return tr("needs_template");
+            if (snapshot.dedicated() && !snapshot.templateReady())
+                return snapshot.templateSettings() != null ? templateStatus() : tr("needs_template");
             return tr("creation_denied");
         }
         return tr("hint." + snapshot.state().name().toLowerCase(Locale.ROOT) + (snapshot.dedicated() ? ".server" : ".single"));
+    }
+
+    private Component templateStatus() {
+        if (snapshot.templatePending())
+            return tr(snapshot.activeTemplateSettings() == null ? "template_pending_activation" : "template_pending");
+        if (snapshot.templateSettings() != null && !snapshot.templateSettings().isAvailableForCreation())
+            return Component.translatable("gtl_enhancedcore.personal_plot.retired_template");
+        return tr(snapshot.templateReady() ? "template_ready" : "template_missing");
     }
 
     @Override public void tick() {
@@ -169,8 +178,7 @@ public final class PersonalPlotWorldScreen extends Screen {
         }
         if (snapshot.dedicated() && textY + 25 < helpBottom) {
             textY += 10;
-            Component templateStatus = tr(snapshot.templatePending() ? "template_pending"
-                    : snapshot.templateReady() ? "template_ready" : "template_missing");
+            Component templateStatus = templateStatus();
             for (var line : font.split(templateStatus, Math.max(20, sidebarWidth - 8))) {
                 g.drawString(font, line, sidebarX + 3, textY, snapshot.templatePending() ? GOLD : MUTED, false); textY += 12;
             }

@@ -25,6 +25,7 @@ public final class PlotWorldRegistration {
     public static void register(IEventBus bus) { GENERATORS.register(bus); }
 
     public static WorldDimensions withPlotOverworld(RegistryAccess access, WorldDimensions dimensions, PlotSettings settings) {
+        if (!settings.isAvailableForCreation()) throw new IllegalArgumentException("Retired campus preset: " + settings.campusPresetId());
         return new WorldDimensions(WorldDimensions.withOverworld(dimensions.dimensions(),
                 access.registryOrThrow(Registries.DIMENSION_TYPE).getHolderOrThrow(BuiltinDimensionTypes.OVERWORLD),
                 new PlotChunkGenerator(access.registryOrThrow(Registries.BIOME).getHolderOrThrow(Biomes.PLAINS), settings)));

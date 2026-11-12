@@ -115,7 +115,7 @@ public final class CreateWorldPlotScreen extends Screen {
                 () -> draft.roadStyle() == PlotSettings.plannedCampus().roadStyle())
                 .setTooltip(Tooltip.create(tr("campus_preset_hint")));
         int y = hint(tr("campus_preset_hint"), 39);
-        for (var definition : CampusPresetRegistry.definitions()) {
+        for (var definition : CampusPresetRegistry.creationDefinitions()) {
             edit(() -> Component.translatable(definition.nameKey()), editorX, y + 8, editorWidth, 30,
                     () -> selectTerrainPreset(definition),
                     () -> selectedPreset(definition))
@@ -421,7 +421,7 @@ public final class CreateWorldPlotScreen extends Screen {
     }
     private void validate() {
         if(building) return; error=presetLoadFailed ? tr("preset_load_failed") : CommonComponents.EMPTY;
-        try { draft=candidate(); validatedPreview=draft; }
+        try { draft=candidate(); validatedPreview=draft; if (!draft.isAvailableForCreation()) error=Component.translatable("gtl_enhancedcore.personal_plot.retired_preset"); }
         catch(RuntimeException invalid) { if (!presetLoadFailed) error=tr("invalid_settings"); }
         boolean valid=!presetLoadFailed && error.equals(CommonComponents.EMPTY);
         if(done!=null) done.active=!presetLoading && valid && (state == null || CreateWorldPlotState.isSkyblock(state));

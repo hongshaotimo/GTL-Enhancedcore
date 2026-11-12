@@ -91,7 +91,8 @@ public final class UpstreamPreviewContractRegression {
             var names = files.filter(Files::isRegularFile).map(path -> path.getFileName().toString()).toList();
             check(Set.copyOf(names).equals(Set.of("PreviewEffectAnchors.java",
                             "LazyMultiblockPreviewWidget.java", "PreviewPatternMemory.java", "ChamberPreviewOverlay.java",
-                            "PreviewPageAccess.java", "PreviewPreparation.java", "PreviewMaterialAccess.java", "PreviewMaterialRows.java")),
+                            "PreviewPageAccess.java", "PreviewPreparation.java", "PreviewMaterialAccess.java", "PreviewMaterialRows.java",
+                            "PreviewStyle.java")),
                     "Local preview helpers provide effect anchors, lazy lifecycle and requested chamber positions");
         }
         var local = JsonParser.parseString(Files.readString(RESOURCES.resolve("gtl_enhancedcore.mixins.json"))).getAsJsonObject();

@@ -206,7 +206,7 @@ public final class PreviewPreparation {
     }
 
     private enum Phase { SCAN, POPULATE, MATCH, PREDICATES, MATERIALS, MODULES, MERGE_MODULES,
-        RESTORE_HOST, MATERIAL_KEYS, MATERIAL_CHOICES, FINISH }
+        RESTORE_HOST, FINISH }
 
     private static final class Build {
         final Pages pages;
@@ -222,8 +222,6 @@ public final class PreviewPreparation {
         final Map<Object, Object> parts = new Object2ObjectOpenHashMap<>();
         final Set<BlockPos> modulePositions = new ObjectOpenHashSet<>();
         final Map<BlockPos, AEItemKey> materialKeys = new LinkedHashMap<>();
-        final Map<TraceabilityPredicate, Set<AEItemKey>> materialChoices = new IdentityHashMap<>();
-        final Set<BlockPos> replaceable = new ObjectOpenHashSet<>();
         List<IMultiController> modules = List.of();
         IMultiController controller;
         BlockPos controllerInShape;
@@ -333,37 +331,10 @@ public final class PreviewPreparation {
                             if (++work % CHECK_INTERVAL == 0 && System.nanoTime() >= deadline) return false;
                         }
                     }
-                    entries = blockMap.entrySet().iterator();
-                    phase = Phase.MATERIAL_KEYS;
-                }
-                // 山海：prepare the new UI index within the existing render-thread frame budget.
-                case MATERIAL_KEYS -> {
-                    while (entries.hasNext()) {
-                        var entry = entries.next();
-                        if (!moduleBlocks.contains(entry.getKey())) {
-                            var item = PreviewMaterialRows.material(world, entry.getKey(), entry.getValue());
-                            if (item != null) materialKeys.put(entry.getKey(), item);
-                        }
-                        if (++work % CHECK_INTERVAL == 0 && System.nanoTime() >= deadline) return false;
-                    }
-                    predicateEntries = predicates.entrySet().iterator();
-                    phase = Phase.MATERIAL_CHOICES;
-                }
-                case MATERIAL_CHOICES -> {
-                    while (predicateEntries.hasNext()) {
-                        var entry = predicateEntries.next();
-                        var predicate = entry.getValue();
-                        if (predicate != null && materialChoices.computeIfAbsent(predicate,
-                                PreviewMaterialRows::candidates).size() > 1) replaceable.add(entry.getKey());
-                        if (++work % CHECK_INTERVAL == 0 && System.nanoTime() >= deadline) return false;
-                    }
                     phase = Phase.FINISH;
                 }
                 case FINISH -> {
                     result = access.enhanced$finishPattern(blockMap, moduleBlocks, controller, predicates, parts, materialKeys);
-                    if (result instanceof PreviewMaterialAccess material) {
-                        material.enhanced$cacheMaterials(materialKeys, materialChoices, replaceable);
-                    }
                     return true;
                 }
             }
@@ -379,7 +350,7 @@ public final class PreviewPreparation {
             for (IMultiController module : modules) PreviewPatternMemory.releaseState(module.getMultiblockState());
             if (controller != null) PreviewPatternMemory.releaseState(controller.getMultiblockState());
             blockMap.clear(); hostBlocks.clear(); predicates.clear(); parts.clear(); moduleBlocks.clear();
-            materialKeys.clear(); materialChoices.clear(); replaceable.clear();
+            materialKeys.clear();
             disposeShell(shell);
         }
     }
