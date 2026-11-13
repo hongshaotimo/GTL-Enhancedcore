@@ -46,7 +46,9 @@ public final class CelestialVfxRenderer {
     private CelestialVfxRenderer() {}
 
     public static void eye(float time, PoseStack pose, MultiBufferSource buffers) { render(false, 3, 0, time, pose); }
-    public static void astrograph(int count, long seed, float time, PoseStack pose, MultiBufferSource buffers) { render(true, count, seed, time, pose); }
+    public static void astrograph(int count, long seed, float time, PoseStack pose, MultiBufferSource buffers) {
+        ArcanicSingularityRenderer.render(count, seed, time, pose);
+    }
 
     private static void setup(PoseStack pose, float time, boolean astrograph) {
         var shader = CelestialVfxRenderTypes.shader();

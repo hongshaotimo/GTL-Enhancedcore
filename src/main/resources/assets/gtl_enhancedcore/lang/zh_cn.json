@@ -614,6 +614,7 @@
   "gtl_enhancedcore.parallel.coil_temperature": "线圈温度：%s K",
   "gtl_enhancedcore.parallel.current": "本轮实际处理：%s 份配方",
   "gtl_enhancedcore.parallel.same_recipe_lanes": "同配方通道：%s（含基础 1 个）",
+  "gtl_enhancedcore.parallel.galaxy_recipes": "当前星辰配方：%s 种",
   "gtl_enhancedcore.platinum_refining": "铂系精炼",
   "gtl_enhancedcore.plot_preset_share.copied": "当前完整预设已复制，可直接粘贴发送给其他玩家。",
   "gtl_enhancedcore.plot_preset_share.empty_hint": "粘贴分享文本后显示导入预览；取消会保留原配置。",

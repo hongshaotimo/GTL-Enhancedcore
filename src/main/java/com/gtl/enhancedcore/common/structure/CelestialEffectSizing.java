@@ -2,9 +2,10 @@ package com.gtl.enhancedcore.common.structure;
 
 /** Visual dimensions for the replacement blueprints; never used for machine IO or recipes. */
 public final class CelestialEffectSizing {
-    // The new procedural fields fit a local R12.65 envelope, hence world R34.788.
+    // Eye keeps its original compact field. Astrograph uses these parent units only at its anchor.
     public static final float EYE_SCALE = 2.75F;
     public static final float ASTROGRAPH_SCALE = 2.75F;
+    public static final float ASTROGRAPH_OUTER_RADIUS = 150F;
     // Heart's shader uses radius * fade for its full envelope: 32 * 1.25 = 40.
     public static final float HEART_RADIUS = 32F;
     public static final float HEART_FADE_RADIUS = 1.25F;

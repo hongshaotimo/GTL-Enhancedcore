@@ -6,4 +6,5 @@ uniform mat4 ProjMat;
 uniform mat4 FieldViewMat;
 out vec4 vertexColor;
 out vec2 fieldUV;
-void main(){vertexColor=Color;fieldUV=UV0;gl_Position=ProjMat*FieldViewMat*vec4(Position,1.0);}
+out vec3 localPosition;
+void main(){localPosition=Position;vertexColor=Color;fieldUV=UV0;gl_Position=ProjMat*FieldViewMat*vec4(Position,1.0);}

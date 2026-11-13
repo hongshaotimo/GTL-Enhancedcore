@@ -128,6 +128,7 @@
     "gtladditions.GalaxyAddParallelMixin",
     "gtlcore.GalaxyParallelCapacityMixin",
     "gtceu.GalaxyRecipeLogicMixin",
+    "gtladditions.GalaxyIndependentNativeLogicMixin",
     "gtceu.GalaxyConnectionHatchUiMixin",
     "gtceu.RetiredLightHunterDefinitionMixin",
     "gtceu.GalaxyMachineDisplayMixin",

@@ -41,6 +41,14 @@ public final class IvMachineDisplay {
     }
 
     private static void update(WorkableElectricMultiblockMachine machine, List<Component> text) {
+        long stellarRecipes = com.gtl.enhancedcore.common.recipe.SingleRecipeParallel.galaxyRecipes(machine);
+        if (stellarRecipes >= 0) {
+            canonicalLine(text, "gtl_enhancedcore.parallel.galaxy_recipes", Component.translatable(
+                    "gtl_enhancedcore.parallel.galaxy_recipes", stellarRecipes).withStyle(ChatFormatting.LIGHT_PURPLE));
+            canonicalLine(text, "gtl_enhancedcore.parallel.current", Component.translatable(
+                    "gtl_enhancedcore.parallel.current", com.gtl.enhancedcore.common.recipe.SingleRecipeParallel.current(machine))
+                    .withStyle(ChatFormatting.GREEN));
+        }
         if (com.gtl.enhancedcore.common.machine.galaxy.GalaxyLinks.active(machine)) {
             var handler = com.gtl.enhancedcore.common.machine.galaxy.GalaxyWirelessEnergyHandler.forMachine(machine);
             var recipe = machine.getRecipeLogic().getLastRecipe();

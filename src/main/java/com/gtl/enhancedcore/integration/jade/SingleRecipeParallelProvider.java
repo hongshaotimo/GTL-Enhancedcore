@@ -26,7 +26,8 @@ public final class SingleRecipeParallelProvider implements IBlockComponentProvid
         if (!machine.isFormed()) return;
         var value = new CompoundTag();
         value.putLong("current", SingleRecipeParallel.current(machine));
-        value.putLong("lanes", SingleRecipeParallel.lanes((IThreadModifierMachine) machine));
+        value.putLong("lanes", machine instanceof IThreadModifierMachine modifier ? SingleRecipeParallel.lanes(modifier) : 1);
+        value.putLong("galaxyRecipes", SingleRecipeParallel.galaxyRecipes(machine));
         data.put(KEY, value);
     }
 
@@ -34,7 +35,7 @@ public final class SingleRecipeParallelProvider implements IBlockComponentProvid
     public void appendTooltip(ITooltip tooltip, BlockAccessor accessor, IPluginConfig config) {
         if (!accessor.getServerData().contains(KEY)) return;
         var value = accessor.getServerData().getCompound(KEY);
-        tooltip.add(Component.translatable("gtl_enhancedcore.parallel.same_recipe_lanes", value.getLong("lanes")));
+        tooltip.add(SingleRecipeParallel.laneDescription(value.getLong("galaxyRecipes"), value.getLong("lanes")));
         tooltip.add(Component.translatable("gtl_enhancedcore.parallel.current", value.getLong("current")));
     }
 

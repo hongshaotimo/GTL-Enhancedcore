@@ -25,6 +25,7 @@ import org.gtlcore.gtlcore.common.machine.multiblock.part.ae.MEPatternBufferPart
 import org.gtlcore.gtlcore.integration.ae2.pattern.PatternQuickUploadMetadata;
 import org.gtlcore.gtlcore.common.data.GTLItems;
 import org.gtlcore.gtlcore.common.item.VirtualIngredientBehavior;
+import org.gtlcore.gtlcore.integration.ae2.graph.GraphDispatchContext;
 
 /** Runtime guards are deliberately instance-local; no global current-controller or recipe cache. */
 public final class IvBuffers {
@@ -231,17 +232,14 @@ public final class IvBuffers {
                 if (possible.length != 1) throw new IllegalArgumentException("样板输入必须有确定身份");
                 unit.merge(possible[0].what(), input.getMultiplier(), Math::addExact);
             }
-            long multiplier = IvDispatchContext.operations(buffer, details);
-            for (var input : unit.entrySet()) {
-                if (isCircuit(input.getKey())) continue;
-                long count = received.getOrDefault(input.getKey(), 0L);
-                if (count <= 0 || count % input.getValue() != 0) throw new IllegalArgumentException("投料与样板倍率不一致");
-                long ratio = count / input.getValue();
-                if (multiplier >= 0 && multiplier != ratio) throw new IllegalArgumentException("整笔物品/流体倍率不一致");
-                multiplier = ratio;
-            }
-            if (multiplier < 1) throw new IllegalArgumentException("未获得无消耗样板的智能翻倍订单数量");
-            for (AEKey key : received.keySet()) if (!unit.containsKey(key)) throw new IllegalArgumentException("样板外的投料");
+            // The route/current-pattern checks above bind this synchronous GRAPH call to this buffer.
+            boolean graphDispatch = GraphDispatchContext.active() && GraphDispatchContext.selectedInputs() != null;
+            long dispatched = graphDispatch ? GraphDispatchContext.operations() : IvDispatchContext.operations(buffer, details);
+            long multiplier = IvPatternAdmission.dispatchMultiplier(unit, received, dispatched, IvBuffers::isCircuit,
+                    key -> graphDispatch && key instanceof AEItemKey item
+                            && GTLItems.VIRTUAL_INGREDIENT.isIn(item.toStack())
+                            && VirtualIngredientBehavior.isMarked(item.toStack())
+                            && !VirtualIngredientBehavior.canonicalStack(item.toStack()).isEmpty());
             IvTaskLog.event(buffer, null, "VALIDATE_DISPATCH", "OK", "request", request, "slot", slot, "multiplier", multiplier, "received", IvTaskLog.stock(received));
             Map<AEKey, Long> intrinsicVirtual = IvPatternAdmission.circuits(slotVirtual(buffer, slot),
                     declaredCircuits(buffer, original), IvBuffers::isCircuit);

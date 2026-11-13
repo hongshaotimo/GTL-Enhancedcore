@@ -12,6 +12,10 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(value = ParallelLogic.class, remap = false, priority = 1200)
 public abstract class IvNativeParallelMixin {
+    @ModifyVariable(method = "getMaxRecipeMultiplier", at = @At("HEAD"), argsOnly = true, require = 1)
+    private static int galaxy$reserveCandidate(int limit) {
+        return com.gtl.enhancedcore.common.recipe.GalaxyRecipeBatch.preparingIndependent() ? Math.min(1, limit) : limit;
+    }
     @Redirect(method = "doParallelRecipes", at = @At(value = "INVOKE",
             target = "Lorg/gtlcore/gtlcore/api/recipe/IParallelLogic;getRecipeOutputChance(Lcom/gregtechceu/gtceu/api/capability/recipe/IRecipeCapabilityHolder;Lcom/gregtechceu/gtceu/api/recipe/GTRecipe;)Lcom/gregtechceu/gtceu/api/recipe/GTRecipe;"))
     private static GTRecipe iv$deferChance(IRecipeCapabilityHolder holder, GTRecipe recipe) {

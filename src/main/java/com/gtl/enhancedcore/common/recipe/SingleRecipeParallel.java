@@ -16,7 +16,9 @@ public final class SingleRecipeParallel {
     private SingleRecipeParallel() {}
 
     public static boolean supports(Object machine) {
-        return machine instanceof HyperstructuralChemicalDistorterMachine;
+        return machine instanceof HyperstructuralChemicalDistorterMachine
+                || machine instanceof WorkableElectricMultiblockMachine electric
+                        && galaxyRecipes(electric) >= 0;
     }
 
     public static long lanes(IThreadModifierMachine machine) {
@@ -33,7 +35,8 @@ public final class SingleRecipeParallel {
     }
 
     public static GTRecipe apply(WorkableElectricMultiblockMachine machine, GTRecipe recipe, int base) {
-        var parallel = ParallelLogic.applyParallel(machine, recipe.copy(), limit(machine, base), false);
+        int limit = GalaxyRecipeBatch.preparingIndependent() ? 1 : limit(machine, base);
+        var parallel = ParallelLogic.applyParallel(machine, recipe.copy(), limit, false);
         // OCResult.parallel belongs to subtick overclocking, not this already-applied multiplier.
         return parallel.getSecond() > 0 ? parallel.getFirst() : null;
     }
@@ -42,13 +45,29 @@ public final class SingleRecipeParallel {
         var logic = machine.getRecipeLogic();
         var recipe = logic.getLastRecipe();
         return !machine.isFormed() || logic.isIdle() || logic.getDuration() <= 0 || recipe == null
-                ? 0 : Math.max(1, IGTRecipe.of(recipe).getRealParallels());
+                ? 0 : Math.max(1, recipe.data.contains(GalaxyRecipeBatch.OPERATIONS_TAG)
+                        ? recipe.data.getLong(GalaxyRecipeBatch.OPERATIONS_TAG)
+                        : IGTRecipe.of(recipe).getRealParallels());
+    }
+
+    public static long galaxyRecipes(WorkableElectricMultiblockMachine machine) {
+        var logic = machine.getRecipeLogic();
+        var recipe = logic.getLastRecipe();
+        if (recipe == null || !recipe.data.contains(GalaxyRecipeBatch.RECIPES_TAG)) return -1;
+        return !machine.isFormed() || logic.isIdle() || logic.getDuration() <= 0
+                ? 0 : Math.max(0, recipe.data.getLong(GalaxyRecipeBatch.RECIPES_TAG));
+    }
+
+    public static net.minecraft.network.chat.MutableComponent laneDescription(long galaxyRecipes, long lanes) {
+        return galaxyRecipes >= 0
+                ? Component.translatable("gtl_enhancedcore.parallel.galaxy_recipes", galaxyRecipes)
+                : Component.translatable("gtl_enhancedcore.parallel.same_recipe_lanes", lanes);
     }
 
     public static void append(WorkableElectricMultiblockMachine machine, List<Component> lines) {
         if (!machine.isFormed()) return;
-        lines.add(Component.translatable("gtl_enhancedcore.parallel.same_recipe_lanes",
-                lanes((IThreadModifierMachine) machine)).withStyle(ChatFormatting.LIGHT_PURPLE));
+        lines.add(laneDescription(galaxyRecipes(machine), lanes((IThreadModifierMachine) machine))
+                .withStyle(ChatFormatting.LIGHT_PURPLE));
         lines.add(Component.translatable("gtl_enhancedcore.parallel.current", current(machine))
                 .withStyle(ChatFormatting.GREEN));
     }

@@ -614,6 +614,7 @@
   "gtl_enhancedcore.parallel.coil_temperature": "Coil temperature: %s K",
   "gtl_enhancedcore.parallel.current": "Current cycle: %s recipe operations",
   "gtl_enhancedcore.parallel.same_recipe_lanes": "Same-recipe lanes: %s (includes 1 base lane)",
+  "gtl_enhancedcore.parallel.galaxy_recipes": "Active stellar recipes: %s",
   "gtl_enhancedcore.platinum_refining": "Platinum Refining",
   "gtl_enhancedcore.plot_preset_share.copied": "The complete current preset was copied. Paste it to share with another player.",
   "gtl_enhancedcore.plot_preset_share.empty_hint": "Paste shared text to preview it. Cancel keeps your current settings.",

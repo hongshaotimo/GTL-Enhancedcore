@@ -29,6 +29,13 @@ public abstract class CelestialVfxRenderTypes extends RenderType {
                     .setDepthTestState(LEQUAL_DEPTH_TEST)
                     .setCullState(NO_CULL).createCompositeState(false));
 
+    static final RenderType VOLUME = create("gtl_enhancedcore_celestial_volume", DefaultVertexFormat.POSITION_COLOR_TEX,
+            VertexFormat.Mode.QUADS, 256, false, false,
+            CompositeState.builder().setShaderState(new ShaderStateShard(() -> shader))
+                    .setTransparencyState(TRANSLUCENT_TRANSPARENCY).setWriteMaskState(COLOR_WRITE)
+                    .setDepthTestState(LEQUAL_DEPTH_TEST)
+                    .setCullState(NO_CULL).createCompositeState(false));
+
     static final RenderType CORE = create("gtl_enhancedcore_celestial_core", DefaultVertexFormat.POSITION_COLOR_TEX,
             VertexFormat.Mode.QUADS, 256, false, false,
             CompositeState.builder().setShaderState(new ShaderStateShard(() -> coreShader))

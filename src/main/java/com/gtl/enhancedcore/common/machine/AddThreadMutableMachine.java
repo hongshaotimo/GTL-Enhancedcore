@@ -82,7 +82,7 @@ public abstract class AddThreadMutableMachine extends MutableElectricParallelHat
     }
 
     /** 128 基准 + Ω：Ω 取自 ADD 的 {@code getAdditionalThread()}（无 Ω 为 0）。 */
-    static final class AddThreadRecipeLogic extends MutableRecipesLogic<MutableElectricParallelHatchMultiblockMachine> {
+    public static final class AddThreadRecipeLogic extends MutableRecipesLogic<MutableElectricParallelHatchMultiblockMachine> {
         private final AddThreadMutableMachine owner;
 
         AddThreadRecipeLogic(AddThreadMutableMachine machine) {

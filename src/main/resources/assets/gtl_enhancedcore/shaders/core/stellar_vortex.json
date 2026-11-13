@@ -1,11 +1,4 @@
 {
-  "blend": {
-    "func": "add",
-    "srcrgb": "srcalpha",
-    "dstrgb": "1",
-    "srcalpha": "1",
-    "dstalpha": "1-srcalpha"
-  },
   "vertex": "gtl_enhancedcore:stellar_vortex",
   "fragment": "gtl_enhancedcore:stellar_vortex",
   "attributes": [
@@ -83,6 +76,16 @@
       "count": 1,
       "values": [
         1
+      ]
+    },
+    {
+      "name": "LocalEye",
+      "type": "float",
+      "count": 3,
+      "values": [
+        0,
+        0,
+        0
       ]
     }
   ]

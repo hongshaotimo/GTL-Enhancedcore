@@ -21,6 +21,15 @@ float fbm(vec2 p) {
     float f=.55*noise(p);p=mat2(.8,-.6,.6,.8)*p*2.13;
     f+=.28*noise(p);p=mat2(.8,-.6,.6,.8)*p*2.07;return f+.14*noise(p);
 }
+float noise3(vec3 p) {
+    vec3 i=floor(p),f=fract(p);f=f*f*(3.0-2.0*f);
+    vec2 uv=i.xy+vec2(37,17)*i.z+f.xy;
+    return mix(noise(uv),noise(uv+vec2(37,17)),f.z);
+}
+float gasNoise(vec3 p) {
+    float n=.57*noise3(p);p=p*2.03+vec3(3.7,8.1,1.9);
+    return n+.29*noise3(p)+.14*noise3(p*2.07);
+}
 vec3 displayColor(vec3 color) {
     color=max(color,vec3(0));
     return mix(color*12.92,1.055*pow(color,vec3(1.0/2.4))-.055,step(vec3(.0031308),color));
@@ -68,6 +77,90 @@ void main() {
         float mist=fbm(vec2(angle*2.4,t*9.0-PhaseTime*.13));
         color=mix(vec3(.10,.37,.85),vec3(.55,.24,.88),t);
         alpha=(filament*.13+mist*.045)*sin(t*3.14159);
+    } else if(Kind==7) {
+        vec3 ray=normalize(localPosition-LocalEye),axes=vec3(79,79,43);
+        vec3 origin=LocalEye/axes,direction=ray/axes;
+        float aa=dot(direction,direction),bb=dot(origin,direction),cc=dot(origin,origin)-1.0;
+        float discriminant=bb*bb-aa*cc;if(discriminant<=0.0)discard;
+        float nearT=max(0.0,(-bb-sqrt(discriminant))/aa),farT=(-bb+sqrt(discriminant))/aa;
+        if(farT<=nearT)discard;
+        // Keep the event-horizon silhouette open while the front volume uses its own spatial depth.
+        if(dot(LocalEye,ray)<0.0&&length(cross(LocalEye,ray))<12.1)discard;
+        vec4 volumeDepth=ProjMat*FieldViewMat*vec4(LocalEye+ray*(nearT+.5),1);
+        gl_FragDepth=clamp(volumeDepth.z/volumeDepth.w*.5+.5,0.0,1.0);
+        int samples=vertexColor.a<.75?16:28;
+        float stepSize=(farT-nearT)/float(samples),transmission=1.0;
+        vec3 scattered=vec3(0);
+        for(int march=0;march<28;march++) {
+            if(march>=samples)break;
+            vec3 point=LocalEye+ray*(nearT+(float(march)+.5)*stepSize);
+            vec3 p=point/axes;
+            float co=cos(PhaseTime*.013),si=sin(PhaseTime*.013);
+            p.xy=mat2(co,-si,si,co)*p.xy;
+            float n=gasNoise(p*4.2+vec3(0,PhaseTime*.023,0));
+            float curl=gasNoise(p*9.7+vec3(n*2.0,0,-PhaseTime*.017));
+            float filament=pow(max(0.0,1.0-abs(n-.53)*5.8),3.0);
+            float rim=pow(max(0.0,1.0-dot(p,p)),1.15);
+            float hole=smoothstep(14.0,27.0,length(point));
+            float density=filament*(.18+.82*curl)*rim*hole;
+            float extinction=1.0-exp(-density*stepSize*.095);
+            vec3 tint=mix(vec3(.025,.045,.24),vec3(.31,.065,.52),smoothstep(.26,.72,n));
+            tint=mix(tint,vec3(.84,.25,.055),pow(curl,3.0)*1.4);
+            tint+=vec3(.22,.28,.48)*pow(max(0.0,(n-.52)*3.0),3.0);
+            scattered+=transmission*extinction*tint*1.9;
+            transmission*=1.0-extinction;
+        }
+        float opticalDepth=1.0-transmission;
+        // A bounded pocket of deep space supplies contrast against a daytime sky.
+        // Ordinary alpha blending applies only to this volume, never to the light passes.
+        float chord=(farT-nearT)*length(direction);
+        alpha=.94*smoothstep(0.0,.90,chord);
+        color=vec3(.002,.003,.012)+scattered*1.15/max(.45,opticalDepth);
+    } else if(Kind==8) {
+        float t=fieldUV.x,angle=fieldUV.y*6.2831853;
+        float edge=smoothstep(0.0,.06,t)*(1.0-smoothstep(.78,1.0,t));
+        float shear=angle-log(t+.18)*1.7-PhaseTime*.18;
+        float gas=fbm(vec2(t*19.0,shear*5.0));
+        float fine=fbm(vec2(t*43.0+gas*1.3,shear*11.0));
+        float threads=pow(max(0.0,1.0-abs(gas-.54)*5.0),3.0);
+        float caustic=exp(-pow((t-.065)/.025,2.0));
+        color=mix(vec3(.44,.075,.018),vec3(1.0,.58,.18),threads);
+        color=mix(color,vec3(.24,.055,.58),smoothstep(.28,1.0,t)*.85);
+        color+=vec3(.8,.67,.42)*caustic*.6;
+        alpha=edge*(.08+threads*.40+caustic*.47)*(.38+.62*fine);
+    } else if(Kind==9) {
+        float r=length(fieldUV);if(r>1.0||r<.43)discard;
+        float angle=atan(fieldUV.y,fieldUV.x);
+        float photon=exp(-pow((r-.46)/.018,2.0));
+        float lens=exp(-pow((r-.61)/.035,2.0));
+        float halo=exp(-pow((r-.49)/.14,2.0));
+        color=mix(vec3(1.0,.45,.10),vec3(1.0,.9,.64),photon);
+        alpha=photon*.95+lens*(.17+.12*sin(angle*3.0-PhaseTime*.3))+halo*.12;
+    } else if(Kind==10) {
+        float t=fieldUV.x,angle=fieldUV.y*6.2831853;
+        float flow=angle-PhaseTime*.021;
+        float n=fbm(vec2(t*8.0,flow*17.0));
+        float detail=fbm(vec2(t*22.0+n*2.0,flow*43.0));
+        float filaments=pow(max(0.0,1.0-abs(n-.53)*5.3),3.0);
+        float edge=sin(t*3.1415926);
+        float knots=pow(.5+.5*sin(angle*12.0-PhaseTime*.9),10.0);
+        color=mix(vec3(.075,.035,.30),vec3(.39,.21,.75),detail);
+        color=mix(color,vec3(.78,.48,.16),knots*.72);
+        alpha=edge*edge*(.045+filaments*.30)*(.45+knots*.55);
+    } else if(Kind==11) {
+        // The secondary, folded accretion image follows the disk's projected inclination.
+        vec2 normal=(FieldViewMat*vec4(0,.9,-.436,0)).xy;
+        normal=length(normal)>.01?normalize(normal):vec2(0,1);
+        vec2 p=fieldUV*38.0;
+        vec2 q=vec2(dot(p,vec2(normal.y,-normal.x)),dot(p,normal));
+        float r=length(vec2(q.x,q.y/.83));
+        float arc=exp(-pow((r-21.0)/.8,2.0));
+        float veil=exp(-pow((r-21.0)/2.2,2.0));
+        float angle=atan(q.y,q.x);
+        float gas=fbm(vec2(r*2.0,angle*9.0-PhaseTime*.25));
+        float polar=smoothstep(.04,.65,abs(q.y)/max(r,.01));
+        color=mix(vec3(.52,.14,.035),vec3(1.0,.72,.32),gas);
+        alpha=(arc*.56+veil*.13)*polar*(.45+.55*gas);
     } else {
         // Analytic ray/sphere surface, with true projected depth and a smoothly shaded silhouette.
         vec3 ray=normalize(localPosition-LocalEye),oc=LocalEye-CoreCenter;
@@ -85,7 +178,10 @@ void main() {
                      +fbm(n.zx*18.0+PhaseTime*.014)*weights.y
                      +fbm(n.xy*18.0+PhaseTime*.014)*weights.z;
         float veins=pow(max(0.0,1.0-abs(texture-.51)*8.0),3.0);
-        if(CoreRadius>1.0) {
+        if(Kind==6) {
+            // Opaque event horizon, with analytic sphere depth rather than a black square sprite.
+            color=vec3(.001,.0007,.003)+vec3(.08,.018,.13)*pow(1.0-mu,12.0);
+        } else if(CoreRadius>1.0 && Profile==0) {
             color=mix(vec3(.12,.30,.82),vec3(.80,.91,1.0),pow(mu,.32));
             color*=.84+.28*texture;
             color+=vec3(.20,.24,.39)*veins*.08;
