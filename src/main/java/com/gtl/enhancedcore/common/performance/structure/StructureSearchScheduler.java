@@ -6,6 +6,7 @@ import com.gregtechceu.gtceu.api.pattern.BlockPattern;
 import com.gregtechceu.gtceu.api.pattern.MultiblockState;
 import com.gregtechceu.gtceu.api.pattern.MultiblockWorldSavedData;
 import com.gtl.enhancedcore.mixin.gtceu.BlockPatternAccessor;
+import com.gtl.enhancedcore.mixin.gtceu.StructureSearchFormationInvoker;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
@@ -60,13 +61,9 @@ public final class StructureSearchScheduler {
             // A part can be claimed by another controller without a block-state event. Confirm on
             // the server thread before binding capabilities; never form from an async-only result.
             CONFIRMING.set(true);
-            if (controller.checkPatternWithLock()) {
-                controller.self().setFlipped(controller.getMultiblockState().isNeededFlip());
-                controller.onStructureFormed();
-                MultiblockWorldSavedData saved = MultiblockWorldSavedData.getOrCreate(level);
-                saved.addMapping(controller.getMultiblockState());
-                saved.removeAsyncLogic(controller);
-            } else {
+            // Call the final recheck synchronously so this token and scope cover the actual match.
+            if (!((StructureSearchFormationInvoker) controller)
+                    .enhancedcore$updateStructure(level, false, "formation")) {
                 budget.failed(System.nanoTime(), token);
             }
         } finally {

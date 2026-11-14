@@ -30,6 +30,9 @@ public final class PerformanceMixinPlugin implements IMixinConfigPlugin {
     @Override public String getRefMapperConfig() { return null; }
 
     @Override public boolean shouldApplyMixin(String targetClassName, String mixinClassName) {
+        if (mixinClassName.equals("com.gtl.enhancedcore.mixin.gtceu.ServerAmountSetWidgetMixin"))
+            return org.spongepowered.asm.mixin.MixinEnvironment.getDefaultEnvironment().getSide()
+                    == org.spongepowered.asm.mixin.MixinEnvironment.Side.SERVER;
         if (mixinClassName.startsWith("com.gtl.enhancedcore.mixin.extendedae.client."))
             return hasClass(targetClassName);
         if (mixinClassName.equals("com.gtl.enhancedcore.mixin.jade.WeatherAnchorRecipeLogicProviderMixin"))

@@ -3,36 +3,14 @@ package com.gtl.enhancedcore.client.structure;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.*;
 import java.util.List;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.core.BlockPos;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.client.event.RenderLevelStageEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
 
 /** One immediate batch of translucent red faces, visible through the structure. */
-@Mod.EventBusSubscriber(modid="gtl_enhancedcore",value=Dist.CLIENT)
 public final class ChamberHighlightRenderer {
-    private static com.gtl.enhancedcore.network.ChamberPackets.Snapshot current;
-    private static long expires;
     private static final BufferBuilder VERTICES=new BufferBuilder(262144);
     private static final int[][] FACES={{0,1,2,3},{4,7,6,5},{0,4,5,1},{3,2,6,7},{0,3,7,4},{1,5,6,2}};
-    static { com.gtl.enhancedcore.client.memory.ClientWorldCacheCleanup.register(level -> current=null); }
     private ChamberHighlightRenderer() {}
-    public static void accept(com.gtl.enhancedcore.network.ChamberPackets.Snapshot snapshot) {
-        var mc=Minecraft.getInstance();
-        if(mc.level==null||!mc.level.dimension().location().equals(snapshot.dimension()))return;
-        current=snapshot;expires=mc.level.getGameTime()+600;
-    }
-    @SubscribeEvent public static void world(RenderLevelStageEvent event) {
-        if(event.getStage()!=RenderLevelStageEvent.Stage.AFTER_PARTICLES||current==null)return;
-        var mc=Minecraft.getInstance();
-        if(mc.level==null||mc.level.getGameTime()>expires||!mc.level.dimension().location().equals(current.dimension())){current=null;return;}
-        var camera=event.getCamera().getPosition();
-        var pose=event.getPoseStack();pose.pushPose();pose.translate(-camera.x,-camera.y,-camera.z);
-        draw(current.positions(),pose);pose.popPose();
-    }
     public static void draw(List<BlockPos> positions,double x,double y,double z) {
         var pose=new PoseStack();pose.translate(x,y,z);draw(positions,pose);
     }

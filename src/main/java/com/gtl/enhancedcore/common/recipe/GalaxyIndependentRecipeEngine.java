@@ -58,15 +58,16 @@ public final class GalaxyIndependentRecipeEngine {
     }
 
     public static boolean supports(RecipeLogic logic) {
+        // Subclasses may own input payment, power or completion. Only these known ordinary
+        // traits share the GTCEu lifecycle; do not claim arbitrary custom recipe engines.
+        Class<?> type = logic.getClass();
+        if (type != RecipeLogic.class && type != RetryableRecipeLogic.class
+                && type != PlusFactoryRecipeLogic.class && !GalaxyNativeRecipePreparation.supports(logic)) return false;
         if (!(logic.getMachine() instanceof WorkableElectricMultiblockMachine machine)
                 || machine instanceof com.gtl.enhancedcore.common.machine.ExtremeReactorMachine
                 || machine.getRecipeType().isFuelRecipeType()
                 || IvMachineScope.crossRecipeEnabled(machine)) return false;
-        // Subclasses may own input payment, power or completion. Only these known ordinary
-        // traits share the GTCEu lifecycle; do not claim arbitrary custom recipe engines.
-        Class<?> type = logic.getClass();
-        return type == RecipeLogic.class || type == RetryableRecipeLogic.class
-                || type == PlusFactoryRecipeLogic.class || GalaxyNativeRecipePreparation.supports(logic);
+        return true;
     }
 
     public boolean hasJobs() { return !jobs.isEmpty(); }

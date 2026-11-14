@@ -21,14 +21,14 @@ float fbm(vec2 p) {
     float f=.55*noise(p);p=mat2(.8,-.6,.6,.8)*p*2.13;
     f+=.28*noise(p);p=mat2(.8,-.6,.6,.8)*p*2.07;return f+.14*noise(p);
 }
-float noise3(vec3 p) {
+float celestialNoise3(vec3 p) {
     vec3 i=floor(p),f=fract(p);f=f*f*(3.0-2.0*f);
     vec2 uv=i.xy+vec2(37,17)*i.z+f.xy;
     return mix(noise(uv),noise(uv+vec2(37,17)),f.z);
 }
 float gasNoise(vec3 p) {
-    float n=.57*noise3(p);p=p*2.03+vec3(3.7,8.1,1.9);
-    return n+.29*noise3(p)+.14*noise3(p*2.07);
+    float n=.57*celestialNoise3(p);p=p*2.03+vec3(3.7,8.1,1.9);
+    return n+.29*celestialNoise3(p)+.14*celestialNoise3(p*2.07);
 }
 vec3 displayColor(vec3 color) {
     color=max(color,vec3(0));

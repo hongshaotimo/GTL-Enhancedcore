@@ -13,7 +13,9 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import net.minecraft.core.BlockPos;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.ChunkPos;
+import org.gtlcore.gtlcore.api.pattern.PatternRetryIndex;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -27,6 +29,7 @@ public abstract class StructureWorldIndexMixin implements StructureWorldAccess {
     @Shadow public Map<BlockPos, MultiblockState> mapping;
     @Shadow public Map<ChunkPos, Set<MultiblockState>> chunkPosMapping;
     @Shadow @Final private CopyOnWriteArrayList<IMultiController> controllers;
+    @Shadow @Final private ServerLevel serverLevel;
     @Shadow public abstract void createExecutorService();
     @Shadow public abstract void releaseExecutorService();
     @Unique private final StructureChunkMembership<MultiblockState> enhancedcore$memberships =
@@ -72,7 +75,15 @@ public abstract class StructureWorldIndexMixin implements StructureWorldAccess {
         synchronized (controllers) {
             boolean present = false;
             for (var existing : controllers) if (existing == controller) { present = true; break; }
-            if (!present) controllers.add(controller);
+            if (!present) {
+                controllers.add(controller);
+                // New upstream controllers also use this lifecycle for explicit formation requests.
+                serverLevel.getServer().execute(() -> {
+                    if (controllers.contains(controller) && !controller.self().isInValid()) {
+                        PatternRetryIndex.get(serverLevel).watch(controller);
+                    }
+                });
+            }
             createExecutorService();
         }
         ci.cancel();
@@ -84,6 +95,9 @@ public abstract class StructureWorldIndexMixin implements StructureWorldAccess {
             controllers.removeIf(existing -> existing == controller);
             if (controllers.isEmpty()) releaseExecutorService();
         }
+        serverLevel.getServer().execute(() -> {
+            if (!controllers.contains(controller)) PatternRetryIndex.get(serverLevel).remove(controller);
+        });
         if (controller instanceof StructureSearchAccess access) {
             access.enhancedcore$searchBackoff().wake();
             enhancedcore$watches.remove(access.enhancedcore$searchBackoff());
