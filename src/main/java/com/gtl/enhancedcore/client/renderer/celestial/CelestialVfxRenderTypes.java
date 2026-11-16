@@ -12,7 +12,7 @@ import net.minecraftforge.client.event.RegisterShadersEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
-/** Depth-tested additive light, no depth writes or quad sorting; shared by both orreries. */
+/** Separate raster-depth light from analytic-depth cores/volume; no quad sorting. */
 @OnlyIn(Dist.CLIENT)
 @Mod.EventBusSubscriber(modid = GTLEnhancedcore.MOD_ID, bus = Mod.EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
 public abstract class CelestialVfxRenderTypes extends RenderType {
@@ -31,7 +31,7 @@ public abstract class CelestialVfxRenderTypes extends RenderType {
 
     static final RenderType VOLUME = create("gtl_enhancedcore_celestial_volume", DefaultVertexFormat.POSITION_COLOR_TEX,
             VertexFormat.Mode.QUADS, 256, false, false,
-            CompositeState.builder().setShaderState(new ShaderStateShard(() -> shader))
+            CompositeState.builder().setShaderState(new ShaderStateShard(() -> coreShader))
                     .setTransparencyState(TRANSLUCENT_TRANSPARENCY).setWriteMaskState(COLOR_WRITE)
                     .setDepthTestState(LEQUAL_DEPTH_TEST)
                     .setCullState(NO_CULL).createCompositeState(false));

@@ -21,11 +21,16 @@ public final class GTLEnhancedcoreItems {
     public static ItemEntry<ComponentItem> PATTERN_GENERATOR;
     public static ItemEntry<com.gtl.enhancedcore.common.item.PlotWorldControllerItem> PLOT_WORLD_CONTROLLER;
     public static ItemEntry<com.gtl.enhancedcore.common.item.AssemblyManagerItem> ASSEMBLY_MANAGER;
+    public static ItemEntry<com.gtl.enhancedcore.common.item.PortableCentralTeleporterItem> PORTABLE_CENTRAL_TELEPORTER;
 
     private GTLEnhancedcoreItems() {
     }
 
     public static void init() {
+        PORTABLE_CENTRAL_TELEPORTER = GTLEnhancedcore.REGISTRATE
+                .item("portable_central_teleporter", com.gtl.enhancedcore.common.item.PortableCentralTeleporterItem::new)
+                .model(com.tterrag.registrate.util.nullness.NonNullBiConsumer.noop())
+                .register();
         ASSEMBLY_MANAGER = GTLEnhancedcore.REGISTRATE
                 .item("assembly_manager", com.gtl.enhancedcore.common.item.AssemblyManagerItem::new)
                 .model(com.tterrag.registrate.util.nullness.NonNullBiConsumer.noop())

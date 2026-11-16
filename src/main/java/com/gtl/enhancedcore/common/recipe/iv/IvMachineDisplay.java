@@ -3,6 +3,7 @@ package com.gtl.enhancedcore.common.recipe.iv;
 import com.google.common.primitives.Ints;
 import com.gregtechceu.gtceu.api.machine.multiblock.WorkableElectricMultiblockMachine;
 import com.gregtechceu.gtceu.utils.FormattingUtil;
+import com.gtl.enhancedcore.common.recipe.GalaxyIndependentRecipeEngine;
 import com.gtladd.gtladditions.api.machine.IThreadModifierMachine;
 import com.gtladd.gtladditions.api.machine.logic.MutableRecipesLogic;
 import java.util.List;
@@ -50,6 +51,10 @@ public final class IvMachineDisplay {
                     .withStyle(ChatFormatting.GREEN));
         }
         if (com.gtl.enhancedcore.common.machine.galaxy.GalaxyLinks.active(machine)) {
+            if (GalaxyIndependentRecipeEngine.supports(machine.getRecipeLogic())
+                    && com.gtl.enhancedcore.common.machine.galaxy.GalaxyLinks.crossRecipeEnabledByConnection(machine))
+                canonicalLine(text, "gtladditions.multiblock.threads", threadLine(
+                        GalaxyIndependentRecipeEngine.threads(machine.getRecipeLogic())));
             var handler = com.gtl.enhancedcore.common.machine.galaxy.GalaxyWirelessEnergyHandler.forMachine(machine);
             var recipe = machine.getRecipeLogic().getLastRecipe();
             var balance = handler == null ? BigInteger.ZERO : handler.getMaxAvailableEnergy();

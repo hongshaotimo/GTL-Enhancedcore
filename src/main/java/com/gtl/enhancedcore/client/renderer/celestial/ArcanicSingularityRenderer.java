@@ -22,6 +22,7 @@ final class ArcanicSingularityRenderer {
     private static final Vector3f EYE = new Vector3f(), RIGHT = new Vector3f(), UP = new Vector3f();
     private static final Vector3f P = new Vector3f(), Q = new Vector3f(), SIDE = new Vector3f();
     private static final float[] STARS = new float[5200 * 5];
+    private static final Angles LOW_ANGLES = new Angles(96), HIGH_ANGLES = new Angles(160);
     private static RenderType activeType;
     static {
         var random = new Random(0x415243414E49434CL);
@@ -48,15 +49,14 @@ final class ArcanicSingularityRenderer {
         inverse.transformDirection(RIGHT.set(1, 0, 0)).normalize();
         inverse.transformDirection(UP.set(0, 1, 0)).normalize();
         boolean distant = EYE.lengthSquared() > 380 * 380;
-        int segments = quality == 1 || distant ? 96 : 160;
+        var angles = quality == 1 || distant ? LOW_ANGLES : HIGH_ANGLES;
+        int segments = angles.segments;
+        for (int j = 0; j <= segments; j++) {
+            angles.warp[j] = Math.sin(angles.radians[j * 2] * 3 + seconds * .3) * 1.2;
+        }
         try (var state = new CelestialVfxState()) {
-            for (var shader : new net.minecraft.client.renderer.ShaderInstance[]{
-                    CelestialVfxRenderTypes.shader(), CelestialVfxRenderTypes.coreShader()}) {
-                shader.safeGetUniform("FieldViewMat").set(view);
-                shader.safeGetUniform("LocalEye").set(EYE);
-                shader.safeGetUniform("PhaseTime").set((float) (seconds % 24000));
-                shader.safeGetUniform("Profile").set(1);
-            }
+            uniforms(CelestialVfxRenderTypes.shader(), view, seconds);
+            uniforms(CelestialVfxRenderTypes.coreShader(), view, seconds);
             sphere(P.set(0, 0, 0), 12F, true);
             for (int i = 0; i < count; i++) {
                 world(i, seed, seconds, P);
@@ -80,10 +80,10 @@ final class ArcanicSingularityRenderer {
             begin(8, false);
             // A broad, inclined accretion sheet, rather than another spiral galaxy.
             for (int band = 0; band < 7; band++) for (int j = 0; j < segments; j++) {
-                diskVertex(14 + band * 7.8, TAU * j / segments, seconds);
-                diskVertex(14 + (band + 1) * 7.8, TAU * j / segments, seconds);
-                diskVertex(14 + (band + 1) * 7.8, TAU * (j + 1) / segments, seconds);
-                diskVertex(14 + band * 7.8, TAU * (j + 1) / segments, seconds);
+                diskVertex(14 + band * 7.8, j, angles);
+                diskVertex(14 + (band + 1) * 7.8, j, angles);
+                diskVertex(14 + (band + 1) * 7.8, j + 1, angles);
+                diskVertex(14 + band * 7.8, j + 1, angles);
             }
             end();
 
@@ -108,10 +108,11 @@ final class ArcanicSingularityRenderer {
             // Counter-precessing meridians occupy the complete central opening.
             for (int ring = 0; ring < 2; ring++) {
                 double azimuth = ring * Math.PI / 2 + seconds * (ring % 2 == 0 ? .018 : -.014);
+                double azimuthCos = Math.cos(azimuth), azimuthSin = Math.sin(azimuth);
                 double radius = 62 + ring * 9;
                 for (int j = 0; j < segments; j++) {
-                    meridian(radius, azimuth, TAU * j / segments, P);
-                    meridian(radius, azimuth, TAU * (j + 1) / segments, Q);
+                    meridian(radius, azimuthCos, azimuthSin, j * 2, angles, P);
+                    meridian(radius, azimuthCos, azimuthSin, (j + 1) * 2, angles, Q);
                     ribbon(.20F, ring % 2 == 0 ? 1F : .66F, .65F, ring % 2 == 0 ? .46F : 1F,
                             .16F, (float) (j * .23 - seconds * 2));
                 }
@@ -119,9 +120,8 @@ final class ArcanicSingularityRenderer {
             end();
             begin(10, false);
             for (int face = -1; face <= 1; face += 2) for (int j = 0; j < segments * 2; j++) {
-                double a = TAU * j / (segments * 2), b = TAU * (j + 1) / (segments * 2);
-                hoopVertex(136, a, face); hoopVertex(153, a, face);
-                hoopVertex(153, b, face); hoopVertex(136, b, face);
+                hoopVertex(136, j, face, angles); hoopVertex(153, j, face, angles);
+                hoopVertex(153, j + 1, face, angles); hoopVertex(136, j + 1, face, angles);
             }
             end();
             begin(2, false);
@@ -131,10 +131,10 @@ final class ArcanicSingularityRenderer {
                     double radius = CelestialEffectSizing.ASTROGRAPH_OUTER_RADIUS - ring * 3.1;
                     float z = face * (4F + ring * 1.3F);
                     for (int j = 0; j < segments * 2; j++) {
-                        double a = TAU * j / (segments * 2), b = TAU * (j + 1) / (segments * 2);
+                        double a = angles.radians[j];
                         float packet = (float) Math.pow(.5 + .5 * Math.sin(a * 12 - seconds * 1.7 * face), 12);
-                        P.set((float) (radius * Math.cos(a)), (float) (radius * Math.sin(a)), z);
-                        Q.set((float) (radius * Math.cos(b)), (float) (radius * Math.sin(b)), z);
+                        P.set((float) (radius * angles.cos[j]), (float) (radius * angles.sin[j]), z);
+                        Q.set((float) (radius * angles.cos[j + 1]), (float) (radius * angles.sin[j + 1]), z);
                         ribbon(ring == 0 ? .44F : ring == 1 ? .25F : 1.6F, ring == 1 ? 1F : .62F, .64F,
                                 ring == 1 ? .48F : 1F, (ring == 2 ? .04F : .14F) + packet * .30F, (float) (a * 25));
                     }
@@ -186,20 +186,27 @@ final class ArcanicSingularityRenderer {
                 (float) (radius * Math.sin(angle) * Math.sin(tilt) * .48));
     }
 
-    private static void hoopVertex(double radius, double angle, int face) {
-        vertex((float) (radius * Math.cos(angle)), (float) (radius * Math.sin(angle)), face * 6F,
-                1, 1, 1, 1, (float) ((radius - 136) / 17), (float) (angle / TAU));
+    private static void uniforms(net.minecraft.client.renderer.ShaderInstance shader, Matrix4f view, double seconds) {
+        shader.safeGetUniform("FieldViewMat").set(view);
+        shader.safeGetUniform("LocalEye").set(EYE);
+        shader.safeGetUniform("PhaseTime").set((float) (seconds % 24000));
+        shader.safeGetUniform("Profile").set(1);
     }
 
-    private static void diskVertex(double radius, double angle, double seconds) {
-        double y = radius * Math.sin(angle), warp = Math.sin(angle * 3 + seconds * .3) * 1.2;
-        vertex((float) (radius * Math.cos(angle)), (float) (y * .34 + warp), (float) (y * .70),
-                1, 1, 1, 1, (float) ((radius - 14) / 54.6), (float) (angle / TAU));
+    private static void hoopVertex(double radius, int j, int face, Angles angles) {
+        vertex((float) (radius * angles.cos[j]), (float) (radius * angles.sin[j]), face * 6F,
+                1, 1, 1, 1, (float) ((radius - 136) / 17), (float) (angles.radians[j] / TAU));
     }
 
-    private static void meridian(double radius, double azimuth, double angle, Vector3f out) {
-        out.set((float) (radius * Math.cos(angle) * Math.cos(azimuth)), (float) (radius * Math.sin(angle)),
-                (float) (radius * Math.cos(angle) * Math.sin(azimuth) * .49));
+    private static void diskVertex(double radius, int j, Angles angles) {
+        double y = radius * angles.sin[j * 2];
+        vertex((float) (radius * angles.cos[j * 2]), (float) (y * .34 + angles.warp[j]), (float) (y * .70),
+                1, 1, 1, 1, (float) ((radius - 14) / 54.6), (float) (angles.radians[j * 2] / TAU));
+    }
+
+    private static void meridian(double radius, double azimuthCos, double azimuthSin, int j, Angles angles, Vector3f out) {
+        out.set((float) (radius * angles.cos[j] * azimuthCos), (float) (radius * angles.sin[j]),
+                (float) (radius * angles.cos[j] * azimuthSin * .49));
     }
 
     private static void inflow(double angle, double t, int face, double seconds, Vector3f out) {
@@ -209,7 +216,7 @@ final class ArcanicSingularityRenderer {
     }
 
     private static void begin(int kind, boolean solid) {
-        (solid ? CelestialVfxRenderTypes.coreShader() : CelestialVfxRenderTypes.shader()).safeGetUniform("Kind").set(kind);
+        (solid || kind == 7 ? CelestialVfxRenderTypes.coreShader() : CelestialVfxRenderTypes.shader()).safeGetUniform("Kind").set(kind);
         activeType = solid ? CelestialVfxRenderTypes.CORE : kind == 7 ? CelestialVfxRenderTypes.VOLUME : CelestialVfxRenderTypes.LIGHT;
         activeType.setupRenderState();
         VERTICES.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR_TEX);
@@ -246,5 +253,24 @@ final class ArcanicSingularityRenderer {
 
     private static void vertex(float x, float y, float z, float r, float g, float b, float alpha, float u, float v) {
         VERTICES.vertex(x,y,z).color(r,g,b,alpha).uv(u,v).endVertex();
+    }
+
+    /** Fixed geometry only; no machine, level or cross-frame animation state is retained. */
+    private static final class Angles {
+        final int segments;
+        final double[] radians, cos, sin, warp;
+
+        Angles(int segments) {
+            this.segments = segments;
+            radians = new double[segments * 2 + 1];
+            cos = new double[radians.length];
+            sin = new double[radians.length];
+            warp = new double[segments + 1];
+            for (int j = 0; j < radians.length; j++) {
+                radians[j] = TAU * j / (segments * 2);
+                cos[j] = Math.cos(radians[j]);
+                sin[j] = Math.sin(radians[j]);
+            }
+        }
     }
 }

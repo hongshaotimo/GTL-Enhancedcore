@@ -1,6 +1,6 @@
 {
   "vertex": "gtl_enhancedcore:celestial_light",
-  "fragment": "gtl_enhancedcore:celestial_light",
+  "fragment": "gtl_enhancedcore:celestial_depth",
   "attributes": [
     "Position",
     "Color",

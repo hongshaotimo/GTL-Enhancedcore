@@ -40,7 +40,10 @@ public final class PatternCutStore {
             throw new IOException("Cut already exists: " + id);
         }
         Entry entry = entryFromPayload(id, payload);
-        writeAtomically(file, payload);
+        // Mirror bindings belong to the source machine, never to a portable pattern cut.
+        CompoundTag stored = payload.copy();
+        stored.remove("proxies");
+        writeAtomically(file, stored);
         entries.put(id, entry);
         // A failed index publication leaves an inaccessible file, never another readable cut.
         saveIndex(entries);

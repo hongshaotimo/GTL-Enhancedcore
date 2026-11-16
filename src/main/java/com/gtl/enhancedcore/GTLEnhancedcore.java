@@ -96,6 +96,7 @@ public class GTLEnhancedcore {
             if (patternGenerator != null) event.accept(patternGenerator.getDefaultInstance());
             event.accept(GTLEnhancedcoreItems.PLOT_WORLD_CONTROLLER.get().getDefaultInstance());
             event.accept(GTLEnhancedcoreItems.ASSEMBLY_MANAGER.get().getDefaultInstance());
+            event.accept(GTLEnhancedcoreItems.PORTABLE_CENTRAL_TELEPORTER.get().getDefaultInstance());
             event.accept(com.gtl.enhancedcore.common.world.campus.CampusDeviceBlocks.VIRTUAL_MARKER.asStack());
             event.accept(com.gtl.enhancedcore.common.world.campus.CampusDeviceBlocks.CENTRAL_TELEPORTER.asStack());
         });

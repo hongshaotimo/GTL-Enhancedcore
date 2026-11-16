@@ -192,6 +192,7 @@
     "ldlib.client.ModularUiPlayerMemoryMixin",
     "ldlib.client.SceneWidgetRenderFilterMixin",
     "gtlcore.client.ForgeClientEventListenerJeiExtractMixin",
+    "gtlcore.client.SocketPreviewPartGateMixin",
     "jei.JeiRecipeCopyMixin",
     "jei.JeiSearchFormattingMixin",
     "jei.JeiAnvilMenuMemoryMixin",

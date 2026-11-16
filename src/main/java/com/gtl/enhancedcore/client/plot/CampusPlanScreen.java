@@ -425,6 +425,10 @@ public final class CampusPlanScreen extends Screen {
         centerZ = Math.max(worldBounds.minZ(), Math.min(worldBounds.maxZ(), centerZ));
     }
     @Override public boolean mouseClicked(double x, double y, int button) {
+        if (button == 1 && session != null && inMap(x, y)) {
+            if (selected != null && selected.equals(hovered(x, y))) teleport();
+            return true;
+        }
         if (button == 0 && inMap(x, y)) {
             searchBox.setFocused(false);
             pointerPressed = true; dragged = false; pressX = x; pressY = y; pressedTarget = hovered(x, y); return true;

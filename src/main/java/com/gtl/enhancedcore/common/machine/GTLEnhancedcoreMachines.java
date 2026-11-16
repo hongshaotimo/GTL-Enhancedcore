@@ -46,6 +46,7 @@ public final class GTLEnhancedcoreMachines {
     private static volatile MultiblockMachineDefinition extremeReactor;
     private static volatile MultiblockMachineDefinition platinumRefiningMatrix;
     private static volatile MultiblockMachineDefinition lanthanideRefiningHub;
+    private static volatile MultiblockMachineDefinition mineralLiberationFlotationComplex;
     private static volatile MultiblockMachineDefinition voidConstrainedMiningField;
     private static volatile MultiblockMachineDefinition dragonFieldProliferationCore;
     private static volatile MultiblockMachineDefinition hyperstructuralChemicalDistorter;
@@ -93,6 +94,7 @@ public final class GTLEnhancedcoreMachines {
         extremeReactor = SpecialMachineRegistration.registerExtremeReactor();
         platinumRefiningMatrix = SpecialMachineRegistration.registerPlatinumRefiningMatrix();
         lanthanideRefiningHub = LanthanideMachineRegistration.register();
+        mineralLiberationFlotationComplex = MineralLiberationFlotationRegistration.register();
         voidConstrainedMiningField = SpecialMachineRegistration.registerVoidConstrainedMiningField();
         dragonFieldProliferationCore = SpecialMachineRegistration.registerDragonFieldProliferationCore();
         hyperstructuralChemicalDistorter = SpecialMachineRegistration.registerHyperstructuralChemicalDistorter();
@@ -210,6 +212,10 @@ public final class GTLEnhancedcoreMachines {
         return lanthanideRefiningHub;
     }
 
+    public static MultiblockMachineDefinition getMineralLiberationFlotationComplex() {
+        return mineralLiberationFlotationComplex;
+    }
+
     public static MultiblockMachineDefinition getVoidConstrainedMiningField() {
         return voidConstrainedMiningField;
     }
@@ -261,7 +267,7 @@ public final class GTLEnhancedcoreMachines {
                 largeFurnace, steamPlatform, plasmaMachineTool, hadronRefinery, quantumMassArray,
                 fusionAssembler, weatherAnchor, causalityTerminal, infinitySingularityCompressor,
                 neutronControlFactory, starCoreStripper, highFluxBreederReactor, hydrothermalLeachingComplex,
-                extremeReactor, platinumRefiningMatrix, lanthanideRefiningHub,
+                extremeReactor, platinumRefiningMatrix, lanthanideRefiningHub, mineralLiberationFlotationComplex,
                 voidConstrainedMiningField, dragonFieldProliferationCore,
                 hyperstructuralChemicalDistorter, stellarConfinementFusionReactor,
                 basicOrePlant, processingPlus, assemblingPlus, separatingPlus, mixingPlus, integratedUniversalFactory));

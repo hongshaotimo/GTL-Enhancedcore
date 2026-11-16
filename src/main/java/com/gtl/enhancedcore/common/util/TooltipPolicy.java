@@ -112,6 +112,11 @@ public final class TooltipPolicy {
                     List.of("lanthanide_refining_hub.intro", "lanthanide_refining_hub.batch",
                             "lanthanide_refining_hub.parallel", "lanthanide_refining_hub.hatches", "no_laser_input"),
                     List.of())),
+            Map.entry("mineral_liberation_flotation_complex", page(
+                    List.of("mineral_liberation_flotation_complex.flavor", "mineral_liberation_flotation_complex.intro",
+                            "mineral_liberation_flotation_complex.batch", "mineral_liberation_flotation_complex.reagents",
+                            "mineral_liberation_flotation_complex.duration", "mineral_liberation_flotation_complex.parallel",
+                            "mineral_liberation_flotation_complex.hatches"), List.of())),
             Map.entry("void_constrained_mining_field", page(
                     List.of("void_constrained_mining_field.tips", "void_constrained_mining_field.parallel",
                             "void_constrained_mining_field.output", "void_constrained_mining_field.input", "no_laser_input"), List.of())),

@@ -1,0 +1,118 @@
+{
+  "namespace": "gtl_enhancedcore",
+  "sourceSize": [
+    65,
+    37,
+    85
+  ],
+  "size": [
+    65,
+    37,
+    85
+  ],
+  "sourceController": [
+    32,
+    18,
+    7
+  ],
+  "sourceNormal": [
+    0,
+    0,
+    -1
+  ],
+  "controllerPosition": [
+    32,
+    18,
+    77
+  ],
+  "controller": "C",
+  "hatches": [
+    "X"
+  ],
+  "bindings": {
+    " ": {
+      "mode": "any"
+    },
+    "C": {
+      "mode": "controller"
+    },
+    "X": {
+      "mode": "hatch",
+      "fallback": "gtlcore:pikyonium_machine_casing"
+    },
+    "G": {
+      "mode": "literal",
+      "block": "gtlcore:hyper_mechanical_casing",
+      "properties": {}
+    },
+    "B": {
+      "mode": "literal",
+      "block": "gtceu:inert_machine_casing",
+      "properties": {}
+    },
+    "J": {
+      "mode": "literal",
+      "block": "gtlcore:pikyonium_machine_casing",
+      "properties": {}
+    },
+    "F": {
+      "mode": "literal",
+      "block": "gtlcore:antifreeze_heatproof_machine_casing",
+      "properties": {}
+    },
+    "E": {
+      "mode": "literal",
+      "block": "gtceu:white_lamp",
+      "properties": {
+        "bloom": "false",
+        "inverted": "true",
+        "lit": "true",
+        "powered": "false"
+      }
+    },
+    "D": {
+      "mode": "literal",
+      "block": "gtceu:laminated_glass",
+      "properties": {}
+    },
+    "I": {
+      "mode": "literal",
+      "block": "gtlcore:iridium_casing",
+      "properties": {}
+    },
+    "K": {
+      "mode": "literal",
+      "block": "kubejs:hastelloy_n_75_casing",
+      "properties": {}
+    },
+    "A": {
+      "mode": "literal",
+      "block": "gtceu:cyan_lamp",
+      "properties": {
+        "bloom": "false",
+        "inverted": "true",
+        "lit": "true",
+        "powered": "false"
+      }
+    }
+  },
+  "counts": {
+    " ": 142434,
+    "A": 20,
+    "B": 2242,
+    "C": 1,
+    "D": 1213,
+    "E": 44,
+    "F": 3957,
+    "G": 20293,
+    "I": 2902,
+    "J": 29995,
+    "K": 1140,
+    "X": 184
+  },
+  "diamondOreMarkers": 184,
+  "hatchFallback": "gtlcore:pikyonium_machine_casing",
+  "sourceSchematic": "SchemTool/input/mineral_liberation_flotation_complex.schem",
+  "sourceSha256": "3079fe3050abaa9cc02639c5fd4069d9400d8c2f73fba8bf0dde5b0a617c0072",
+  "sha256": "a8884e93f40615dce39c5686e745640227df45b3edf1c977efa094c5c66d2ca9"
+}

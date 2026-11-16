@@ -1,6 +1,7 @@
 package com.gtl.enhancedcore.common.world.campus;
 
 import com.gtl.enhancedcore.GTLEnhancedcore;
+import com.gtl.enhancedcore.common.item.PortableCentralTeleporterItem;
 import com.gtl.enhancedcore.common.world.plot.PlotChunkGenerator;
 import com.gtl.enhancedcore.common.world.plot.PlotPresetShare;
 import com.gtl.enhancedcore.common.world.plot.PlotSettings;
@@ -21,6 +22,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Pose;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
@@ -57,7 +59,7 @@ public final class CampusTeleportNetwork {
     public enum Result { SUCCESS, EXPIRED, INVALID_DEVICE, BLOCKED, INVALID_TARGET, COOLDOWN, UNSAFE, CANCELLED }
     private record Session(UUID id, ResourceKey<Level> dimension, BlockPos origin,
                            CentralTeleporterBlockEntity device, PlotChunkGenerator generator,
-                           CampusPlanAccess.Plan plan, String layoutIdentity, long expiresAt) {}
+                           CampusPlanAccess.Plan plan, String layoutIdentity, long expiresAt, InteractionHand hand) {}
     private static final class ServerSessions {
         final Map<UUID, Session> sessions = new HashMap<>();
         final Map<UUID, Long> attempts = new HashMap<>(), opens = new HashMap<>();
@@ -113,15 +115,36 @@ public final class CampusTeleportNetwork {
     public static void open(ServerPlayer player, BlockPos origin) {
         var generator = validateDevice(player, origin, null);
         if (generator == null) { notice(player, Result.INVALID_DEVICE); return; }
+        var device = (CentralTeleporterBlockEntity) player.serverLevel().getBlockEntity(origin);
+        openSession(player, origin, device, generator, null);
+    }
+
+    public static void openPortable(ServerPlayer player, InteractionHand hand) {
+        var binding = PortableCentralTeleporterItem.binding(player.getItemInHand(hand));
+        if (binding == null) { PortableCentralTeleporterItem.message(player, "unbound"); return; }
+        if (!player.level().dimension().location().equals(binding.dimension())) {
+            PortableCentralTeleporterItem.message(player, "wrong_world"); return;
+        }
+        if (!player.isAlive() || player.isSpectator()
+                || !(player.serverLevel().getChunkSource().getGenerator() instanceof PlotChunkGenerator generator)
+                || !generator.settings().isCampus()
+                || !binding.origin().equals(new BlockPos(0, generator.settings().surfaceY() + 1, 0))
+                || !binding.layoutIdentity().equals(CampusPlanAccess.layoutIdentity(generator.settings()))) {
+            PortableCentralTeleporterItem.message(player, "bind_centre"); return;
+        }
+        openSession(player, binding.origin(), null, generator, hand);
+    }
+
+    private static void openSession(ServerPlayer player, BlockPos origin, CentralTeleporterBlockEntity device,
+                                    PlotChunkGenerator generator, InteractionHand hand) {
         if (blocked(player)) { notice(player, Result.BLOCKED); return; }
         ServerSessions state = SERVERS.computeIfAbsent(player.server, server -> new ServerSessions());
         long now = now(player.server);
         if (now - state.opens.getOrDefault(player.getUUID(), -OPEN_COOLDOWN) < OPEN_COOLDOWN) return;
         state.opens.put(player.getUUID(), now);
-        var device = (CentralTeleporterBlockEntity) player.serverLevel().getBlockEntity(origin);
         var plan = CampusPlanAccess.of(generator.settings());
         Session session = new Session(UUID.randomUUID(), player.level().dimension(), origin.immutable(), device, generator,
-                plan, CampusPlanAccess.layoutIdentity(generator.settings()), now + SESSION_TICKS);
+                plan, CampusPlanAccess.layoutIdentity(generator.settings()), now + SESSION_TICKS, hand);
         state.sessions.put(player.getUUID(), session);
         CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), new Open(session.id, session.origin, session.dimension.location(), generator.settings(), session.layoutIdentity));
     }
@@ -130,6 +153,14 @@ public final class CampusTeleportNetwork {
 
     private static PlotChunkGenerator validateDevice(ServerPlayer player, BlockPos origin, Session expected) {
         ServerLevel level = player.serverLevel();
+        if (expected != null && expected.hand != null) {
+            var binding = PortableCentralTeleporterItem.binding(player.getItemInHand(expected.hand));
+            if (!player.isAlive() || player.isSpectator() || !level.dimension().equals(expected.dimension)
+                    || level.getChunkSource().getGenerator() != expected.generator || binding == null
+                    || !binding.dimension().equals(expected.dimension.location()) || !binding.origin().equals(origin)
+                    || !binding.layoutIdentity().equals(expected.layoutIdentity)) return null;
+            return expected.generator;
+        }
         if (!player.isAlive() || player.isSpectator() || player.distanceToSqr(origin.getX() + .5, origin.getY() + .5, origin.getZ() + .5) > 64
                 || !level.hasChunkAt(origin) || !level.getBlockState(origin).is(CampusDeviceBlocks.CENTRAL_TELEPORTER.get())
                 || !(level.getBlockEntity(origin) instanceof CentralTeleporterBlockEntity device)
@@ -247,7 +278,7 @@ public final class CampusTeleportNetwork {
     @SubscribeEvent public static void unloadChunk(ChunkEvent.Unload event) {
         if (event.getLevel() instanceof ServerLevel level) {
             var state = SERVERS.get(level.getServer()); var pos = event.getChunk().getPos();
-            if (state != null) state.sessions.values().removeIf(s -> s.dimension.equals(level.dimension())
+            if (state != null) state.sessions.values().removeIf(s -> s.hand == null && s.dimension.equals(level.dimension())
                     && (s.origin.getX() >> 4) == pos.x && (s.origin.getZ() >> 4) == pos.z);
         }
     }

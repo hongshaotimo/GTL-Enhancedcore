@@ -3,6 +3,8 @@ package com.gtl.enhancedcore.mixin.jade;
 import com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity;
 import com.gregtechceu.gtceu.api.machine.multiblock.WorkableElectricMultiblockMachine;
 import com.gtl.enhancedcore.common.machine.TieredParallelMachine;
+import com.gtl.enhancedcore.common.machine.galaxy.GalaxyLinks;
+import com.gtl.enhancedcore.common.recipe.GalaxyIndependentRecipeEngine;
 import com.gtl.enhancedcore.common.recipe.iv.IvMachineScope;
 import net.minecraft.nbt.CompoundTag;
 import org.spongepowered.asm.mixin.Mixin;
@@ -26,6 +28,11 @@ public abstract class IvParallelProviderMixin {
         if (IvMachineScope.unlimited(machine)) {
             data.putLong("parallel", -114514L);
             data.putLong("threads", -114514L);
+            return;
+        }
+        if (GalaxyLinks.crossRecipeEnabledByConnection(machine)
+                && GalaxyIndependentRecipeEngine.supports(machine.getRecipeLogic())) {
+            data.putLong("threads", GalaxyIndependentRecipeEngine.threads(machine.getRecipeLogic()));
             return;
         }
         if (!IvMachineScope.crossRecipeEnabled(machine)

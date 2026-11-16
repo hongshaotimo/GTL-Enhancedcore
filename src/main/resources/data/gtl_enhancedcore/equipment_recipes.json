@@ -2,6 +2,19 @@
   "schema": 1,
   "recipes": [
     {
+      "output": "portable_central_teleporter",
+      "tier": "hv",
+      "method": "crafting",
+      "pattern": ["PEP", "CTC", "PDP"],
+      "key": {
+        "P": { "item": "gtceu:steel_plate", "count": 1 },
+        "E": { "item": "minecraft:ender_eye", "count": 1 },
+        "C": { "tag": "gtceu:circuits/hv", "count": 1 },
+        "T": { "item": "ae2:terminal", "count": 1 },
+        "D": { "item": "gtceu:data_stick", "count": 1 }
+      }
+    },
+    {
       "output": "assembly_manager",
       "tier": "hv",
       "method": "crafting",
@@ -2364,6 +2377,72 @@
         {
           "fluid": "gtceu:super_mutated_living_solder",
           "amount": 9216
+        }
+      ]
+    },
+    {
+      "output": "mineral_liberation_flotation_complex",
+      "tier": "uhv",
+      "method": "assembly_line",
+      "duration": 2400,
+      "ingredients": [
+        {
+          "item": "gtceu:isa_mill",
+          "count": 4
+        },
+        {
+          "item": "gtceu:flotation_cell_regulator",
+          "count": 4
+        },
+        {
+          "item": "gtceu:uhv_machine_hull",
+          "count": 4
+        },
+        {
+          "item": "gtlcore:pikyonium_machine_casing",
+          "count": 16
+        },
+        {
+          "item": "gtceu:uhv_electric_motor",
+          "count": 8
+        },
+        {
+          "item": "gtceu:uhv_electric_pump",
+          "count": 8
+        },
+        {
+          "item": "gtceu:uhv_robot_arm",
+          "count": 4
+        },
+        {
+          "item": "gtceu:uhv_sensor",
+          "count": 4
+        },
+        {
+          "item": "gtceu:uhv_field_generator",
+          "count": 2
+        },
+        {
+          "tag": "gtceu:circuits/uhv",
+          "count": 8
+        },
+        {
+          "item": "gtceu:neutronium_plate",
+          "count": 32
+        }
+      ],
+      "fluids": [
+        {
+          "fluid": "gtceu:soldering_alloy",
+          "amount": 9216
+        },
+        {
+          "fluid": "gtceu:lubricant",
+          "amount": 8000
+        },
+        {
+          "fluid": "gtceu:polytetrafluoroethylene",
+          "amount": 4608
         }
       ]
     },

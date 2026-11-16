@@ -61,6 +61,10 @@ public abstract class GalaxyRecipeLogicMixin implements com.gtl.enhancedcore.com
             galaxy$nativeFallback = true;
             try { original.call(); }
             finally { galaxy$nativeFallback = false; }
+            // GTCEu's idle serverTick unsubscribes directly, bypassing our
+            // updateTickSubscription hook. Keep polling for later AE deliveries
+            // while the connection remains active, even after an empty search.
+            ((RecipeLogic)(Object)this).updateTickSubscription();
         }
     }
     @Inject(method = "updateTickSubscription", at = @At("HEAD"), cancellable = true)

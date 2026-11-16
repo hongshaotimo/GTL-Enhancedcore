@@ -17,5 +17,6 @@
   "gtladditions:space_infinity_integrated_ore_processor": "gtlcore:space_elevator_mechanical_casing",
   "gtladditions:apocalyptic_torsion_quantum_matrix": "gtlcore:dimensionally_transcendent_casing",
   "gtl_enhancedcore:stellar_vortex_space_station": "gtlcore:dimensionally_transcendent_casing",
-  "gtl_enhancedcore:lanthanide_refining_hub": "gtceu:computer_casing"
+  "gtl_enhancedcore:lanthanide_refining_hub": "gtceu:computer_casing",
+  "gtl_enhancedcore:mineral_liberation_flotation_complex": "gtlcore:pikyonium_machine_casing"
 }

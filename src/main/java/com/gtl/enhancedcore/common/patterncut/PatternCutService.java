@@ -25,7 +25,6 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.level.storage.LevelResource;
 import org.gtlcore.gtlcore.common.machine.multiblock.part.ae.MEPatternBufferPartMachine;
-import org.gtlcore.gtlcore.common.machine.multiblock.part.ae.MEPatternBufferProxyPartMachine;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -168,26 +167,14 @@ public final class PatternCutService {
         if (!idle(buffer)) return text("busy");
         var store = store(player);
         var payloads = new ArrayList<CompoundTag>();
-        var proxies = new ArrayList<MEPatternBufferProxyPartMachine>();
         for (var entry : group) {
             CompoundTag payload = store.read(entry.id()); payloads.add(payload);
-            if (payload.getLongArray("proxies").length > 0
-                    && !payload.getString("dimension").equals(player.serverLevel().dimension().location().toString())) return text("proxy_dimension");
-            if (payload.getLongArray("proxies").length > 0 && IvBuffers.isolated(buffer))
-                return Component.translatable("gtl_enhancedcore.diagnostic.iv_paste");
-            for (long value : payload.getLongArray("proxies")) {
-                BlockPos pos = BlockPos.of(value);
-                if (!(loaded(player, pos) instanceof MEPatternBufferProxyPartMachine proxy)) return text("proxy_unloaded");
-                if (!mayEdit(player, hand, pos)) return text("proxy_blocked");
-                proxies.add(proxy);
-            }
         }
         var plan = PatternCutPaste.prepare(buffer, payloads);
         if (!plan.ready()) return Component.translatable(plan.reason());
         var ids = group.stream().map(PatternCutStore.Entry::id).toList();
         store.takeAll(ids);
         plan.apply();
-        for (var proxy : proxies) proxy.setBuffer(buffer.getPos());
         refresh(buffer);
         for (var id : ids) {
             try { store.finish(id); }

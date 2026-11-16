@@ -7,8 +7,10 @@ import com.gtl.enhancedcore.common.data.machine.InfinitySingularityRecipeLoader;
 import com.gtl.enhancedcore.common.data.machine.EquipmentRecipeLoader;
 import com.gtl.enhancedcore.common.data.machine.PlatinumRefiningRecipeLoader;
 import com.gtl.enhancedcore.common.data.machine.LanthanideRefiningRecipeLoader;
+import com.gtl.enhancedcore.common.data.machine.MineralLiberationFlotationRecipeLoader;
 import com.gtl.enhancedcore.common.data.machine.ExoticProliferationRecipeLoader;
 import com.gtl.enhancedcore.common.data.machine.ExtremeReactionRecipeLoader;
+import com.gtl.enhancedcore.common.data.machine.HydrogenPeroxideRecipeLoader;
 
 import net.minecraft.data.recipes.FinishedRecipe;
 
@@ -51,8 +53,10 @@ public class GTLEnhancedcoreGTAddon implements IGTAddon {
         InfinitySingularityRecipeLoader.registerRecipes(provider);
         PlatinumRefiningRecipeLoader.registerRecipes(provider);
         LanthanideRefiningRecipeLoader.registerRecipes(provider);
+        MineralLiberationFlotationRecipeLoader.registerRecipes(provider);
         ExoticProliferationRecipeLoader.registerRecipes(provider);
         ExtremeReactionRecipeLoader.registerRecipes(provider);
+        HydrogenPeroxideRecipeLoader.registerRecipes(provider);
         com.gtl.enhancedcore.common.data.machine.BrilliantStarsRecipeLoader.registerRecipes(provider);
     }
 }
