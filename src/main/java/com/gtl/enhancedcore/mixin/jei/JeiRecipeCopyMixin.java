@@ -64,7 +64,11 @@ public abstract class JeiRecipeCopyMixin<R> {
         if (category == null || recipe == null) return;
         ResourceLocation id = category.getRegistryName(recipe);
         if (id == null) return;
-        com.gtl.enhancedcore.client.copy.CopyActions.copyRecipe(id);
+        net.minecraft.world.item.crafting.Recipe<?> syncedRecipe =
+                recipe instanceof com.gregtechceu.gtceu.integration.jei.recipe.GTRecipeWrapper wrapper
+                        ? wrapper.recipe
+                        : recipe instanceof net.minecraft.world.item.crafting.Recipe<?> vanilla ? vanilla : null;
+        com.gtl.enhancedcore.client.copy.CopyActions.copyRecipe(id, syncedRecipe);
         cir.setReturnValue(Optional.of((IUserInputHandler) this));
     }
 }

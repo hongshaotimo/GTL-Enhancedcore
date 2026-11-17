@@ -31,7 +31,11 @@ public final class GalaxyRecipeBatch {
     public static boolean modifying() { return MODIFYING.get(); }
     public static boolean preparingIndependent() { return INDEPENDENT.get(); }
     private record Candidate(GTRecipe recipe, long capacity) {}
-    public record Prepared(GTRecipe origin, GTRecipe recipe, long capacity) {}
+    public record Prepared(GTRecipe origin, GTRecipe recipe, long capacity, GTRecipe chanceSource) {
+        public Prepared(GTRecipe origin, GTRecipe recipe, long capacity) {
+            this(origin, recipe, capacity, recipe);
+        }
+    }
     private GalaxyRecipeBatch() {}
     public static boolean applicable(RecipeLogic logic) {
         return !(logic instanceof MultipleRecipesLogic) && !(logic instanceof MutableRecipesLogic<?>)
@@ -41,7 +45,7 @@ public final class GalaxyRecipeBatch {
     public static GTRecipe find(WorkableElectricMultiblockMachine machine, RecipeLogic logic, int rotation) {
         if (!machine.hasProxies() || !machine.isRecipeLogicAvailable()) return null;
         var candidates = candidates(machine, logic, rotation);
-        int threads = GalaxyLinks.threads(machine, 1);
+        int threads = GalaxyLinks.ordinaryThreads(machine);
         if (candidates.size() > threads) candidates.subList(threads, candidates.size()).clear();
         var modified = new ArrayList<Candidate>();
         boolean previousModifying = MODIFYING.get();
@@ -131,8 +135,10 @@ public final class GalaxyRecipeBatch {
             }
             var prepared = new ArrayList<Prepared>();
             for (var candidate : admitted) {
-                GTRecipe recipe = build(machine, List.of(candidate.recipe()), true);
-                if (recipe != null) prepared.add(new Prepared(candidate.origin(), recipe, candidate.capacity()));
+                GTRecipe recipe = build(machine, List.of(candidate.recipe()), false,
+                        GalaxyNativeRecipePreparation.supports(logic) ? candidate.recipe().duration
+                                : GalaxyNativeRecipePreparation.minimumDuration(candidate.recipe()));
+                if (recipe != null) prepared.add(new Prepared(candidate.origin(), recipe, candidate.capacity(), candidate.recipe()));
             }
             return prepared;
         } finally {
@@ -140,13 +146,19 @@ public final class GalaxyRecipeBatch {
             if (previousModifying) MODIFYING.set(true); else MODIFYING.remove();
         }
     }
+    /** Roll only the candidate about to pay inputs, retaining the source's original chance multiplier. */
+    public static GTRecipe settleIndependent(WorkableElectricMultiblockMachine machine, RecipeLogic logic, Prepared candidate) {
+        GTRecipe source = candidate.chanceSource();
+        return build(machine, List.of(source), true, GalaxyNativeRecipePreparation.supports(logic)
+                ? source.duration : GalaxyNativeRecipePreparation.minimumDuration(source));
+    }
     public static long capacity(WorkableElectricMultiblockMachine machine) {
         if (GalaxyNativeRecipePreparation.supports(machine.getRecipeLogic()))
             return GalaxyLinks.unlimited(machine) ? (long)Integer.MAX_VALUE * Integer.MAX_VALUE
                     : (long)((org.gtlcore.gtlcore.api.machine.multiblock.ParallelMachine)machine).getMaxParallel()
                             * GalaxyIndependentRecipeEngine.threads(machine.getRecipeLogic());
         return GalaxyLinks.unlimited(machine) ? (long)Integer.MAX_VALUE * Integer.MAX_VALUE
-                : (long)com.gtl.enhancedcore.common.recipe.iv.IvMachineScope.parallel(machine) * GalaxyLinks.threads(machine, 1);
+                : (long)com.gtl.enhancedcore.common.recipe.iv.IvMachineScope.parallel(machine) * GalaxyLinks.ordinaryThreads(machine);
     }
     private static boolean fitsIndependent(WorkableElectricMultiblockMachine machine, List<Prepared> candidates,
             BigInteger reservedPower) {
@@ -190,7 +202,7 @@ public final class GalaxyRecipeBatch {
         var capacities = new ArrayList<Long>();
         long budget = GalaxyLinks.unlimited(machine) ? (long)Integer.MAX_VALUE * Integer.MAX_VALUE
                 : (long)com.gtl.enhancedcore.common.recipe.iv.IvMachineScope.parallel(machine)
-                        * GalaxyLinks.threads(machine, 1);
+                        * GalaxyLinks.ordinaryThreads(machine);
         long used = 0;
         // Reserve one of every compatible recipe before any candidate can consume shared stock.
         for (Candidate candidate : candidates) {
@@ -272,6 +284,10 @@ public final class GalaxyRecipeBatch {
         } catch (ArithmeticException overflow) { return false; }
     }
     private static GTRecipe build(WorkableElectricMultiblockMachine machine, List<GTRecipe> recipes, boolean settle) {
+        return build(machine, recipes, settle, Integer.MAX_VALUE);
+    }
+    private static GTRecipe build(WorkableElectricMultiblockMachine machine, List<GTRecipe> recipes, boolean settle,
+            int minimumTicks) {
         GTRecipe first = recipes.getFirst();
         GTRecipe combined = first.copy();
         combined.data = first.data.copy(); // GTCEu copy() shares data with its source recipe.
@@ -284,6 +300,9 @@ public final class GalaxyRecipeBatch {
         long operations = 0;
         boolean tickProducer=recipes.stream().anyMatch(recipe->!recipe.tickOutputs.isEmpty());
         for (GTRecipe recipe : recipes) {
+            // Ingredient actions address their own recipe inputs; a union cannot
+            // safely execute just the first recipe's actions for every source.
+            if (recipes.size() > 1 && !recipe.ingredientActions.isEmpty()) return null;
             // Keep machine-specific data on the batch; conflicting metadata cannot be merged.
             var firstData = first.data.copy(); firstData.remove(GalaxyPower.EU_TAG);
             var recipeData = recipe.data.copy(); recipeData.remove(GalaxyPower.EU_TAG);
@@ -309,7 +328,10 @@ public final class GalaxyRecipeBatch {
         BigInteger power = GalaxyPower.availablePower(machine);
         if (energy.signum() == 0) power = power.max(BigInteger.ONE);
         if (power.signum() <= 0) return null;
-        var plan = GalaxyBatchAccounting.plan(energy, ticks, power);
+        // Independent ordinary candidates have already passed their native modifiers.
+        // Pure EU work can spend that same total energy over the native batch window;
+        // tick-producing and research recipes retain their original duration.
+        var plan = GalaxyBatchAccounting.plan(energy, Math.min(ticks, minimumTicks), power);
         if (plan == null) return null;
         if (tickProducer && plan.duration()!=ticks) return null;
         combined.duration = plan.duration();

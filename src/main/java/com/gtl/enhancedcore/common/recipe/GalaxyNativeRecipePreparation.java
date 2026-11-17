@@ -28,6 +28,19 @@ public final class GalaxyNativeRecipePreparation {
 
     private GalaxyNativeRecipePreparation() {}
 
+    /** Only fixed-energy work can shorten its window without changing tick IO or research. */
+    public static boolean energyOnly(GTRecipe recipe) {
+        return !recipe.data.getBoolean("duration_is_total_cwu")
+                && recipe.tickInputs.entrySet().stream().noneMatch(entry ->
+                        entry.getKey() != EURecipeCapability.CAP && !entry.getValue().isEmpty())
+                && recipe.tickOutputs.values().stream().noneMatch(contents -> !contents.isEmpty());
+    }
+
+    /** Preserve faster native processing while sharing the native 20-tick energy window. */
+    public static int minimumDuration(GTRecipe recipe) {
+        return energyOnly(recipe) ? Math.min(BATCH_TICKS, recipe.duration) : recipe.duration;
+    }
+
     /** Custom subclasses can own extra admission, energy or completion contracts. */
     public static boolean supports(RecipeLogic logic) {
         Class<?> type = logic.getClass();
@@ -71,11 +84,7 @@ public final class GalaxyNativeRecipePreparation {
      * Extra tick capabilities and total-CWU work keep their original scheduler.
      */
     public static GTRecipe prepare(RecipeLogic logic, GTRecipe origin) {
-        if (!supports(logic) || origin.duration <= 0
-                || origin.data.getBoolean("duration_is_total_cwu")
-                || origin.tickInputs.entrySet().stream().anyMatch(entry ->
-                        entry.getKey() != EURecipeCapability.CAP && !entry.getValue().isEmpty())
-                || origin.tickOutputs.values().stream().anyMatch(contents -> !contents.isEmpty())) return null;
+        if (!supports(logic) || origin.duration <= 0 || !energyOnly(origin)) return null;
         long baseEUt = logic instanceof MutableRecipesLogic<?>
                 ? ((IvNativeMutableAccessor) logic).iv$recipeEUt(origin) : RecipeHelper.getInputEUt(origin);
         if (baseEUt < 0) return null;
@@ -107,6 +116,6 @@ public final class GalaxyNativeRecipePreparation {
         if (!supports(logic)) return 0;
         if (logic instanceof MutableRecipesLogic<?> mutable) return Math.max(1, mutable.getMultipleThreads());
         if (logic instanceof GTLAddMultipleRecipesLogic add) return Math.max(1, add.getMultipleThreads());
-        return GalaxyLinks.threads((WorkableElectricMultiblockMachine) logic.getMachine(), 64);
+        return GalaxyLinks.nativeMultipleRecipeThreads((WorkableElectricMultiblockMachine) logic.getMachine());
     }
 }

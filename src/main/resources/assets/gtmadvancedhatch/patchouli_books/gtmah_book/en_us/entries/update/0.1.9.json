@@ -1,0 +1,17 @@
+{
+  "sortnum": -2,
+  "name": "0.1.9 功能性更新",
+  "icon": "minecraft:book",
+  "category": "gtmadvancedhatch:update",
+  "pages": [
+    {
+      "type": "text",
+      "text": "此页面涵盖了上个正式版之后发布的全部热修hotfix。$(br)$(thing)$(_)功能性更新：$()$(br)$(li)$(l:hatch/configurable_fluid_hatch)可配置流体仓$()$(li)$(l:hatch/configurable_item_bus)可配置物品总线$()$(li)$(l:hatch/configurable_dual_hatch)可配置总成、终极可配置总成$()$(li)$(l:hatch/lock_item_output_bus)留存输出总线$()现在支持拥有更大的槽位堆叠了$(li)自适配电网终端UI美化，新增$(item)已加载数量显示$()"
+    },
+    {
+      "type": "text",
+      "title": "bug修复/优化",
+      "text": "$(thing)$(_)$(br)电网监视器调整:$()$(li)调整对齐宽度。$(thing)$(_)$(br)一般性调整:$()$(li)现在gt复制工具会自动设定机器主方块为样板主产物并改名样板了$(li)修复一些配方错误$(li)优化$(item)自适配电网终端性能$()"
+    }
+  ]
+}

@@ -3,6 +3,7 @@ package com.gtl.enhancedcore.audit;
 import com.gregtechceu.gtceu.api.machine.MetaMachine;
 import com.gtl.enhancedcore.common.config.GTLConfig;
 import com.gtl.enhancedcore.common.machine.ClaimReplacementTerminalMachine;
+import com.gtl.enhancedcore.common.util.BlockReplacementTransaction;
 import com.lowdragmc.lowdraglib.gui.widget.PhantomSlotWidget;
 import com.lowdragmc.lowdraglib.gui.widget.WidgetGroup;
 import com.mojang.authlib.GameProfile;
@@ -23,6 +24,8 @@ import java.util.UUID;
 import java.util.function.Consumer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.Tag;
 import net.minecraft.network.Connection;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.PacketFlow;
@@ -33,10 +36,21 @@ import net.minecraft.server.network.ServerGamePacketListenerImpl;
 import net.minecraft.server.players.PlayerList;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.BlockItem;
+import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.level.block.BarrelBlock;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.RotatedPillarBlock;
 import net.minecraft.world.level.block.entity.BarrelBlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.block.entity.ChestBlockEntity;
+import net.minecraft.world.level.block.entity.CommandBlockEntity;
+import net.minecraft.world.level.block.entity.ShulkerBoxBlockEntity;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.BedPart;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
+import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
+import net.minecraft.world.phys.AABB;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.level.BlockEvent;
 import net.minecraftforge.eventbus.api.EventPriority;
@@ -246,11 +260,94 @@ public final class ClaimReplacementChecks {
         check(!flag("detected"), "Same-block replacement passed detection");
         log("forge_protection_material_shortage_template_changes_orientation_and_stale_targets=OK");
 
+        runNbt(server);
+        runMultiblock(server);
         reset(4);
         terminal.detectClicked(actor);
         terminal.replaceClicked(actor);
         check(flag("replacing"), "Asynchronous subscription did not start");
         return checks;
+    }
+
+    /** Requires prepare(server); also included in run(server) for the existing placement runner. */
+    public static int runNbt(MinecraftServer server) throws Exception {
+        int before = checks;
+        var world = server.overworld();
+        check(actor != null && actor.serverLevel() == world && !flag("aeMode"), "NBT fixture requires prepared backpack mode");
+        var area = new AABB(FIRST).inflate(4);
+        for (ItemEntity item : world.getEntitiesOfClass(ItemEntity.class, area)) item.discard();
+        ItemStack payload = new ItemStack(Items.DIAMOND, 37);
+        payload.getOrCreateTag().putString("ClaimReplacementNbt", "preserve-slot-and-tag");
+        var container = new ShulkerBoxBlockEntity(FIRST, Blocks.SHULKER_BOX.defaultBlockState());
+        container.setItem(5, payload.copy());
+        ItemStack material = new ItemStack(Items.SHULKER_BOX);
+        BlockItem.setBlockEntityData(material, BlockEntityType.SHULKER_BOX, container.saveWithoutMetadata());
+
+        reset(1);
+        slots.get(0).getHandler().set(material.copy());
+        actor.getInventory().clearContent();
+        actor.getInventory().add(material.copy());
+        terminal.detectClicked(actor);
+        terminal.replaceClicked(actor);
+        tick(1);
+        check(number("doneCount") == 1 && count(actor, Items.SHULKER_BOX) == 0
+                        && count(actor, Items.EMERALD_BLOCK) == 1, "Tagged replacement material was not consumed exactly once");
+        check(world.getBlockEntity(FIRST) instanceof ShulkerBoxBlockEntity placed
+                        && ItemStack.isSameItemSameTags(placed.getItem(5), payload) && placed.getItem(5).getCount() == 37,
+                "Replacing with a filled shulker lost its contents or item NBT");
+
+        slots.get(0).getHandler().set(new ItemStack(Items.GOLD_BLOCK));
+        slots.get(1).getHandler().set(new ItemStack(Items.SHULKER_BOX));
+        actor.getInventory().add(new ItemStack(Items.GOLD_BLOCK));
+        terminal.detectClicked(actor);
+        terminal.replaceClicked(actor);
+        tick(1);
+        ItemStack returned = actor.getInventory().items.stream().filter(stack -> stack.is(Items.SHULKER_BOX)).findFirst().orElse(ItemStack.EMPTY);
+        CompoundTag returnedTag = BlockItem.getBlockEntityData(returned);
+        var contents = returnedTag == null ? new net.minecraft.nbt.ListTag() : returnedTag.getList("Items", Tag.TAG_COMPOUND);
+        check(number("doneCount") == 1 && world.getBlockState(FIRST).is(Blocks.GOLD_BLOCK)
+                        && count(actor, Items.SHULKER_BOX) == 1 && count(actor, Items.GOLD_BLOCK) == 0,
+                "Replacing a filled shulker did not return exactly one container");
+        check(contents.size() == 1 && contents.getCompound(0).getByte("Slot") == 5
+                        && ItemStack.isSameItemSameTags(ItemStack.of(contents.getCompound(0)), payload)
+                        && ItemStack.of(contents.getCompound(0)).getCount() == 37,
+                "Returned shulker lost its encapsulated contents or item NBT");
+        check(world.getEntitiesOfClass(ItemEntity.class, area).isEmpty() && count(actor, Items.DIAMOND) == 0,
+                "Shulker contents escaped or were duplicated outside the returned item");
+
+        reset(0);
+        world.setBlock(FIRST, Blocks.CHEST.defaultBlockState(), 3);
+        ((ChestBlockEntity) world.getBlockEntity(FIRST)).setItem(3, payload.copy());
+        slots.get(1).getHandler().set(new ItemStack(Items.CHEST));
+        terminal.detectClicked(actor);
+        terminal.replaceClicked(actor);
+        tick(1);
+        int dropped = world.getEntitiesOfClass(ItemEntity.class, area).stream().filter(item -> item.getItem().is(Items.DIAMOND))
+                .mapToInt(item -> item.getItem().getCount()).sum();
+        check(number("doneCount") == 1 && count(actor, Items.CHEST) == 1
+                        && dropped + count(actor, Items.DIAMOND) == 37, "Ordinary chest contents must be returned exactly once");
+        ItemStack chest = actor.getInventory().items.stream().filter(stack -> stack.is(Items.CHEST)).findFirst().orElse(ItemStack.EMPTY);
+        CompoundTag chestTag = BlockItem.getBlockEntityData(chest);
+        check(chestTag == null || chestTag.getList("Items", Tag.TAG_COMPOUND).isEmpty(),
+                "Ordinary chest contents were also copied into its returned block item");
+        for (ItemEntity item : world.getEntitiesOfClass(ItemEntity.class, area)) item.discard();
+
+        reset(0);
+        world.setBlock(FIRST, Blocks.STONE.defaultBlockState(), 3);
+        check(BlockReplacementTransaction.replace(world, actor, FIRST, Blocks.SHULKER_BOX.defaultBlockState(), material, () -> false)
+                        == BlockReplacementTransaction.Result.INSUFFICIENT && world.getBlockState(FIRST).is(Blocks.STONE)
+                        && world.getEntitiesOfClass(ItemEntity.class, area).isEmpty(),
+                "Unpaid tagged replacement must restore the original without leaking copied contents");
+        ItemStack commandBlock = new ItemStack(Items.COMMAND_BLOCK);
+        CompoundTag command = new CompoundTag(); command.putString("Command", "say forbidden_replacement_nbt");
+        BlockItem.setBlockEntityData(commandBlock, BlockEntityType.COMMAND_BLOCK, command);
+        check(!actor.canUseGameMasterBlocks(), "NBT permission fixture must lack game-master privileges");
+        check(BlockReplacementTransaction.replace(world, actor, FIRST, Blocks.COMMAND_BLOCK.defaultBlockState(), commandBlock, () -> true)
+                        == BlockReplacementTransaction.Result.PLACED && world.getBlockEntity(FIRST) instanceof CommandBlockEntity placed
+                        && placed.getCommandBlock().getCommand().isEmpty(), "Native OP-only block-entity NBT permission was bypassed");
+        reset(0);
+        log("replacement_material_and_returned_shulker_nbt_chest_conservation_and_nbt_permission=OK");
+        return checks - before;
     }
 
     public static int finish() throws Exception {
@@ -266,6 +363,99 @@ public final class ClaimReplacementChecks {
         check(!flag("detected") && number("totalCount") == 0, "Reload exposed an unpersisted queue");
         log("actual_tick_subscription_and_reload=OK");
         return checks;
+    }
+
+    /** Requires prepare(server); paired targets/materials must fail before any world or inventory mutation. */
+    public static int runMultiblock(MinecraftServer server) throws Exception {
+        int before = checks;
+        var world = server.overworld();
+        check(actor != null && actor.serverLevel() == world && !flag("aeMode"), "Paired-block fixture requires prepared backpack mode");
+        var replace = ClaimReplacementTerminalMachine.class.getDeclaredMethod("replaceOne",
+                net.minecraft.server.level.ServerLevel.class, ServerPlayer.class, BlockPos.class);
+        replace.setAccessible(true);
+        var area = new AABB(FIRST).inflate(4);
+        for (var material : List.of(Items.OAK_DOOR, Items.RED_BED, Items.SUNFLOWER)) {
+            reset(1);
+            world.setBlock(FIRST.above(), Blocks.CHEST.defaultBlockState(), 3);
+            ((ChestBlockEntity) world.getBlockEntity(FIRST.above())).setItem(3, new ItemStack(Items.DIAMOND, 37));
+            actor.getInventory().clearContent();
+            actor.getInventory().add(new ItemStack(material));
+            slots.get(0).getHandler().set(new ItemStack(material));
+            for (ItemEntity item : world.getEntitiesOfClass(ItemEntity.class, area)) item.discard();
+            var chestNbt = world.getBlockEntity(FIRST.above()).saveWithFullMetadata();
+            terminal.detectClicked(actor);
+            check(!flag("detected") && !flag("replacing"), "Paired replacement material passed detection: " + material);
+            var materialResult = replace.invoke(terminal, world, actor, FIRST).toString();
+            check(materialResult.equals("UNSUPPORTED_MULTIBLOCK"),
+                    "Paired replacement material passed execution: " + material + "; actual=" + materialResult);
+            check(world.getBlockState(FIRST).is(Blocks.EMERALD_BLOCK)
+                            && chestNbt.equals(world.getBlockEntity(FIRST.above()).saveWithFullMetadata()),
+                    "Rejected paired replacement modified the target or upper container: " + material);
+            check(count(actor, material) == 1 && count(actor, Items.EMERALD_BLOCK) == 0
+                            && world.getEntitiesOfClass(ItemEntity.class, area).isEmpty(),
+                    "Rejected paired replacement consumed/refunded/leaked items: " + material);
+            world.setBlock(FIRST.above(), Blocks.AIR.defaultBlockState(), 3);
+        }
+        var door = Blocks.OAK_DOOR.defaultBlockState();
+        var bed = Blocks.RED_BED.defaultBlockState().setValue(BlockStateProperties.HORIZONTAL_FACING, Direction.EAST);
+        var plant = Blocks.SUNFLOWER.defaultBlockState();
+        for (var old : List.of(door.setValue(BlockStateProperties.DOUBLE_BLOCK_HALF, DoubleBlockHalf.UPPER),
+                door, bed, bed.setValue(BlockStateProperties.BED_PART, BedPart.HEAD),
+                plant, plant.setValue(BlockStateProperties.DOUBLE_BLOCK_HALF, DoubleBlockHalf.UPPER))) {
+            reset(0);
+            BlockPos otherPos;
+            BlockState other;
+            if (old.hasProperty(BlockStateProperties.DOUBLE_BLOCK_HALF)) {
+                boolean lower = old.getValue(BlockStateProperties.DOUBLE_BLOCK_HALF) == DoubleBlockHalf.LOWER;
+                otherPos = lower ? FIRST.above() : FIRST.below();
+                other = old.setValue(BlockStateProperties.DOUBLE_BLOCK_HALF, lower ? DoubleBlockHalf.UPPER : DoubleBlockHalf.LOWER);
+            } else {
+                boolean foot = old.getValue(BlockStateProperties.BED_PART) == BedPart.FOOT;
+                otherPos = FIRST.relative(foot ? Direction.EAST : Direction.WEST);
+                other = old.setValue(BlockStateProperties.BED_PART, foot ? BedPart.HEAD : BedPart.FOOT);
+            }
+            boolean otherFirst = old.hasProperty(BlockStateProperties.DOUBLE_BLOCK_HALF)
+                    ? old.getValue(BlockStateProperties.DOUBLE_BLOCK_HALF) == DoubleBlockHalf.UPPER
+                    : old.getValue(BlockStateProperties.BED_PART) == BedPart.HEAD;
+            var supports = old.hasProperty(BlockStateProperties.DOUBLE_BLOCK_HALF)
+                    ? List.of((otherFirst ? otherPos : FIRST).below())
+                    : List.of(FIRST.below(), otherPos.below());
+            var supportStates = new java.util.LinkedHashMap<BlockPos, BlockState>();
+            try {
+                for (var support : supports) {
+                    supportStates.put(support, world.getBlockState(support));
+                    // Dirt is solid enough for doors/beds and also the native substrate for sunflower.
+                    world.setBlock(support, Blocks.DIRT.defaultBlockState(), 3);
+                }
+                // Establish the lower/foot block first, then its native upper/head counterpart.
+                world.setBlock(otherFirst ? otherPos : FIRST, otherFirst ? other : old, 2);
+                world.setBlock(otherFirst ? FIRST : otherPos, otherFirst ? old : other, 2);
+                check(world.getBlockState(FIRST).equals(old) && world.getBlockState(otherPos).equals(other),
+                        "Paired target fixture changed before rejection: expected=" + old + " / " + other
+                                + "; actual=" + world.getBlockState(FIRST) + " / " + world.getBlockState(otherPos));
+                slots.get(1).getHandler().set(new ItemStack(old.getBlock().asItem()));
+                for (ItemEntity item : world.getEntitiesOfClass(ItemEntity.class, area)) item.discard();
+                terminal.detectClicked(actor);
+                check(!flag("detected") && !flag("replacing"), "Paired target passed detection: " + old);
+                var targetResult = replace.invoke(terminal, world, actor, FIRST).toString();
+                check(targetResult.equals("UNSUPPORTED_MULTIBLOCK"),
+                        "Paired target passed execution: " + old + "; actual=" + targetResult);
+                check(world.getBlockState(FIRST).equals(old) && world.getBlockState(otherPos).equals(other),
+                        "Rejected target modified one of its paired blocks: " + old + "; actual="
+                                + world.getBlockState(FIRST) + " / " + world.getBlockState(otherPos));
+                check(count(actor, Items.GOLD_BLOCK) == 16 && count(actor, old.getBlock().asItem()) == 0
+                                && world.getEntitiesOfClass(ItemEntity.class, area).isEmpty(),
+                        "Rejected paired target consumed material or duplicated its item: " + old);
+            } finally {
+                world.setBlock(FIRST, Blocks.AIR.defaultBlockState(), 2);
+                world.setBlock(otherPos, Blocks.AIR.defaultBlockState(), 2);
+                for (var support : supportStates.entrySet()) world.setBlock(support.getKey(), support.getValue(), 3);
+            }
+        }
+        reset(0);
+        for (ItemEntity item : world.getEntitiesOfClass(ItemEntity.class, area)) item.discard();
+        log("paired_door_bed_and_plant_materials_and_both_target_halves_rejected_without_mutation=OK");
+        return checks - before;
     }
 
     private static void testEntityPlaceEventProtection() throws Exception {

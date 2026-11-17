@@ -63,6 +63,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.Property;
 import net.minecraft.world.phys.BlockHitResult;
 
@@ -148,7 +149,8 @@ public class ClaimReplacementTerminalMachine extends MetaMachine
 
     private enum ReplacementResult {
         REPLACED(""), CHANGED("changed"), PROTECTED("protected"), UNLOADED("unloaded"),
-        INVALID("replacement_not_block"), INSUFFICIENT("insufficient"), PLACE_FAILED("place_failed");
+        INVALID("replacement_not_block"), UNSUPPORTED_MULTIBLOCK("unsupported_multiblock"),
+        INSUFFICIENT("insufficient"), PLACE_FAILED("place_failed");
 
         final String key;
         ReplacementResult(String key) { this.key = key; }
@@ -318,6 +320,12 @@ public class ClaimReplacementTerminalMachine extends MetaMachine
         }
         if (!(repl.getItem() instanceof BlockItem)) {
             player.sendSystemMessage(Component.translatable("gtl_enhancedcore.claim_replacement.replacement_not_block"));
+            return;
+        }
+        if (isMultiBlockState(targetBlock.defaultBlockState())
+                || isMultiBlockState(((BlockItem) repl.getItem()).getBlock().defaultBlockState())) {
+            invalidateDetection();
+            player.sendSystemMessage(Component.translatable("gtl_enhancedcore.claim_replacement.unsupported_multiblock"));
             return;
         }
         if (resolveTargetBlock(repl) == targetBlock) {
@@ -501,7 +509,8 @@ public class ClaimReplacementTerminalMachine extends MetaMachine
         ReplacementResult result = replaceOne(serverLevel, player, pos);
         if (result == ReplacementResult.REPLACED) {
             this.doneCount++;
-        } else if (result == ReplacementResult.INSUFFICIENT || result == ReplacementResult.INVALID) {
+        } else if (result == ReplacementResult.INSUFFICIENT || result == ReplacementResult.INVALID
+                || result == ReplacementResult.UNSUPPORTED_MULTIBLOCK) {
             finishReplace(player, result.key);
             return;
         } else {
@@ -556,6 +565,11 @@ public class ClaimReplacementTerminalMachine extends MetaMachine
         if (repl.isEmpty() || !(repl.getItem() instanceof BlockItem blockItem)) {
             return ReplacementResult.INVALID;
         }
+        // The transaction returns one block at one position. Native paired blocks can overwrite or
+        // drop their other half, which requires a separate multi-block removal/payment contract.
+        if (isMultiBlockState(old) || isMultiBlockState(blockItem.getBlock().defaultBlockState())) {
+            return ReplacementResult.UNSUPPORTED_MULTIBLOCK;
+        }
         // Honor protection mods and the IV in-flight task break guard before removing anything.
         if (old.getDestroySpeed(level, pos) < 0 || net.minecraftforge.common.MinecraftForge.EVENT_BUS.post(
                 new net.minecraftforge.event.level.BlockEvent.BreakEvent(level, pos, old, player))) {
@@ -573,6 +587,14 @@ public class ClaimReplacementTerminalMachine extends MetaMachine
                 newState = copyProperty(newState, old, property);
             }
         }
+        ItemStack oldItem = new ItemStack(old.getBlock().asItem());
+        // Keep one-block returns, but preserve item-carried data supplied by the block's own loot (e.g. shulkers).
+        for (ItemStack drop : Block.getDrops(old, level, pos, level.getBlockEntity(pos), player, player.getMainHandItem())) {
+            if (drop.is(oldItem.getItem())) {
+                oldItem = drop.copyWithCount(1);
+                break;
+            }
+        }
         var placement = BlockReplacementTransaction.replace(level, player, pos, newState, material,
                 () -> useAe ? storage.extract(AEItemKey.of(material), 1L, Actionable.MODULATE, IActionSource.ofPlayer(player)) > 0L
                         : consumeOneFromInventory(player, material));
@@ -585,7 +607,6 @@ public class ClaimReplacementTerminalMachine extends MetaMachine
             };
         }
         // 旧方块处置：AE 模式存入 AE（失败给玩家），否则给玩家
-        ItemStack oldItem = new ItemStack(old.getBlock().asItem());
         returnItemToStorageOrPlayer(useAe ? storage : null, player, oldItem);
         if (placement == BlockReplacementTransaction.Result.PLACED_WITH_WARNING) {
             player.sendSystemMessage(Component.translatable("gtl_enhancedcore.claim_replacement.placement_warning",
@@ -657,6 +678,11 @@ public class ClaimReplacementTerminalMachine extends MetaMachine
 
     private static <T extends Comparable<T>> BlockState copyProperty(BlockState target, BlockState source, Property<T> property) {
         return target.setValue(property, source.getValue(property));
+    }
+
+    private static boolean isMultiBlockState(BlockState state) {
+        return state.hasProperty(BlockStateProperties.DOUBLE_BLOCK_HALF)
+                || state.hasProperty(BlockStateProperties.BED_PART);
     }
 
     /** 统计背包内与替换物同 ID 的物品总数（仅主背包）。 */

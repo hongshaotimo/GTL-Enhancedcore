@@ -25,13 +25,14 @@ public final class IvTimeAcceleration {
         if (!logic.isWorking() || !(logic.getMachine() instanceof WorkableElectricMultiblockMachine machine))
             return BigInteger.ZERO;
         BigInteger eut = BigInteger.ZERO;
-        // Native wireless orders deliberately publish physical EU/t=0; use their real wide ledger.
+        // Stellar and native wireless orders expose clipped or zero physical EU/t; use their wide ledger.
         for (var buffer : IvBuffers.collect(machine)) {
             var state = IvBuffers.state(buffer);
             if (state == null) continue;
             for (var job : state.jobs) {
                 if (job.active() && !job.halted)
-                    eut = eut.add((job.nativeWireless ? job.nativeWirelessEUt : BigInteger.valueOf(job.eut))
+                    eut = eut.add((job.ivGalaxy ? job.ivGalaxyEUt
+                            : job.nativeWireless ? job.nativeWirelessEUt : BigInteger.valueOf(job.eut))
                             .max(BigInteger.ZERO));
             }
         }

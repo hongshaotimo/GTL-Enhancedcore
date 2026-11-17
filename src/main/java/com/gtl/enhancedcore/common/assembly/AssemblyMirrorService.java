@@ -9,6 +9,8 @@ import com.gtl.enhancedcore.common.item.AssemblyManagerItem;
 import com.gtl.enhancedcore.common.recipe.iv.IvBuffers;
 import com.gtladd.gtladditions.common.machine.multiblock.part.MESuperPatternBufferPartMachine;
 import com.gtladd.gtladditions.common.machine.multiblock.part.MESuperPatternBufferProxyPartMachine;
+import dev.ftb.mods.ftbchunks.api.FTBChunksAPI;
+import dev.ftb.mods.ftbchunks.api.Protection;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -138,12 +140,15 @@ public final class AssemblyMirrorService {
 
     private static String coordinates(BlockPos pos) { return pos.getX() + ", " + pos.getY() + ", " + pos.getZ(); }
     static Component text(String key, Object... args) { return Component.translatable("gtl_enhancedcore.assembly.mirror." + key, args); }
-    private static boolean mayEdit(ServerPlayer player, BlockPos pos) {
-        return !player.isSpectator() && player.isAlive() && player.mayBuild() && player.serverLevel().mayInteract(player, pos);
+    private static boolean mayEdit(ServerPlayer player, InteractionHand hand, BlockPos pos) {
+        // FTB reads block state for interaction whitelists; packet positions must never load chunks.
+        return !player.isSpectator() && player.isAlive() && player.mayBuild() && player.serverLevel().mayInteract(player, pos)
+                && player.serverLevel().getChunkSource().getChunkNow(pos.getX() >> 4, pos.getZ() >> 4) != null
+                && !FTBChunksAPI.api().getManager().shouldPreventInteraction(player, hand, pos, Protection.INTERACT_BLOCK, null);
     }
 
     public static Component bindNetwork(ServerPlayer player, InteractionHand hand, BlockPos pos, Direction face) {
-        if (!mayEdit(player, pos) || player.distanceToSqr(pos.getCenter()) > 64) return text("blocked");
+        if (!mayEdit(player, hand, pos) || player.distanceToSqr(pos.getCenter()) > 64) return text("blocked");
         IGridNode node = node(player.serverLevel(), pos, face);
         if (node == null) return text("not_network");
         CompoundTag tag = new CompoundTag();
@@ -159,7 +164,7 @@ public final class AssemblyMirrorService {
     }
 
     public static Component bindMirror(ServerPlayer player, InteractionHand hand, BlockPos pos, boolean requireKnown) {
-        if (!mayEdit(player, pos)) return text("blocked");
+        if (!mayEdit(player, hand, pos)) return text("blocked");
         if (!requireKnown && player.distanceToSqr(pos.getCenter()) > 64) return text("blocked");
         Network network = resolve(player, hand);
         if (!network.binding.dimension.equals(player.serverLevel().dimension().location())) return text("same_dimension");
@@ -168,6 +173,8 @@ public final class AssemblyMirrorService {
         if (requireKnown && !known(network, proxy)) return text("invalid_mirror");
         var source = network.sources.stream().filter(candidate -> candidate.getPos().equals(network.binding.selected)).findFirst().orElse(null);
         if (source == null) return text("choose_source");
+        if (!mayEdit(player, hand, source.getPos())
+                || proxy.getBufferPos() != null && !mayEdit(player, hand, proxy.getBufferPos())) return text("blocked");
         if (IvBuffers.isolated(source)) return text("iv_exclusive");
         if (!source.getMainNode().isActive()) return text("source_offline");
         if (proxy instanceof MESuperPatternBufferProxyPartMachine && !(source instanceof MESuperPatternBufferPartMachine)) return text("type_mismatch");
@@ -200,16 +207,17 @@ public final class AssemblyMirrorService {
             if (source == null) return text("invalid_source");
             if (IvBuffers.isolated(source)) return text("iv_exclusive");
             if (!source.getMainNode().isActive()) return text("source_offline");
-            if (!mayEdit(player, pos)) return text("blocked");
+            if (!mayEdit(player, hand, pos)) return text("blocked");
             CompoundTag tag = writable(player, hand);
             tag.putLong("selectedSource", pos.asLong()); tag.putString("selectedName", name(source));
             player.getInventory().setChanged();
             return text("source_selected", displayName(source));
         }
         if (action == AssemblyMirrorNetwork.UNBIND) {
-            if (!mayEdit(player, pos)) return text("blocked");
+            if (!mayEdit(player, hand, pos)) return text("blocked");
             if (!(loadedMachine(player.serverLevel(), pos) instanceof MEPatternBufferProxyPartMachine proxy)) return text("mirror_unloaded");
             if (!known(network, proxy)) return text("invalid_mirror");
+            if (!mayEdit(player, hand, proxy.getBufferPos())) return text("blocked");
             var oldSource = proxy.getBuffer();
             proxy.setBuffer(null); proxy.markDirty();
             if (oldSource != null) oldSource.markDirty();

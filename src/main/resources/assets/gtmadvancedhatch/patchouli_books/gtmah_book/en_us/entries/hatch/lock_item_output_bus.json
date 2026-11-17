@@ -1,0 +1,22 @@
+{
+  "sortnum": 0,
+  "name": "留存输出总线",
+  "icon": "minecraft:book",
+  "category": "gtmadvancedhatch:hatch",
+  "pages": [
+    {
+      "type": "text",
+      "title": "Disabled / 已停用",
+      "text": "$(bold)Disabled in this modpack / 本整合包已停用$()$(br)These hatches are not registered in this modpack. The original descriptions below are kept for reference.$(br)这些仓室未在本整合包注册，下方保留原说明供参考。"
+    },
+    {
+      "type": "text",
+      "text": "$(item)留存输出总线$()是普通输出总线的升级版，造价十分便宜，通常用于$(_)被动产线中为同一机器运行多个配方并维持数量而使用$()。$(br)$(li)1.玩家可以任意放入或取出其中的物品。$(li)2.比同级别的物品输出总线$(thing)格子多将近一倍$()且拥有$(thing)更大的堆叠$()，堆叠数量原先小于64的物品会同比增加。$(li)3.自动输出与外部物流或AE存储总线都$(thing)不会取出每个格子中最后一个物品$()。"
+    },
+    {
+      "type": "text",
+      "title": "电网能源仓/动力仓",
+      "text": "在组装机中由1个物品输出总线和1个物品探测覆盖板进行制作，$(iv)及以上等级需要改用进阶物品探测器制作。"
+    }
+  ]
+}

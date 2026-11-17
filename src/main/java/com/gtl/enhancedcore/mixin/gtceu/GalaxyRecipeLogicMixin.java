@@ -5,6 +5,7 @@ import com.gregtechceu.gtceu.api.machine.trait.RecipeLogic;
 import com.gregtechceu.gtceu.api.recipe.GTRecipe;
 import com.gtl.enhancedcore.common.recipe.GalaxyRecipeBatch;
 import com.gtl.enhancedcore.common.recipe.GalaxyIndependentRecipeEngine;
+import com.gtl.enhancedcore.common.recipe.RecipeChanceCacheScope;
 import com.gtl.enhancedcore.common.machine.galaxy.GalaxyLinks;
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import com.llamalad7.mixinextras.injector.wrapmethod.WrapMethod;
@@ -27,6 +28,8 @@ public abstract class GalaxyRecipeLogicMixin implements com.gtl.enhancedcore.com
         return galaxy$independent != null && galaxy$independent.hasJobs();
     }
     @Override public boolean galaxy$blockNativeSearch() {
+        // A mode/structure change must not hand an owned display recipe to native search.
+        if (galaxy$hasIndependentJobs()) return true;
         var logic = (RecipeLogic)(Object)this;
         if (galaxy$nativeFallback || !GalaxyIndependentRecipeEngine.supports(logic)
                 || !GalaxyLinks.crossRecipeEnabledByConnection((WorkableElectricMultiblockMachine)logic.getMachine()))
@@ -40,8 +43,8 @@ public abstract class GalaxyRecipeLogicMixin implements com.gtl.enhancedcore.com
     }
     @Unique private boolean galaxy$independentMode() {
         var logic = (RecipeLogic)(Object)this;
-        if (!GalaxyIndependentRecipeEngine.supports(logic)) return false;
         if (galaxy$independent != null && galaxy$independent.hasJobs()) return true;
+        if (!GalaxyIndependentRecipeEngine.supports(logic)) return false;
         // An already-paid native batch finishes on its original execution path.
         if (logic.getLastRecipe() != null && logic.getDuration() > 0 && !logic.isIdle()) return false;
         return GalaxyLinks.crossRecipeEnabledByConnection((WorkableElectricMultiblockMachine)logic.getMachine());
@@ -52,7 +55,13 @@ public abstract class GalaxyRecipeLogicMixin implements com.gtl.enhancedcore.com
     }
     @WrapMethod(method = "serverTick")
     private void galaxy$independentTick(Operation<Void> original) {
-        if (!galaxy$independentMode()) { original.call(); return; }
+        if (!galaxy$independentMode()) {
+            original.call();
+            // Finishing a paid native batch can enter independent mode and then
+            // unsubscribe in the same tick. Recheck after native completion.
+            if (galaxy$independentMode()) ((RecipeLogic)(Object)this).updateTickSubscription();
+            return;
+        }
         var engine = galaxy$engine();
         engine.tick();
         // Independent admission deliberately skips specialized work such as total CWU.
@@ -98,21 +107,33 @@ public abstract class GalaxyRecipeLogicMixin implements com.gtl.enhancedcore.com
             return;
         }
         if (!GalaxyRecipeBatch.applicable(logic)) return;
-        GTRecipe batch = GalaxyRecipeBatch.find((WorkableElectricMultiblockMachine)logic.getMachine(), logic, galaxy$rotation);
-        if (batch == null) return; // Keep custom generated recipes and specialized work ledgers available.
-        galaxy$rotation++;
-        lastOriginRecipe = null;
-        lastRecipe = null;
-        logic.setupRecipe(batch);
-        // Machine-specific beforeWorking or IO handlers may reject a combined candidate.
-        // In that case let GTCEu continue its native single-recipe search this tick.
-        if (lastRecipe != batch || !logic.isActive()) return;
-        logic.lastFailedMatches = null;
-        ci.cancel();
+        try (var chances = new RecipeChanceCacheScope(logic)) {
+            GTRecipe batch = GalaxyRecipeBatch.find((WorkableElectricMultiblockMachine)logic.getMachine(), logic, galaxy$rotation);
+            if (batch == null) return; // Keep custom generated recipes and specialized work ledgers available.
+            galaxy$rotation++;
+            lastOriginRecipe = null;
+            lastRecipe = null;
+            logic.setupRecipe(batch);
+            // Machine-specific beforeWorking or IO handlers may reject a combined candidate.
+            // In that case let GTCEu continue its native single-recipe search this tick.
+            if (lastRecipe != batch || !logic.isActive()) return;
+            chances.commit();
+            logic.lastFailedMatches = null;
+            ci.cancel();
+        }
     }
-    @ModifyVariable(method="setupRecipe",at=@At("HEAD"),argsOnly=true,require=1)
-    private GTRecipe galaxy$customCandidate(GTRecipe recipe) {
-        return GalaxyRecipeBatch.expand((RecipeLogic)(Object)this, recipe);
+    @WrapMethod(method = "setupRecipe")
+    private void galaxy$customCandidate(GTRecipe recipe, Operation<Void> original) {
+        var logic = (RecipeLogic)(Object)this;
+        if (!GalaxyRecipeBatch.applicable(logic)) {
+            original.call(recipe);
+            return;
+        }
+        try (var chances = new RecipeChanceCacheScope(logic, recipe)) {
+            GTRecipe expanded = GalaxyRecipeBatch.expand(logic, recipe);
+            original.call(expanded);
+            if (lastRecipe == expanded && logic.isActive()) chances.commit();
+        }
     }
     @ModifyExpressionValue(method = "onRecipeFinish", at = @At(value = "FIELD", target =
             "Lcom/gregtechceu/gtceu/api/machine/trait/RecipeLogic;recipeDirty:Z"), require = 1)

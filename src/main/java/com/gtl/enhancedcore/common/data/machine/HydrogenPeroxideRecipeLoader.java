@@ -27,6 +27,8 @@ public final class HydrogenPeroxideRecipeLoader {
                 .save(provider);
 
         GTLRecipeTypes.DISTORT_RECIPES.recipeBuilder(GTLEnhancedcore.id("hydrogen_peroxide_bulk"))
+                // Keep the peroxide input subset separate from palladium-based resin recipes.
+                .circuitMeta(24)
                 .notConsumable(dust, Palladium)
                 .inputFluids(Hydrogen.getFluid(64000), Oxygen.getFluid(64000))
                 .outputFluids(GTLMaterials.HydrogenPeroxide.getFluid(32000))

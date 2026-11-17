@@ -1,0 +1,31 @@
+{
+  "sortnum": 3,
+  "name": "可配置总成",
+  "icon": "minecraft:book",
+  "category": "gtmadvancedhatch:hatch",
+  "pages": [
+    {
+      "type": "text",
+      "title": "Disabled / 已停用",
+      "text": "$(bold)Disabled in this modpack / 本整合包已停用$()$(br)These hatches are not registered in this modpack. The original descriptions below are kept for reference.$(br)这些仓室未在本整合包注册，下方保留原说明供参考。"
+    },
+    {
+      "type": "text",
+      "text": "$(item)可配置总成$()同时拥有8格同级别可配置仓的物品和流体槽。具体见$(l:hatch/configurable_item_bus)可配置物品总线$()和$(l:hatch/configurable_fluid_hatch)可配置流体仓$()。$(p)还有对应的终极可配置总成，拥有16倍数量的物品和流体槽位（翻页显示）。$(br)$(thing)支持使用闪存读写配置$()。"
+    },
+    {
+      "type": "text",
+      "title": "可配置仓的容量",
+      "text": "可配置总成直接使用对应等级的八重可配置流体仓和八重可配置物品总线在组装机中合成。终极可配置总成则需要各使用16个进行制作。$(p)$(8)$(o)         \"~ 据说是某位格雷员工从某个魔怔外星文明那里得来的技术 ~ \"$()$(br)         ——$(max)终极可配置总成"
+    },
+    {
+      "type": "text",
+      "title": "一些终极可配置总成",
+      "text": "Item displays have been removed because these hatches are not registered.$(br)这些仓室未注册，因此已移除对应物品展示。"
+    },
+    {
+      "type": "text",
+      "text": "$(li)$(ulv) 8桶 64堆叠$(li)$(lv) 16桶 128堆叠$(li)$(mv) 32桶 256堆叠$(li)$(hv) 2048桶 1024堆叠$(li)$(ev) 32768桶 4096堆叠$(li)$(iv) 524288桶 16384堆叠$(li)$(luv) 8388608桶 65536堆叠$(li)$(zpm) 134217728桶 262144堆叠$(li)$(uv) 21亿桶 1048576堆叠$(li)......$(li)$(max) 9.22E15桶 21亿堆叠"
+    }
+  ]
+}

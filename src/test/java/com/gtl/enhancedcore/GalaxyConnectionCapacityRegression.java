@@ -35,14 +35,14 @@ final class GalaxyConnectionCapacityRegression {
         for (int arrays = 0; arrays <= 64; arrays++) {
             for (boolean active : new boolean[]{false, true}) {
                 for (boolean modifier : new boolean[]{false, true}) {
-                    boolean unlimited = active && !modifier && arrays == 64;
+                    boolean unlimited = active && arrays == 64;
                     check(GalaxyLinks.connectionProvidesUnlimitedCapacity(active, modifier, arrays) == unlimited,
-                            "only a full active station without a thread modifier grants unlimited capacity");
+                            "a full active station grants unlimited capacity with or without Omega");
                     for (int base : new int[]{1, 64, 128, 192, Integer.MAX_VALUE - 5}) {
-                        int expected = !active || modifier ? base : unlimited ? Integer.MAX_VALUE
+                        int expected = !active ? base : unlimited ? Integer.MAX_VALUE
                                 : (int)Math.min(Integer.MAX_VALUE, (long)base + 10_000);
                         check(GalaxyLinks.connectionThreads(active, modifier, arrays, base) == expected,
-                                "finite bonus preserves native threads, disconnect, precedence and saturation");
+                                "finite bonus stacks with native Omega threads and preserves disconnect and saturation");
                         capacityChecks++;
                     }
                     capacityChecks++;

@@ -499,6 +499,16 @@ public final class IvNativeEngine {
                         wirelessEUt = wirelessEUt.multiply(BigInteger.valueOf(repeats));
                     }
                     wirelessTotal = wirelessEUt.multiply(BigInteger.valueOf(timing.duration));
+                    if (com.gtl.enhancedcore.common.recipe.GalaxyNativeRecipePreparation.energyOnly(scaled)) {
+                        // A live stellar source supplies the same total EU through a wider
+                        // power window even when no Omega hatch enables native batch mode.
+                        var plan = com.gtl.enhancedcore.common.recipe.GalaxyBatchAccounting.plan(wirelessTotal,
+                                com.gtl.enhancedcore.common.recipe.GalaxyNativeRecipePreparation.minimumDuration(scaled),
+                                wireless.getMaxAvailableEnergy().max(BigInteger.ONE));
+                        if (plan == null) { waiting(ref, "gtl_enhancedcore.diagnostic.power"); return; }
+                        timing = scaled.copy(); timing.duration = plan.duration();
+                        wirelessEUt = plan.eut();
+                    }
                 }
             }
             if (IvRecipeInputs.plan(scaled, job.inventory, virtual, 1) == null) {
@@ -539,6 +549,7 @@ public final class IvNativeEngine {
             }
             GTRecipe outputs = IParallelLogic.getRecipeOutputChance(machine, scaled);
             GTRecipe inputRoll = scaled.copy(); inputRoll.outputs.clear();
+            RecipeExtensionCopier.copy(scaled, inputRoll);
             scaled.inputs.forEach((cap, contents) -> {
                 var consumed = contents.stream().filter(content -> content.chance > 0).toList();
                 if (!consumed.isEmpty()) inputRoll.outputs.put(cap, consumed);

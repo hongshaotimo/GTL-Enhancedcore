@@ -1,0 +1,31 @@
+{
+  "sortnum": 2,
+  "name": "可配置物品总线",
+  "icon": "minecraft:book",
+  "category": "gtmadvancedhatch:hatch",
+  "pages": [
+    {
+      "type": "text",
+      "title": "Disabled / 已停用",
+      "text": "$(bold)Disabled in this modpack / 本整合包已停用$()$(br)These hatches are not registered in this modpack. The original descriptions below are kept for reference.$(br)这些仓室未在本整合包注册，下方保留原说明供参考。"
+    },
+    {
+      "type": "text",
+      "text": "$(item)可配置物品总线$()是高度可控的物品总线，它$(_)集成了槽位过滤，容量配置于一体$()。$(br)$(li)1.相比于$(l:hatch/lock_item_output_bus)留存输出总线$()槽位数量更少，但堆叠大得多，且与物品本身堆叠上限无关。$(li)2.每一格都可以通过虚拟物品槽设置$(item)过滤$()和$(item)容量$()大小。$(li)3.槽位数量会显示$(thing)百分比$()。$(br)$(thing)支持使用闪存读写配置$()。"
+    },
+    {
+      "type": "text",
+      "title": "可配置仓的容量",
+      "text": "$(hv)及以下等级仅有四重可配置物品总线，EV及以上等级则还有八重和十六重的版本。槽位越多制作所需的超级箱/量子箱以及其他电子部件的数量就越多。而且八重可配置物品总线还是制作$(l:hatch/configurable_dual_hatch)可配置总成和终极可配置总成$()所需的部件。$(_)$(bold)输入总线摆下来时会自动设为最大容量，输出总线则会自动设为0容量。$()容量上限不同等级具体数值罗列见本条目末页。"
+    },
+    {
+      "type": "text",
+      "title": "一些多重可配置仓",
+      "text": "Item displays have been removed because these hatches are not registered.$(br)这些仓室未注册，因此已移除对应物品展示。"
+    },
+    {
+      "type": "text",
+      "text": "$(li)$(ulv) 64堆叠$(li)$(lv) 128堆叠$(li)$(mv) 256堆叠$(li)$(hv) 1024堆叠$(li)$(ev) 4096堆叠$(li)$(iv) 16384堆叠$(li)$(luv) 65536堆叠$(li)$(zpm) 262144堆叠$(li)$(uv) 1048576堆叠$(li)......$(li)$(max) 21亿堆叠"
+    }
+  ]
+}

@@ -46,14 +46,14 @@ public final class GalaxyLinks {
                 p -> p instanceof com.gtladd.gtladditions.api.machine.feature.IThreadModifierPart);
     }
     public static boolean crossRecipeEnabledByConnection(WorkableElectricMultiblockMachine machine) {
-        return active(machine) && !hasThreadModifierHatch(machine);
+        return active(machine);
     }
     /** Explicit isolation owns its scheduler rather than the native stellar mode. */
     public static boolean temporaryNativeModeAllowed(boolean isolated) {
         return !isolated;
     }
     public static boolean connectionProvidesUnlimitedCapacity(boolean linkActive, boolean hasThreadModifierHatch, int arrays) {
-        return linkActive && !hasThreadModifierHatch && arrays >= REQUIRED_ARRAYS;
+        return linkActive && arrays >= REQUIRED_ARRAYS;
     }
     public static boolean unlimited(WorkableElectricMultiblockMachine machine) {
         var station = linkedStation(machine);
@@ -61,8 +61,8 @@ public final class GalaxyLinks {
                 station == null ? 0 : station.getAstralArrayCount());
     }
     public static int connectionThreads(boolean linkActive, boolean hasThreadModifierHatch, int arrays, int original) {
-        if (!linkActive || hasThreadModifierHatch) return original;
-        return connectionProvidesUnlimitedCapacity(true, false, arrays) ? Integer.MAX_VALUE
+        if (!linkActive) return original;
+        return connectionProvidesUnlimitedCapacity(true, hasThreadModifierHatch, arrays) ? Integer.MAX_VALUE
                 : (int)Math.min(Integer.MAX_VALUE, (long)original + EXTRA_THREADS);
     }
     public static int threads(WorkableElectricMultiblockMachine machine, int original) {
@@ -70,12 +70,23 @@ public final class GalaxyLinks {
         return connectionThreads(station != null, hasThreadModifierHatch(machine),
                 station == null ? 0 : station.getAstralArrayCount(), original);
     }
+    /** GTLCore's batch trait has 64 native threads plus the actual Omega grant. */
+    public static int nativeMultipleRecipeThreads(WorkableElectricMultiblockMachine machine) {
+        int nativeThreads = (int)Math.min(Integer.MAX_VALUE, 64L
+                + com.gtl.enhancedcore.common.recipe.iv.IvMachineScope.modifierThreads(machine));
+        return threads(machine, nativeThreads);
+    }
+    /** Ordinary traits expose Omega's same-recipe lanes as the native stellar lanes. */
+    public static int ordinaryThreads(WorkableElectricMultiblockMachine machine) {
+        int nativeThreads = (int)Math.min(Integer.MAX_VALUE, 1L
+                + com.gtl.enhancedcore.common.recipe.iv.IvMachineScope.modifierThreads(machine));
+        return threads(machine, nativeThreads);
+    }
     public static long batchBudget(WorkableElectricMultiblockMachine machine, long original) {
         if (!active(machine)) return original;
         if (unlimited(machine)) return (long)Integer.MAX_VALUE * Integer.MAX_VALUE;
-        if (hasThreadModifierHatch(machine)) return original;
-        // Ordinary GTLCore and the fragment stripper supply one native parallel lane;
-        // ADD budgets that already read enhanced thread getters bypass this method.
+        // The fragment stripper supplies a recipe-specific native lane budget.
+        // Core and ADD thread-times-parallel budgets use their effective thread getters.
         return ordinaryBatchBudget(original);
     }
     public static long ordinaryBatchBudget(long original) {

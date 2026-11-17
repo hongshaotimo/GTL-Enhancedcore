@@ -6,6 +6,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.WitherSkullBlock;
 import net.minecraft.world.level.block.state.BlockState;
@@ -51,6 +52,8 @@ public final class BlockReplacementTransaction {
         try {
             level.captureBlockSnapshots = true;
             if (!level.setBlock(position, replacement, 3)) return Result.FAILED;
+            // Match BlockItem.place: restore item-carried BE data before setPlacedBy, including its OP check.
+            BlockItem.updateCustomBlockEntityTag(level, player, position, material);
             if (!deferredInitializer) replacement.getBlock().setPlacedBy(level, position, replacement, player, material.copyWithCount(1));
             level.captureBlockSnapshots = false;
             snapshots = captured(level, snapshotStart, original);

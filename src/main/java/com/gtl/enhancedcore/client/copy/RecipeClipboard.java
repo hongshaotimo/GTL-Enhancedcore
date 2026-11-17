@@ -41,6 +41,12 @@ public final class RecipeClipboard {
      */
     @Nullable
     public static String toJson(@Nullable MinecraftServer server, ResourceLocation id) {
+        return toJson(server, id, null);
+    }
+
+    @Nullable
+    public static String toJson(@Nullable MinecraftServer server, ResourceLocation id,
+                                @Nullable Recipe<?> displayedRecipe) {
         if (id == null) return null;
         // 1) 数据包原始 JSON 优先：保留作者写的全部字段与书写风格。
         if (server != null) {
@@ -49,7 +55,9 @@ public final class RecipeClipboard {
         }
         // 2) 兜底：从注册表里的配方对象实时生成。
         if (!CopyKeysConfig.liveGenerateRecipe()) return null;
-        return server == null ? null : liveJson(server, id);
+        Recipe<?> recipe = displayedRecipe;
+        if (recipe == null && server != null) recipe = server.getRecipeManager().byKey(id).orElse(null);
+        return recipe == null ? null : liveJson(recipe, id);
     }
 
     /** 从数据包读取 recipes/&lt;namespace&gt;/&lt;path&gt;.json 并压成单行。 */
@@ -71,10 +79,8 @@ public final class RecipeClipboard {
 
     /** 用注册表里的配方对象生成 JSON；GT 配方额外输出输入/输出/时长等可读字段。 */
     @Nullable
-    private static String liveJson(MinecraftServer server, ResourceLocation id) {
+    private static String liveJson(Recipe<?> recipe, ResourceLocation id) {
         try {
-            Recipe<?> recipe = server.getRecipeManager().byKey(id).orElse(null);
-            if (recipe == null) return null;
             JsonObject root = new JsonObject();
             root.addProperty("type", String.valueOf(ForgeRegistries.RECIPE_SERIALIZERS.getKey(recipe.getSerializer())));
             root.addProperty("_source", "live-generated");

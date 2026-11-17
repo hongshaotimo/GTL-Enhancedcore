@@ -33,9 +33,17 @@ public final class CopyActions {
 
     /** 复制配方的 JSON 文本。 */
     public static boolean copyRecipe(@Nullable ResourceLocation recipeId) {
+        return copyRecipe(recipeId, null);
+    }
+
+    /** JEI already owns the synced recipe, including when connected to a dedicated server. */
+    public static boolean copyRecipe(@Nullable ResourceLocation recipeId,
+                                     @Nullable net.minecraft.world.item.crafting.Recipe<?> recipe) {
         if (recipeId == null) return false;
         var server = net.minecraftforge.server.ServerLifecycleHooks.getCurrentServer();
-        String json = RecipeClipboard.toJson(server, recipeId);
+        if (recipe == null && Minecraft.getInstance().level != null)
+            recipe = Minecraft.getInstance().level.getRecipeManager().byKey(recipeId).orElse(null);
+        String json = RecipeClipboard.toJson(server, recipeId, recipe);
         if (json == null) {
             message(Component.translatable("gtl_enhancedcore.copy.recipe.failed", recipeId.toString()));
             return false;

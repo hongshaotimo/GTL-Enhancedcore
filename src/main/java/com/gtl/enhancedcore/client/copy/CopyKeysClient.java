@@ -116,7 +116,6 @@ public final class CopyKeysClient {
             CopyActions.copyFluid(hoveredFluid);
             return;
         }
-        if (allowItem && !hoveredFluid.isEmpty()) CopyActions.copyFluid(hoveredFluid);
     }
 
     /** 供 JEI mixin 判断是否应接管配方复制。 */

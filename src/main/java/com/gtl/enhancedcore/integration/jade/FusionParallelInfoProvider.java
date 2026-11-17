@@ -54,7 +54,7 @@ public class FusionParallelInfoProvider implements IBlockComponentProvider, ISer
             return;
         }
         GTRecipe last = ((WorkableMultiblockMachine) machine).getRecipeLogic().getLastRecipe();
-        int parallels = (last != null && last.parallels > 1) ? last.parallels : configuredParallel(machine.getDefinition());
+        int parallels = last != null ? Math.max(1, last.parallels) : configuredParallel(machine.getDefinition());
         data.putInt(KEY_PARALLEL, parallels);
     }
 
@@ -65,7 +65,7 @@ public class FusionParallelInfoProvider implements IBlockComponentProvider, ISer
             return;
         }
         int parallels = data.getInt(KEY_PARALLEL);
-        if (parallels > 1) {
+        if (parallels > 0) {
             tooltip.add(Component.translatable("gui.gtl_enhancedcore.fusion_reactor.parallel",
                     Component.literal(String.valueOf(parallels)).withStyle(ChatFormatting.LIGHT_PURPLE))
                     .withStyle(ChatFormatting.GRAY));

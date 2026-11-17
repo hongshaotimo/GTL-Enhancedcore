@@ -48,7 +48,7 @@ public abstract class FusionReactorParallelMixin {
         }
         int maxParallel = parallelFor(((MetaMachine) (Object) this).getDefinition());
         GTRecipe last = ((WorkableMultiblockMachine) (Object) this).getRecipeLogic().getLastRecipe();
-        int shown = (last != null && last.parallels > 1) ? last.parallels : maxParallel;
+        int shown = last != null ? Math.max(1, last.parallels) : maxParallel;
         textList.add(Component.translatable("gui.gtl_enhancedcore.fusion_reactor.parallel",
                 Component.literal(String.valueOf(shown)).withStyle(ChatFormatting.LIGHT_PURPLE))
                 .withStyle(ChatFormatting.GRAY));

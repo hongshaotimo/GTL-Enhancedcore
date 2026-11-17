@@ -59,11 +59,14 @@ public class GalaxyConnectionHatch extends TieredIOPartMachine implements com.gr
         if (!isRemote() && !source) linkSubscription = subscribeServerTick(linkSubscription, () -> {
             if (getOffsetTimer() % 5 != 0) return;
             boolean active = linkActive();
-            if (active == lastLinkActive) return;
+            boolean changed = active != lastLinkActive;
+            if (!active && !changed) return;
             lastLinkActive = active;
             for (var controller : GalaxyLinks.controllers(this)) {
                 if (controller instanceof com.gregtechceu.gtceu.api.machine.multiblock.WorkableElectricMultiblockMachine machine) {
-                    machine.getRecipeLogic().markLastRecipeDirty();
+                    // A stable link must also wake an idle native/custom trait.
+                    // Only link transitions invalidate its recipe search state.
+                    if (changed) machine.getRecipeLogic().markLastRecipeDirty();
                     machine.getRecipeLogic().updateTickSubscription();
                 }
             }

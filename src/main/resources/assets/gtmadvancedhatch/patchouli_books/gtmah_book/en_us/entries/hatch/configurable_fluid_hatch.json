@@ -1,0 +1,31 @@
+{
+  "sortnum": 1,
+  "name": "可配置流体仓",
+  "icon": "minecraft:book",
+  "category": "gtmadvancedhatch:hatch",
+  "pages": [
+    {
+      "type": "text",
+      "title": "Disabled / 已停用",
+      "text": "$(bold)Disabled in this modpack / 本整合包已停用$()$(br)These hatches are not registered in this modpack. The original descriptions below are kept for reference.$(br)这些仓室未在本整合包注册，下方保留原说明供参考。"
+    },
+    {
+      "type": "text",
+      "text": "$(item)可配置流体仓$()是高度可控的流体仓，它$(_)集成了槽位过滤，容量配置于一体$()。$(br)$(li)1.自HV等级，每格容量都远大于普通流体仓的容量。$(li)2.每一格都可以通过虚拟流体槽设置$(item)过滤$()和$(item)容量$()大小。$(li)3.槽位流体量会显示$(thing)百分比$()。$(li)4.$(item)螺丝刀$()右击可以调整流体占用模式：$(thing)流体仅占用一格$()默认为禁用，启用后同种流体最多$(_)只占用一个槽位$()。$(br)$(thing)支持使用闪存读写配置$()。"
+    },
+    {
+      "type": "text",
+      "title": "可配置仓的容量",
+      "text": "$(mv)及以下级别的制作材料因其容量不大，要容易得多，无需使用超级缸制作。八重和十六重则还要更贵。而且八重可配置流体仓还是制作$(l:hatch/configurable_dual_hatch)可配置总成和终极可配置总成$()所需的部件。$(_)$(bold)输入仓摆下来时会自动设为最大容量，输出仓则会自动设为0容量。$()容量上限不同等级具体数值罗列见本条目末页。"
+    },
+    {
+      "type": "text",
+      "title": "一些多重可配置仓",
+      "text": "Item displays have been removed because these hatches are not registered.$(br)这些仓室未注册，因此已移除对应物品展示。"
+    },
+    {
+      "type": "text",
+      "text": "$(li)$(ulv) 8桶$(li)$(lv) 16桶$(li)$(mv) 32桶$(li)$(hv) 2048桶$(li)$(ev) 32768桶$(li)$(iv) 524288桶$(li)$(luv) 8388608桶$(li)$(zpm) 134217728桶$(li)$(uv) 21亿桶$(li)......$(li)$(max) 9.22E15桶"
+    }
+  ]
+}

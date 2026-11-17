@@ -1,7 +1,10 @@
 package com.gtl.enhancedcore.network;
 
+import dev.ftb.mods.ftbchunks.api.FTBChunksAPI;
+import dev.ftb.mods.ftbchunks.api.Protection;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.InteractionHand;
 
 /** Validate senders before resolving block entities; packets must not load remote chunks. */
 final class MachinePacketAccess {
@@ -12,6 +15,8 @@ final class MachinePacketAccess {
                 && player.distanceToSqr(pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5) <= 64.0
                 && player.serverLevel().hasChunkAt(pos)
                 && player.serverLevel().mayInteract(player, pos)
+                && !FTBChunksAPI.api().getManager().shouldPreventInteraction(
+                        player, InteractionHand.MAIN_HAND, pos, Protection.INTERACT_BLOCK, null)
                 && player.containerMenu instanceof com.lowdragmc.lowdraglib.gui.modular.ModularUIContainer menu
                 && menu.getModularUI().holder instanceof com.gregtechceu.gtceu.api.machine.MetaMachine machine
                 && machine.getLevel() == player.serverLevel() && machine.getPos().equals(pos);

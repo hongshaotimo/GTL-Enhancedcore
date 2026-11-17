@@ -13,7 +13,11 @@ public abstract class GalaxyParallelCapacityMixin {
     // overwrite. Set it once, rather than regranting capacity for every candidate.
     @ModifyVariable(method="getRecipe",at=@At(value="STORE",ordinal=0),ordinal=1,require=1)
     private long galaxy$capacity(long original) {
-        return GalaxyLinks.batchBudget((WorkableElectricMultiblockMachine)((RecipeLogic)(Object)this).getMachine(), original);
+        var machine = (WorkableElectricMultiblockMachine)((RecipeLogic)(Object)this).getMachine();
+        if (!GalaxyLinks.active(machine)) return original;
+        return GalaxyLinks.unlimited(machine) ? (long)Integer.MAX_VALUE * Integer.MAX_VALUE
+                : (long)((org.gtlcore.gtlcore.api.machine.multiblock.ParallelMachine)machine).getMaxParallel()
+                        * GalaxyLinks.nativeMultipleRecipeThreads(machine);
     }
     @Dynamic("com.gtladd.gtladditions.mixin.gtlcore.machine.trait.MultipleRecipesLogicMixin")
     @ModifyVariable(method="gtladditions$getWirelessRecipe",at=@At(value="STORE",ordinal=0),ordinal=0,require=1)

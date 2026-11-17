@@ -143,7 +143,7 @@ public final class GalaxyIndependentRecipeEngine {
             publish(RecipeLogic.Status.SUSPEND, null);
             return;
         }
-        if (GalaxyLinks.crossRecipeEnabledByConnection(machine)
+        if (supports(logic) && GalaxyLinks.crossRecipeEnabledByConnection(machine)
                 && (refill || completed || machine.getOffsetTimer() % 5 == 0)) {
             refill = false;
             advanced |= admit();
@@ -160,7 +160,7 @@ public final class GalaxyIndependentRecipeEngine {
 
     public static int threads(RecipeLogic logic) {
         return GalaxyNativeRecipePreparation.supports(logic) ? GalaxyNativeRecipePreparation.threads(logic)
-                : GalaxyLinks.threads((WorkableElectricMultiblockMachine) logic.getMachine(), 1);
+                : GalaxyLinks.ordinaryThreads((WorkableElectricMultiblockMachine) logic.getMachine());
     }
 
     private boolean admit() {
@@ -186,19 +186,23 @@ public final class GalaxyIndependentRecipeEngine {
         if (candidates.isEmpty() || !GalaxyNativeRecipePreparation.beforeAdmission(logic)) return false;
         boolean started = false;
         for (var candidate : candidates) {
-            GTRecipe recipe = candidate.recipe();
-            try (var context = access.iv$recipeContext(recipe, candidate.origin(), 0, recipe.duration)) {
-                if (!recipe.checkConditions(logic).isSuccess()
-                        || !RecipeRunnerHelper.matchRecipeInputNocache(machine, recipe)
-                        || !RecipeRunnerHelper.matchRecipeOutput(machine, recipe)
-                        || !machine.beforeWorking(recipe)) continue;
-                recipe.preWorking(machine);
-                if (!RecipeRunnerHelper.handleRecipeInputNocache(machine, recipe)) continue;
-                jobs.add(new Job(candidate.origin(), recipe, candidate.capacity(), 0));
-                if (lock.isLock() && lock.getLockRecipe() == null) lock.setLockRecipe(candidate.origin());
-                cycleActive = true;
-                started = true;
-                machine.markDirty();
+            try (var chances = new RecipeChanceCacheScope(logic, candidate.chanceSource())) {
+                GTRecipe recipe = GalaxyRecipeBatch.settleIndependent(machine, logic, candidate);
+                if (recipe == null) continue;
+                try (var context = access.iv$recipeContext(recipe, candidate.origin(), 0, recipe.duration)) {
+                    if (!recipe.checkConditions(logic).isSuccess()
+                            || !RecipeRunnerHelper.matchRecipeInputNocache(machine, recipe)
+                            || !RecipeRunnerHelper.matchRecipeOutput(machine, recipe)
+                            || !machine.beforeWorking(recipe)) continue;
+                    recipe.preWorking(machine);
+                    if (!RecipeRunnerHelper.handleRecipeInputNocache(machine, recipe)) continue;
+                    jobs.add(new Job(candidate.origin(), recipe, candidate.capacity(), 0));
+                    chances.commit();
+                    if (lock.isLock() && lock.getLockRecipe() == null) lock.setLockRecipe(candidate.origin());
+                    cycleActive = true;
+                    started = true;
+                    machine.markDirty();
+                }
             }
         }
         return started;

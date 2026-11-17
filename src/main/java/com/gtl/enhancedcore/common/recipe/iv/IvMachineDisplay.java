@@ -170,6 +170,9 @@ public final class IvMachineDisplay {
     /** Match the ordinary-mode branches of GTLAdditions' ParallelProviderMixin. */
     private static int plainThreads(WorkableElectricMultiblockMachine machine) {
         var logic = machine.getRecipeLogic();
+        if (com.gtl.enhancedcore.common.machine.galaxy.GalaxyLinks.active(machine)
+                && GalaxyIndependentRecipeEngine.supports(logic))
+            return GalaxyIndependentRecipeEngine.threads(logic);
         if (logic instanceof com.gtladd.gtladditions.api.machine.logic.GTLAddMultipleRecipesLogic add)
             return add.getMultipleThreads();
         if (logic instanceof MultipleRecipesLogic && machine instanceof IThreadModifierMachine modifier)

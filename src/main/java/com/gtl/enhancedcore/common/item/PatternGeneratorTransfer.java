@@ -4,6 +4,8 @@ import appeng.api.parts.IPartHost;
 import appeng.helpers.patternprovider.PatternContainer;
 import com.gregtechceu.gtceu.api.recipe.GTRecipe;
 import com.gregtechceu.gtceu.api.machine.MetaMachine;
+import dev.ftb.mods.ftbchunks.api.FTBChunksAPI;
+import dev.ftb.mods.ftbchunks.api.Protection;
 import java.util.Map;
 import java.lang.ref.WeakReference;
 import java.util.UUID;
@@ -12,6 +14,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.UseOnContext;
@@ -39,6 +42,7 @@ public final class PatternGeneratorTransfer {
         final UUID generator;
         final BlockPos pos;
         final Direction side;
+        final InteractionHand hand;
         final Vec3 hit;
         final WeakReference<BlockEntity> blockEntity;
         int inserted;
@@ -48,6 +52,7 @@ public final class PatternGeneratorTransfer {
             this.generator = generator;
             pos = context.getClickedPos().immutable();
             side = context.getClickedFace();
+            hand = context.getHand();
             hit = context.getClickLocation();
             // A WeakHashMap value must not retain its player key through world -> players.
             blockEntity = new WeakReference<>(context.getLevel().getBlockEntity(pos));
@@ -98,7 +103,7 @@ public final class PatternGeneratorTransfer {
             tell(player, "fill_empty");
             return;
         }
-        if (player.isSpectator() || !player.serverLevel().mayInteract(player, context.getClickedPos())) return;
+        if (player.isSpectator() || !mayInteract(player, context.getHand(), context.getClickedPos())) return;
         Transfer transfer = new Transfer(settings.generatorId, context);
         if (target(player, transfer) == null) {
             tell(player, "fill_unsupported");
@@ -121,7 +126,7 @@ public final class PatternGeneratorTransfer {
         transfer.lastTick = now;
         if (!settings.getBoolean("transferArmed") || player.isSpectator()
                 || player.distanceToSqr(Vec3.atCenterOf(transfer.pos)) > 64
-                || !player.serverLevel().mayInteract(player, transfer.pos)) {
+                || !mayInteract(player, transfer.hand, transfer.pos)) {
             finish(player, transfer, "fill_stopped");
             return;
         }
@@ -208,6 +213,11 @@ public final class PatternGeneratorTransfer {
             if (target.inventory().isItemValid(slot, remainder)) remainder = target.inventory().insertItem(slot, remainder, false);
         }
         return offered - remainder.getCount();
+    }
+
+    private static boolean mayInteract(ServerPlayer player, InteractionHand hand, BlockPos pos) {
+        return player.serverLevel().hasChunkAt(pos) && player.serverLevel().mayInteract(player, pos)
+                && !FTBChunksAPI.api().getManager().shouldPreventInteraction(player, hand, pos, Protection.INTERACT_BLOCK, null);
     }
 
     private static Target target(ServerPlayer player, Transfer transfer) {

@@ -70,6 +70,8 @@
     "gtlcore.IvSuperBufferMixin",
     "gtlcore.IvCompatibleBufferUiMixin",
     "gtlcore.IvPatternBufferMixin",
+    "gtlcore.PatternInputPaymentMixin",
+    "gtlcore.MachineRecipeInputTypesMixin",
     "gtlcore.IvPatternBufferCutToolMixin",
     "gtlcore.PatternCutBufferAccess",
     "gtlcore.PatternBufferTerminalNameMixin",
@@ -159,6 +161,7 @@
     "jade.HarmonyAddParallelProviderMixin"
   ],
   "client": [
+    "jei.GtlLampSubtypeRegistrationMixin",
     "gtlcore.client.EyeOfHarmonyEffectAnchorMixin",
     "gtlcore.client.CelestialEffectViewDistanceMixin",
     "gtladditions.client.ArcanicAstrographEffectAnchorMixin",

@@ -32,6 +32,7 @@ import com.lowdragmc.lowdraglib.syncdata.annotation.Persisted;
 import com.lowdragmc.lowdraglib.syncdata.field.ManagedFieldHolder;
 import org.gtlcore.gtlcore.api.recipe.IGTRecipe;
 import org.gtlcore.gtlcore.api.recipe.IParallelLogic;
+import org.gtlcore.gtlcore.api.recipe.RecipeExtensionCopier;
 
 /** Compatible with the existing GTLAdd machine getter, but never enters its global input/merge path. */
 public final class IvRecipeLogic extends GTLAddMultipleRecipesLogic {
@@ -370,6 +371,7 @@ public final class IvRecipeLogic extends GTLAddMultipleRecipesLogic {
             // Roll once, only after all deterministic input checks. Keep the result with the active task.
             GTRecipe outputs = IParallelLogic.getRecipeOutputChance(machine, scaled);
             GTRecipe inputRoll = scaled.copy(); inputRoll.outputs.clear();
+            RecipeExtensionCopier.copy(scaled, inputRoll);
             for (var entry : scaled.inputs.entrySet()) {
                 List<Content> consumed = entry.getValue().stream().filter(content -> content.chance > 0).toList();
                 if (!consumed.isEmpty()) inputRoll.outputs.put(entry.getKey(), consumed);

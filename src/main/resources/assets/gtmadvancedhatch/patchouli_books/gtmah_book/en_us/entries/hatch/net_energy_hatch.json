@@ -1,0 +1,68 @@
+{
+  "sortnum": 4,
+  "name": "电网仓",
+  "icon": "gtmadvancedhatch:max_64a_net_energy_input_hatch",
+  "category": "gtmadvancedhatch:hatch",
+  "pages": [
+    {
+      "type": "text",
+      "text": "$(item)电网仓$()是无线仓的升级版，通常用于实体加速时$(_)锁定内部电量$()。$(p)其实际原理是，机器运行配方时$(_)直接使用无线电网中的能源$()，而非使用能源仓内的能源。需要注意的是64安同样仅限$(ev)以上等级，此外$(luv)以上阶段还添加了4种大安培电网仓。$(p)不过机器仍会受功率、超频等的影响。因为它们内部存储不会“耗尽”，所以加速是净收益，并且功率不足时也往往能发挥出双倍于无线仓的并行数量。"
+    },
+    {
+      "type": "spotlight",
+      "item": "gtmadvancedhatch:ev_2a_net_energy_input_hatch,gtmadvancedhatch:ev_4a_net_energy_input_hatch,gtmadvancedhatch:ev_16a_net_energy_input_hatch,gtmadvancedhatch:ev_64a_net_energy_input_hatch,gtmadvancedhatch:ev_2a_net_energy_output_hatch,gtmadvancedhatch:ev_4a_net_energy_output_hatch,gtmadvancedhatch:ev_16a_net_energy_output_hatch,gtmadvancedhatch:ev_64a_net_energy_output_hatch",
+      "title": "电网能源仓/动力仓",
+      "text": "在组装机中由$(_)4个$()对应等级的无线能源仓/动力仓，世界加速器，无线能源接收器；多安版本还需额外一个进阶能量探测器制作而成。电网动力仓同样可以胜任加速多方块发电机传输电力的工作。$(p)后面两页会展示一部分电网能源仓和电网动力仓。"
+    },
+    {
+      "type": "4x4item_display",
+      "title": "一些电网能源仓",
+      "item11": "gtmadvancedhatch:ev_2a_net_energy_input_hatch",
+      "item12": "gtmadvancedhatch:ev_4a_net_energy_input_hatch",
+      "item13": "gtmadvancedhatch:ev_16a_net_energy_input_hatch",
+      "item14": "gtmadvancedhatch:ev_64a_net_energy_input_hatch",
+      "item21": "gtmadvancedhatch:iv_2a_net_energy_input_hatch",
+      "item22": "gtmadvancedhatch:iv_4a_net_energy_input_hatch",
+      "item23": "gtmadvancedhatch:iv_16a_net_energy_input_hatch",
+      "item24": "gtmadvancedhatch:iv_64a_net_energy_input_hatch",
+      "item31": "gtmadvancedhatch:luv_2a_net_energy_input_hatch",
+      "item32": "gtmadvancedhatch:luv_4a_net_energy_input_hatch",
+      "item33": "gtmadvancedhatch:luv_16a_net_energy_input_hatch",
+      "item34": "gtmadvancedhatch:luv_64a_net_energy_input_hatch",
+      "item41": "gtmadvancedhatch:max_2a_net_energy_input_hatch",
+      "item42": "gtmadvancedhatch:max_4a_net_energy_input_hatch",
+      "item43": "gtmadvancedhatch:max_16a_net_energy_input_hatch",
+      "item44": "gtmadvancedhatch:max_64a_net_energy_input_hatch"
+    },
+    {
+      "type": "4x4item_display",
+      "title": "一些电网动力仓",
+      "item11": "gtmadvancedhatch:ev_2a_net_energy_output_hatch",
+      "item12": "gtmadvancedhatch:ev_4a_net_energy_output_hatch",
+      "item13": "gtmadvancedhatch:ev_16a_net_energy_output_hatch",
+      "item14": "gtmadvancedhatch:ev_64a_net_energy_output_hatch",
+      "item21": "gtmadvancedhatch:iv_2a_net_energy_output_hatch",
+      "item22": "gtmadvancedhatch:iv_4a_net_energy_output_hatch",
+      "item23": "gtmadvancedhatch:iv_16a_net_energy_output_hatch",
+      "item24": "gtmadvancedhatch:iv_64a_net_energy_output_hatch",
+      "item31": "gtmadvancedhatch:luv_2a_net_energy_output_hatch",
+      "item32": "gtmadvancedhatch:luv_4a_net_energy_output_hatch",
+      "item33": "gtmadvancedhatch:luv_16a_net_energy_output_hatch",
+      "item34": "gtmadvancedhatch:luv_64a_net_energy_output_hatch",
+      "item41": "gtmadvancedhatch:max_2a_net_energy_output_hatch",
+      "item42": "gtmadvancedhatch:max_4a_net_energy_output_hatch",
+      "item43": "gtmadvancedhatch:max_16a_net_energy_output_hatch",
+      "item44": "gtmadvancedhatch:max_64a_net_energy_output_hatch"
+    },
+    {
+      "type": "text",
+      "title": "Disabled / 已停用",
+      "text": "These high-amperage energy hatches are not registered in this modpack. Laser hatches are a separate line.$(br)本包已移除这组大安培电网能源仓和动力仓，与仍可用的激光仓是不同的系列。"
+    },
+    {
+      "type": "text",
+      "title": "Historical / 原说明",
+      "text": "在组装机中由1个对应等级的$(_)电网激光能源仓/动力仓$()制作而成。它们有着傲人的功率数，在一些不能使用激光仓的场合不妨使用它们，同样可以胜任加速多方块发电机传输电力的工作。$(p)只有$(luv)以上阶段才有大安培仓室，分别是$(thing)16384A$()、$(thing)65536A$()、$(thing)262144A$()、$(thing)1048576A$()。展示一部分电网能源仓和电网动力仓。$(p)$(thing)262144A$()、$(thing)1048576A$()需要整合包或魔改添加配方，默认不添加配方。"
+    }
+  ]
+}
