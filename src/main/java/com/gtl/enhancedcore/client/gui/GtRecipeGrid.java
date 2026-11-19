@@ -90,17 +90,26 @@ public final class GtRecipeGrid extends WidgetGroup {
     }
 
     public static boolean hasOverflow(GTRecipe recipe) {
-        for (IO io : new IO[]{IO.IN, IO.OUT}) {
-            var capabilities = new LinkedHashSet<RecipeCapability<?>>();
-            capabilities.addAll((io == IO.IN ? recipe.inputs : recipe.outputs).keySet());
-            capabilities.addAll((io == IO.IN ? recipe.tickInputs : recipe.tickOutputs).keySet());
-            for (RecipeCapability<?> cap : capabilities.stream().sorted(RecipeCapability.COMPARATOR).toList()) {
-                if (!cap.doRenderSlot || cap.getWidgetClass() == null) continue;
-                int declared = io == IO.IN ? recipe.recipeType.getMaxInputs(cap) : recipe.recipeType.getMaxOutputs(cap);
-                if (combined(recipe, io, cap).size() > declared) return true;
-            }
+        return hasOverflow(recipe, IO.IN) || hasOverflow(recipe, IO.OUT);
+    }
+
+    private static boolean hasOverflow(GTRecipe recipe, IO io) {
+        var regular = io == IO.IN ? recipe.inputs : recipe.outputs;
+        var tick = io == IO.IN ? recipe.tickInputs : recipe.tickOutputs;
+        for (var cap : regular.keySet()) {
+            if (exceedsSlotCount(recipe, io, cap, tick.getOrDefault(cap, List.of()).size())) return true;
+        }
+        for (var entry : tick.entrySet()) {
+            if (!regular.containsKey(entry.getKey()) && exceedsSlotCount(recipe, io, entry.getKey(), entry.getValue().size())) return true;
         }
         return false;
+    }
+
+    private static boolean exceedsSlotCount(GTRecipe recipe, IO io, RecipeCapability<?> cap, int tickCount) {
+        if (!cap.doRenderSlot || cap.getWidgetClass() == null) return false;
+        int regularCount = (io == IO.IN ? recipe.getInputContents(cap) : recipe.getOutputContents(cap)).size();
+        int declared = io == IO.IN ? recipe.recipeType.getMaxInputs(cap) : recipe.recipeType.getMaxOutputs(cap);
+        return regularCount + tickCount > declared;
     }
 
     private static List<Content> combined(GTRecipe recipe, IO io, RecipeCapability<?> cap) {

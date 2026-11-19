@@ -29,7 +29,7 @@ import java.util.WeakHashMap;
 
 /** Singularity field, preserving the compressor's real-world and JEI anchor contract. */
 @OnlyIn(Dist.CLIENT)
-public class NeutronStarInfinityRenderer extends WorkableCasingMachineRenderer {
+public class NeutronStarInfinityRenderer extends WorkableCasingMachineRenderer implements MachineEffectPass<WorkableElectricMultiblockMachine> {
 
     private static final double CENTER_Z = -83.0D;
     private static final double CENTER_Y = 6.5D;
@@ -55,6 +55,12 @@ public class NeutronStarInfinityRenderer extends WorkableCasingMachineRenderer {
             return;
         }
 
+        renderEffect(blockEntity, machine, partialTicks, poseStack, buffer);
+    }
+
+    @Override
+    public void drawEffect(BlockEntity blockEntity, WorkableElectricMultiblockMachine machine, float partialTicks,
+                           PoseStack poseStack, MultiBufferSource buffer) {
         float tick = RenderUtil.getSmoothTick(machine, partialTicks);
 
         poseStack.pushPose();

@@ -2,6 +2,7 @@ package com.gtl.enhancedcore.mixin.ftbchunks.client;
 
 import com.gtl.enhancedcore.client.ftbchunks.ChunkMapLayout;
 import com.gtl.enhancedcore.client.ftbchunks.ClaimMapBackground;
+import com.gtl.enhancedcore.client.ftbchunks.ClaimMode;
 import com.gtl.enhancedcore.client.ftbchunks.ClaimModeState;
 import com.gtl.enhancedcore.client.ftbchunks.RectangleSelectionState;
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
@@ -11,6 +12,7 @@ import dev.ftb.mods.ftblibrary.icon.Icons;
 import dev.ftb.mods.ftblibrary.ui.GuiHelper;
 import dev.ftb.mods.ftblibrary.ui.Panel;
 import dev.ftb.mods.ftblibrary.ui.SimpleButton;
+import dev.ftb.mods.ftblibrary.ui.Theme;
 import dev.ftb.mods.ftblibrary.ui.Widget;
 import dev.ftb.mods.ftblibrary.ui.input.MouseButton;
 import net.minecraft.client.gui.GuiGraphics;
@@ -78,6 +80,13 @@ public abstract class ChunkScreenMixin {
     }
 
     // ---- drawBackground: background texture, grid, player marker ----
+
+    @Inject(method = "drawBackground", at = @At("HEAD"))
+    private void gtlEnhancedcore$sampleRectangleInput(GuiGraphics graphics, Theme theme, int x, int y,
+                                                      int width, int height, CallbackInfo ci) {
+        RectangleSelectionState.beginFrame(ClaimModeState.current() == ClaimMode.RECTANGLE
+                && (Widget.isMouseButtonDown(MouseButton.LEFT) || Widget.isMouseButtonDown(MouseButton.RIGHT)));
+    }
 
     @ModifyConstant(method = "drawBackground", constant = @Constant(intValue = 240), require = 6)
     private int gtlEnhancedcore$drawMapSize(int original) {

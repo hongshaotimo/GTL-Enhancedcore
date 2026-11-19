@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import net.minecraft.Util;
+import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractButton;
@@ -45,6 +46,17 @@ public final class CampusPlanScreen extends Screen {
     private final CampusPlanAccess.Plan plan;
     private final PlannedCampus.Bounds worldBounds, aeBounds;
     private final TeleportSession session;
+    private final List<CampusPlanAccess.Target> workshopLabels;
+    private boolean hasHitTest;
+    private int hitX, hitZ;
+    private CampusPlanAccess.Target hitTarget;
+    private TargetText targetText;
+
+    // Only retain layout for the displayed target. Screen init resets widths and font metrics.
+    private record TargetText(CampusPlanAccess.Target target, String heading,
+                              List<FormattedCharSequence> description,
+                              List<FormattedCharSequence> tooltip) {}
+
     private final PlotPreviewRenderer.AtlasCached map = new PlotPreviewRenderer.AtlasCached();
     private final CampusLiveMapBackground liveMap = new CampusLiveMapBackground();
     private double zoom = 1, centerX, centerZ;
@@ -69,6 +81,8 @@ public final class CampusPlanScreen extends Screen {
         super(session == null ? tr("campus_open_plan") : tp("title"));
         this.parent = parent; this.settings = settings; this.session = session;
         plan = CampusPlanAccess.of(settings); worldBounds = plan.bounds(); aeBounds = plan.aeBounds();
+        workshopLabels = session == null ? plan.targets().stream()
+                .filter(t -> t.kind() == CampusPlanAccess.Kind.WORKSHOP).toList() : List.of();
         overview(); status = tp("hint");
     }
     public static void openTeleporter(PlotSettings settings, BlockPos origin, ResourceLocation dimension, UUID sessionId) {
@@ -96,6 +110,7 @@ public final class CampusPlanScreen extends Screen {
         return Component.translatable("gtl_enhancedcore.campus.teleport." + key, args);
     }
     @Override protected void init() {
+        targetText = null;
         pointerPressed = false; dragged = false; pressedTarget = null; lastClickAt = 0;
         if (session != null) {
             baseSize = Math.max(20, Math.min((int) (Math.min(width, height) * .75), height - 60));
@@ -253,7 +268,11 @@ public final class CampusPlanScreen extends Screen {
         if (!inMap(mx, my)) return null;
         int x = worldBounds.minX() + (int) Math.floor((mx - mapLeft()) * worldBounds.width() / side());
         int z = worldBounds.minZ() + (int) Math.floor((my - mapY()) * worldBounds.depth() / side());
-        return plan.targetAt(x, z);
+        if (!hasHitTest || x != hitX || z != hitZ) {
+            hitTarget = plan.targetAt(x, z);
+            hitX = x; hitZ = z; hasHitTest = true;
+        }
+        return hitTarget;
     }
     private static Component name(CampusPlanAccess.Target target) {
         return switch (target.kind()) {
@@ -300,7 +319,7 @@ public final class CampusPlanScreen extends Screen {
                     (mapLeftEdge + mapRightEdge) / 2, (mapTop + mapBottom) / 2 - font.lineHeight / 2, GuiStyle.DARK_SECONDARY);
         }
         if (session == null) mapLabel(g, tr("campus_ae_short"), (aeBounds.minX() + aeBounds.maxX()) / 2.0, (aeBounds.minZ() + aeBounds.maxZ()) / 2.0);
-        for (var target : plan.targets()) if (session == null && target.kind() == CampusPlanAccess.Kind.WORKSHOP) {
+        for (var target : workshopLabels) {
             Component label = tp("workshop_short", target.ordinal());
             if (target.bounds().width() * side() / worldBounds.width() >= font.width(label) + 8
                     && target.bounds().depth() * side() / worldBounds.depth() >= font.lineHeight + 8)
@@ -311,9 +330,8 @@ public final class CampusPlanScreen extends Screen {
         if (selected != null) outline(g, selected, GuiStyle.DARK_ACCENT);
         if (hover != null && hover != selected) outline(g, hover, GuiStyle.DARK_TEXT);
         g.disableScissor();
-        Component searchStatus = searchStatus();
         if (session != null) drawTeleporterSearchBar(g);
-        else g.drawString(font, font.plainSubstrByWidth(searchStatus.getString(), width - 24), 12, searchStatusY,
+        else g.drawString(font, font.plainSubstrByWidth(searchStatus().getString(), width - 24), 12, searchStatusY,
                 !searchText.isBlank() && searchMatches.isEmpty() ? GuiStyle.DARK_ERROR : GuiStyle.DARK_SECONDARY, false);
         if (session != null) {
             if (statusVisible && !pending) {
@@ -333,10 +351,15 @@ public final class CampusPlanScreen extends Screen {
         }
         g.drawString(font, tr("campus_north"), 17, mapTop + 5, GuiStyle.DARK_TEXT, false);
         int textY = mapBottom + 7;
-        Component heading = shown == null ? tr("campus_atlas_hint") : name(shown);
-        g.drawString(font, font.plainSubstrByWidth(heading.getString(), width - 28), 14, textY, GuiStyle.DARK_TEXT, false);
-        Component description = shown == null ? tr("campus_atlas_ae") : details(shown);
-        for (var line : font.split(description, width - 28)) {
+        if (targetText == null || targetText.target() != shown) {
+            Component heading = shown == null ? tr("campus_atlas_hint") : name(shown);
+            Component description = shown == null ? tr("campus_atlas_ae") : details(shown);
+            targetText = new TargetText(shown, font.plainSubstrByWidth(heading.getString(), width - 28),
+                    font.split(description, width - 28), shown == null ? List.of()
+                    : font.split(heading.copy().append("\n").append(description), Math.min(320, width - 20)));
+        }
+        g.drawString(font, targetText.heading(), 14, textY, GuiStyle.DARK_TEXT, false);
+        for (var line : targetText.description()) {
             textY += 11; if (textY > height - 30) break;
             g.drawString(font, line, 14, textY, GuiStyle.DARK_SECONDARY, false);
         }
@@ -344,7 +367,7 @@ public final class CampusPlanScreen extends Screen {
         CampusPlanAccess.Target tooltip = hover != null ? hover : selected != null && my >= mapBottom + 5
                 && my < height - 26 ? selected : null;
         if (tooltip != null && !dragged) g.renderTooltip(font,
-                font.split(name(tooltip).copy().append("\n").append(details(tooltip)), Math.min(320, width - 20)), mx, my);
+                targetText.tooltip(), mx, my);
     }
     private void drawTeleporterSearchBar(GuiGraphics g) {
         int x = searchPanelX, y = searchPanelY, right = x + searchPanelWidth;

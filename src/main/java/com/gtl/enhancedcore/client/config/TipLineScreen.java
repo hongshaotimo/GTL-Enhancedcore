@@ -35,6 +35,7 @@ final class TipLineScreen extends ConfigPage {
     private double savedScroll;
     private String toolbarText;
     private Selection toolbarSelection;
+    private Entry previewEntry;
 
     TipLineScreen(Screen parent, Line line, Consumer<Line> accept) {
         super(parent, "edit_line"); this.accept = accept;
@@ -79,13 +80,14 @@ final class TipLineScreen extends ConfigPage {
         textBox.setCharacterLimit(TooltipTextEditor.LIMIT);
         // Arm the responder after initialisation: opening a translate/with component is not an edit.
         textBox.setValue(draft.text());
-        textBox.setValueListener(value -> { if (!value.equals(draft.text())) draft.text(value); });
+        textBox.setValueListener(value -> { if (!value.equals(draft.text())) { draft.text(value); previewEntry = null; } });
         restoreCaret(savedSelection == null ? new Selection(draft.text().length(), draft.text().length()) : savedSelection);
         textBox.restoreScroll(savedScroll);
         setFocused(textBox);
         int half = (bodyWidth - 6) / 2;
         button("visibility." + draft.visibility().name().toLowerCase(Locale.ROOT), left, layout.controlsY(), half, widget -> {
             draft.visibility(Visibility.values()[(draft.visibility().ordinal() + 1) % Visibility.values().length]);
+            previewEntry = null;
             widget.setMessage(tr("visibility." + draft.visibility().name().toLowerCase(Locale.ROOT)));
         });
         preview = button("preview", left + half + 6, layout.controlsY(), half, () -> {});
@@ -124,6 +126,7 @@ final class TipLineScreen extends ConfigPage {
     }
     private void refreshToolbar() {
         if (textBox == null || colorButton == null) return;
+        previewEntry = null;
         scopeButton.setMessage(scopeLabel());
         var local = wholeLine ? null : localFormat();
         for (var entry : styleButtons.entrySet()) entry.getValue().setFGColor(
@@ -174,7 +177,8 @@ final class TipLineScreen extends ConfigPage {
         g.drawString(font, clipped(tr(wholeLine ? "format_line_help" : "format_local_help"), bodyWidth), left, layout.hintY(), 0xaaaaaa);
         g.fill(left, layout.previewY(), left + bodyWidth, layout.previewY() + 19, 0xcc101720);
         try {
-            var rendered = ClientTooltipConfig.render(new Entry(Mode.REPLACE, List.of(draft.line())), hasShiftDown());
+            if (previewEntry == null) previewEntry = new Entry(Mode.REPLACE, List.of(draft.line()));
+            var rendered = ClientTooltipConfig.render(previewEntry, hasShiftDown());
             if (rendered.isEmpty()) g.drawString(font, clipped(tr("preview_hidden"), bodyWidth - 12), left + 6, layout.previewY() + 5, 0xaaaaaa);
             else g.drawString(font, clipped(rendered.getFirst(), bodyWidth - 12), left + 6, layout.previewY() + 5, 0xffffff);
             if (preview.isHovered()) g.renderTooltip(font, rendered, Optional.empty(), x, y);

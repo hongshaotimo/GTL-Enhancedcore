@@ -61,6 +61,7 @@ public class WirelessChargerMachine extends TieredMachine implements IMachineLif
             new ManagedFieldHolder(WirelessChargerMachine.class, TieredMachine.MANAGED_FIELD_HOLDER);
 
     private static final int SCAN_INTERVAL = 20;
+    private static final Direction[] ENERGY_SIDES = Direction.values();
     /** 默认扫描半径 5（11×11 = 121 区块）；保留作默认值与文档锚点。 */
     private static final int CHUNK_RADIUS = 5;
 
@@ -244,8 +245,8 @@ public class WirelessChargerMachine extends TieredMachine implements IMachineLif
                     }
 
                     // 屏蔽能源仓：不给能源仓（EnergyHatchPartMachine）充能
-                    com.gregtechceu.gtceu.api.machine.MetaMachine machine =
-                            com.gregtechceu.gtceu.api.machine.MetaMachine.getMachine(serverLevel, pos);
+                    if (!(entry.getValue() instanceof IMachineBlockEntity holder)) continue;
+                    var machine = holder.getMetaMachine();
                     // 白名单：只充 GT 体系内的单方块机器——非 GT 机器方块一律跳过
                     if (machine == null) {
                         continue;
@@ -270,7 +271,7 @@ public class WirelessChargerMachine extends TieredMachine implements IMachineLif
                     }
 
                     IEnergyContainer ec = null;
-                    for (Direction dir : Direction.values()) {
+                    for (Direction dir : ENERGY_SIDES) {
                         ec = GTCapabilityHelper.getEnergyContainer(serverLevel, pos, dir);
                         if (ec != null) {
                             break;

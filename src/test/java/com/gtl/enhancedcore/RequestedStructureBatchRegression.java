@@ -39,7 +39,7 @@ final class RequestedStructureBatchRegression {
                 "arcanic_astrograph 291 291 149 230 gtlcore:create_casing",
                 "heart_of_the_universe 241 226 217 170 gtceu:high_power_casing",
                 "fuxi_bagua_heaven_forging_furnace 157 182 162 186 gtlcore:dimension_injection_casing",
-                "space_infinity_integrated_ore_processor 171 101 237 220 gtlcore:dimensionally_transcendent_casing",
+                "space_infinity_integrated_ore_processor 171 101 237 220 gtlcore:space_elevator_mechanical_casing",
                 "apocalyptic_torsion_quantum_matrix 205 154 205 80 gtlcore:dimensionally_transcendent_casing",
                 "stellar_vortex_space_station 200 216 200 298 gtlcore:dimensionally_transcendent_casing",
                 "lanthanide_refining_hub 57 45 71 64 gtceu:computer_casing"};

@@ -19,6 +19,8 @@ import net.minecraft.world.level.block.state.BlockState;
 public final class StructurePanelAppearance {
     private static final Map<ResourceLocation, Supplier<BlockState>> PANELS = load();
 
+    private static final Map<ResourceLocation, Supplier<BlockState>> HATCHES = GtlMegastructurePatterns.hatchCasings();
+
     private StructurePanelAppearance() {}
 
     private static Map<ResourceLocation, Supplier<BlockState>> load() {
@@ -44,11 +46,16 @@ public final class StructurePanelAppearance {
         return PANELS.get(id);
     }
 
+    public static Supplier<BlockState> hatchPanel(ResourceLocation id) {
+        if (id.getNamespace().equals("gtl_enhancedcore")) return PANELS.get(id);
+        return MachineOverrideConfig.current().replaceOriginalStructures() ? HATCHES.get(id) : null;
+    }
+
     /** Run after the builder has installed both its appearance and optional part-appearance function. */
     public static void configure(MultiblockMachineDefinition definition) {
         var panel = panel(definition.getId());
-        if (panel == null) return;
-        definition.setAppearance(panel);
-        definition.setPartAppearance((controller, part, side) -> panel.get());
+        if (panel != null) definition.setAppearance(panel);
+        var hatch = hatchPanel(definition.getId());
+        if (hatch != null) definition.setPartAppearance((controller, part, side) -> hatch.get());
     }
 }

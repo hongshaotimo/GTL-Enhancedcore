@@ -360,6 +360,7 @@ public final class IvNativeEngine {
                 ready.add(ref);
             }
         }
+        if (ready.isEmpty()) return;
         var chosen = new ArrayList<>(selector.select(ready, slots, ref -> ref.job.id.toString()));
         var selected = new HashSet<>(chosen);
         int scheduledSlots = IvMachineScope.threads(machine) - slots + chosen.size();

@@ -1,5 +1,6 @@
 package com.gtl.enhancedcore.client.renderer.celestial;
 
+import com.gtl.enhancedcore.client.renderer.MachineShaders;
 import com.gtladd.gtladditions.client.render.machine.deferred.DeferredMachineRenderer;
 import com.gtladd.gtladditions.client.render.machine.deferred.DeferredRenderContext;
 import com.gtladd.gtladditions.client.render.machine.deferred.DeferredRenderEntry;
@@ -22,6 +23,7 @@ public final class CelestialVfxDeferred {
      */
     public static void dispatch(BlockEntity entity, boolean astrograph, int count, long seed,
             float time, PoseStack pose) {
+        if (MachineShaders.shadow()) return;
         DeferredMachineRenderer.INSTANCE.enqueue$gtladditions(new Entry(entity, astrograph, count, seed,
                 time, new Matrix4f(pose.last().pose())));
     }

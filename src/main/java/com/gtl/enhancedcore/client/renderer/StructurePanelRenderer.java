@@ -1,22 +1,21 @@
 package com.gtl.enhancedcore.client.renderer;
 
 import com.gregtechceu.gtceu.api.machine.MetaMachine;
-import com.gtl.enhancedcore.common.structure.StructurePanelAppearance;
+import java.util.function.Supplier;
 import com.lowdragmc.lowdraglib.client.renderer.IBlockRendererProvider;
 import java.util.List;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.core.Direction;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.util.RandomSource;
 
 /** Draw only the casing layer; the original controller and hatch renderers retain their overlays and effects. */
 public final class StructurePanelRenderer {
     private StructurePanelRenderer() {}
 
-    public static boolean render(List<BakedQuad> quads, ResourceLocation controller, MetaMachine rendered,
+    public static boolean render(List<BakedQuad> quads, Supplier<BlockState> panel, MetaMachine rendered,
                                  Direction side, RandomSource random) {
-        var panel = StructurePanelAppearance.panel(controller);
         if (panel == null) return false;
         var state = panel.get();
         // LDLib-backed blocks return no quads from vanilla's three-argument BakedModel getter.

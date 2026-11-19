@@ -2,7 +2,7 @@ package com.gtl.enhancedcore.client.renderer.celestial;
 
 import com.gtl.enhancedcore.client.config.GalaxyEffectSettings;
 import com.gtl.enhancedcore.common.structure.CelestialEffectSizing;
-import com.mojang.blaze3d.vertex.BufferBuilder;
+import com.gtl.enhancedcore.client.renderer.MachineEffectGeometry;
 import com.mojang.blaze3d.vertex.BufferUploader;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -18,7 +18,6 @@ import org.joml.Vector3f;
 @OnlyIn(Dist.CLIENT)
 final class ArcanicSingularityRenderer {
     private static final double TAU = Math.PI * 2;
-    private static final BufferBuilder VERTICES = new BufferBuilder(2 * 1024 * 1024);
     private static final Vector3f EYE = new Vector3f(), RIGHT = new Vector3f(), UP = new Vector3f();
     private static final Vector3f P = new Vector3f(), Q = new Vector3f(), SIDE = new Vector3f();
     private static final float[] STARS = new float[5200 * 5];
@@ -219,11 +218,11 @@ final class ArcanicSingularityRenderer {
         (solid || kind == 7 ? CelestialVfxRenderTypes.coreShader() : CelestialVfxRenderTypes.shader()).safeGetUniform("Kind").set(kind);
         activeType = solid ? CelestialVfxRenderTypes.CORE : kind == 7 ? CelestialVfxRenderTypes.VOLUME : CelestialVfxRenderTypes.LIGHT;
         activeType.setupRenderState();
-        VERTICES.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR_TEX);
+        MachineEffectGeometry.vertices().begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR_TEX);
     }
 
     private static void end() {
-        var data = VERTICES.end();
+        var data = MachineEffectGeometry.vertices().end();
         try {
             if (data.drawState().vertexCount() > 0) BufferUploader.drawWithShader(data); else data.release();
         } finally { activeType.clearRenderState(); }
@@ -252,7 +251,7 @@ final class ArcanicSingularityRenderer {
     }
 
     private static void vertex(float x, float y, float z, float r, float g, float b, float alpha, float u, float v) {
-        VERTICES.vertex(x,y,z).color(r,g,b,alpha).uv(u,v).endVertex();
+        MachineEffectGeometry.vertices().vertex(x,y,z).color(r,g,b,alpha).uv(u,v).endVertex();
     }
 
     /** Fixed geometry only; no machine, level or cross-frame animation state is retained. */

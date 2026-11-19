@@ -8,3 +8,7 @@
 *.toml text
 *.md text
 *.snbt text
+
+# Keep the published campus catalogs byte-identical on checkout.
+src/main/resources/data/gtl_enhancedcore/worldgen/*_machines.json text eol=lf
+src/main/resources/data/gtl_enhancedcore/worldgen/planned_campus_machines_v[123].json text eol=crlf

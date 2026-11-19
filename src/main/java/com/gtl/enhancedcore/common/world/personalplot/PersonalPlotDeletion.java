@@ -30,25 +30,28 @@ public final class PersonalPlotDeletion {
     private static final Map<MinecraftServer, Map<UUID, Job>> JOBS = new WeakHashMap<>();
     private static final class Job {
         final Path root; final UUID owner; final ServerLevel level;
-        boolean worker, closed, failed; int ticks;
+        CompletableFuture<Void> worker; boolean closed, failed; int ticks;
         Job(Path root, UUID owner, ServerLevel level) { this.root = root; this.owner = owner; this.level = level; }
     }
     private PersonalPlotDeletion() {}
-    private static boolean deletedDimension(net.minecraft.resources.ResourceLocation id, java.util.Set<UUID> deleted) {
-        if (!id.getNamespace().equals(GTLEnhancedcore.MOD_ID)) return false;
-        for (UUID owner : deleted) if (id.getPath().equals(PersonalPlotStore.dimensionPath(owner))) return true;
-        return false;
+    private static java.util.Set<String> deletedPaths(Path root) throws IOException {
+        var paths = new java.util.HashSet<String>();
+        for (UUID owner : PersonalPlotStore.deletions(root)) paths.add(PersonalPlotStore.dimensionPath(owner));
+        return paths;
     }
     public static com.mojang.datafixers.util.Pair<net.minecraft.world.level.storage.WorldData, net.minecraft.world.level.levelgen.WorldDimensions.Complete>
             filterLoaded(Path root, com.mojang.datafixers.util.Pair<net.minecraft.world.level.storage.WorldData, net.minecraft.world.level.levelgen.WorldDimensions.Complete> loaded) {
         if (loaded == null) return null;
         try {
-            var deleted = PersonalPlotStore.deletions(root); if (deleted.isEmpty()) return loaded;
+            var deleted = deletedPaths(root); if (deleted.isEmpty()) return loaded;
             var previous = loaded.getSecond(); var registry = previous.dimensions();
             var filtered = new net.minecraft.core.MappedRegistry<net.minecraft.world.level.dimension.LevelStem>(
                     net.minecraft.core.registries.Registries.LEVEL_STEM, registry.registryLifecycle());
-            for (var entry : registry.entrySet()) if (!deletedDimension(entry.getKey().location(), deleted))
-                filtered.register(entry.getKey(), entry.getValue(), registry.lifecycle(entry.getValue()));
+            for (var entry : registry.entrySet()) {
+                var id = entry.getKey().location();
+                if (!GTLEnhancedcore.MOD_ID.equals(id.getNamespace()) || !deleted.contains(id.getPath()))
+                    filtered.register(entry.getKey(), entry.getValue(), registry.lifecycle(entry.getValue()));
+            }
             return com.mojang.datafixers.util.Pair.of(loaded.getFirst(),
                     new net.minecraft.world.level.levelgen.WorldDimensions.Complete(filtered.freeze(), previous.specialWorldProperty()));
         } catch (IOException failure) { throw new java.io.UncheckedIOException("Cannot read personal deletion journal", failure); }
@@ -56,11 +59,9 @@ public final class PersonalPlotDeletion {
     public static net.minecraft.nbt.CompoundTag filterSaved(Path root, net.minecraft.nbt.CompoundTag data) {
         try {
             var deleted = PersonalPlotStore.deletions(root);
+            if (deleted.isEmpty()) return data;
             var dimensions = data.getCompound("WorldGenSettings").getCompound("dimensions");
-            for (String key : java.util.Set.copyOf(dimensions.getAllKeys())) {
-                var id = net.minecraft.resources.ResourceLocation.tryParse(key);
-                if (id != null && deletedDimension(id, deleted)) dimensions.remove(key);
-            }
+            for (UUID owner : deleted) dimensions.remove(GTLEnhancedcore.MOD_ID + ":" + PersonalPlotStore.dimensionPath(owner));
             return data;
         } catch (IOException failure) { throw new java.io.UncheckedIOException("Cannot read personal deletion journal", failure); }
     }
@@ -84,7 +85,15 @@ public final class PersonalPlotDeletion {
         MinecraftServer server = event.getServer(); Map<UUID, Job> jobs = JOBS.get(server);
         if (jobs == null) return;
         // Incomplete drains remain part of normal stopServer close/save; tombstones suppress the next load.
-        for (Job job : jobs.values()) if (job.level != null && !job.closed) {
+        for (Job job : jobs.values()) {
+            // The next server may open this save as soon as shutdown completes.
+            if (job.worker != null) {
+                try { job.worker.join(); }
+                catch (java.util.concurrent.CompletionException failure) {
+                    GTLEnhancedcore.LOGGER.error("Personal dimension cleanup incomplete for {}", job.owner, failure);
+                }
+            }
+            if (job.level == null || job.closed) continue;
             server.forgeGetWorldMap().put(PersonalPlotWorlds.key(job.owner), job.level); server.markWorldsDirty();
         }
     }
@@ -93,11 +102,19 @@ public final class PersonalPlotDeletion {
         MinecraftServer server = event.getServer(); Map<UUID, Job> jobs = JOBS.get(server);
         if (jobs == null) return;
         for (Job job : java.util.List.copyOf(jobs.values())) {
-            if (job.worker || job.failed) continue;
+            if (job.failed) continue;
             try {
+                if (job.worker != null) {
+                    if (!job.worker.isDone()) continue;
+                    job.worker.join();
+                    jobs.remove(job.owner);
+                    PersonalPlotNetwork.broadcastDimensionRemoval(PersonalPlotWorlds.key(job.owner));
+                    notify(server, job.owner, "deleted");
+                    continue;
+                }
                 if (job.level != null && !job.closed) {
                     if (!job.level.players().isEmpty()) throw new IOException("A player entered a deleting dimension");
-                    server.forgeGetWorldMap().remove(PersonalPlotWorlds.key(job.owner), job.level); server.markWorldsDirty();
+                    if (server.forgeGetWorldMap().remove(PersonalPlotWorlds.key(job.owner), job.level)) server.markWorldsDirty();
                     var chunks = job.level.getChunkSource(); chunks.removeTicketsOnClosing();
                     chunks.tick(() -> true, false);
                     long deadline = System.nanoTime() + 5_000_000L;
@@ -116,20 +133,10 @@ public final class PersonalPlotDeletion {
                     access.enhancedcore$retirePersonalPack();
                 }
                 server.getPackRepository().removePack(packId);
-                job.worker = true;
-                CompletableFuture.runAsync(() -> {
+                job.worker = CompletableFuture.runAsync(() -> {
                     try { cleanup(job.root, job.owner); }
                     catch (IOException failure) { throw new java.io.UncheckedIOException(failure); }
-                }, Util.backgroundExecutor()).whenComplete((ignored, failure) -> {
-                    if (!server.isStopped()) server.execute(() -> {
-                        if (JOBS.get(server) != jobs || jobs.get(job.owner) != job) return;
-                        if (failure == null) {
-                            jobs.remove(job.owner);
-                            PersonalPlotNetwork.broadcastDimensionRemoval(PersonalPlotWorlds.key(job.owner));
-                            notify(server, job.owner, "deleted");
-                        } else { job.failed = true; failed(server, job, failure); }
-                    });
-                });
+                }, Util.backgroundExecutor());
             } catch (IOException | RuntimeException failure) { job.failed = true; failed(server, job, failure); }
         }
     }

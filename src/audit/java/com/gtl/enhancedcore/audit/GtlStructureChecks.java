@@ -100,7 +100,10 @@ public final class GtlStructureChecks {
                         }
                     }
                 }
-                check(manifest.size() == 15, "Unexpected changed-casing scope");
+                check(manifest.keySet().equals(Set.of("crystalline_infinity", "mega_distillery", "suprachronal_assembly_line",
+                        "mega_fluid_heater", "star_ultimate_material_forge_factory", "nano_core", "advanced_neutron_activator",
+                        "advanced_integrated_ore_processor", "atomic_energy_excitation_plant", "mage_assembler",
+                        "superconducting_electromagnetism")), "Unexpected changed-casing fixture scope");
                 names = manifest.keySet().stream().sorted().toList();
             } else {
             try (var input = com.gtl.enhancedcore.common.structure.GtlMegastructurePatterns.class.getResourceAsStream(
@@ -317,13 +320,16 @@ public final class GtlStructureChecks {
             int partCount = machine.getParts().size();
             if (palettes) {
                 var spec = manifest.getAsJsonObject(name);
-                var expectedAppearance = ForgeRegistries.BLOCKS.getValue(new net.minecraft.resources.ResourceLocation(
-                        spec.getAsJsonObject("bindings").getAsJsonObject("#").get("block").getAsString())).defaultBlockState();
-                check(machine.getDefinition().getAppearance().get() == expectedAppearance,
+                var hatchBinding = spec.getAsJsonObject("bindings").getAsJsonObject("#");
+                var expectedController = ForgeRegistries.BLOCKS.getValue(new net.minecraft.resources.ResourceLocation(
+                        hatchBinding.get("block").getAsString())).defaultBlockState();
+                var expectedHatch = ForgeRegistries.BLOCKS.getValue(new net.minecraft.resources.ResourceLocation(
+                        hatchBinding.get("fallback").getAsString())).defaultBlockState();
+                check(machine.getDefinition().getAppearance().get() == expectedController,
                         name + ": native controller appearance changed");
                 for (var part : machine.getParts()) for (Direction side : Direction.values())
-                    check(machine.getPartAppearance(part, side, expectedAppearance, part.self().getPos()) == expectedAppearance,
-                            name + ": native hatch appearance changed");
+                    check(machine.getPartAppearance(part, side, expectedHatch, part.self().getPos()) == expectedHatch,
+                            name + ": formed hatch does not match its slot casing");
             }
             if (upgrades && Set.of("mega_fluid_heater", "dimensionally_transcendent_chemical_plant",
                     "super_blast_smelter", "atomic_energy_excitation_plant").contains(name)) {

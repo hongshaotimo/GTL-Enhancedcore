@@ -22,6 +22,8 @@ public final class AssemblyManagerScreen extends Screen {
     private static final int INK = GuiStyle.LIGHT_TEXT, MUTED = GuiStyle.LIGHT_SECONDARY;
     private static final int ACCENT = 0xff17677d, ROW_HEIGHT = 29;
     private AssemblyMirrorNetwork.View received;
+    private AssemblyMirrorNetwork.Source shownSource;
+    private AssemblyMirrorNetwork.Mirror shownMirror;
     private final List<Entry> entries = new ArrayList<>();
     private List<Entry> filtered = List.of();
     private final List<RowButton> rowButtons = new ArrayList<>();
@@ -66,7 +68,7 @@ public final class AssemblyManagerScreen extends Screen {
                 b -> action(AssemblyMirrorNetwork.REBIND, inspectedMirror));
         unbind = button(tr("unbind"), divider + 9, bodyBottom - 21, right - divider - 18, 18,
                 b -> action(AssemblyMirrorNetwork.UNBIND, inspectedMirror));
-        received = null; refresh();
+        received = null; shownSource = null; shownMirror = null; refresh();
         setFocused(null); search.setFocused(false);
     }
 
@@ -77,7 +79,7 @@ public final class AssemblyManagerScreen extends Screen {
     void refresh() {
         var view = AssemblyMirrorClient.view();
         if (view == null || search == null || view == received) return;
-        received = view; rebuildEntries(); updateButtons();
+        received = view; rebuildEntries();
     }
 
     private void rebuildEntries() {
@@ -113,7 +115,7 @@ public final class AssemblyManagerScreen extends Screen {
         AssemblyMirrorClient.query(mirrors, search.getValue());
         mirrors = target; AssemblyMirrorClient.mirrorsTab(target); scroll = 0;
         search.setValue(AssemblyMirrorClient.query(mirrors));
-        rebuildEntries(); updateButtons();
+        rebuildEntries();
     }
 
     private void scroll(int delta) {
@@ -173,7 +175,9 @@ public final class AssemblyManagerScreen extends Screen {
                 row.setTooltip(Tooltip.create(tip));
             }
         }
-        var mirror = mirrorDetails(); var source = selectedSource();
+        shownSource = mirrors ? null : sourceDetails();
+        shownMirror = mirrors ? mirrorDetails() : null;
+        var mirror = shownMirror; var source = selectedSource();
         rebind.visible = unbind.visible = mirrors && mirror != null;
         boolean editable = mirror != null && mirror.loaded() && received.online();
         unbind.active = editable;
@@ -250,7 +254,7 @@ public final class AssemblyManagerScreen extends Screen {
 
     private void renderDetails(GuiGraphics g) {
         int x = divider + 10, y = bodyTop + 8, w = right - x - 8;
-        var mirror = mirrorDetails();
+        var mirror = shownMirror;
         Component mirrorType = mirror == null ? tr("mirror_details") : tr(mirror.superBuffer() ? "super_mirror" : "normal_mirror");
         text(g, mirrors && mirror != null ? mirror.loaded() ? mirrorType : tr("unloaded_mirror", mirrorType)
                 : tr(mirrors ? "mirror_details" : "source_details"), x, y, w, ACCENT);
@@ -263,7 +267,7 @@ public final class AssemblyManagerScreen extends Screen {
             if (bodyBottom - bodyTop > 132) wrapped(g, tr(!mirror.loaded() ? "unloaded_hint" : "rebind_hint"),
                     x, y + 65, w, bodyBottom - 47, MUTED);
         } else {
-            var source = sourceDetails();
+            var source = shownSource;
             if (source == null) { wrapped(g, tr("choose_source"), x, y + 24, w, bodyBottom - 6, MUTED); return; }
             text(g, displayName(source.name()), x, y + 20, w, INK);
             text(g, Component.literal(coordinates(source.pos())), x, y + 32, w, MUTED);

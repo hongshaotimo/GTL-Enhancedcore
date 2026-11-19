@@ -75,15 +75,7 @@ public final class IvRecipeInputs {
         return result;
     }
     public static long maxParallel(GTRecipe recipe, Map<AEKey, Long> input, Map<AEKey, Long> virtual, long limit) {
-        long low = 0, high = limit;
-        while (low < high) {
-            long mid = low + (high - low) / 2 + 1;
-            boolean fits;
-            try { fits = plan(recipe, input, virtual, mid) != null; }
-            catch (ArithmeticException overflow) { fits = false; }
-            if (fits) low = mid; else high = mid - 1;
-        }
-        return low;
+        return maxParallel(recipe.inputs, input, virtual, limit);
     }
     public static boolean hasConsumedInputs(GTRecipe recipe) {
         return recipe.inputs.values().stream().flatMap(List::stream).anyMatch(content -> content.chance > 0);
@@ -109,8 +101,7 @@ public final class IvRecipeInputs {
                 if (amount < 0) throw new IllegalArgumentException("样板输入数量无效");
                 limit = limit > Long.MAX_VALUE - amount ? Long.MAX_VALUE : limit + amount;
             }
-            long operations = maxParallel(inputs, input, virtual, limit);
-            return operations > 0 && plan(inputs, input, virtual, operations) != null ? operations : 0;
+            return maxParallel(inputs, input, virtual, limit);
         }
         // Preserve finite sizing for genuinely input-free recipes; never interpret a reusable tool
         // or virtual catalyst as an unlimited processing budget.

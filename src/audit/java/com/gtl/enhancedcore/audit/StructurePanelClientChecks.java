@@ -1,6 +1,14 @@
 package com.gtl.enhancedcore.audit;
 
 import com.google.gson.GsonBuilder;
+import com.google.gson.JsonObject;
+import com.gtl.enhancedcore.common.config.MachineOverrideConfig;
+import com.gtl.enhancedcore.common.structure.HollowStructureResources;
+import com.gtl.enhancedcore.common.structure.StructureData;
+import com.gregtechceu.gtceu.api.pattern.util.RelativeDirection;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
+import net.minecraft.world.level.block.state.properties.Property;
 import com.google.gson.JsonParser;
 import com.gregtechceu.gtceu.api.block.MetaMachineBlock;
 import com.gregtechceu.gtceu.api.machine.IMachineBlockEntity;
@@ -49,7 +57,11 @@ public final class StructurePanelClientChecks {
     private final List<Panel> panels = new ArrayList<>();
     private final boolean baseline = Boolean.getBoolean("gtl.enhancedcore.panelBaseline");
     private Path directory;
-    private List<Map.Entry<String,String>> palette;
+    private record Materials(String id, String controller, String hatch) {}
+    private static final String ORE = "gtladditions:space_infinity_integrated_ore_processor";
+    private static final String DATA = "/data/gtl_enhancedcore/structures/";
+    private JsonObject oreSpec;
+    private List<Materials> palette;
     private int next, page, frames;
     private boolean done;
 
@@ -58,20 +70,55 @@ public final class StructurePanelClientChecks {
     private void tick(TickEvent.ClientTickEvent event) {
         if (done || event.phase != TickEvent.Phase.END || !Boolean.getBoolean("gtl.enhancedcore.panelAudit")) return;
         var mc = Minecraft.getInstance();
-        if (next == 0 && (mc.getOverlay() != null || !(mc.screen instanceof TitleScreen))) return;
+        if (next == 0 && (mc.getOverlay() != null || mc.screen == null)) return;
         try {
             if (palette == null) {
                 directory = mc.gameDirectory.toPath().toAbsolutePath().normalize();
                 require(directory.startsWith(ROOT) && Files.exists(directory.resolve("panel.marker"))
                         && mc.level == null && mc.player == null && mc.getSingleplayerServer() == null, "Isolated title-screen client");
-                var entries = JsonParser.parseString(Files.readString(ROOT.resolve(
-                        "../../src/main/resources/data/gtl_enhancedcore/structures/panel_appearance.json").normalize())).getAsJsonObject();
-                palette = entries.entrySet().stream().map(e -> Map.entry(e.getKey(),e.getValue().getAsString())).toList();
-                require(palette.size() == 19, "Exact nineteen-machine review scope");
+                var selected = System.getProperty("gtl.enhancedcore.panelMachine");
+                if (ORE.equals(selected)) {
+                    require(MachineOverrideConfig.current().replaceOriginalStructures(), "Replacement structure selected");
+                    var path = new ResourceLocation(ORE).getPath();
+                    oreSpec = packagedJson("gtl/upgrades_20261102.json").getAsJsonObject(path);
+                    require(ORE.equals(oreSpec.get("namespace").getAsString() + ":" + path), "Packaged machine ID");
+                    String slot = oreSpec.getAsJsonArray("hatches").get(0).getAsString();
+                    palette = List.of(new Materials(ORE, packagedJson("panel_appearance.json").get(ORE).getAsString(),
+                            oreSpec.getAsJsonObject("bindings").getAsJsonObject(slot).get("fallback").getAsString()));
+                } else {
+                    var structures = ROOT.resolve("../../src/main/resources/data/gtl_enhancedcore/structures").normalize();
+                    var entries = JsonParser.parseString(Files.readString(structures.resolve("panel_appearance.json"))).getAsJsonObject();
+                    var hatches = new HashMap<String,String>();
+                    try (var files = Files.list(structures.resolve("gtl"))) {
+                        for (var file : files.filter(path -> path.toString().endsWith(".json")).toList()) {
+                            var specs = JsonParser.parseString(Files.readString(file)).getAsJsonObject();
+                            for (var specEntry : specs.entrySet()) {
+                                var spec = specEntry.getValue().getAsJsonObject();
+                                var namespace = spec.has("namespace") ? spec.get("namespace").getAsString() : "gtceu";
+                                for (var slot : spec.getAsJsonObject("bindings").entrySet()) {
+                                    var rule = slot.getValue().getAsJsonObject();
+                                    if ("hatch".equals(rule.get("mode").getAsString()))
+                                        hatches.put(namespace + ":" + specEntry.getKey(), rule.get("fallback").getAsString());
+                                }
+                            }
+                        }
+                    }
+                    palette = entries.entrySet().stream().map(e -> {
+                        var id = e.getKey();
+                        var controller = e.getValue().getAsString();
+                        var hatch = id.startsWith("gtl_enhancedcore:") ? controller :
+                                Objects.requireNonNull(hatches.get(id), "Missing third-party hatch binding: " + id);
+                        return new Materials(id, controller, hatch);
+                    }).toList();
+                    if (selected != null) {
+                        palette = palette.stream().filter(m -> m.id().equals(selected)).toList();
+                        require(palette.size() == 1, "Single reviewed machine: " + selected);
+                    }
+                }
             }
             if (next < palette.size()) {
                 var entry = palette.get(next++);
-                panels.add(verify(entry.getKey(), entry.getValue()));
+                panels.add(verify(entry.id(), entry.controller(), entry.hatch()));
                 return;
             }
             if (!(mc.screen instanceof PanelScreen)) { mc.setScreen(new PanelScreen()); return; }
@@ -85,7 +132,7 @@ public final class StructurePanelClientChecks {
         } catch (Throwable failure) { failure.printStackTrace(); finish(failure); }
     }
 
-    private Panel verify(String id, String casing) throws Exception {
+    private Panel verify(String id, String casing, String hatchCasing) throws Exception {
         // Reuse only the detached world fixture: Harmony and other controllers are not
         // subclasses of WorkableElectricMultiblockMachine.
         var f = StellarIvGuiChecks.fixture("gtceu:suprachronal_assembly_line", true, false, false);
@@ -106,15 +153,27 @@ public final class StructurePanelClientChecks {
         entity.setLevel(world);
         var controller = (MultiblockControllerMachine)((IMachineBlockEntity)entity).getMetaMachine();
         var panel = Objects.requireNonNull(ForgeRegistries.BLOCKS.getValue(new ResourceLocation(casing))).defaultBlockState();
+        var hatch = Objects.requireNonNull(ForgeRegistries.BLOCKS.getValue(new ResourceLocation(hatchCasing))).defaultBlockState();
+        var controllerNeighbor = origin.offset(-1,0,0);
+        var hatchNeighbor = origin.offset(0,2,0);
         world.renderedBlocks.clear();
         world.blockEntities.clear();
-        for (int x = -2; x <= 2; x++) for (int y = -2; y <= 2; y++)
-            world.renderedBlocks.put(origin.offset(x,y,0), BlockInfo.fromBlockState(panel));
+        var observed = new LinkedHashMap<String,Object>();
+        BlockPos[] positions;
+        String[] partIds;
+        if (oreSpec != null) {
+            positions = sampleOreFace(world, origin, observed);
+            partIds = positions.length == 0 ? new String[0] : new String[]{"gtceu:ev_input_bus"};
+        } else {
+            for (int x = -2; x <= 2; x++) for (int y = -2; y <= 2; y++)
+                world.renderedBlocks.put(origin.offset(x,y,0), BlockInfo.fromBlockState(hatch));
+            world.renderedBlocks.put(controllerNeighbor, BlockInfo.fromBlockState(panel));
+            positions = new BlockPos[]{origin.offset(-1,-1,0),origin.offset(0,1,0),origin.offset(1,-1,0)};
+            partIds = new String[]{"gtceu:ev_input_bus", "gtceu:ev_output_hatch", "gtceu:maintenance_hatch"};
+        }
         world.renderedBlocks.put(origin, BlockInfo.fromBlockState(state));
         world.blockEntities.put(origin, entity);
         var parts = new ArrayList<IMultiPart>();
-        String[] partIds = {"gtceu:ev_input_bus", "gtceu:ev_output_hatch", "gtceu:maintenance_hatch"};
-        BlockPos[] positions = {origin.offset(-1,-1,0),origin.offset(0,1,0),origin.offset(1,-1,0)};
         for (int i = 0; i < partIds.length; i++) {
             var pd = GTRegistries.MACHINES.get(new ResourceLocation(partIds[i]));
             var ps = pd.defaultBlockState().setValue(((MetaMachineBlock)pd.getBlock()).rotationState.property,Direction.NORTH);
@@ -132,9 +191,9 @@ public final class StructurePanelClientChecks {
         var formed = field(controller,"isFormed");
         formed.setBoolean(controller,true);
         var renderer = (MachineRenderer) definition.getRenderer();
-        var observed = new LinkedHashMap<String,Object>();
         observed.put("id",id);
         observed.put("panel",casing);
+        observed.put("hatchCasing",hatchCasing);
         observed.put("appearance",String.valueOf(ForgeRegistries.BLOCKS.getKey(definition.getAppearance().get().getBlock())));
         observed.put("renderer",renderer.getClass().getName());
         var failures = new ArrayList<String>();
@@ -153,19 +212,31 @@ public final class StructurePanelClientChecks {
             renderer.renderMachine(item,definition,null,Direction.NORTH,side,RandomSource.create(42),
                     ModelFactory.modelFacing(side,Direction.NORTH),ModelFactory.getRotation(Direction.NORTH));
             test(!item.isEmpty() && sprites(item).containsAll(sprites),id + " full item renderer " + side,failures);
-            test(renderer.isConnected(world,state,origin,panel,origin.offset(2,0,0),side),
+            if (oreSpec != null) {
+                for (var offset : List.of(Direction.WEST, Direction.EAST, Direction.UP, Direction.DOWN)) {
+                    var neighbor = origin.relative(offset);
+                    var actual = world.getBlockState(neighbor);
+                    if (actual == panel) test(renderer.isConnected(world,state,origin,actual,neighbor,side),
+                            id + " controller CTM with actual " + offset + " casing on " + side,failures);
+                }
+            } else test(renderer.isConnected(world,state,origin,panel,controllerNeighbor,side),
                     id + " controller-to-shell CTM " + side,failures);
             for (var part : parts) {
                 var pm = part.self(); var pd = pm.getDefinition(); var pr = (MachineRenderer)pd.getRenderer();
-                test(part.getFormedAppearance(panel,origin.offset(2,0,0),side) == panel,
+                var neighborPos = oreSpec == null ? hatchNeighbor : pm.getPos().relative(side);
+                var neighborState = world.getBlockState(neighborPos);
+                test(part.getFormedAppearance(neighborState,neighborPos,side) == hatch,
                         id + " " + pd.getId() + " formed appearance " + side,failures);
-                test(pr.isConnected(world,pm.getBlockState(),pm.getPos(),panel,origin.offset(2,0,0),side),
+                if (neighborState == hatch) test(pr.isConnected(world,pm.getBlockState(),pm.getPos(),neighborState,neighborPos,side),
                         id + " " + pd.getId() + " hatch-to-shell CTM " + side,failures);
+                var hatchQuads = casingQuads(world,pm.getPos(),hatch,side);
+                require(!hatchQuads.isEmpty(), id + " real hatch casing quads " + side);
+                var hatchSprites = sprites(hatchQuads);
                 var quads = new ArrayList<BakedQuad>();
                 pr.renderMachine(quads,pd,pm,Direction.NORTH,side,RandomSource.create(42),
                         ModelFactory.modelFacing(side,Direction.NORTH),ModelFactory.getRotation(Direction.NORTH));
-                test(sprites(quads).containsAll(sprites),id + " " + pd.getId() + " casing sprites " + side,failures);
-                if (side == Direction.NORTH) require(quads.stream().anyMatch(q -> !sprites.contains(q.getSprite().contents().name().toString())),
+                test(sprites(quads).containsAll(hatchSprites),id + " " + pd.getId() + " casing sprites " + side,failures);
+                if (side == Direction.NORTH) require(quads.stream().anyMatch(q -> !hatchSprites.contains(q.getSprite().contents().name().toString())),
                         id + " " + pd.getId() + " original front overlay retained");
             }
         }
@@ -185,7 +256,7 @@ public final class StructurePanelClientChecks {
         // remaining sprites against the old artifact instead of inventing an overlay requirement.
         observed.put("controllerOverlaySprites",controllerOverlay);
         formed.setBoolean(controller,false);
-        require(controller.getPartAppearance(parts.getFirst(),Direction.NORTH,panel,origin) == null,
+        if (!parts.isEmpty()) require(controller.getPartAppearance(parts.getFirst(),Direction.NORTH,hatch,hatchNeighbor) == null,
                 id + " unformed controller does not provide a formed appearance");
         formed.setBoolean(controller,true);
         observed.put("mismatches",failures);
@@ -196,10 +267,74 @@ public final class StructurePanelClientChecks {
         scene.setParticleManager(new com.lowdragmc.lowdraglib.client.scene.ParticleManager());
         scene.useCacheBuffer(false);
         scene.setClearColor(0xff182331);
-        scene.setCameraLookAt(new Vector3f(1.8F,81.2F,-9),new Vector3f(.5F,80.5F,.5F),new Vector3f(0,1,0));
+        // About 20 blocks of vertical field for a 17-block-high crop; a slight angle reveals the backing.
+        var eye = oreSpec == null ? new Vector3f(1.8F,81.2F,-9) : new Vector3f(3F,82F,-27);
+        scene.setCameraLookAt(eye,new Vector3f(.5F,80.5F,.5F),new Vector3f(0,1,0));
         scene.setFov(40);
         scene.addRenderedBlocks(world.renderedBlocks.keySet(),null);
         return new Panel(id,casing,scene,world,f.holders());
+    }
+
+    private static JsonObject packagedJson(String path) throws Exception {
+        try (var input = Objects.requireNonNull(StructureData.class.getResourceAsStream(DATA + path), path);
+             var reader = new InputStreamReader(input, StandardCharsets.UTF_8)) {
+            return JsonParser.parseReader(reader).getAsJsonObject();
+        }
+    }
+
+    /** Crop the actual selected resource in pattern coordinates (LEFT / UP / FRONT, north-facing).
+     * Keep the 17 x 13 face, two blocks of framing on each edge, and two depth slices on either side. */
+    private BlockPos[] sampleOreFace(TrackedDummyWorld world, BlockPos origin, Map<String,Object> observed) throws Exception {
+        var path = HollowStructureResources.resolve(DATA + "gtl/" + new ResourceLocation(ORE).getPath() + ".pattern.gz");
+        var pattern = new ArrayList<String[]>();
+        StructureData.read(StructureData.class.getResourceAsStream(path)).forEachAisle(pattern::add);
+        var anchor = oreSpec.getAsJsonArray("controllerPosition");
+        int cx = anchor.get(0).getAsInt(), cy = anchor.get(1).getAsInt(), cz = anchor.get(2).getAsInt();
+        char marker = oreSpec.get("controller").getAsString().charAt(0);
+        require(pattern.get(cz)[cy].charAt(cx) == marker, "Controller at packaged anchor in " + path);
+        var cells = new LinkedHashMap<String,String>();
+        var slots = new ArrayList<BlockPos>();
+        var bindings = oreSpec.getAsJsonObject("bindings");
+        for (int dz = -2; dz <= 2; dz++) for (int dy = -8; dy <= 8; dy++) for (int dx = -10; dx <= 10; dx++) {
+            int z = cz+dz, y = cy+dy, x = cx+dx;
+            if (z < 0 || z >= pattern.size() || y < 0 || y >= pattern.get(z).length) continue;
+            String row = pattern.get(z)[y];
+            if (x < 0 || x >= row.length()) continue;
+            char symbol = row.charAt(x);
+            if (dx == 0 && dy == 0 && dz == 0) continue;
+            var rule = bindings.getAsJsonObject(String.valueOf(symbol));
+            String mode = rule.get("mode").getAsString();
+            if (mode.equals("any")) continue;
+            var pos = origin.relative(RelativeDirection.LEFT.getActualFacing(Direction.NORTH), dx).above(dy).north(dz);
+            String block = switch (mode) {
+                case "hatch" -> rule.get("fallback").getAsString();
+                case "literal", "casing" -> rule.get("block").getAsString();
+                default -> throw new IllegalStateException("Cannot represent sampled " + symbol + ": " + mode);
+            };
+            var key = new ResourceLocation(block);
+            require(ForgeRegistries.BLOCKS.containsKey(key), "Sampled material " + key);
+            var state = ForgeRegistries.BLOCKS.getValue(key).defaultBlockState();
+            if (rule.has("properties")) for (var prop : rule.getAsJsonObject("properties").entrySet()) {
+                var property = Objects.requireNonNull(state.getBlock().getStateDefinition().getProperty(prop.getKey()));
+                state = applyProperty(state, property, prop.getValue().getAsString());
+            }
+            world.renderedBlocks.put(pos, BlockInfo.fromBlockState(state));
+            cells.put(x + "," + y + "," + z, symbol + " " + state);
+            if (mode.equals("hatch") && dz == 0 && Math.max(Math.abs(dx),Math.abs(dy)) > 1) slots.add(pos);
+        }
+        // Leave the controller's immediate material ring intact. Never invent or expose a slot.
+        var shown = slots.stream().filter(p -> !world.renderedBlocks.containsKey(p.north())
+                && !world.renderedBlocks.containsKey(p.north(2)))
+                .min(Comparator.comparingDouble(origin::distSqr));
+        observed.put("patternResource", path);
+        observed.put("patternAnchor", List.of(cx,cy,cz));
+        observed.put("sampledCellsXYZ", cells);
+        observed.put("displayedBusOffset", shown.map(p -> p.subtract(origin).toShortString()).orElse("none"));
+        return shown.stream().toArray(BlockPos[]::new);
+    }
+
+    private static <T extends Comparable<T>> BlockState applyProperty(BlockState state, Property<T> prop, String value) {
+        return state.setValue(prop, prop.getValue(value).orElseThrow());
     }
 
     private static List<BakedQuad> casingQuads(TrackedDummyWorld world, BlockPos pos, BlockState state, Direction side) {
@@ -237,7 +372,7 @@ public final class StructurePanelClientChecks {
         result.put("baseline",baseline);
         result.put("checks",checks);
         result.put("machines",results);
-        result.put("scope","Real registrations, formed controller/part appearance and CTM/render paths in synthetic detached five-by-five panels; no player world, no full megastructure formation or production claim");
+        result.put("scope",oreSpec != null ? "Packaged ore processor controller neighbourhood; detached render, not full formation" : "Real registrations, formed controller/part appearance and CTM/render paths in synthetic detached five-by-five panels; no player world, no full megastructure formation or production claim");
         if (failure != null) result.put("error",failure.toString());
         try {
             Files.writeString(directory.resolve("panel-checks.json"),new GsonBuilder().setPrettyPrinting().create().toJson(result));
@@ -257,8 +392,8 @@ public final class StructurePanelClientChecks {
         }
         private void renderPanels(GuiGraphics g) {
             g.fill(0,0,width,height,0xff101820);
-            g.drawString(font,(baseline ? "4.3.9 BEFORE" : "4.4.0 AFTER") + " - formed panels " + (page+1) + "/4",12,12,0xffffff);
-            int cell = width / 5;
+            g.drawString(font,(baseline ? "BEFORE" : "AFTER") + " - formed panels " + (page+1) + "/" + ((panels.size()+4)/5),12,12,0xffffff);
+            int cell = width / Math.min(5, panels.size());
             for (int col = 0; col < 5 && page*5+col < panels.size(); col++) {
                 var p = panels.get(page*5+col);
                 p.scene.render(g.pose(),col*cell+3,45,cell-6,height-105,-100,-100);

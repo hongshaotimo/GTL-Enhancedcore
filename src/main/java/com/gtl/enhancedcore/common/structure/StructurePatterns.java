@@ -21,9 +21,9 @@ public final class StructurePatterns {
     }
 
     static StructureData data(String resource) {
-        return CACHE.computeIfAbsent(resource, path -> {
+        return CACHE.computeIfAbsent(HollowStructureResources.resolve(resource), path -> {
             try {
-                return StructureData.read(StructurePatterns.class.getResourceAsStream(HollowStructureResources.resolve(path)));
+                return StructureData.read(StructurePatterns.class.getResourceAsStream(path));
             } catch (IOException e) {
                 throw new UncheckedIOException("Cannot load multiblock geometry " + path, e);
             }

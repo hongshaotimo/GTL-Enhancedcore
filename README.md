@@ -4,7 +4,7 @@ GregTech Leisure Enhanced 整合包专用核心模组，扩展工业机器、仓
 
 - 模组 ID：`gtl_enhancedcore`
 - 环境：Minecraft 1.20.1 / Forge 47.x / Java 21
-- 当前版本：5.3.3（以 `gradle.properties` 为准）
+- 当前版本：5.3.9（以 `gradle.properties` 为准）
 - 许可：[LGPL-3.0](LICENSE)
 
 ## 主要功能
@@ -20,16 +20,17 @@ GregTech Leisure Enhanced 整合包专用核心模组，扩展工业机器、仓
 - 总成管理器：持久化 AE 网络镜像管理，可在列表内换源/解绑，准星附近显示名称并支持 Alt 传送。
 - 样板切割：在预览界面直接切割样板并粘贴到目标仓室，支持命名与存档。
 - 样板生成工具、气象锚点、因果重构终端、领地置换终端及第三方结构/配方适配。
+- 光影兼容：机器场与宇宙之心特效接入 Oculus 最终画面，开关光影后状态不泄漏；43 台第三方替换结构的仓室按机壳绘制。
 
 恒星约束聚变堆从无线电网扣 EU，并行与跨配方线程取无限上限，单批固定 20 tick，结构只接受输入/输出仓。星核剥离装置定位 UHV，碎片世界采集配方，固定 128 条跨配方线程。
 
 ## 依赖
 
-需要 Forge 47.3.7+、Minecraft 1.20.1、GTCEu 1.4.4、GTLCore 1.2.3.3-fix3、GTLAdditions 3.3.1Custom、LDLib、GTMThings、AE2、ExtendedAE、FTB Chunks/Library/Teams 和 Architectury。JEI、Jade 为可选客户端依赖；准确版本以 `gradle/local-dependencies.json` 和整合包清单为准。
+需要 Forge 47.3.7+、Minecraft 1.20.1、GTCEu 1.4.4、GTLCore 1.2.3.3-fix4、GTLAdditions 3.3.1Custom、LDLib、GTMThings、AE2、ExtendedAE、FTB Chunks/Library/Teams 和 Architectury。JEI、Jade 为可选客户端依赖；准确版本以 `gradle/local-dependencies.json` 和整合包清单为准。
 
 ## 构建
 
-需要 JDK 21，依赖 JAR 放在 `libs/`。Windows 执行：
+需要 JDK 21，依赖 JAR 放在 `libs/`。Oculus 1.8.0 仅用于编译光影适配，不随核心打包。Windows 执行：
 
 ```powershell
 .\build.bat --no-pause --offline --deploy

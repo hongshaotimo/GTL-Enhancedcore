@@ -15,7 +15,7 @@ import net.minecraft.world.phys.Vec3;
 import org.joml.Vector3f;
 
 /** Same casing and overlay as upstream. Only the active forge gains an optical field. */
-public final class StellarForgeMachineRenderer extends WorkableCasingMachineRenderer {
+public final class StellarForgeMachineRenderer extends WorkableCasingMachineRenderer implements MachineEffectPass<WorkableElectricMultiblockMachine> {
     public StellarForgeMachineRenderer() {
         super(new ResourceLocation("gtlcore","block/molecular_casing"),
                 new ResourceLocation("gtceu","block/multiblock/fusion_reactor"));
@@ -30,6 +30,12 @@ public final class StellarForgeMachineRenderer extends WorkableCasingMachineRend
                 || !(holder.getMetaMachine() instanceof WorkableElectricMultiblockMachine machine)
                 || !machine.isFormed() || !machine.getRecipeLogic().isWorking()) return;
         if (entity.getLevel() instanceof TrackedDummyWorld) return; // An unpowered JEI model is not a running factory.
+        renderEffect(entity, machine, partial, pose, buffers);
+    }
+
+    @Override
+    public void drawEffect(BlockEntity entity, WorkableElectricMultiblockMachine machine, float partial,
+                           PoseStack pose, MultiBufferSource buffers) {
         double[] center = offset(machine,0,30,-106);
         var world = Vec3.atCenterOf(entity.getBlockPos()).add(center[0],center[1],center[2]);
         double distance = Minecraft.getInstance().gameRenderer.getMainCamera().getPosition().distanceTo(world);

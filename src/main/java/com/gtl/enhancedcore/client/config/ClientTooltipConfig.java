@@ -1,5 +1,6 @@
 package com.gtl.enhancedcore.client.config;
 
+import com.google.common.collect.MapMaker;
 import com.gtl.enhancedcore.GTLEnhancedcore;
 import com.gtl.enhancedcore.common.config.EditableConfigFile;
 import com.gtl.enhancedcore.common.config.TooltipOverrides;
@@ -102,21 +103,16 @@ public final class ClientTooltipConfig {
         try { return original(stack); }
         finally { config = saved; }
     }
-    /**
-     * 悬停时提示框每帧都会重建；行 JSON 只在配置变化时改变，因此按原文缓存解析结果。
-     * 配置重载/保存时整体清空，避免旧条目长期驻留。
-     */
-    private static final Map<String, Optional<Component>> PARSED = new HashMap<>();
-
-    private static Component parsed(String json) {
-        return PARSED.computeIfAbsent(json, key -> Optional.ofNullable(Component.Serializer.fromJson(key))).orElse(null);
-    }
+    // Config and editor lines are replaced, not mutated. Weak identity keys avoid serializing
+    // JSON on hover and let abandoned drafts disappear without waiting for a save/reload.
+    private static final Map<Line, Optional<Component>> PARSED = new MapMaker().weakKeys().makeMap();
 
     public static List<Component> render(Entry entry, boolean shift) {
         var result = new ArrayList<Component>();
         for (Line line : entry.lines()) {
             if (!line.visible(shift)) continue;
-            Component component = parsed(line.component().toString());
+            Component component = PARSED.computeIfAbsent(line, key ->
+                    Optional.ofNullable(Component.Serializer.fromJson(key.component()))).orElse(null);
             if (component != null) result.add(styledText(component, line.rainbow()));
         }
         return result;

@@ -1084,7 +1084,7 @@
         63,
         104
       ],
-      "sourceSha256": "d412a87a64258b8ed4b3220e175ecd1d578cbffcdad32c24b264294bdecf20ae",
+      "sourceSha256": "3f683b4e2fdc865bf5112ea13f083ff5a9dd74e2c76f7611c468351eb4be6914",
       "removed": 8100,
       "removedBySymbol": {
         "A": 5341,
@@ -1098,7 +1098,7 @@
       "opaqueSymbols": "ABDEGI",
       "remaining": 64133,
       "optimizedResource": "/data/gtl_enhancedcore/structures/hollow/voidconstrainedminingfieldstructure.pattern.gz",
-      "optimizedSha256": "2cbcaf9e2415680016f0e3bab0c353009332d8801e2f33287935d807b1477b8f"
+      "optimizedSha256": "43d111200a9a3c8712db53aae1b53621837321f540b24d9e0915a972bd4cce9a"
     },
     "/data/gtl_enhancedcore/structures/weather_anchor.pattern.gz": {
       "resource": "/data/gtl_enhancedcore/structures/weather_anchor.pattern.gz",

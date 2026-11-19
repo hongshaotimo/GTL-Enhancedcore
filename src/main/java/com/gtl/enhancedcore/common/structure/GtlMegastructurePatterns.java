@@ -57,6 +57,22 @@ public final class GtlMegastructurePatterns {
         return manifest;
     }
 
+    /** All current replacement patterns have one hatch material. Resolve registry blocks only after registration. */
+    static Map<ResourceLocation, Supplier<BlockState>> hatchCasings() {
+        var result = new java.util.HashMap<ResourceLocation, Supplier<BlockState>>();
+        for (var entry : MANIFEST.entrySet()) {
+            var spec = entry.getValue().getAsJsonObject();
+            var id = new ResourceLocation(spec.has("namespace") ? spec.get("namespace").getAsString() : "gtceu", entry.getKey());
+            for (var value : spec.getAsJsonObject("bindings").entrySet()) {
+                var binding = value.getValue().getAsJsonObject();
+                if (!binding.get("mode").getAsString().equals("hatch")) continue;
+                if (result.put(id, Suppliers.memoize(() -> block(binding, "fallback").defaultBlockState())) != null)
+                    throw new IllegalStateException("Multiple hatch bindings need position-specific appearance: " + id);
+            }
+        }
+        return Map.copyOf(result);
+    }
+
     public static boolean targets(ResourceLocation id) {
         if (id == null || !MANIFEST.has(id.getPath())) return false;
         var spec = MANIFEST.getAsJsonObject(id.getPath());

@@ -3,8 +3,11 @@ package com.gtl.enhancedcore;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonParser;
 import com.gtl.enhancedcore.common.world.campus.CampusPlanAccess;
+import com.gtl.enhancedcore.common.world.personalplot.PersonalPlotStore;
 import com.gtl.enhancedcore.common.world.plot.PlannedCampus;
 import com.gtl.enhancedcore.common.world.plot.PlotSettings;
+import com.gtl.enhancedcore.common.world.plot.PlotSettingsCodec;
+import com.mojang.serialization.JsonOps;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.MessageDigest;
@@ -32,6 +35,9 @@ public final class CampusPlanIdentityRegression {
             var row = element.getAsJsonObject();
             var style = PlotSettings.RoadStyle.valueOf(row.get("roadStyle").getAsString());
             var settings = PlotSettings.plannedCampus().withRoadStyle(style);
+            var savedSettings = PersonalPlotStore.dimensionJson(settings).getAsJsonObject("generator").get("settings");
+            check(PlotSettingsCodec.CODEC.parse(JsonOps.INSTANCE, savedSettings).result().orElseThrow().equals(settings),
+                    style + " saved generator settings still decode");
             var plan = CampusPlanAccess.of(settings);
             String expectedIdentity = row.get("layoutIdentity").getAsString();
             check(actualStyles.add(style.name()) && identities.add(expectedIdentity), "Published style and identity are unique in the frozen fixture");

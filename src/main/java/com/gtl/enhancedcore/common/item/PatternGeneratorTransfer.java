@@ -99,7 +99,7 @@ public final class PatternGeneratorTransfer {
 
     public static void begin(ServerPlayer player, UseOnContext context) {
         PatternGeneratorSettings settings = PatternGeneratorSettings.load(context.getItemInHand());
-        if (settings.generatorId == null || available(player, settings.generatorId) == 0 && settings.transferRecipes.isEmpty()) {
+        if (settings.generatorId == null || settings.transferRecipes.isEmpty() && available(player, settings.generatorId) == 0) {
             tell(player, "fill_empty");
             return;
         }
@@ -190,8 +190,7 @@ public final class PatternGeneratorTransfer {
             }
             if (moved >= batchSize) break;
         }
-        int remaining = available(player, transfer.generator) + queue.transferRecipes.size();
-        if (remaining == 0) {
+        if (queue.transferRecipes.isEmpty() && available(player, transfer.generator) == 0) {
             queue.transferArmed = false;
             saveQueue(player, tool, queue);
             finish(player, transfer, "fill_complete");

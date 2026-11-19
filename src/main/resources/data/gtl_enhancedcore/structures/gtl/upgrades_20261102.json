@@ -1639,7 +1639,7 @@
           19
         ],
         "block": "gtlcore:space_elevator_mechanical_casing",
-        "fallback": "gtlcore:dimensionally_transcendent_casing"
+        "fallback": "gtlcore:space_elevator_mechanical_casing"
       },
       "A": {
         "mode": "literal",
@@ -1778,7 +1778,7 @@
       "L": 73782
     },
     "diamondOreMarkers": 220,
-    "hatchFallback": "gtlcore:dimensionally_transcendent_casing",
+    "hatchFallback": "gtlcore:space_elevator_mechanical_casing",
     "sourceSha256": "474c5cf2768a6bfa44afba9d2b482ee84cf2cb9912be9717cfb47174d852d164",
     "sha256": "7730ec3aeef94ba4a0afe43b14d20c37d4daa5851485a13748f166db8d5183db",
     "rawPatternSha256": "18f70d65fc61479182a34cbedba8a3f677ad5e61ab82711bff3b8ed57ea9f204",

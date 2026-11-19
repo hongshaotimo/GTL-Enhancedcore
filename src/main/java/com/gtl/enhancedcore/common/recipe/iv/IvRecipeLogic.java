@@ -313,6 +313,7 @@ public final class IvRecipeLogic extends GTLAddMultipleRecipesLogic {
             if (!condition.isSuccess()) { conditionFailure(ref, condition); continue; }
             ready.add(ref);
         }
+        if (ready.isEmpty()) return;
         List<Ref> chosen = new ArrayList<>(selector.select(ready, slots, ref -> ref.job.id.toString()));
         long[] wants = new long[chosen.size()];
         for (int i = 0; i < chosen.size(); i++) {

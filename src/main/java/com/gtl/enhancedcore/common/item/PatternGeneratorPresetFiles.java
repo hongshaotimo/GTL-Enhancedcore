@@ -15,10 +15,12 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
+import java.util.regex.Pattern;
 
 /** Portable local JSON files. Contains configuration and recipe IDs, never inventory or running work. */
 public final class PatternGeneratorPresetFiles {
     public static final int MAX_BYTES = 524288, MAX_RECIPES = 16384;
+    private static final Pattern RECIPE_ID = Pattern.compile("[a-z0-9_.-]+:[a-z0-9_./-]+");
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().disableHtmlEscaping().create();
     public record Preset(String name, String author, String authorId, String savedAt, String configuration, List<String> recipes) {
         public Preset {
@@ -27,7 +29,7 @@ public final class PatternGeneratorPresetFiles {
                     || configuration == null || configuration.length() > 65536 || recipes == null || recipes.size() > MAX_RECIPES)
                 throw new IllegalArgumentException("Invalid pattern preset");
             recipes = List.copyOf(recipes);
-            if (recipes.stream().anyMatch(id -> id == null || !id.matches("[a-z0-9_.-]+:[a-z0-9_./-]+") || id.length() > 256))
+            if (recipes.stream().anyMatch(id -> id == null || id.length() > 256 || !RECIPE_ID.matcher(id).matches()))
                 throw new IllegalArgumentException("Invalid recipe ID in pattern preset");
         }
     }

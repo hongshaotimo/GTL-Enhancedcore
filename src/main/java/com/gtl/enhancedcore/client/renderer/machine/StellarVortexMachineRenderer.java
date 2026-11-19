@@ -4,6 +4,7 @@ import com.gregtechceu.gtceu.client.renderer.machine.WorkableCasingMachineRender
 import com.gtl.enhancedcore.GTLEnhancedcore;
 import com.gtl.enhancedcore.common.machine.galaxy.StellarVortexSpaceStationMachine;
 import com.gtl.enhancedcore.client.renderer.StellarVortexRenderer;
+import com.gtl.enhancedcore.client.config.GalaxyEffectSettings;
 import com.lowdragmc.lowdraglib.utils.TrackedDummyWorld;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Minecraft;
@@ -16,8 +17,11 @@ import org.joml.Vector3f;
 import org.joml.Vector4f;
 import java.util.WeakHashMap;
 
-public final class StellarVortexMachineRenderer extends WorkableCasingMachineRenderer {
-    private record Fade(float visibility, long nanos) {}
+public final class StellarVortexMachineRenderer extends WorkableCasingMachineRenderer implements MachineEffectPass<StellarVortexSpaceStationMachine> {
+    private static final class Fade {
+        float visibility;
+        long nanos = System.nanoTime();
+    }
     private final WeakHashMap<BlockEntity, Fade> visibility = new WeakHashMap<>();
     public StellarVortexMachineRenderer() {
         super(new ResourceLocation("gtlcore", "block/casings/dimensionally_transcendent_casing"), GTLEnhancedcore.id("block/multiblock/stellar_vortex"));
@@ -25,14 +29,27 @@ public final class StellarVortexMachineRenderer extends WorkableCasingMachineRen
     @Override public void render(BlockEntity entity,float partial,PoseStack pose,MultiBufferSource buffers,int light,int overlay) {
         if (!(entity instanceof IMachineBlockEntity holder) || !(holder.getMetaMachine() instanceof StellarVortexSpaceStationMachine station)
                 || entity.getLevel() instanceof TrackedDummyWorld) return;
-        long now=System.nanoTime();
-        Fade previous=visibility.getOrDefault(entity,new Fade(0,now));
-        float old = previous.visibility();
-        float target = station.isFieldActive() ? 1F : 0F;
-        float step=(float)(1-Math.exp(-Math.min(.25,(now-previous.nanos())/1e9)*3.2));
-        float fade = old + (target-old)*step;
-        if (fade < .001F && target == 0) { visibility.remove(entity); return; }
-        visibility.put(entity,new Fade(fade,now));
+        if (GalaxyEffectSettings.quality() == 0 || (!station.isFieldActive() && !visibility.containsKey(entity))) return;
+        renderEffect(entity, station, partial, pose, buffers);
+    }
+
+    @Override
+    public void drawEffect(BlockEntity entity, StellarVortexSpaceStationMachine station, float partial,
+                           PoseStack pose, MultiBufferSource buffers) {
+        boolean active = station.isFieldActive();
+        Fade state = visibility.get(entity);
+        if (state == null) {
+            if (!active) return;
+            state = new Fade();
+            visibility.put(entity, state);
+        }
+        long now = System.nanoTime();
+        float target = active ? 1F : 0F;
+        float step = (float) -Math.expm1(-Math.min(.25, (now - state.nanos) / 1e9) * 3.2);
+        state.nanos = now;
+        state.visibility += (target - state.visibility) * step;
+        float fade = state.visibility;
+        if (!active && fade < .001F) { visibility.remove(entity); return; }
         // Source C=(99,58,61); imported C=(100,58,138), effect index=(99.5,107.5,99.5).
         // MIN_Z import maps source +X to pattern -X and source +Z to pattern -Z.
         var center=offset(station,-.5,49.5,-38.5);

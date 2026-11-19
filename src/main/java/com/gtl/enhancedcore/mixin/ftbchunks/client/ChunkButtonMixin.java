@@ -1,14 +1,11 @@
 package com.gtl.enhancedcore.mixin.ftbchunks.client;
 
 import com.gtl.enhancedcore.client.ftbchunks.ChunkMapLayout;
-import com.gtl.enhancedcore.client.ftbchunks.ClaimMode;
-import com.gtl.enhancedcore.client.ftbchunks.ClaimModeState;
 import com.gtl.enhancedcore.client.ftbchunks.RectangleSelectionState;
 import dev.ftb.mods.ftblibrary.math.XZ;
 import dev.ftb.mods.ftblibrary.ui.Panel;
 import dev.ftb.mods.ftblibrary.ui.Theme;
 import dev.ftb.mods.ftblibrary.ui.Widget;
-import dev.ftb.mods.ftblibrary.ui.input.MouseButton;
 import java.util.Set;
 import net.minecraft.client.gui.GuiGraphics;
 import org.spongepowered.asm.mixin.Mixin;
@@ -42,12 +39,7 @@ public abstract class ChunkButtonMixin extends Widget {
     @Inject(method = "drawBackground", at = @At("HEAD"))
     private void gtlEnhancedcore$rectSelect(GuiGraphics graphics, Theme theme, int x, int y, int width,
                                              int height, CallbackInfo ci) {
-        if (ClaimModeState.current() != ClaimMode.RECTANGLE) return;
-        if (!Widget.isMouseButtonDown(MouseButton.LEFT) && !Widget.isMouseButtonDown(MouseButton.RIGHT)) {
-            RectangleSelectionState.reset();
-            return;
-        }
-        if (!isMouseOver()) return;
+        if (!RectangleSelectionState.isDragging() || !isMouseOver()) return;
 
         XZ first = RectangleSelectionState.getFirstChunk();
         if (first == null) {
@@ -55,11 +47,22 @@ public abstract class ChunkButtonMixin extends Widget {
             RectangleSelectionState.setFirstChunk(first);
         }
         Set<XZ> selected = ((ChunkScreenAccessor) getParent()).getSelectedChunks();
-        selected.clear();
         int minX = Math.min(first.x(), chunkPos.x());
         int maxX = Math.max(first.x(), chunkPos.x());
         int minZ = Math.min(first.z(), chunkPos.z());
         int maxZ = Math.max(first.z(), chunkPos.z());
+        // FTB also mutates this set. Check its actual contents, not just the last drag endpoint.
+        if (selected.size() == (maxX - minX + 1) * (maxZ - minZ + 1)) {
+            boolean matches = true;
+            for (XZ chunk : selected) {
+                if (chunk.x() < minX || chunk.x() > maxX || chunk.z() < minZ || chunk.z() > maxZ) {
+                    matches = false;
+                    break;
+                }
+            }
+            if (matches) return;
+        }
+        selected.clear();
         for (int chunkX = minX; chunkX <= maxX; chunkX++) {
             for (int chunkZ = minZ; chunkZ <= maxZ; chunkZ++) {
                 selected.add(XZ.of(chunkX, chunkZ));

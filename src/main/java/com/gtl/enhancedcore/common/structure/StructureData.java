@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
 import java.util.function.Consumer;
 import java.util.zip.GZIPInputStream;
 
@@ -37,13 +38,17 @@ public final class StructureData {
                 throw new IOException("Structure dimensions exceed supported bounds: " + header);
             }
             String[][] aisles = new String[depth][height];
+            // A giant often repeats the same full-width row tens of thousands of times.
+            // Share immutable row text only within this resource; discard the lookup table after loading.
+            var rowPool = new HashMap<String, String>();
             for (int z = 0; z < depth; z++) {
                 for (int y = 0; y < height; y++) {
                     String row = reader.readLine();
                     if (row == null || row.length() != width) {
                         throw new IOException("Invalid structure row at aisle " + z + ", row " + y);
                     }
-                    aisles[z][y] = row;
+                    String previous = rowPool.putIfAbsent(row, row);
+                    aisles[z][y] = previous == null ? row : previous;
                 }
             }
             if (reader.readLine() != null) throw new IOException("Unexpected trailing structure data");

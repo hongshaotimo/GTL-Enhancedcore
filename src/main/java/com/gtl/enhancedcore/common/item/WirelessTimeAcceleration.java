@@ -82,8 +82,10 @@ public final class WirelessTimeAcceleration {
         }
         if (!logic.isWorking() || logic.getLastRecipe() == null) return;
         int remaining = logic.getDuration() - logic.getProgress();
+        // Progress is integral: halving the last tick cannot advance the recipe.
+        if (remaining < 2) return;
         long eut = RecipeHelper.getInputEUt(logic.getLastRecipe());
-        if (remaining <= 0 || eut <= 0) return;
+        if (eut <= 0) return;
         // Exactly the original 8 * (remaining * 0.5) * EU/t, without JS double overflow.
         BigInteger eu = BigInteger.valueOf(remaining).multiply(BigInteger.valueOf(eut)).shiftLeft(2);
         if (WirelessEnergyManager.addEUToGlobalEnergyMap(player.getUUID(), eu.negate(), logic.getMachine())) {

@@ -1,6 +1,7 @@
 package com.gtl.enhancedcore.client.renderer;
 
 import com.gtl.enhancedcore.GTLEnhancedcore;
+import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.*;
 import net.minecraft.client.renderer.RenderType;
@@ -17,20 +18,24 @@ import java.io.IOException;
 @Mod.EventBusSubscriber(modid=GTLEnhancedcore.MOD_ID,bus=Mod.EventBusSubscriber.Bus.MOD,value=Dist.CLIENT)
 public final class StellarVortexRenderer extends RenderType {
     private static ShaderInstance shader;
-    private static final BufferBuilder VERTICES=new BufferBuilder(4*1024*1024);
+    // One blend equation: the mist emits premultiplied colour and opacity; light emits colour only.
+    private static final TransparencyStateShard SCATTERING = new TransparencyStateShard("stellar_scattering", () -> {
+        RenderSystem.enableBlend();
+        RenderSystem.blendFunc(GlStateManager.SourceFactor.ONE, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA);
+    }, () -> { RenderSystem.disableBlend(); RenderSystem.defaultBlendFunc(); });
     private static final RenderType FIELD=create("stellar_vortex_field",DefaultVertexFormat.POSITION_COLOR_TEX,VertexFormat.Mode.QUADS,262144,false,false,
-            CompositeState.builder().setShaderState(new ShaderStateShard(()->shader)).setTransparencyState(ADDITIVE_TRANSPARENCY)
+            CompositeState.builder().setShaderState(new ShaderStateShard(()->shader)).setTransparencyState(SCATTERING)
                     .setDepthTestState(LEQUAL_DEPTH_TEST).setCullState(NO_CULL).setWriteMaskState(COLOR_WRITE).createCompositeState(false));
-    private static final RenderType MIST=create("stellar_vortex_mist",DefaultVertexFormat.POSITION_COLOR_TEX,VertexFormat.Mode.QUADS,262144,false,false,
-            CompositeState.builder().setShaderState(new ShaderStateShard(()->shader)).setTransparencyState(TRANSLUCENT_TRANSPARENCY)
-                    .setDepthTestState(LEQUAL_DEPTH_TEST).setCullState(NO_CULL).setWriteMaskState(COLOR_WRITE).createCompositeState(false));
+    private static final float[] VOLUME_HALF_SIZE = {82, 164, 82};
+    // -X,+X,-Y,+Y,-Z,+Z. Corner bits encode the positive X/Y/Z half-space.
+    private static final int[][] VOLUME_FACES = {{0,2,6,4},{1,5,7,3},{0,4,5,1},{2,3,7,6},{0,1,3,2},{4,6,7,5}};
     private static final Vector3f P=new Vector3f(),Q=new Vector3f(),SIDE=new Vector3f(),VERTICAL=new Vector3f(0,1,0);
     /** Keep the optical connectors aligned with the station's existing inclined frame. */
     private static final double TILT_COS=Math.cos(Math.PI/10),TILT_SIN=Math.sin(Math.PI/10);
-    /** The sheath's fixed angular samples are shared by both poles. */
-    private static final double[] PLUME_COS=new double[65],PLUME_SIN=new double[65];
+    /** Unit circle shared by the nebula band and both polar sheaths. */
+    private static final double[] CIRCLE_COS=new double[65],CIRCLE_SIN=new double[65];
     static {
-        for(int k=0;k<=64;k++){double a=k*Math.PI/32;PLUME_COS[k]=Math.cos(a);PLUME_SIN[k]=Math.sin(a);}
+        for(int k=0;k<=64;k++){double a=k*Math.PI/32;CIRCLE_COS[k]=Math.cos(a);CIRCLE_SIN[k]=Math.sin(a);}
     }
     private StellarVortexRenderer() { super("unused_galaxy",DefaultVertexFormat.POSITION_COLOR_TEX,VertexFormat.Mode.QUADS,256,false,false,()->{},()->{}); }
     @SubscribeEvent public static void register(RegisterShadersEvent event) throws IOException {
@@ -49,22 +54,13 @@ public final class StellarVortexRenderer extends RenderType {
             var right=inverse.transformDirection(new Vector3f(1,0,0)).normalize();
             var up=inverse.transformDirection(new Vector3f(0,1,0)).normalize();
             int layers=quality==1||distance>500?2:3;
-            // One view-facing envelope ray-marches a three-dimensional pinched cosmic rupture.
-            MIST.setupRenderState();
-            shader.safeGetUniform("Kind").set(0);begin();
-            float cameraDistance=eye.length();
-            float envelope;
-            if(cameraDistance>190) {
-                envelope=190*cameraDistance/(float)Math.sqrt(cameraDistance*cameraDistance-190*190);
-                P.set(0,0,0);
-            } else {
-                inverse.transformDirection(P.set(0,0,-1)).normalize().add(eye);
-                envelope=2;
-            }
-            billboard(P,right,up,envelope,1,1,1,quality==1||distance>500?.5F:1F);
-            end();
-            MIST.clearRenderState();
             FIELD.setupRenderState();
+            shader.safeGetUniform("Kind").set(0);begin();
+            volumeExitFaces(eye, quality == 1 || distance > 500 ? .5F : 1F);
+            end();
+            shader.safeGetUniform("Kind").set(4);begin();
+            nebulaBand(seconds, layers);
+            end();
             shader.safeGetUniform("Kind").set(1);begin();
             for(int port=0;port<8;port++) {
                 double angle=port*Math.PI/4,radius=(port%2==0?98:114)+2.5;
@@ -117,11 +113,40 @@ public final class StellarVortexRenderer extends RenderType {
                 double t=j/28.0,u=(j+1)/28.0;
                 plume(sign,t,k,layer);plume(sign,u,k,layer);plume(sign,u,k+1,layer);plume(sign,t,k+1,layer);
             }end();
-        } finally { FIELD.clearRenderState();MIST.clearRenderState();RenderSystem.setShader(()->old); }
+        } finally { FIELD.clearRenderState();RenderSystem.setShader(()->old); }
     }
-    private static void begin(){VERTICES.begin(VertexFormat.Mode.QUADS,DefaultVertexFormat.POSITION_COLOR_TEX);}
+    // Exit faces of a convex box cover each ray exactly once, even when the camera is inside.
+    private static void volumeExitFaces(Vector3f eye, float detail) {
+        for (int face = 0; face < VOLUME_FACES.length; face++) {
+            int axis = face / 2;
+            if (((face & 1) == 0 ? -eye.get(axis) : eye.get(axis)) >= VOLUME_HALF_SIZE[axis]) continue;
+            for (int corner : VOLUME_FACES[face]) {
+                vertex((corner & 1) == 0 ? -VOLUME_HALF_SIZE[0] : VOLUME_HALF_SIZE[0],
+                       (corner & 2) == 0 ? -VOLUME_HALF_SIZE[1] : VOLUME_HALF_SIZE[1],
+                       (corner & 4) == 0 ? -VOLUME_HALF_SIZE[2] : VOLUME_HALF_SIZE[2], 1,1,1,detail,0,0);
+            }
+        }
+    }
+
+    // Original tilted 120–230 block annulus. Dust and stars rotate together in its local frame.
+    private static void nebulaBand(double seconds, int layers) {
+        double angle = StellarVortexMotion.rotationAngle(seconds), c = Math.cos(angle), s = Math.sin(angle);
+        for (int layer = 0; layer < layers; layer++) {
+            float height = (layer / (layers - 1F) - .5F) * 8;
+            for (int j = 0; j < 64; j++) {
+                cloudVertex(120,j,height,c,s,layers); cloudVertex(230,j,height,c,s,layers);
+                cloudVertex(230,j+1,height,c,s,layers); cloudVertex(120,j+1,height,c,s,layers);
+            }
+        }
+    }
+    private static void cloudVertex(float radius,int segment,float height,double c,double s,int layers) {
+        float x = (float)(radius * CIRCLE_COS[segment]), z = (float)(radius * CIRCLE_SIN[segment]);
+        // Encode the layer index independently of its orientation in world space.
+        vertex(galaxy(x,height,z,c,s,P), (height+4)/8,1,1,1F/layers,x,z);
+    }
+    private static void begin(){MachineEffectGeometry.vertices().begin(VertexFormat.Mode.QUADS,DefaultVertexFormat.POSITION_COLOR_TEX);}
     private static void end(){
-        var data=VERTICES.end();
+        var data=MachineEffectGeometry.vertices().end();
         if(data.drawState().vertexCount()>0)BufferUploader.drawWithShader(data);else data.release();
     }
     /** c/s 为旋转角的 cos/sin；不旋转时传 1,0。 */
@@ -141,7 +166,7 @@ public final class StellarVortexRenderer extends RenderType {
     }
     private static void plume(int sign,double t,int segment,int layer){
         double r=1.1+(9+layer*2)*t,a=segment*Math.PI/32;
-        vertex((float)(PLUME_COS[segment]*r),(float)(sign*(106+t*55.5)),(float)(PLUME_SIN[segment]*r),1,1,1,1,(float)(a/Math.PI/2),(float)t);
+        vertex((float)(CIRCLE_COS[segment]*r),(float)(sign*(106+t*55.5)),(float)(CIRCLE_SIN[segment]*r),1,1,1,1,(float)(a/Math.PI/2),(float)t);
     }
     private static void billboard(Vector3f p,Vector3f right,Vector3f up,float radius,float r,float g,float b,float alpha){
         float rx=right.x*radius,ry=right.y*radius,rz=right.z*radius;
@@ -160,5 +185,5 @@ public final class StellarVortexRenderer extends RenderType {
         vertex(b.x+sx,b.y+sy,b.z+sz,r,g,blue,alpha,end,1);vertex(b.x-sx,b.y-sy,b.z-sz,r,g,blue,alpha,end,-1);
     }
     private static void vertex(Vector3f p,float r,float g,float b,float a,float u,float v){vertex(p.x,p.y,p.z,r,g,b,a,u,v);}
-    private static void vertex(float x,float y,float z,float r,float g,float b,float a,float u,float v){VERTICES.vertex(x,y,z).color(r,g,b,a).uv(u,v).endVertex();}
+    private static void vertex(float x,float y,float z,float r,float g,float b,float a,float u,float v){MachineEffectGeometry.vertices().vertex(x,y,z).color(r,g,b,a).uv(u,v).endVertex();}
 }

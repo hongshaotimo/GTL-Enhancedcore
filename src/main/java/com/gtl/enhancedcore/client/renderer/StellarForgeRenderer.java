@@ -18,7 +18,6 @@ import java.util.List;
 @Mod.EventBusSubscriber(modid=GTLEnhancedcore.MOD_ID,bus=Mod.EventBusSubscriber.Bus.MOD,value=Dist.CLIENT)
 public final class StellarForgeRenderer extends RenderType {
     private static ShaderInstance star, flow;
-    private static final BufferBuilder VERTICES = new BufferBuilder(32768);
     private static final RenderType CORE = type("stellar_core",false,true);
     private static final RenderType CORONA = type("stellar_corona",false,false);
     private static final RenderType FLOW = type("stellar_flow",true,false);
@@ -91,19 +90,19 @@ public final class StellarForgeRenderer extends RenderType {
         type.setupRenderState();
         try {
             star.safeGetUniform("Pass").set(pass);
-            VERTICES.begin(VertexFormat.Mode.QUADS,DefaultVertexFormat.POSITION);
+            MachineEffectGeometry.vertices().begin(VertexFormat.Mode.QUADS,DefaultVertexFormat.POSITION);
             for (var face : BOX) for (int i=0;i<4;i++) {
-                var p = face[mirrored?3-i:i]; VERTICES.vertex(p[0]*15.1F,p[1]*15.1F,p[2]*15.1F).endVertex();
+                var p = face[mirrored?3-i:i]; MachineEffectGeometry.vertices().vertex(p[0]*15.1F,p[1]*15.1F,p[2]*15.1F).endVertex();
             }
-            BufferUploader.drawWithShader(VERTICES.end());
+            BufferUploader.drawWithShader(MachineEffectGeometry.vertices().end());
         } finally { type.clearRenderState(); }
     }
     private static void begin(int kind) {
         flow.safeGetUniform("Kind").set(kind);
-        VERTICES.begin(VertexFormat.Mode.QUADS,DefaultVertexFormat.POSITION_COLOR_TEX);
+        MachineEffectGeometry.vertices().begin(VertexFormat.Mode.QUADS,DefaultVertexFormat.POSITION_COLOR_TEX);
     }
     private static void end() {
-        var data = VERTICES.end();
+        var data = MachineEffectGeometry.vertices().end();
         if (data.drawState().vertexCount()>0) BufferUploader.drawWithShader(data); else data.release();
     }
     private static void ribbon(List<Vector3f> points,Vector3f eye,float width,float r,float g,float b,float alpha,int stride) {
@@ -123,7 +122,7 @@ public final class StellarForgeRenderer extends RenderType {
         }
     }
     private static void vertex(Vector3f p,Vector3f side,int sign,float u,float r,float g,float b,float alpha) {
-        VERTICES.vertex(p.x+side.x*sign,p.y+side.y*sign,p.z+side.z*sign)
+        MachineEffectGeometry.vertices().vertex(p.x+side.x*sign,p.y+side.y*sign,p.z+side.z*sign)
                 .color(r,g,b,alpha).uv(u,sign).endVertex();
     }
 }

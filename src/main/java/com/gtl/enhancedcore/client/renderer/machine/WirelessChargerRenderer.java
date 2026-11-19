@@ -27,7 +27,7 @@ import java.util.function.Consumer;
 
 /** Top-coil induction field; cached light ribbons and soft core remain entirely client-side. */
 @OnlyIn(Dist.CLIENT)
-public final class WirelessChargerRenderer extends TieredHullMachineRenderer {
+public final class WirelessChargerRenderer extends TieredHullMachineRenderer implements MachineEffectPass<WirelessChargerMachine> {
     private final boolean mv;
     private final ResourceLocation idleId;
     private final ResourceLocation activeId;
@@ -69,8 +69,14 @@ public final class WirelessChargerRenderer extends TieredHullMachineRenderer {
     @Override
     public void render(BlockEntity entity, float partial, PoseStack pose, MultiBufferSource buffers, int light, int overlay) {
         if (!(entity instanceof IMachineBlockEntity holder)
-                || !(holder.getMetaMachine() instanceof WirelessChargerMachine)
+                || !(holder.getMetaMachine() instanceof WirelessChargerMachine charger)
                 || entity.getLevel() == null) return;
+        renderEffect(entity, charger, partial, pose, buffers);
+    }
+
+    @Override
+    public void drawEffect(BlockEntity entity, WirelessChargerMachine charger, float partial,
+                           PoseStack pose, MultiBufferSource buffers) {
         // Decorative field is always visible while loaded, independently of power and work state.
         var camera = Minecraft.getInstance().gameRenderer.getMainCamera();
         double distance = camera.getPosition().distanceToSqr(entity.getBlockPos().getX() + 0.5,
@@ -99,6 +105,8 @@ public final class WirelessChargerRenderer extends TieredHullMachineRenderer {
         softCore(pose.last().pose(), lightField, (mv ? 0.15F : 0.11F) * pulse, 210, 240, 255, 215);
         pose.popPose();
     }
+
+    @Override public boolean additiveBatch() { return true; }
 
     private static void softCore(Matrix4f matrix, VertexConsumer out, float radius, int r, int g, int b, int a) {
         coreVertex(out, matrix, -radius, -radius, 32.5F / 128, 111.5F / 128, r, g, b, a);

@@ -1,4 +1,5 @@
 {
+  "blend": { "func": "add", "srcrgb": "1", "dstrgb": "1-srcalpha", "srcalpha": "1", "dstalpha": "1-srcalpha" },
   "vertex": "gtl_enhancedcore:stellar_vortex",
   "fragment": "gtl_enhancedcore:stellar_vortex",
   "attributes": [

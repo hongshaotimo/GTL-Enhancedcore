@@ -2,7 +2,6 @@ package com.gtl.enhancedcore.client.renderer;
 
 import com.gtl.enhancedcore.GTLEnhancedcore;
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.BufferUploader;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -22,7 +21,6 @@ import java.io.IOException;
 @Mod.EventBusSubscriber(modid = GTLEnhancedcore.MOD_ID, bus = Mod.EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
 public final class BlackHoleRenderer extends RenderType {
     private static final float HORIZON_RADIUS = 6.5F;
-    private static final BufferBuilder VERTICES = new BufferBuilder(256);
     private static ShaderInstance shader;
     private static final RenderType HORIZON = fieldType("singularity_horizon", true);
     private static final RenderType DISK = fieldType("singularity_disk", false);
@@ -83,18 +81,18 @@ public final class BlackHoleRenderer extends RenderType {
         type.setupRenderState();
         try {
             shader.safeGetUniform("OpaquePass").set(opaque);
-            VERTICES.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION);
+            MachineEffectGeometry.vertices().begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION);
             // Inward faces draw the far boundary once per pixel, even when the
             // camera enters the volume. A mirrored preview reverses the winding.
             for (float[][] face : VOLUME) {
                 for (int i = 0; i < 4; i++) {
                     float[] vertex = face[mirrored ? 3-i : i];
-                    VERTICES.vertex(vertex[0]*8.1F, vertex[1]*8.1F, vertex[2]*8.1F).endVertex();
+                    MachineEffectGeometry.vertices().vertex(vertex[0]*8.1F, vertex[1]*8.1F, vertex[2]*8.1F).endVertex();
                 }
             }
             // Draw immediately: per-machine uniforms must not leak to another
             // buffered machine, the JEI scene, or a differently oriented structure.
-            BufferUploader.drawWithShader(VERTICES.end());
+            BufferUploader.drawWithShader(MachineEffectGeometry.vertices().end());
         } finally {
             type.clearRenderState();
         }

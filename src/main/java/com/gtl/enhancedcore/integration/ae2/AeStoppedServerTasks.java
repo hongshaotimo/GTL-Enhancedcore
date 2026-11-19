@@ -53,25 +53,26 @@ public final class AeStoppedServerTasks {
             if (field == null) return;
             Object value = field.get(TickHandler.instance());
             if (!(value instanceof Queue<?> queue) || queue.getClass() != ArrayDeque.class) return;
-            int removed = 0;
-            for (var iterator = queue.iterator(); iterator.hasNext();) {
-                Object task = iterator.next();
-                if (!(task instanceof ILevelRunnable)) continue;
-                Field capture = CAPTURES.get(task.getClass()).field();
-                if (capture == null) continue;
-                AEBaseBlockEntity blockEntity = (AEBaseBlockEntity) capture.get(task);
-                if (blockEntity != null && blockEntity.getLevel() instanceof ServerLevel level
-                        && level.getServer() == departed) {
-                    // Discard only an in-memory callback for the fully saved, stopped world.
-                    // Do not invoke it, reset BE flags, or touch crafting/inventory data.
-                    iterator.remove();
-                    removed++;
-                }
-            }
+            int before = queue.size();
+            // Bulk removal compacts mixed queues once, without running any callbacks.
+            queue.removeIf(task -> belongsTo(task, departed));
+            int removed = before - queue.size();
             if (removed > 0) GTLEnhancedcore.LOGGER.info(
                     "[AeStoppedServerTasks] Released {} deferred callbacks for the stopped server", removed);
         } catch (ReflectiveOperationException | RuntimeException | LinkageError failure) {
             warnOnce(failure);
+        }
+    }
+
+    private static boolean belongsTo(Object task, MinecraftServer departed) {
+        if (!(task instanceof ILevelRunnable)) return false;
+        Field capture = CAPTURES.get(task.getClass()).field();
+        if (capture == null) return false;
+        try {
+            AEBaseBlockEntity entity = (AEBaseBlockEntity) capture.get(task);
+            return entity != null && entity.getLevel() instanceof ServerLevel level && level.getServer() == departed;
+        } catch (IllegalAccessException failure) {
+            throw new IllegalStateException(failure);
         }
     }
 

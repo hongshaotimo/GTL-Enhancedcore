@@ -27,7 +27,7 @@ import java.util.function.Consumer;
 
 /** Fields are anchored to the same local coordinates used by the structure predicates. */
 @OnlyIn(Dist.CLIENT)
-public final class MachineFieldRenderer extends WorkableCasingMachineRenderer {
+public final class MachineFieldRenderer extends WorkableCasingMachineRenderer implements MachineEffectPass<WorkableElectricMultiblockMachine> {
     private static final ResourceLocation WEATHER = GTLEnhancedcore.id("obj/weather_phase_field");
     private static final ResourceLocation WEATHER_CORE = GTLEnhancedcore.id("obj/weather_phase_core");
     private static final ResourceLocation YANG = GTLEnhancedcore.id("obj/causality_yang");
@@ -57,6 +57,13 @@ public final class MachineFieldRenderer extends WorkableCasingMachineRenderer {
         boolean preview = entity.getLevel() instanceof TrackedDummyWorld;
         if (!causality && (!(machine instanceof WeatherAnchorMachine weather)
                 || (!weather.isAnchoring() && !preview))) return;
+        renderEffect(entity, machine, partialTicks, pose, buffer);
+    }
+
+    @Override
+    public void drawEffect(BlockEntity entity, WorkableElectricMultiblockMachine machine, float partialTicks,
+                           PoseStack pose, MultiBufferSource buffer) {
+        boolean preview = entity.getLevel() instanceof TrackedDummyWorld;
         float time = RenderUtil.getSmoothTick(machine, partialTicks);
         pose.pushPose();
         double[] offset = offset(machine, 0, causality ? 73 : 17, causality ? -12 : -11);

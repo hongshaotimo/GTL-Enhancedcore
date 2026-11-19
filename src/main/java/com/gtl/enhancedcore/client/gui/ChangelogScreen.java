@@ -14,6 +14,7 @@ import net.minecraftforge.api.distmarker.OnlyIn;
 import org.lwjgl.glfw.GLFW;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -69,6 +70,7 @@ public class ChangelogScreen extends Screen {
     private int contentHeight;
     /** 正文总高度（全部行叠加）。 */
     private int totalContentHeight;
+    private int[] lineEnds;
     private int scrollOffset;
 
     private ChangelogScreen(Screen parent) {
@@ -94,8 +96,10 @@ public class ChangelogScreen extends Screen {
         this.buildLines();
 
         this.totalContentHeight = 0;
-        for (Line line : this.lines) {
-            this.totalContentHeight += line.height();
+        this.lineEnds = new int[this.lines.size()];
+        for (int i = 0; i < this.lines.size(); i++) {
+            this.totalContentHeight += this.lines.get(i).height();
+            this.lineEnds[i] = this.totalContentHeight;
         }
 
         // 面板高度：内容能装下就按内容算，否则占满屏幕可用高度（留 40px 边距）后靠滚动查看。
@@ -205,25 +209,24 @@ public class ChangelogScreen extends Screen {
         graphics.enableScissor(this.panelLeft + 1, this.contentTop, this.panelLeft + PANEL_WIDTH - 1, contentBottom);
 
         int centerX = this.panelLeft + (PANEL_WIDTH - SCROLLBAR_WIDTH - 2) / 2;
-        int y = this.contentTop - this.scrollOffset;
-        for (Line line : this.lines) {
-            int lineHeight = line.height();
-            // 完全在可视区之外的行直接跳过绘制，只推进 y。
-            if (y + lineHeight >= this.contentTop && y <= contentBottom) {
-                if (!line.text().getString().isEmpty()) {
-                    if (line.title()) {
-                        graphics.pose().pushPose();
-                        graphics.pose().translate(centerX, y, 0.0D);
-                        graphics.pose().scale(1.4F, 1.4F, 1.0F);
-                        graphics.drawString(this.font, line.text(),
-                                -this.font.width(line.text()) / 2, 0, line.color(), true);
-                        graphics.pose().popPose();
-                    } else {
-                        graphics.drawCenteredString(this.font, line.text(), centerX, y, line.color());
-                    }
+        int first = Arrays.binarySearch(this.lineEnds, this.scrollOffset);
+        if (first < 0) first = -first - 1;
+        int y = this.contentTop - this.scrollOffset + (first == 0 ? 0 : this.lineEnds[first - 1]);
+        for (int i = first; i < this.lines.size() && y <= contentBottom; i++) {
+            Line line = this.lines.get(i);
+            if (!line.text().getString().isEmpty()) {
+                if (line.title()) {
+                    graphics.pose().pushPose();
+                    graphics.pose().translate(centerX, y, 0.0D);
+                    graphics.pose().scale(1.4F, 1.4F, 1.0F);
+                    graphics.drawString(this.font, line.text(),
+                            -this.font.width(line.text()) / 2, 0, line.color(), true);
+                    graphics.pose().popPose();
+                } else {
+                    graphics.drawCenteredString(this.font, line.text(), centerX, y, line.color());
                 }
             }
-            y += lineHeight;
+            y += line.height();
         }
 
         graphics.disableScissor();
