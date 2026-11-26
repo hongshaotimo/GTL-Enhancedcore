@@ -40,6 +40,14 @@ public final class DataItemBehaviorCompatibility {
             }
             // Older GTLCore has no redirect; installations without ADD need no adjustment.
             if (core == null || add == null || core.getPriority() > add.getPriority()) return;
+            // Newer GTLAdditions injects into the tooltip without replacing Core's redirect target.
+            MethodNode tooltip = add.getClassNode(0).methods.stream()
+                    .filter(method -> method.name.equals("appendHoverText") && method.desc.equals(TOOLTIP))
+                    .findFirst().orElse(null);
+            if (tooltip == null) return;
+            if (tooltip.visibleAnnotations == null || tooltip.visibleAnnotations.stream().noneMatch(annotation ->
+                    annotation.desc.equals("Lorg/spongepowered/asm/mixin/Overwrite;")))
+                throw new IllegalStateException("GTLAdditions data-item tooltip overwrite changed");
             ClassNode coreNode = core.getClassNode(0);
             MethodNode reader = coreNode.methods.stream()
                     .filter(method -> method.name.equals("gtlcore$readTooltipData") && method.desc.equals(READER))
@@ -49,11 +57,6 @@ public final class DataItemBehaviorCompatibility {
                 throw new IllegalStateException("GTLCore data-item reader is no longer a redirect");
             if (coreNode.methods.stream().anyMatch(method -> !method.name.equals("<init>") && method != reader))
                 throw new IllegalStateException("GTLCore data-item mixin has additional behavior");
-            boolean overwrite = add.getClassNode(0).methods.stream().anyMatch(method ->
-                    method.name.equals("appendHoverText") && method.desc.equals(TOOLTIP)
-                            && method.visibleAnnotations != null && method.visibleAnnotations.stream().anyMatch(annotation ->
-                            annotation.desc.equals("Lorg/spongepowered/asm/mixin/Overwrite;")));
-            if (!overwrite) throw new IllegalStateException("GTLAdditions data-item tooltip overwrite changed");
             if (core.getPriority() != 1000 || add.getPriority() != 1000)
                 throw new IllegalStateException("Unexpected GTLCore/GTLAdditions data-item priorities");
             Field priority = core.getClass().getDeclaredField("priority");
