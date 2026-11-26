@@ -269,8 +269,8 @@ public final class TooltipPolicyRegression {
             require(selected.contains(summary), "joint factory always retains the actionable short summary");
             require(selected.contains(TooltipPolicy.JOINT_FACTORY_FLAVOR) == expanded,
                     "requested historical flavor appears only in Shift details");
-            require(selected.contains("tooltip.gtl_enhancedcore.iv_only_super_buffer"),
-                    "preserving flavor never hides the exclusive input requirement");
+            require(selected.contains("tooltip.gtl_enhancedcore.universal_joint_factory.hatches"),
+                    "workshop station roles stay visible without Shift");
         }
         require(TooltipPolicy.translationIssues(TooltipPolicy.JOINT_FACTORY_FLAVOR, "flavor", "en_us", true)
                 .stream().anyMatch(issue -> issue.contains("Shift details only")), "historical flavor cannot be assigned to a summary");
@@ -347,8 +347,8 @@ public final class TooltipPolicyRegression {
         for (String path : paths) {
             var pages = TooltipPolicy.nativePages(path);
             require(pages.getLast().equals("native_isolation"), path + ": either registered callback selects the complete isolation composition");
-            int expectedPages = path.equals("dimensional_focus_engraving_array") || path.equals("suprachronal_assembly_line") ? 2 : 1;
-            require(pages.size() == expectedPages, path + ": only explicit recipe and module changes receive a supplement");
+            int expectedPages = path.equals("dimensional_focus_engraving_array") ? 2 : 1;
+            require(pages.size() == expectedPages, path + ": only an explicit recipe-mode change receives a supplement");
             for (boolean expanded : List.of(false, true)) {
                 List<String> rows = List.copyOf(TooltipPolicy.nativeSummaryKeys(path));
                 for (String page : pages) {
@@ -375,23 +375,12 @@ public final class TooltipPolicyRegression {
         }
         var original = List.of("gtceu.machine.suprachronal_assembly_line.tooltip.0",
                 "gtceu.machine.suprachronal_assembly_line.tooltip.1", "gtceu.machine.research.required");
-        var changed = TooltipPolicy.compose(TooltipPolicy.page("suprachronal_module_host"), original,
-                TooltipPolicy.replacedKeys("suprachronal_module_host")::contains, ignored -> false, false, null);
-        require(changed.contains(original.getFirst()) && changed.contains(original.getLast()),
-                "module removal preserves the original flavor and research requirement");
-        require(!changed.contains(original.get(1)) && changed.contains("tooltip.gtl_enhancedcore.suprachronal_no_modules"),
-                "only the outdated module support claim is replaced");
-        require(TooltipPolicy.page("suprachronal_module").select(false, null)
-                        .contains("tooltip.gtl_enhancedcore.suprachronal_module_disabled"),
-                "the registered legacy extension item advertises its disabled state without Shift");
-        var oldModuleRows = List.of("gtceu.machine.suprachronal_assembly_line_module.tooltip.0",
-                "gtceu.machine.available_recipe_map_2.tooltip", TooltipPolicy.RECIPE_HEADER, "upstream preserved detail");
-        var disabledModuleRows = TooltipPolicy.compose(TooltipPolicy.page("suprachronal_module"), oldModuleRows,
-                TooltipPolicy.replacedKeys("suprachronal_module")::contains, ignored -> false, false, null);
-        require(disabledModuleRows.contains("upstream preserved detail"), "disabling an extension keeps unrelated original details");
-        require(!disabledModuleRows.contains(TooltipPolicy.RECIPE_HEADER)
-                        && !disabledModuleRows.contains("gtceu.machine.available_recipe_map_2.tooltip"),
-                "a disabled legacy extension no longer advertises obsolete recipe availability");
+        var rows = original;
+        for (String page : TooltipPolicy.nativePages("suprachronal_assembly_line")) {
+            rows = TooltipPolicy.compose(TooltipPolicy.page(page), rows,
+                    TooltipPolicy.replacedKeys(page)::contains, ignored -> false, true, null);
+        }
+        require(rows.containsAll(original), "native isolation tooltip preserves original module support, flavor and research");
     }
 
     private static void recipeGrouping() {
@@ -541,8 +530,8 @@ public final class TooltipPolicyRegression {
         require(chinese.get(TooltipPolicy.RECIPE_SEPARATOR).equals(" ") && english.get(TooltipPolicy.RECIPE_SEPARATOR).equals(" "),
                 "Both languages use the requested space-separated recipe catalog format");
         require(TooltipPolicy.page("universal_joint_factory").select(false, TooltipPolicy.SHIFT_HINT)
-                        .contains("tooltip.gtl_enhancedcore.iv_admission"),
-                "The joint factory shows the AE cancellation reminder without Shift");
+                        .contains("tooltip.gtl_enhancedcore.universal_joint_factory.service"),
+                "The joint factory displays its separate power and service sockets without Shift");
         require(chinese.get("tooltip.gtl_enhancedcore.void_constrained_mining_field.input").startsWith("两种模式均消耗钻井液")
                         && chinese.get("tooltip.gtl_enhancedcore.void_constrained_mining_field.input").contains("精准模式还需矿脉精华"),
                 "Both mining modes need drilling fluid and targeted mining additionally needs vein essence");
@@ -550,8 +539,7 @@ public final class TooltipPolicyRegression {
                         && english.get("tooltip.gtl_enhancedcore.void_constrained_mining_field.input").contains("targeted mode also requires vein essence"),
                 "The English mining input description preserves both consumable requirements");
         require(!chinese.get(TooltipPolicy.SHIFT_HINT).contains("配方"), "the Shift hint never implies hidden supported recipes");
-        for (String page : List.of("weather_anchor", "infinity_singularity", "dragon_field_proliferation_core",
-                "hyperstructural_chemical_distorter")) {
+        for (String page : List.of("weather_anchor", "infinity_singularity", "dragon_field_proliferation_core")) {
             require(TooltipPolicy.page(page).summary().contains("tooltip.gtl_enhancedcore.supports_laser_hatch"),
                     page + ": supported laser target hatches are advertised without Shift");
         }
@@ -590,7 +578,7 @@ public final class TooltipPolicyRegression {
         require(chinese.get("tooltip.gtl_enhancedcore.ore_plant.no_parallel_hatch").contains("不支持维护仓"),
                 "unsupported maintenance hatches are an explicit limitation, not an optional feature");
         for (String page : List.of("steam_platform", "processing_plus", "assembling_plus", "separating_plus", "mixing_plus",
-                "hyperstructural_chemical_distorter", "stellar_confinement_fusion_reactor")) {
+                "stellar_confinement_fusion_reactor")) {
             require(!TooltipPolicy.page(page).summary().contains(TooltipPolicy.CROSS_RECIPE_KEY),
                     page + ": a single active recipe or same-recipe channel machine must not claim cross-type parallelism");
         }

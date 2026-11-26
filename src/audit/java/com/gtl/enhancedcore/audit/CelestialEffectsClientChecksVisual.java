@@ -8,18 +8,13 @@ import com.gregtechceu.gtceu.api.machine.multiblock.MultiblockControllerMachine;
 import com.gregtechceu.gtceu.api.machine.multiblock.WorkableMultiblockMachine;
 import com.gregtechceu.gtceu.api.machine.trait.RecipeLogic;
 import com.gregtechceu.gtceu.api.registry.GTRegistries;
+import com.gtl.enhancedcore.client.renderer.celestial.CelestialVfxRenderer;
 import com.gtl.enhancedcore.common.structure.CelestialEffectAnchors;
-import com.gtladd.gtladditions.client.render.machine.deferred.DeferredMachineRenderer;
-import com.gtladd.gtladditions.client.render.machine.deferred.DeferredRenderContext;
-import com.gtladd.gtladditions.client.render.machine.deferred.DeferredRenderEntry;
-import com.gtladd.gtladditions.client.render.machine.heart.HeartBlackHoleRenderEntry;
-import com.gtladd.gtladditions.client.render.machine.heart.HeartBlackHoleRenderer;
-import com.gtladd.gtladditions.client.render.machine.heart.HeartBlackHolePostTargets;
+import com.gtl.enhancedcore.common.structure.CelestialEffectSizing;
 import com.lowdragmc.lowdraglib.utils.DummyWorld;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexSorting;
-import it.unimi.dsi.fastutil.longs.Long2ObjectLinkedOpenHashMap;
 import java.lang.reflect.Field;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -40,7 +35,7 @@ import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import org.gtlcore.gtlcore.config.ConfigHolder;
 
-/** Real native renderer pixels in an isolated client. No saved world or additional @Mod entry. */
+/** Offscreen output of the Core Eye effect and native ADD Astrograph preview. */
 public final class CelestialEffectsClientChecksVisual {
     private static final int SIZE = 960;
     private static final long[] TIMES = {10_000, 10_040, 10_080};
@@ -67,8 +62,7 @@ public final class CelestialEffectsClientChecksVisual {
             require(target.isStencilEnabled(), "Isolated visual main target has compatible stencil", checks);
             RenderSystem.setProjectionMatrix(new Matrix4f().perspective((float) Math.toRadians(55), 1, .1F, 1500),
                     VertexSorting.DISTANCE_TO_ORIGIN);
-            for (String id : List.of("gtceu:eye_of_harmony", "gtladditions:arcanic_astrograph",
-                    "gtladditions:heart_of_the_universe")) {
+            for (String id : List.of("gtceu:eye_of_harmony", "gtladditions:arcanic_astrograph")) {
                 renderMachine(id, checks, directory);
             }
         } finally {
@@ -96,19 +90,15 @@ public final class CelestialEffectsClientChecksVisual {
         world.entity = entity;
         ObfuscationReflectionHelper.findField(Level.class, "f_46443_").setBoolean(world, true);
         entity.setLevel(world);
-        var queue = deferredQueue();
-        require(!queue.containsKey(0), id + " clean isolated deferred slot", checks);
         try {
             field(MultiblockControllerMachine.class, "isFormed").setBoolean(machine, true);
             var logic = machine.getRecipeLogic();
             field(RecipeLogic.class, "isActive").setBoolean(logic, true);
             field(RecipeLogic.class, "status").set(logic, RecipeLogic.Status.WORKING);
-            boolean heart = id.endsWith("heart_of_the_universe");
             boolean eye = id.endsWith("eye_of_harmony");
-            if (!heart && !eye) field(machine.getClass(), "parallelAmount").setInt(machine, Integer.MAX_VALUE);
             require(machine.isActive() && logic.isWorking() && machine.isFormed(), id + " visual active fixture", checks);
-            var center = heart ? new Vec3(.5, 36.5, -38.5)
-                    : eye ? CelestialEffectAnchors.eye(machine) : CelestialEffectAnchors.astrograph(machine);
+            // The native ADD shell is 16 blocks behind the controller (facing SOUTH here).
+            var center = eye ? CelestialEffectAnchors.eye(machine) : new Vec3(.5, .5, -15.5);
             var renderer = Minecraft.getInstance().getBlockEntityRenderDispatcher().getRenderer(entity);
             require(renderer != null, id + " registered real BER for pixels", checks);
             var frames = new ArrayList<LinkedHashMap<String, Object>>();
@@ -123,11 +113,11 @@ public final class CelestialEffectsClientChecksVisual {
                 for (long time : TIMES) {
                     world.time = time;
                     var view = new Matrix4f().lookAt(camera.toVector3f(), center.toVector3f(), new Vector3f(0, 1, 0));
-                    if (!heart) {
+                    if (eye) {
                         // Match the direct production shader: global model-view * parent BER pose.
                         // The fixture global matrix is identity; lookAt must be applied exactly once.
                         var fieldView = new Matrix4f(RenderSystem.getModelViewMatrix()).mul(view)
-                                .translate((float) center.x, (float) center.y, (float) center.z).scale(2.75F);
+                                .translate((float) center.x, (float) center.y, (float) center.z).scale(CelestialEffectSizing.EYE_SCALE);
                         var origin = fieldView.transformPosition(new Vector3f());
                         require(Math.abs(origin.x) < 1E-4 && Math.abs(origin.y) < 1E-4
                                         && Math.abs(origin.z + camera.distanceTo(center)) < 1E-4,
@@ -147,33 +137,15 @@ public final class CelestialEffectsClientChecksVisual {
                     RenderSystem.enableDepthTest();
                     RenderSystem.enableCull();
                     var buffers = mc.renderBuffers().bufferSource();
-                    renderer.render(entity, .25F, pose, buffers, 0xF000F0, 0);
-                    buffers.endBatch();
-                    if (!heart) {
-                        var entry = queue.remove(0);
-                        require(entry != null && entry.getClass().getName().contains("CelestialVfxDeferred"),
-                                id + " real BER enqueues the complete celestial effect", checks);
-                        // Title-page artwork fixture: manually consume the real
-                        // entry. World identity/stage scheduling is tested by
-                        // AstrographWorldClientChecks in a fresh actual world.
-                        entry.render(new DeferredRenderContext(camera, new PoseStack(), null));
-                    }
-                    if (heart && queue.containsKey(0)) {
-                        var heartTargets = HeartBlackHolePostTargets.INSTANCE.ensure(SIZE, SIZE);
-                        for (var depthTarget : List.of(heartTargets.getEffect(), heartTargets.getMask())) {
-                            depthTarget.enableStencil();
-                            depthTarget.resize(SIZE, SIZE, Minecraft.ON_OSX);
-                            require(depthTarget.isStencilEnabled(), "Isolated heart compatible stencil", checks);
-                        }
-                        var entry = queue.remove(0);
-                        require(entry instanceof HeartBlackHoleRenderEntry, "Heart real BER enqueues actual volume", checks);
-                        // Deferred renderer already subtracts the camera position from each entry.
-                        var deferredPose = new PoseStack();
-                        deferredPose.last().pose().set(view).setTranslation(0, 0, 0);
-                        deferredPose.last().normal().set(deferredPose.last().pose()).invert().transpose();
-                        entry.render(new DeferredRenderContext(camera, deferredPose, null));
-                        target.bindWrite(true);
-                        HeartBlackHoleRenderer.renderPendingComposite(SIZE, SIZE);
+                    if (eye) {
+                        // The title screen has no scene frame. The Core BER anchor is checked separately.
+                        pose.translate(center.x, center.y, center.z);
+                        float scale = CelestialEffectSizing.EYE_SCALE;
+                        pose.scale(scale, scale, scale);
+                        CelestialVfxRenderer.eye(time + .25F, pose, buffers);
+                    } else {
+                        renderer.render(entity, .25F, pose, buffers, 0xF000F0, 0);
+                        buffers.endBatch();
                     }
                     String filename = id.substring(id.indexOf(':') + 1) + "-" + angle + "-t" + time + "-actual.png";
                     try (var picture = Screenshot.takeScreenshot(target)) {
@@ -204,14 +176,8 @@ public final class CelestialEffectsClientChecksVisual {
             Files.writeString(directory.resolve(id.substring(id.indexOf(':') + 1) + "-frames.json"),
                     new GsonBuilder().setPrettyPrinting().create().toJson(frames));
         } finally {
-            queue.remove(0);
             entity.setLevel(null);
         }
-    }
-
-    @SuppressWarnings("unchecked")
-    private static Long2ObjectLinkedOpenHashMap<DeferredRenderEntry> deferredQueue() throws Exception {
-        return (Long2ObjectLinkedOpenHashMap<DeferredRenderEntry>) field(DeferredMachineRenderer.class, "entries").get(null);
     }
 
     private static sun.misc.Unsafe unsafe() throws Exception {

@@ -32,7 +32,7 @@ public final class StellarOmegaChecks {
                 "Omega probe requires the title screen");
         var rows = new ArrayList<Map<String, Object>>();
         for (String id : List.of("gtceu:field_extruder_factory", "gtceu:mage_assembler",
-                "gtl_enhancedcore:basic_ore_processing_plant", "gtl_enhancedcore:hyperstructural_chemical_distorter")) {
+                "gtl_enhancedcore:basic_ore_processing_plant")) {
             rows.add(probe(id, false));
             if (IvMachineScope.nativeTarget(new ResourceLocation(id))) rows.add(probe(id, true));
         }

@@ -1,5 +1,6 @@
 package com.gtl.enhancedcore.client.renderer.machine;
 
+import com.gtladd.gtladditions.api.client.scene.PartBounds;
 import com.gregtechceu.gtceu.api.machine.IMachineBlockEntity;
 import com.gregtechceu.gtceu.api.machine.multiblock.WorkableElectricMultiblockMachine;
 import com.gregtechceu.gtceu.client.renderer.machine.WorkableCasingMachineRenderer;
@@ -31,6 +32,11 @@ public final class StellarForgeMachineRenderer extends WorkableCasingMachineRend
                 || !machine.isFormed() || !machine.getRecipeLogic().isWorking()) return;
         if (entity.getLevel() instanceof TrackedDummyWorld) return; // An unpowered JEI model is not a running factory.
         renderEffect(entity, machine, partial, pose, buffers);
+    }
+
+    @Override
+    public PartBounds effectBounds(BlockEntity entity, WorkableElectricMultiblockMachine machine) {
+        return MachineEffectPass.sphere(entity, offset(machine, 0, 30, -106), 47);
     }
 
     @Override

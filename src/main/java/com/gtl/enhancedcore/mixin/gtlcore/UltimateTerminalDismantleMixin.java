@@ -11,7 +11,8 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-@Mixin(value = AdvancedBlockPattern.class, remap = false)
+// Queue before ADD's default-priority HEAD callback can restore blocks synchronously.
+@Mixin(value = AdvancedBlockPattern.class, priority = 1500, remap = false)
 public abstract class UltimateTerminalDismantleMixin {
     @Inject(method = "dismantleMultiblock", at = @At("HEAD"), cancellable = true, remap = false)
     private void enhancedcore$queueDismantle(IMultiController controller, Player player,

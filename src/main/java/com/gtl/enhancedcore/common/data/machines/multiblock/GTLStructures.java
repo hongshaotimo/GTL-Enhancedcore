@@ -9,7 +9,6 @@ import com.gregtechceu.gtceu.api.pattern.BlockPattern;
 import com.gregtechceu.gtceu.api.pattern.Predicates;
 import com.gregtechceu.gtceu.api.pattern.TraceabilityPredicate;
 import com.gtladd.gtladditions.api.machine.GTLAddPartAbility;
-import com.gtl.enhancedcore.common.structure.DistorterCoils;
 import com.gtl.enhancedcore.common.structure.StructurePatterns;
 import com.gtl.enhancedcore.common.structure.StarCoreStripperStructure;
 import com.gtl.enhancedcore.common.structure.HighFluxBreederReactorStructure;
@@ -17,7 +16,6 @@ import com.gtl.enhancedcore.common.recipe.iv.IvBufferRegistry;
 import com.gtl.enhancedcore.common.data.machines.multiblock.BxjljzStructure.BxjljzStructure;
 import com.gtl.enhancedcore.common.data.machines.multiblock.VoidConstrainedMiningFieldStructure.VoidConstrainedMiningFieldStructure;
 import com.gtl.enhancedcore.common.data.machines.multiblock.DragonFieldProliferationCoreStructure.DragonFieldProliferationCoreStructure;
-import com.gtl.enhancedcore.common.data.machines.multiblock.HyperstructuralChemicalDistorterStructure.HyperstructuralChemicalDistorterStructure;
 import com.gtl.enhancedcore.common.data.machines.multiblock.StellarConfinementFusionReactorStructure.StellarConfinementFusionReactorStructure;
 import com.gtl.enhancedcore.common.data.machines.multiblock.SteamPlatformStructure.SteamPlatformStructure;
 import com.gtl.enhancedcore.common.data.machines.multiblock.LVWirelessChargerStructure.LVWirelessChargerStructure;
@@ -432,26 +430,6 @@ public final class GTLStructures {
                         // 2026-09-25 用户要求：为龙式场约束增殖核心补上 Ω-天球分歧引擎（THREAD_MODIFIER）仓室位。
                         // 与大型熔炉同款写法（ProcessingMachineRegistration 第 59 行）；上限 1 个，与包内 23 处用法一致。
                         .or(Predicates.abilities(GTLAddPartAbility.INSTANCE.getTHREAD_MODIFIER()).setPreviewCount(1).setMaxGlobalLimited(1)))
-                .where(' ', Predicates.any())
-                .build();
-    }
-
-    /** Reviewed 2026-10-30 schematic: 87 x 109 x 89, 114 hatch cells.
-     * Fixed materials and lamp candidates come from the palette; N retains CoilType. */
-    public static BlockPattern hyperstructuralChemicalDistorter(MultiblockMachineDefinition def) {
-        return HyperstructuralChemicalDistorterStructure.create()
-                .where('C', controller(def))
-                .where('X', block("gtlcore:iridium_casing")
-                        .or(Predicates.abilities(PartAbility.INPUT_ENERGY).setPreviewCount(1).setMinGlobalLimited(1).setMaxGlobalLimited(2))
-                        .or(Predicates.abilities(PartAbility.INPUT_LASER).setPreviewCount(1).setMaxGlobalLimited(1))
-                        .or(Predicates.abilities(PartAbility.MAINTENANCE).setPreviewCount(1).setMaxGlobalLimited(1))
-                        .or(Predicates.abilities(PartAbility.PARALLEL_HATCH).setPreviewCount(1).setMaxGlobalLimited(1))
-                        .or(Predicates.abilities(PartAbility.IMPORT_ITEMS).setPreviewCount(1))
-                        .or(Predicates.abilities(PartAbility.EXPORT_ITEMS).setPreviewCount(1))
-                        .or(Predicates.abilities(PartAbility.IMPORT_FLUIDS).setPreviewCount(1))
-                        .or(Predicates.abilities(PartAbility.EXPORT_FLUIDS).setPreviewCount(1))
-                        .or(Predicates.abilities(GTLAddPartAbility.INSTANCE.getTHREAD_MODIFIER()).setPreviewCount(1).setMaxGlobalLimited(1)))
-                .where('N', DistorterCoils.create())
                 .where(' ', Predicates.any())
                 .build();
     }

@@ -49,7 +49,6 @@ public final class GTLEnhancedcoreMachines {
     private static volatile MultiblockMachineDefinition mineralLiberationFlotationComplex;
     private static volatile MultiblockMachineDefinition voidConstrainedMiningField;
     private static volatile MultiblockMachineDefinition dragonFieldProliferationCore;
-    private static volatile MultiblockMachineDefinition hyperstructuralChemicalDistorter;
     private static volatile MultiblockMachineDefinition stellarConfinementFusionReactor;
     private static volatile MachineDefinition[] crystalResonators;
     private static volatile MachineDefinition[] wirelessChargers;
@@ -97,7 +96,6 @@ public final class GTLEnhancedcoreMachines {
         mineralLiberationFlotationComplex = MineralLiberationFlotationRegistration.register();
         voidConstrainedMiningField = SpecialMachineRegistration.registerVoidConstrainedMiningField();
         dragonFieldProliferationCore = SpecialMachineRegistration.registerDragonFieldProliferationCore();
-        hyperstructuralChemicalDistorter = SpecialMachineRegistration.registerHyperstructuralChemicalDistorter();
         stellarConfinementFusionReactor = SpecialMachineRegistration.registerStellarConfinementFusionReactor();
         crystalResonators = WirelessMachineRegistration.registerCrystalResonators();
         wirelessChargers = WirelessMachineRegistration.registerWirelessChargers();
@@ -224,10 +222,6 @@ public final class GTLEnhancedcoreMachines {
         return dragonFieldProliferationCore;
     }
 
-    public static MultiblockMachineDefinition getHyperstructuralChemicalDistorter() {
-        return hyperstructuralChemicalDistorter;
-    }
-
     public static MultiblockMachineDefinition getStellarConfinementFusionReactor() {
         return stellarConfinementFusionReactor;
     }
@@ -269,7 +263,7 @@ public final class GTLEnhancedcoreMachines {
                 neutronControlFactory, starCoreStripper, highFluxBreederReactor, hydrothermalLeachingComplex,
                 extremeReactor, platinumRefiningMatrix, lanthanideRefiningHub, mineralLiberationFlotationComplex,
                 voidConstrainedMiningField, dragonFieldProliferationCore,
-                hyperstructuralChemicalDistorter, stellarConfinementFusionReactor,
+                stellarConfinementFusionReactor,
                 basicOrePlant, processingPlus, assemblingPlus, separatingPlus, mixingPlus, integratedUniversalFactory));
         for (MachineDefinition definition : crystalResonators) if (definition != null) result.add(definition);
         for (MachineDefinition definition : wirelessChargers) if (definition != null) result.add(definition);

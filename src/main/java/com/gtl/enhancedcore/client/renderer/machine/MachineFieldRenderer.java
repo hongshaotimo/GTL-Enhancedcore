@@ -1,5 +1,7 @@
 package com.gtl.enhancedcore.client.renderer.machine;
 
+import com.gtladd.gtladditions.api.client.scene.PartBlend;
+import com.gtladd.gtladditions.api.client.scene.PartBounds;
 import com.gregtechceu.gtceu.GTCEu;
 import com.gregtechceu.gtceu.api.machine.IMachineBlockEntity;
 import com.gregtechceu.gtceu.api.machine.multiblock.WorkableElectricMultiblockMachine;
@@ -10,6 +12,7 @@ import com.gtl.enhancedcore.common.machine.CausalityTerminalMachine;
 import com.gtl.enhancedcore.common.machine.WeatherAnchorMachine;
 import com.lowdragmc.lowdraglib.utils.TrackedDummyWorld;
 import com.mojang.blaze3d.vertex.PoseStack;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.texture.OverlayTexture;
@@ -61,12 +64,25 @@ public final class MachineFieldRenderer extends WorkableCasingMachineRenderer im
     }
 
     @Override
+    public PartBounds effectBounds(BlockEntity entity, WorkableElectricMultiblockMachine machine) {
+        return MachineEffectPass.sphere(entity, effectOffset(machine), causality ? 74 : 7);
+    }
+
+    @Override public PartBlend effectBlend() { return causality ? PartBlend.STRAIGHT : PartBlend.ADDITIVE; }
+
+    private double[] effectOffset(WorkableElectricMultiblockMachine machine) {
+        return offset(machine, 0, causality ? 73 : 17, causality ? -12 : -11);
+    }
+
+    @Override
     public void drawEffect(BlockEntity entity, WorkableElectricMultiblockMachine machine, float partialTicks,
                            PoseStack pose, MultiBufferSource buffer) {
         boolean preview = entity.getLevel() instanceof TrackedDummyWorld;
         float time = RenderUtil.getSmoothTick(machine, partialTicks);
         pose.pushPose();
-        double[] offset = offset(machine, 0, causality ? 73 : 17, causality ? -12 : -11);
+        double[] offset = effectOffset(machine);
+        boolean world = entity.getLevel() == Minecraft.getInstance().level;
+        RenderType energy = world ? NeutronStarRenderTypes.WORLD_ENERGY : NeutronStarRenderTypes.ENERGY;
         pose.translate(offset[0] + 0.5, offset[1] + 0.5, offset[2] + 0.5);
         Vector3f x = vector(offset(machine,1,0,0));
         Vector3f y = vector(offset(machine,0,1,0));
@@ -80,21 +96,21 @@ public final class MachineFieldRenderer extends WorkableCasingMachineRenderer im
             boolean running = machine instanceof CausalityTerminalMachine terminal
                     && terminal.getProgressPercent() > 0;
             // Boundary flow stays aligned with the physical S-channel; only the orb spins.
-            renderModel(YIN,pose,buffer,NeutronStarRenderTypes.ENERGY,1,1,1);
-            renderModel(YANG,pose,buffer,NeutronStarRenderTypes.ENERGY,1,1,1);
-            renderModel(IRIS,pose,buffer,NeutronStarRenderTypes.ENERGY,1,1,1);
-            if (running || preview) renderModel(STREAMS,pose,buffer,NeutronStarRenderTypes.ENERGY,1,1,1);
+            renderModel(YIN,pose,buffer,energy,1,1,1);
+            renderModel(YANG,pose,buffer,energy,1,1,1);
+            renderModel(IRIS,pose,buffer,energy,1,1,1);
+            if (running || preview) renderModel(STREAMS,pose,buffer,energy,1,1,1);
             pose.pushPose();
             pose.translate(0,0,17);
             pose.mulPose(new Quaternionf().fromAxisAngleDeg(0,1,0,(time * 0.10F) % 360));
-            renderModel(EYES,pose,buffer,RenderType.translucent(),1,1,1);
-            renderModel(ORBITS,pose,buffer,NeutronStarRenderTypes.ENERGY,1,1,1);
+            renderModel(EYES,pose,buffer,world ? NeutronStarRenderTypes.WORLD_TRANSLUCENT : RenderType.translucent(),1,1,1);
+            renderModel(ORBITS,pose,buffer,energy,1,1,1);
             pose.popPose();
         } else {
             float[] color = MODE_COLORS[Math.floorMod(machine.getActiveRecipeType(),MODE_COLORS.length)];
             pose.mulPose(new Quaternionf().fromAxisAngleDeg(0,1,0,(time * 0.75F) % 360));
-            renderModel(WEATHER_CORE,pose,buffer,NeutronStarRenderTypes.ENERGY,color[0],color[1],color[2]);
-            renderModel(WEATHER,pose,buffer,NeutronStarRenderTypes.ENERGY,color[0],color[1],color[2]);
+            renderModel(WEATHER_CORE,pose,buffer,energy,color[0],color[1],color[2]);
+            renderModel(WEATHER,pose,buffer,energy,color[0],color[1],color[2]);
         }
         pose.popPose();
     }
@@ -110,9 +126,13 @@ public final class MachineFieldRenderer extends WorkableCasingMachineRenderer im
 
     private static void renderModel(ResourceLocation model,PoseStack pose,MultiBufferSource buffer,
                                     RenderType type,float r,float g,float b) {
+        // Keep the model's original quad selection while changing only the draw target.
+        RenderType modelType = type;
+        if (type == NeutronStarRenderTypes.WORLD_ENERGY) modelType = NeutronStarRenderTypes.ENERGY;
+        if (type == NeutronStarRenderTypes.WORLD_TRANSLUCENT) modelType = RenderType.translucent();
         ClientUtil.modelRenderer().renderModel(pose.last(),buffer.getBuffer(type),null,
                 ClientUtil.getBakedModel(model),r,g,b,0xF000F0,
-                OverlayTexture.NO_OVERLAY,ModelData.EMPTY,type);
+                OverlayTexture.NO_OVERLAY,ModelData.EMPTY,modelType);
     }
 
     @Override

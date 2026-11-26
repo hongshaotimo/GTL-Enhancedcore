@@ -1,5 +1,6 @@
 package com.gtl.enhancedcore.client.renderer.machine;
 
+import com.gtladd.gtladditions.api.client.scene.PartBounds;
 import com.gregtechceu.gtceu.api.machine.IMachineBlockEntity;
 import com.gregtechceu.gtceu.api.machine.MetaMachine;
 import com.gregtechceu.gtceu.api.machine.multiblock.WorkableElectricMultiblockMachine;
@@ -59,6 +60,16 @@ public class NeutronStarInfinityRenderer extends WorkableCasingMachineRenderer i
     }
 
     @Override
+    public PartBounds effectBounds(BlockEntity entity, WorkableElectricMultiblockMachine machine) {
+        return MachineEffectPass.sphere(entity, worldEffectOffset(machine), 14.1);
+    }
+
+    private static double[] worldEffectOffset(WorkableElectricMultiblockMachine machine) {
+        return toActualRelativeOffset(machine.getPattern(), 0, CENTER_Y, CENTER_Z,
+                machine.getFrontFacing(), machine.getUpwardsFacing(), machine.isFlipped());
+    }
+
+    @Override
     public void drawEffect(BlockEntity blockEntity, WorkableElectricMultiblockMachine machine, float partialTicks,
                            PoseStack poseStack, MultiBufferSource buffer) {
         float tick = RenderUtil.getSmoothTick(machine, partialTicks);
@@ -93,13 +104,11 @@ public class NeutronStarInfinityRenderer extends WorkableCasingMachineRenderer i
     private static boolean translateToEffectCenter(PoseStack poseStack, WorkableElectricMultiblockMachine machine,
                                                BlockEntity blockEntity) {
         double[] offset;
-        BlockPattern pattern = machine.getPattern();
         if (blockEntity.getLevel() instanceof TrackedDummyWorld) {
             offset = getPreviewEffectOffset((TrackedDummyWorld) blockEntity.getLevel(), blockEntity.getBlockPos());
             if (offset == null) return false;
         } else {
-            offset = toActualRelativeOffset(pattern, 0.0D, CENTER_Y, CENTER_Z,
-                    machine.getFrontFacing(), machine.getUpwardsFacing(), machine.isFlipped());
+            offset = worldEffectOffset(machine);
             // Rotate the displacement, then add the controller block's center in world axes.
             for (int i = 0; i < offset.length; i++) offset[i] += 0.5D;
         }

@@ -27,7 +27,8 @@ public final class NativeStructureHollowing {
     private NativeStructureHollowing() {}
 
     public static BlockPattern optimize(ResourceLocation id, BlockPattern original) {
-        if (id == null || original == null || id.getNamespace().equals("gtl_enhancedcore")) return original;
+        if (id == null || original == null || AddStructureOwnership.owns(id)
+                || id.getNamespace().equals("gtl_enhancedcore")) return original;
         TraceabilityPredicate[][][] source = ((BlockPatternAccessor) original).gtlEnhancedcore$getBlockMatches();
         if (source.length == 0 || original.aisleRepetitions.length != source.length) return original;
         int depth = source.length, height = source[0].length, width = height == 0 ? 0 : source[0][0].length;

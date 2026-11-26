@@ -4,7 +4,6 @@ import com.gregtechceu.gtceu.api.machine.multiblock.WorkableElectricMultiblockMa
 import com.gregtechceu.gtceu.api.machine.trait.RecipeLogic;
 import com.gregtechceu.gtceu.api.recipe.GTRecipe;
 import com.gregtechceu.gtceu.api.recipe.GTRecipeSerializer;
-import com.gtl.enhancedcore.common.machine.HyperstructuralChemicalDistorterMachine;
 import com.gtl.enhancedcore.common.machine.galaxy.GalaxyLinks;
 import com.gtl.enhancedcore.common.machine.galaxy.GalaxyPower;
 import com.gtl.enhancedcore.common.recipe.iv.IvMachineScope;
@@ -105,11 +104,6 @@ public final class GalaxyIndependentRecipeEngine {
             budget -= job.capacity;
             limit--;
             try (var context = access.iv$recipeContext(job.recipe, job.origin, job.elapsed, job.recipe.duration)) {
-                if (machine instanceof HyperstructuralChemicalDistorterMachine distorter
-                        && job.recipe.data.getInt("ebf_temp") > distorter.getCoilType().getCoilTemperature()) {
-                    failure = Component.translatable("gtl_enhancedcore.diagnostic.temperature");
-                    continue;
-                }
                 if (!GalaxyNativeRecipePreparation.allowed(logic, job.origin)) {
                     failure = Component.translatable("gtl_enhancedcore.diagnostic.conditions");
                     continue;

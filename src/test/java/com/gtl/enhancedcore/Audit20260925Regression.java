@@ -22,7 +22,8 @@ final class Audit20260925Regression {
         var fixtures = Path.of("src/test/resources/gtl-megastructures");
         var originals = JsonParser.parseString(Files.readString(fixtures.resolve("original/bindings.json"))).getAsJsonObject();
         var manifest = JsonParser.parseString(Files.readString(root.resolve("manifest.json"))).getAsJsonObject();
-        check(manifest.size() == 12, "all supplied GTL megastructures imported");
+        check(manifest.size() == 11 && !manifest.has("suprachronal_assembly_line"),
+                "retain the base GTL replacements while ADD owns the suprachronal host");
         for (var entry : manifest.entrySet()) {
             var spec = entry.getValue().getAsJsonObject();
             var original = originals.getAsJsonObject(entry.getKey());

@@ -14,7 +14,7 @@ import com.gtl.enhancedcore.common.machine.galaxy.GalaxyPower;
 import com.gtl.enhancedcore.common.util.FairRecipeSelector;
 import com.gtladd.gtladditions.api.machine.logic.GTLAddMultipleRecipesLogic;
 import org.gtlcore.gtlcore.common.machine.multiblock.part.ae.MEPatternBufferPartMachine;
-import com.gtladd.gtladditions.utils.RecipeCalculationHelper;
+import com.gtladd.gtladditions.utils.recipe.RecipeCalculationHelper;
 import java.math.BigInteger;
 import java.util.*;
 import net.minecraft.nbt.CompoundTag;

@@ -35,7 +35,7 @@ public final class WorldLoadCompatibilityRegression {
 
     public static int run() throws Exception {
         checks = 0;
-        var original = readJar("gtladditions-3.3.1Custom.jar", AddSkyTearsRecipeCompatibility.TARGET);
+        var original = readJar("gtladditions-3.6.2Custom.jar", AddSkyTearsRecipeCompatibility.TARGET);
         Method before = inputProbe(original, "Before");
         try {
             before.invoke(null, new Builder(new Ingredient()), (Consumer<Object>) value -> {});
@@ -43,7 +43,7 @@ public final class WorldLoadCompatibilityRegression {
         } catch (InvocationTargetException failure) {
             check(failure.getCause() instanceof ArrayIndexOutOfBoundsException, "Original callback reproduces the reported crash");
         }
-        var patched = readJar("gtladditions-3.3.1Custom.jar", AddSkyTearsRecipeCompatibility.TARGET);
+        var patched = readJar("gtladditions-3.6.2Custom.jar", AddSkyTearsRecipeCompatibility.TARGET);
         AddSkyTearsRecipeCompatibility.transform(patched);
         Method after = inputProbe(patched, "After");
         var ordinary = new Stack(new Object());

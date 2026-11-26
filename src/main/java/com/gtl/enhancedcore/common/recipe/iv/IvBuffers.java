@@ -31,7 +31,7 @@ import org.gtlcore.gtlcore.integration.ae2.graph.GraphDispatchContext;
 public final class IvBuffers {
     private static final Set<String> CONTROLLERS = Set.of("gtl_enhancedcore:plasma_machine_tool", "gtl_enhancedcore:hadron_catalytic_refinery",
             "gtl_enhancedcore:quantum_mass_spectrum_array", "gtl_enhancedcore:superconducting_fusion_assembler",
-            "gtl_enhancedcore:universal_joint_factory", "gtl_enhancedcore:hydrothermal_leaching_complex");
+            "gtl_enhancedcore:hydrothermal_leaching_complex");
     public static final String SAVE_KEY = "gtl_enhancedcore_iv_tasks";
     public static final String ROUTE_KEY = "gtl_enhancedcore_iv_route";
     public static final int MAX_QUEUED_DISPATCHES = 4096; // Does not limit the long amount in a dispatch.

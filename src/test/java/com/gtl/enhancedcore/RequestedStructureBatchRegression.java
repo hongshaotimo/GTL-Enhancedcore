@@ -17,35 +17,23 @@ final class RequestedStructureBatchRegression {
     static int run() throws Exception {
         Path root = Path.of("src/main/resources/data/gtl_enhancedcore/structures");
         var specs = new HashMap<String,JsonObject>();
-        for (String file : new String[]{"upgrades.json", "lucid_etchdreamer.json", "super_particle_collider.json", "upgrades_20261102.json"}) {
+        for (String file : new String[]{"upgrades.json", "super_particle_collider.json", "upgrades_20261102.json"}) {
             var entries = JsonParser.parseString(Files.readString(root.resolve("gtl/" + file))).getAsJsonObject();
             for (var entry : entries.entrySet()) specs.put(entry.getKey(), entry.getValue().getAsJsonObject());
         }
-        String[] own = {"stellar_confinement_fusion_reactor", "hyperstructural_chemical_distorter", "stellar_vortex_space_station", "lanthanide_refining_hub"};
+        String[] own = {"stellar_confinement_fusion_reactor", "stellar_vortex_space_station", "lanthanide_refining_hub"};
         for (String name : own) specs.put(name, JsonParser.parseString(Files.readString(root.resolve(name + ".json"))).getAsJsonObject());
         String[] rows = {
-                "antientropy_condensation_center 121 87 97 30 gtlcore:antifreeze_heatproof_machine_casing",
                 "stellar_confinement_fusion_reactor 167 95 167 40 gtlcore:iridium_casing",
-                "hyperstructural_chemical_distorter 87 109 89 114 gtlcore:iridium_casing",
-                "dimensionally_transcendent_chemical_plant 111 88 111 58 gtceu:inert_machine_casing",
-                "lucid_etchdreamer 175 175 175 108 gtlcore:iridium_casing",
                 "advanced_sps_crafting 73 77 73 68 gtceu:fusion_casing_mk2",
                 "super_particle_collider 131 55 139 174 gtlcore:lafium_mechanical_casing",
-                "macro_atomic_resonant_fragment_stripper 101 101 59 184 gtlcore:hyper_mechanical_casing",
-                "quantum_syphon_matrix 73 69 73 194 gtceu:high_power_casing",
                 "huge_incubator 59 68 59 394 gtceu:inert_machine_casing",
-                "titan_crip_earthbore 109 157 109 116 gtlcore:echo_casing",
                 "eye_of_harmony 191 191 187 220 gtlcore:dimensionally_transcendent_casing",
-                "arcanic_astrograph 291 291 149 230 gtlcore:create_casing",
-                "heart_of_the_universe 241 226 217 170 gtceu:high_power_casing",
-                "fuxi_bagua_heaven_forging_furnace 157 182 162 186 gtlcore:dimension_injection_casing",
-                "space_infinity_integrated_ore_processor 171 101 237 220 gtlcore:space_elevator_mechanical_casing",
-                "apocalyptic_torsion_quantum_matrix 205 154 205 80 gtlcore:dimensionally_transcendent_casing",
                 "stellar_vortex_space_station 200 216 200 298 gtlcore:dimensionally_transcendent_casing",
                 "lanthanide_refining_hub 57 45 71 64 gtceu:computer_casing"};
-        int replacements = 0;
+        var replacementIds = new java.util.HashSet<String>();
         for (String file : new String[]{"manifest.json", "upgrades.json", "upgrades_20260927.json",
-                "lucid_etchdreamer.json", "super_particle_collider.json", "upgrades_20261013.json", "upgrades_20261102.json"}) {
+                "super_particle_collider.json", "upgrades_20261013.json", "upgrades_20261102.json"}) {
             var entries = JsonParser.parseString(Files.readString(root.resolve("gtl/" + file))).getAsJsonObject();
             for (var entry : entries.entrySet()) {
                 var spec = entry.getValue().getAsJsonObject();
@@ -58,10 +46,24 @@ final class RequestedStructureBatchRegression {
                         check(!binding.has(candidate) || !binding.get(candidate).getAsString().equals(id),
                                 id + " non-controller cell cannot use its own controller: " + bindingEntry.getKey());
                 }
-                replacements++;
+                check(replacementIds.add(entry.getKey()) && id.startsWith("gtceu:"),
+                        id + " is a unique base GTCEu replacement");
             }
         }
-        check(replacements == 43, "all forty-three third-party replacement manifests checked for controller fallback");
+        var hollow = JsonParser.parseString(Files.readString(root.resolve("hollow/manifest.json")))
+                .getAsJsonObject().getAsJsonObject("resources");
+        for (String name : new String[]{
+                "antientropy_condensation_center", "apocalyptic_torsion_quantum_matrix", "arcanic_astrograph",
+                "dimensionally_transcendent_chemical_plant", "fuxi_bagua_heaven_forging_furnace",
+                "heart_of_the_universe", "lucid_etchdreamer", "macro_atomic_resonant_fragment_stripper",
+                "quantum_syphon_matrix", "skeleton_shift_rift_engine", "space_infinity_integrated_ore_processor",
+                "suprachronal_assembly_line", "titan_crip_earthbore", "weather_control", "research_station"}) {
+            String pattern = "gtl/" + name + ".pattern.gz";
+            check(!replacementIds.contains(name) && !Files.exists(root.resolve(pattern))
+                            && !Files.exists(root.resolve("hollow/" + pattern))
+                            && !hollow.has("/data/gtl_enhancedcore/structures/" + pattern),
+                    name + " keeps ADD geometry without a replacement or hollow mask");
+        }
         long volume = 0, removed = 0;
         for (String row : rows) {
             String[] columns = row.split(" "); String name = columns[0]; var spec = specs.get(name);
@@ -74,7 +76,6 @@ final class RequestedStructureBatchRegression {
             check(spec.get("diamondOreMarkers").getAsInt()==ports && spec.get("hatchFallback").getAsString().equals(casing),name+" requested hatch fallback");
             String resource = switch(name) {
                 case "stellar_confinement_fusion_reactor" -> "stellarconfinementfusionreactorstructure";
-                case "hyperstructural_chemical_distorter" -> "hyperstructuralchemicaldistorterstructure";
                 case "stellar_vortex_space_station", "lanthanide_refining_hub" -> name;
                 default -> "gtl/"+name;
             };
@@ -106,15 +107,8 @@ final class RequestedStructureBatchRegression {
             }
             check(removedSum==deleted,name+" removal total");
         }
-        check(volume==70_716_315L && removed==1_930_071L,"nineteen reviewed geometry and removal totals");
+        check(volume == 20_786_040L && removed == 128_607L, "retained geometry and removal totals");
         check(specs.get("advanced_sps_crafting").get("minimumCasing").getAsInt()==162,"SPS minimum fixed casings retained");
-        var lucid=specs.get("lucid_etchdreamer");
-        byte[] panel;
-        try(var input=new GZIPInputStream(Files.newInputStream(root.resolve("gtl/lucid_etchdreamer_preview_panel.pattern.gz")))) { panel=input.readAllBytes(); }
-        String[] panelRows=new String(panel,java.nio.charset.StandardCharsets.US_ASCII).split("\n");
-        check(panelRows[0].equals("11 11 3") && panelRows.length==34,"lucid boundary panel retains three preview layers");
-        for(int line=23;line<34;line++)check(panelRows[line].equals("           "),"lucid outside-boundary preview layer is wildcard padding");
-        check(hash(panel).equals(lucid.getAsJsonObject("previewPanel").get("sha256").getAsString()),"lucid panel manifest matches padded resource");
         String preview=Files.readString(Path.of("src/main/java/com/gtl/enhancedcore/common/structure/StellarVortexStructure.java"));
         check(preview.contains("width-1-x") && preview.contains("depth-1-z") && !preview.contains("new BlockInfo[199]"),"station preview follows actual imported dimensions");
         return checks;

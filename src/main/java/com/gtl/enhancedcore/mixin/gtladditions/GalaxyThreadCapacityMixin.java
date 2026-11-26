@@ -8,7 +8,8 @@ import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 @Mixin(targets={
         "com.gtladd.gtladditions.api.machine.logic.GTLAddMultipleRecipesLogic",
         "com.gtladd.gtladditions.api.machine.logic.MutableRecipesLogic",
-        "com.gtladd.gtladditions.common.machine.multiblock.controller.ApocalypticTorsionQuantumMatrix$Companion$ApocalypticTorsionQuantumMatrixLogic",
+        "com.gtladd.gtladditions.api.machine.logic.ApocalypticMatrixRecipeLogic",
+        "com.gtladd.gtladditions.api.machine.logic.chemical.ExoticChemicalRecipeLogic",
         "com.gtladd.gtladditions.common.machine.multiblock.controller.HeartOfTheUniverse$Companion$HeartOfTheUniverseLogic",
         "com.gtladd.gtladditions.common.machine.multiblock.controller.TaixuTurbidArray$Companion$TaixuTurbidArrayLogic"},remap=false,priority=1100)
 public abstract class GalaxyThreadCapacityMixin {

@@ -13,7 +13,12 @@ import com.gregtechceu.gtceu.api.pattern.MultiblockState;
 import com.gregtechceu.gtceu.api.pattern.TraceabilityPredicate;
 import com.gtl.enhancedcore.GTLEnhancedcore;
 import com.gtl.enhancedcore.common.config.TerminalDismantleConfig;
+import com.gtl.enhancedcore.mixin.gtladditions.TerminalDismantleRemovedStructureAccessor;
+import com.gtl.enhancedcore.mixin.gtladditions.TerminalDismantleStructureModifyAccessor;
 import com.gtl.enhancedcore.mixin.gtlcore.TerminalDismantlePatternAccessor;
+import com.gtladd.gtladditions.api.machine.feature.IStructureTierMachine;
+import com.gtladd.gtladditions.common.machine.trait.StructureModifyTrait;
+import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import java.util.ArrayDeque;
 import java.util.List;
 import net.minecraft.core.BlockPos;
@@ -23,6 +28,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.LiquidBlock;
@@ -182,6 +188,7 @@ public final class TerminalDismantleTasks {
 
     private static final class Job {
         private final AdvancedBlockPattern pattern;
+        private final boolean tiered;
         private final TerminalDismantlePatternAccessor access;
         private final IMultiController controller;
         private final ServerPlayer player;
@@ -220,8 +227,15 @@ public final class TerminalDismantleTasks {
 
         private Job(AdvancedBlockPattern pattern, IMultiController controller, ServerPlayer player,
                 ServerLevel level, AutoBuildSetting setting) {
-            this.pattern = pattern;
-            this.access = (TerminalDismantlePatternAccessor) pattern;
+            // The controller's working pattern may exclude upper tiers or captured cells.
+            if (controller.self() instanceof IStructureTierMachine machine) {
+                this.pattern = AdvancedBlockPattern.getAdvancedBlockPattern(machine.getStructureTierTrait().getLayout().getPattern());
+                tiered = true;
+            } else {
+                this.pattern = pattern;
+                tiered = false;
+            }
+            this.access = (TerminalDismantlePatternAccessor) this.pattern;
             this.controller = controller;
             this.player = player;
             this.level = level;
@@ -261,10 +275,10 @@ public final class TerminalDismantleTasks {
                 if (!controller.self().getPatternLock().tryLock()) return 2;
                 try {
                     MultiblockState state = controller.getMultiblockState();
-                    if (TerminalDismantleGuard.canReuseFormedLayout(controller, pattern, state)) {
-                        int[] repetitions = state.getMatchContext().get("gtlcore:matched_repetitions");
-                        layout = new DismantleLayoutPlanner.Layout(state.getMatchContext().getInt("gtlcore:matched_min_z"),
-                                repetitions.clone(), state.isNeededFlip(), Long.MAX_VALUE);
+                    DismantleLayoutPlanner.Layout formed = formedLayout(state);
+                    if (!restoreCapturedBlocks()) return 2;
+                    if (formed != null) {
+                        layout = formed;
                         startCursor();
                     } else if ((layout = RESUME.find(controller, matches, facing.ordinal(), upwards.ordinal())) != null) {
                         verifyingResume = true;
@@ -321,6 +335,48 @@ public final class TerminalDismantleTasks {
             cursor.advance();
             examined++;
             return 0;
+        }
+
+        private DismantleLayoutPlanner.Layout formedLayout(MultiblockState state) {
+            if (tiered) {
+                if (!controller.isFormed()) return null;
+                int[][] limits = access.enhancedcore$repetitions();
+                int[] repetitions = new int[limits.length];
+                for (int i = 0; i < limits.length; i++) {
+                    if (limits[i][0] != limits[i][1]) return null;
+                    repetitions[i] = limits[i][0];
+                }
+                // Match StructureTierLayout.offset for the full, fixed layout.
+                return new DismantleLayoutPlanner.Layout(-center[4], repetitions,
+                        controller.self().isFlipped(), Long.MAX_VALUE);
+            }
+            if (!TerminalDismantleGuard.canReuseFormedLayout(controller, pattern, state)) return null;
+            int[] repetitions = state.getMatchContext().get("gtlcore:matched_repetitions");
+            return new DismantleLayoutPlanner.Layout(state.getMatchContext().getInt("gtlcore:matched_min_z"),
+                    repetitions.clone(), state.isNeededFlip(), Long.MAX_VALUE);
+        }
+
+        private boolean restoreCapturedBlocks() {
+            // The native restore calls getChunk before writing. Wait until every captured chunk is present.
+            LongOpenHashSet checkedChunks = new LongOpenHashSet();
+            var traits = controller.self().getTraits();
+            for (var trait : traits) {
+                if (!(trait instanceof StructureModifyTrait modify) || !modify.getHasRemovedStructure()) continue;
+                var captured = ((TerminalDismantleStructureModifyAccessor) (Object) modify).enhancedcore$removedStructure();
+                var positions = ((TerminalDismantleRemovedStructureAccessor) (Object) captured)
+                        .enhancedcore$capturedBlocks().keySet().iterator();
+                while (positions.hasNext()) {
+                    long pos = positions.nextLong();
+                    int x = BlockPos.getX(pos) >> 4;
+                    int z = BlockPos.getZ(pos) >> 4;
+                    if (checkedChunks.add(ChunkPos.asLong(x, z)) && level.getChunkSource().getChunkNow(x, z) == null)
+                        return false;
+                }
+            }
+            for (var trait : traits) {
+                if (trait instanceof StructureModifyTrait modify && modify.getHasRemovedStructure()) modify.restore();
+            }
+            return true;
         }
 
         private int planStep() {

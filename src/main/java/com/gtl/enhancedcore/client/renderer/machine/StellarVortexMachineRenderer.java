@@ -1,4 +1,7 @@
 package com.gtl.enhancedcore.client.renderer.machine;
+
+import com.gtladd.gtladditions.api.client.scene.PartBlend;
+import com.gtladd.gtladditions.api.client.scene.PartBounds;
 import com.gregtechceu.gtceu.api.machine.IMachineBlockEntity;
 import com.gregtechceu.gtceu.client.renderer.machine.WorkableCasingMachineRenderer;
 import com.gtl.enhancedcore.GTLEnhancedcore;
@@ -32,6 +35,13 @@ public final class StellarVortexMachineRenderer extends WorkableCasingMachineRen
         if (GalaxyEffectSettings.quality() == 0 || (!station.isFieldActive() && !visibility.containsKey(entity))) return;
         renderEffect(entity, station, partial, pose, buffers);
     }
+
+    @Override
+    public PartBounds effectBounds(BlockEntity entity, StellarVortexSpaceStationMachine station) {
+        return MachineEffectPass.sphere(entity, offset(station, -.5, 49.5, -38.5), 232);
+    }
+
+    @Override public PartBlend effectBlend() { return PartBlend.PREMULTIPLIED; }
 
     @Override
     public void drawEffect(BlockEntity entity, StellarVortexSpaceStationMachine station, float partial,

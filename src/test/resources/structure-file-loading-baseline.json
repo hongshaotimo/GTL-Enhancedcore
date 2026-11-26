@@ -114,24 +114,6 @@
       }
     ]
   },
-  "gtl/lucid_etchdreamer_preview_panel.pattern.gz": {
-    "width": 11,
-    "height": 11,
-    "depth": 3,
-    "sha256": "1873b10c8d7e4a7f84ffc404c66e6c73f3cc0b9ebe669051636fa69347267549",
-    "characters": [
-      " ",
-      "C",
-      "J",
-      "X"
-    ],
-    "sources": [
-      {
-        "file": "src/main/java/com/gtl/enhancedcore/common/structure/LucidEtchdreamerPreview.java",
-        "method": "previewPanel"
-      }
-    ]
-  },
   "legacy/plasma_machine_tool_placeholder.pattern.gz": {
     "width": 3,
     "height": 3,

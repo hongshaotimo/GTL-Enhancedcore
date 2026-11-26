@@ -31,7 +31,9 @@ final class RetiredMachinesRegression {
                 "immutable recipe map is filtered without mutating caller data");
         Path root = Path.of("src/main/java/com/gtl/enhancedcore");
         String helper = Files.readString(root.resolve("common/structure/RetiredLightHunter.java"));
-        check(helper.contains("RetiredMachines.contains(id.toString())"), "retired array uses impossible file geometry");
+        check(helper.contains("RetiredMachines.contains(id.toString())")
+                        && !helper.contains("light_hunter_space_station") && !helper.contains("nexus_satellite_factory"),
+                "only the project's retired controllers use impossible file geometry");
         String factory = Files.readString(root.resolve("mixin/gtceu/RetiredMachineDefinitionMixin.java"));
         check(factory.contains("MultiblockControllerMachine::new : MetaMachine::new")
                 && !factory.contains("MachineOverrideConfig"), "inert shells never instantiate upstream AE CPU logic");

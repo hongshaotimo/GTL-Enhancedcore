@@ -8,15 +8,9 @@ public final class ForeignMachineMixinPolicy {
     private static final Set<String> PERSONAL_WORLD_LIFECYCLE_MIXINS = Set.of(
             "mc.PersonalPlotFilePackMixin", "mc.PersonalPlotStorageMixin");
     private static final Set<String> STRUCTURE_MIXINS = Set.of(
-            "gtceu.GtlMegastructurePatternMixin", "gtceu.LucidEtchdreamerPreviewMixin",
-            "gtlcore.client.LucidSparsePreviewShapeMixin",
+            "gtceu.GtlMegastructurePatternMixin",
             "gtlcore.client.EyeOfHarmonyEffectAnchorMixin",
-            "gtlcore.client.CelestialEffectViewDistanceMixin",
-            "gtladditions.client.ArcanicAstrographEffectAnchorMixin",
-            "gtladditions.client.HeartOfTheUniverseEffectSizeMixin",
-            "gtladditions.client.HeartOfTheUniverseEffectBoundsMixin",
-            "gtladditions.client.HeartOfTheUniverseShaderMixin",
-            "gtladditions.ArcanicAstrographCollectionAnchorMixin");
+            "gtlcore.client.CelestialEffectViewDistanceMixin");
     private static final Set<String> ENHANCEMENT_MIXINS = Set.of(
             "gtlcore.PrimitiveVoidOreRecipeMixin", "gtlcore.PrimitiveVoidOreDimensionMixin",
             "gtlcore.PrimitiveVoidOreRecipeTypeMixin", "gtlcore.PrimitiveVoidOreStructureMixin",
@@ -34,9 +28,6 @@ public final class ForeignMachineMixinPolicy {
             "gtladditions.IvNativeBiologicalInputGuardMixin", "gtladditions.IvNativeAstrographInputGuardMixin",
             "gtlcore.IvNativeRecipeThreadLimitMixin", "gtlcore.IvNativeGtlAddThreadLimitMixin",
             "gtceu.IvNativeMachineUiMixin", "gtceu.IvNativeTooltipMixin",
-            "gtladditions.SuprachronalModuleHostRemovalMixin",
-            "gtladditions.SuprachronalAssemblyLineModuleRemovalMixin",
-            "gtladditions.SuprachronalModulePreviewRemovalMixin",
             "mc.PlantResearchRecipeMixin", "mc.MvCircuitAssemblerRecipeMixin", "gtceu.MvCircuitAssemblerTooltipMixin",
             "gtlcore.AutoConfigMaintenanceHatchMixin", "gtlcore.AutoConfigMaintenanceHatchAccessor",
             "gtlcore.BedrockDrillingRigNoBreakMixin", "gtlcore.AggregationDevicePatternBufferMixin",

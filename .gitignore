@@ -86,6 +86,8 @@ build_log.txt
 # tracked so the project builds without hunting down exact third-party builds.
 !/libs/*.jar
 /libs/gtladditions-3.2.8Custom-fix2.jar
+/libs/gtladditions-3.3.1Custom.jar
+/libs/gtladditions-3.6.2Custom.jar
 /libs/gtlcore-1.2.3.2-fix3.jar
 /libs/gtlcore-1.2.3.2-fix4.jar
 /libs/gtlcore-1.2.3.3-fix3.jar

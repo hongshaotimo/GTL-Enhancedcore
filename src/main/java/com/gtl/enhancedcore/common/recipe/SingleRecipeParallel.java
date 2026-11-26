@@ -3,7 +3,6 @@ package com.gtl.enhancedcore.common.recipe;
 import com.gregtechceu.gtceu.api.machine.multiblock.WorkableElectricMultiblockMachine;
 import com.gregtechceu.gtceu.api.recipe.GTRecipe;
 import com.gregtechceu.gtceu.api.recipe.modifier.ParallelLogic;
-import com.gtl.enhancedcore.common.machine.HyperstructuralChemicalDistorterMachine;
 import com.gtladd.gtladditions.api.machine.IThreadModifierMachine;
 import java.util.List;
 import net.minecraft.ChatFormatting;
@@ -16,9 +15,7 @@ public final class SingleRecipeParallel {
     private SingleRecipeParallel() {}
 
     public static boolean supports(Object machine) {
-        return machine instanceof HyperstructuralChemicalDistorterMachine
-                || machine instanceof WorkableElectricMultiblockMachine electric
-                        && galaxyRecipes(electric) >= 0;
+        return machine instanceof WorkableElectricMultiblockMachine electric && galaxyRecipes(electric) >= 0;
     }
 
     public static long lanes(IThreadModifierMachine machine) {

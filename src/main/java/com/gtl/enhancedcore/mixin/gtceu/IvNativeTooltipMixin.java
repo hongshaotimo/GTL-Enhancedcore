@@ -20,10 +20,6 @@ public abstract class IvNativeTooltipMixin {
         var definition = (MachineDefinition)(Object)this;
         var id = definition.getId();
         if (id == null) return upstream;
-        if (id.getNamespace().equals("gtceu") && id.getPath().equals("suprachronal_assembly_line_module")) {
-            upstream = MachineTooltips.modify(upstream, "suprachronal_module");
-            return upstream;
-        }
         // qft 走 ADD 可变多配方路线（不是 IV 隔离）：只追加「支持跨配方并行 / 拥有 512 条跨配方线程」。
         if (id.getNamespace().equals("gtceu") && id.getPath().equals("qft")) {
             upstream = MachineTooltips.modifyWithRecipes(upstream, "qft", definition.getRecipeTypes());

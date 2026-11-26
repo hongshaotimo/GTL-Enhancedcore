@@ -38,7 +38,7 @@ import org.lwjgl.glfw.GLFW;
 @Mod.EventBusSubscriber(modid = "enhancedcore_audit", value = Dist.CLIENT)
 public final class FullscreenPreviewClientChecks {
     private static final String[] DEFAULT_IDS = {
-            "gtl_enhancedcore:hyperstructural_chemical_distorter",
+            "gtl_enhancedcore:stellar_confinement_fusion_reactor",
             "gtl_enhancedcore:infinity_singularity_compressor",
             "gtl_enhancedcore:dragon_field_proliferation_core",
             "gtladditions:light_hunter_space_station",

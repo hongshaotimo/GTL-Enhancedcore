@@ -219,29 +219,6 @@
       "optimizedResource": "/data/gtl_enhancedcore/structures/hollow/gtl/mega_wiremill.pattern.gz",
       "optimizedSha256": "8afedc17148207076d303ee2ec01e706a33e6cbc9b4902def795932bfd32c52d"
     },
-    "/data/gtl_enhancedcore/structures/gtl/suprachronal_assembly_line.pattern.gz": {
-      "resource": "/data/gtl_enhancedcore/structures/gtl/suprachronal_assembly_line.pattern.gz",
-      "size": [
-        71,
-        71,
-        157
-      ],
-      "sourceSha256": "22f4e0f8f9e0c9d40b8883a911caf0a4f551abc29bfa24dff2a8f1032b09acc6",
-      "removed": 3027,
-      "removedBySymbol": {
-        "D": 136,
-        "E": 146,
-        "F": 1550,
-        "G": 27,
-        "H": 525,
-        "J": 538,
-        "K": 105
-      },
-      "opaqueSymbols": "CDEFGHJK",
-      "remaining": 50584,
-      "optimizedResource": "/data/gtl_enhancedcore/structures/hollow/gtl/suprachronal_assembly_line.pattern.gz",
-      "optimizedSha256": "a348e80bdb97a5f996c2c6fb7a4f07513e6f5efd52b2081c6f8024d2b3b7cd1b"
-    },
     "/data/gtl_enhancedcore/structures/gtl/mega_fluid_heater.pattern.gz": {
       "resource": "/data/gtl_enhancedcore/structures/gtl/mega_fluid_heater.pattern.gz",
       "size": [
@@ -413,34 +390,6 @@
       "optimizedResource": "/data/gtl_enhancedcore/structures/hollow/gtl/advanced_neutron_activator.pattern.gz",
       "optimizedSha256": "3c2003ea6f55cb2c960d149decd1012afc5b10b485801fcb910c54d748a54b41"
     },
-    "/data/gtl_enhancedcore/structures/gtl/dimensionally_transcendent_chemical_plant.pattern.gz": {
-      "resource": "/data/gtl_enhancedcore/structures/gtl/dimensionally_transcendent_chemical_plant.pattern.gz",
-      "size": [
-        111,
-        88,
-        111
-      ],
-      "sourceSha256": "1728f334ea60eb64c12e41a8c5bd2284a89fcc3cba1092775de9d80360083674",
-      "removed": 0,
-      "removedBySymbol": {},
-      "opaqueSymbols": "",
-      "remaining": 193879,
-      "review": "2026-11-02 import already removes 1524 certified hidden fixed blocks; no secondary deletion mask"
-    },
-    "/data/gtl_enhancedcore/structures/gtl/antientropy_condensation_center.pattern.gz": {
-      "resource": "/data/gtl_enhancedcore/structures/gtl/antientropy_condensation_center.pattern.gz",
-      "size": [
-        121,
-        87,
-        97
-      ],
-      "sourceSha256": "9e61a65f2d983044a046ed51cb3b02afc82889135373c4dd0b8f078b7bec9ebc",
-      "removed": 0,
-      "removedBySymbol": {},
-      "opaqueSymbols": "",
-      "remaining": 96303,
-      "review": "2026-11-02 import already removes 0 certified hidden fixed blocks; no secondary deletion mask"
-    },
     "/data/gtl_enhancedcore/structures/gtl/advanced_integrated_ore_processor.pattern.gz": {
       "resource": "/data/gtl_enhancedcore/structures/gtl/advanced_integrated_ore_processor.pattern.gz",
       "size": [
@@ -600,20 +549,6 @@
       "optimizedResource": "/data/gtl_enhancedcore/structures/hollow/gtl/superconducting_electromagnetism.pattern.gz",
       "optimizedSha256": "ff2a57e61b3e0e9740625107fa26d92e0b0fdaf962ad1070d16bdbcb0db04600"
     },
-    "/data/gtl_enhancedcore/structures/gtl/lucid_etchdreamer.pattern.gz": {
-      "resource": "/data/gtl_enhancedcore/structures/gtl/lucid_etchdreamer.pattern.gz",
-      "size": [
-        175,
-        175,
-        175
-      ],
-      "sourceSha256": "31cdaa0a8b4bf97b1d6943e25a6889a0bf8743da2514b6fbb331bb4c64427ca3",
-      "removed": 0,
-      "removedBySymbol": {},
-      "opaqueSymbols": "",
-      "remaining": 160603,
-      "review": "2026-11-02 import already removes 13840 certified hidden fixed blocks; no secondary deletion mask"
-    },
     "/data/gtl_enhancedcore/structures/gtl/super_particle_collider.pattern.gz": {
       "resource": "/data/gtl_enhancedcore/structures/gtl/super_particle_collider.pattern.gz",
       "size": [
@@ -649,20 +584,6 @@
       "remaining": 10734,
       "optimizedResource": "/data/gtl_enhancedcore/structures/hollow/gtl/wood_distillation.pattern.gz",
       "optimizedSha256": "d410f8dda38dd921106d4852503c0d2d95e0dfedbe953eaae4d2788af376483a"
-    },
-    "/data/gtl_enhancedcore/structures/gtl/skeleton_shift_rift_engine.pattern.gz": {
-      "resource": "/data/gtl_enhancedcore/structures/gtl/skeleton_shift_rift_engine.pattern.gz",
-      "size": [
-        31,
-        31,
-        48
-      ],
-      "sourceSha256": "2c88b55cf401b10c78ff3cb1bac67d41f5823e06f165016207176f3abb20cf8c",
-      "removed": 0,
-      "removedBySymbol": {},
-      "opaqueSymbols": "",
-      "remaining": 12742,
-      "review": "2026-10-27 replacement; no old deletion mask"
     },
     "/data/gtl_enhancedcore/structures/gtl/pcb_factory.pattern.gz": {
       "resource": "/data/gtl_enhancedcore/structures/gtl/pcb_factory.pattern.gz",
@@ -841,20 +762,6 @@
       "remaining": 114256,
       "optimizedResource": "/data/gtl_enhancedcore/structures/hollow/hydrothermal_leaching_complex.pattern.gz",
       "optimizedSha256": "62145272f2d3538a6f2914888e4e883a23891ab15ae6d0d0e5736a0d45ede748"
-    },
-    "/data/gtl_enhancedcore/structures/hyperstructuralchemicaldistorterstructure.pattern.gz": {
-      "resource": "/data/gtl_enhancedcore/structures/hyperstructuralchemicaldistorterstructure.pattern.gz",
-      "size": [
-        87,
-        109,
-        89
-      ],
-      "sourceSha256": "73fd9207a10134f009c9333bd3d1dcacb18b9302d345603a4cf2e113f4c46b82",
-      "removed": 0,
-      "removedBySymbol": {},
-      "opaqueSymbols": "",
-      "remaining": 69521,
-      "review": "2026-11-02 import already removes 508 certified hidden fixed blocks; no secondary deletion mask"
     },
     "/data/gtl_enhancedcore/structures/integrated_universal_factory.pattern.gz": {
       "resource": "/data/gtl_enhancedcore/structures/integrated_universal_factory.pattern.gz",
@@ -1129,20 +1036,6 @@
       "removedBySymbol": {},
       "opaqueSymbols": "BG",
       "remaining": 2211
-    },
-    "/data/gtl_enhancedcore/structures/gtl/lucid_etchdreamer_preview_panel.pattern.gz": {
-      "resource": "/data/gtl_enhancedcore/structures/gtl/lucid_etchdreamer_preview_panel.pattern.gz",
-      "size": [
-        11,
-        11,
-        3
-      ],
-      "sourceSha256": "40b7fa7799c0d90eb787e3425729fed08a05c0f322d0b6947856ce68d75210c2",
-      "removed": 0,
-      "removedBySymbol": {},
-      "opaqueSymbols": "",
-      "remaining": 218,
-      "review": "2026-11-02 panel from cleaned blueprint"
     }
   },
   "opacity": {

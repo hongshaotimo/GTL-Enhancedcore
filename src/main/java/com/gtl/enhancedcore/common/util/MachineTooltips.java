@@ -45,7 +45,7 @@ public final class MachineTooltips {
         var summary = new ArrayList<>(layout.summary());
         summary.addFirst(SOURCE);
         var additions = new TooltipPolicy.Layout<>(summary, layout.details(), layout.recipeRows());
-        boolean replaceCatalog = !layout.recipeRows().isEmpty() || page.equals("suprachronal_module");
+        boolean replaceCatalog = !layout.recipeRows().isEmpty();
         return (stack, lines) -> {
             var inherited = new ArrayList<Component>();
             if (original != null) original.accept(stack, inherited);

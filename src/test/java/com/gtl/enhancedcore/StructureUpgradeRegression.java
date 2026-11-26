@@ -16,15 +16,14 @@ final class StructureUpgradeRegression {
     static int run() throws Exception {
         runGroup("upgrades.json", "gtl-structure-upgrades", Set.of("mega_fluid_heater", "advanced_sps_crafting",
                 "dimensionally_transcendent_mixer", "star_ultimate_material_forge_factory", "qft", "nano_core",
-                "advanced_neutron_activator",
-                "dimensionally_transcendent_chemical_plant", "antientropy_condensation_center"));
+                "advanced_neutron_activator"));
         runGroup("upgrades_20260927.json", "gtl-structure-upgrades-20260927",
                 Set.of("advanced_integrated_ore_processor", "atomic_energy_excitation_plant",
                         "component_assembly_line", "mage_assembler", "super_blast_smelter", "superconducting_electromagnetism"));
         runGroup("super_particle_collider.json", "gtl-structure-upgrades-20261013",
                 Set.of("super_particle_collider"), Path.of("SchemTool/input"));
         runGroup("upgrades_20261013.json", "gtl-structure-upgrades-20261013-batch",
-                Set.of("wood_distillation", "skeleton_shift_rift_engine", "pcb_factory", "a_mass_fabricator"),
+                Set.of("wood_distillation", "pcb_factory", "a_mass_fabricator"),
                 Path.of("SchemTool/input"));
         // 2026-10-14 用户要求：gravitation_shockburst 还原上游原结构（保留 IV 隔离等其它改动）。
         // 结构替换移除后，它由 NativeIsolationPatterns 的派生判定接管（上游几何 + 隔离材料仓）。
@@ -32,7 +31,7 @@ final class StructureUpgradeRegression {
         check(!Files.exists(structures.resolve("gravitation_shockburst.pattern.gz")),
                 "gravitation_shockburst no longer ships custom geometry");
         for (String file : new String[]{"manifest.json", "upgrades.json", "upgrades_20260927.json",
-                "lucid_etchdreamer.json", "super_particle_collider.json", "upgrades_20261013.json"}) {
+                "super_particle_collider.json", "upgrades_20261013.json"}) {
             var manifest = JsonParser.parseString(Files.readString(structures.resolve(file))).getAsJsonObject();
             check(!manifest.has("gravitation_shockburst"),
                     "gravitation_shockburst removed from " + file);
@@ -84,11 +83,10 @@ final class StructureUpgradeRegression {
             });
             check(aisles[0] == d, name + " depth");
             check(HexFormat.of().formatHex(hash.digest()).equals(spec.get("sha256").getAsString()), name + " payload hash");
-            check(counts['@'] == 1 && counts['#'] == (name.equals("antientropy_condensation_center") ? 30
-                    : name.equals("advanced_sps_crafting") ? 68
+            check(counts['@'] == 1 && counts['#'] == (name.equals("advanced_sps_crafting") ? 68
                     : name.equals("dimensionally_transcendent_chemical_plant") ? 58
                     : name.equals("super_particle_collider") ? 174
-                    : name.equals("skeleton_shift_rift_engine") ? 80 : 24),
+                    : 24),
                     name + " source marker count");
             if (name.equals("superconducting_electromagnetism")) {
                 check(counts['J'] == 180 && counts['K'] == 0, name + " five UEV casings and one lamp replaced");

@@ -12,7 +12,9 @@ import com.mojang.serialization.JsonOps;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.List;
 import net.minecraft.server.MinecraftServer;
+import org.gtlcore.gtlcore.utils.Registries;
 
 public final class UpgradeProgressionChecks {
     private static final java.util.List<com.gtl.enhancedcore.common.machine.TieredParallelMachine> IV = new ArrayList<>();
@@ -81,6 +83,32 @@ public final class UpgradeProgressionChecks {
         }
     }
 
+    public static void checkLightHunterRecipes(MinecraftServer server) {
+        var mainframe = Registries.getItemStack("kubejs:suprachronal_mainframe_complex", 1);
+        require(!mainframe.isEmpty(), "Creative mainframe not registered");
+        var items = ItemRecipeCapability.CAP;
+        for (String name : List.of("light_hunter_space_station", "nexus_satellite_factory_mk1",
+                "nexus_satellite_factory_mk2", "nexus_satellite_factory_mk3", "nexus_satellite_factory_mk4")) {
+            var controller = Registries.getItemStack("gtladditions:" + name, 1);
+            require(!controller.isEmpty(), name + " not registered");
+            var matches = server.getRecipeManager().getRecipes().stream()
+                    .filter(candidate -> candidate instanceof GTRecipe recipe
+                            ? recipe.getOutputContents(items).stream().anyMatch(content -> items.of(content.content).test(controller))
+                            : candidate.getResultItem(server.registryAccess()).is(controller.getItem()))
+                    .toList();
+            require(matches.size() == 1, name + " crafting recipes=" + matches.size());
+            require(matches.getFirst() instanceof GTRecipe, name + " not a GT recipe");
+            var recipe = (GTRecipe) matches.getFirst();
+            require(recipe.recipeType == GTRecipeTypes.ASSEMBLY_LINE_RECIPES, name + " assembly type");
+            require(RecipeHelper.getInputEUt(recipe) == GTValues.VA[GTValues.MAX], name + " MAX voltage");
+            long required = recipe.getInputContents(items).stream().filter(content -> content.chance > 0)
+                    .map(content -> items.of(content.content)).filter(ingredient -> ingredient.test(mainframe))
+                    .mapToLong(IvRecipeInputs::itemAmount).sum();
+            require(required == 1, name + " creative mainframes=" + required);
+        }
+    }
+
+    /** Historical 2.7.7 release comparison, not the current ADD recipe rules. */
     public static void check(MinecraftServer server) throws Exception {
         var baseline = com.google.gson.JsonParser.parseString(Files.readString(
                 Path.of("kubejs/upgrade-20260927-baseline-recipes.json"))).getAsJsonObject();

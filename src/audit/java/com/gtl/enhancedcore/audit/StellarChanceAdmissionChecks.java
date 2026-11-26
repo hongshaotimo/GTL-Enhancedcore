@@ -8,7 +8,6 @@ import com.gregtechceu.gtceu.api.machine.trait.NotifiableItemStackHandler;
 import com.gregtechceu.gtceu.api.recipe.GTRecipe;
 import com.gregtechceu.gtceu.api.recipe.content.Content;
 import com.gregtechceu.gtceu.api.recipe.lookup.GTRecipeLookup;
-import com.gregtechceu.gtceu.common.block.CoilBlock;
 import com.gregtechceu.gtceu.data.recipe.builder.GTRecipeBuilder;
 import com.gregtechceu.gtceu.utils.IngredientEquality;
 import com.gtl.enhancedcore.common.machine.galaxy.GalaxyConnectionHatch;
@@ -133,14 +132,13 @@ public final class StellarChanceAdmissionChecks {
     }
 
     private static Map<String, Object> directSetup() throws Exception {
-        var f = StellarIvGuiChecks.fixture("gtl_enhancedcore:hyperstructural_chemical_distorter", false, false, true);
+        var f = StellarIvGuiChecks.fixture("gtl_enhancedcore:platinum_refining_matrix", false, false, true);
         var machine = f.machine(); var logic = machine.getRecipeLogic();
         try {
             var parts = machine.getParts().stream().filter(GalaxyConnectionHatch.class::isInstance).toList();
             field(machine, "parts").set(machine, new ArrayList<>(parts));
             field(machine, "partPositions").set(machine,
                     parts.stream().map(p -> p.self().getPos()).toArray(BlockPos[]::new));
-            field(machine, "coilType").set(machine, CoilBlock.CoilType.TRITANIUM);
             UUID owner = UUID.randomUUID();
             field(GalaxyLinks.linkedStation(machine), "userId").set(GalaxyLinks.linkedStation(machine), owner);
             WirelessEnergyManager.setUserEU(owner, BigInteger.TEN.pow(30));
@@ -162,24 +160,16 @@ public final class StellarChanceAdmissionChecks {
             inputs.add(new Content(sugar, 5_000, 10_000, 0, null, null)); recipe.inputs.put(ItemRecipeCapability.CAP, inputs);
             var outputs = new ArrayList<>(recipe.outputs.get(ItemRecipeCapability.CAP));
             outputs.add(new Content(diamond, 5_000, 10_000, 0, null, null)); recipe.outputs.put(ItemRecipeCapability.CAP, outputs);
-            recipe.data = recipe.data.copy();
-            recipe.data.putInt("ebf_temp", CoilBlock.CoilType.TRITANIUM.getCoilTemperature() + 1);
             input.setStackInSlot(0, new ItemStack(Items.APPLE)); input.setStackInSlot(1, new ItemStack(Items.SUGAR));
             var cache = ItemRecipeCapability.CAP.makeChanceCache(); cache.put(sugar, 0); cache.put(diamond, 0);
             requireFixedKey(cache, sugar); requireFixedKey(cache, diamond);
             logic.getChanceCaches().put(ItemRecipeCapability.CAP, cache);
-            logic.setupRecipe(recipe);
-            require(!logic.isActive() && input.rejections == 0 && input.getStackInSlot(0).is(Items.APPLE)
-                    && input.getStackInSlot(1).is(Items.SUGAR) && logic.getChanceCaches().get(ItemRecipeCapability.CAP) == cache
-                    && cache.getInt(sugar) == 0 && cache.getInt(diamond) == 0,
-                    "Direct expand then real excessive-temperature beforeWorking rejection preserves input/cache");
-            var allowed = recipe.copy(); allowed.data = recipe.data.copy(); allowed.data.putInt("ebf_temp", 0);
-            input.rejectExecution = true; logic.setupRecipe(allowed);
+            input.rejectExecution = true; logic.setupRecipe(recipe);
             require(!logic.isActive() && input.rejections > 0 && input.getStackInSlot(0).is(Items.APPLE)
                     && input.getStackInSlot(1).is(Items.SUGAR) && logic.getChanceCaches().get(ItemRecipeCapability.CAP) == cache
                     && cache.getInt(sugar) == 0 && cache.getInt(diamond) == 0,
                     "Direct expanded input execution failure preserves original input/cache");
-            input.rejectExecution = false; logic.setupRecipe(allowed);
+            input.rejectExecution = false; logic.setupRecipe(recipe);
             String state = " active=" + logic.isActive() + ", recipe=" + logic.getLastRecipe()
                     + ", apple=" + input.getStackInSlot(0) + ", sugar=" + input.getStackInSlot(1)
                     + ", inputCache=" + cache.getInt(sugar) + ", outputCache=" + cache.getInt(diamond)
@@ -190,9 +180,9 @@ public final class StellarChanceAdmissionChecks {
                     && logic.getChanceCaches().get(ItemRecipeCapability.CAP) == cache
                     && cache.getInt(sugar) == 2_500 && cache.getInt(diamond) == 2_500,
                     "Direct accepted expanded batch pays once and commits exactly one chance update;" + state);
-            return Map.of("status", "PASS", "temperatureRejected", true, "inputExecutionRejected", true,
+            return Map.of("status", "PASS", "inputExecutionRejected", true,
                     "acceptedActive", true, "inputCache", cache.getInt(sugar), "outputCache", cache.getInt(diamond),
-                    "scope", "Real registered distorter direct setup/expand and real coil beforeWorking; injected execute-only inventory rejection. Synthetic formed membership, no full structure.");
+                    "scope", "Real registered platinum refinery direct setup/expand; injected execute-only inventory rejection. Synthetic formed membership, no full structure.");
         } finally { f.holders().forEach(holder -> holder.setLevel(null)); }
     }
 

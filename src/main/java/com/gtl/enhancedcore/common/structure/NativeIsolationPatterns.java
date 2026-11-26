@@ -55,7 +55,7 @@ public final class NativeIsolationPatterns {
                 }
             }
         }
-        NativeHiddenStructureCells.apply(id, original, matches);
+        if (!AddStructureOwnership.owns(id)) NativeHiddenStructureCells.apply(id, original, matches);
         return new BlockPattern(matches, original.structureDir, original.aisleRepetitions,
                 access.enhanced$getCenterOffset().clone());
     }

@@ -20,7 +20,7 @@ import com.gtl.enhancedcore.common.recipe.MachineDiagnostics;
 import com.gtladd.gtladditions.api.machine.IWirelessElectricMultiblockMachine;
 import com.gtladd.gtladditions.api.machine.trait.IWirelessNetworkEnergyHandler;
 import org.gtlcore.gtlcore.common.machine.multiblock.part.ae.MEPatternBufferPartMachine;
-import com.gtladd.gtladditions.utils.RecipeCalculationHelper;
+import com.gtladd.gtladditions.utils.recipe.RecipeCalculationHelper;
 import com.lowdragmc.lowdraglib.side.fluid.FluidStack;
 import java.math.*;
 import java.util.*;
@@ -412,6 +412,10 @@ public final class IvNativeEngine {
             GTRecipe scaled;
             GTRecipe timing;
             var wireless = wireless();
+            if (wireless != null && !wireless.isOnline()) {
+                waiting(ref, "gtl_enhancedcore.diagnostic.power", nativeDetail("wireless_offline"));
+                return;
+            }
             BigInteger wirelessEUt = BigInteger.ZERO;
             BigInteger wirelessTotal = null;
             long parallel;

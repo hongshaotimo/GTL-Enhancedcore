@@ -18,7 +18,8 @@ public final class NativeHiddenStructureRegression {
         var manifest = JsonParser.parseString(Files.readString(Path.of(
                 "src/main/resources/data/gtl_enhancedcore/structures/hollow/native.json"))).getAsJsonObject();
         var machines = manifest.getAsJsonObject("machines");
-        check(machines.size() == 3, "Three preserved upstream fixtures remain after retiring four satellites");
+        check(machines.keySet().equals(Set.of("gtceu:huge_incubator", "gtceu:gravitation_shockburst")),
+                "native cell exemptions never target ADD controllers");
         int removed = 0;
         for (var entry : machines.entrySet()) {
             var spec = entry.getValue().getAsJsonObject();
@@ -48,8 +49,7 @@ public final class NativeHiddenStructureRegression {
                 check(cell.getAsJsonArray("expectedBlocks").get(0).getAsString().equals(expected),
                         "Candidate ID matches the upstream plain blocks predicate");
             }
-            boolean module = entry.getKey().startsWith("gtladditions:nexus_satellite_factory_mk");
-            check(cells.size() == (module ? 3 : 0), "Only four modules have certified removal coordinates");
+            check(cells.isEmpty(), "Retained native review has no removed coordinates");
             removed += cells.size();
         }
         check(removed == 0, "Retired module cell exemptions are no longer loaded");
@@ -62,7 +62,7 @@ public final class NativeHiddenStructureRegression {
         }
         String integration = Files.readString(Path.of(
                 "src/main/java/com/gtl/enhancedcore/common/structure/NativeIsolationPatterns.java"));
-        check(integration.contains("NativeHiddenStructureCells.apply(id, original, matches)"),
+        check(integration.contains("if (!AddStructureOwnership.owns(id)) NativeHiddenStructureCells.apply(id, original, matches)"),
                 "Native geometry exemptions are applied to the isolation copy before it is built");
         return assertions;
     }

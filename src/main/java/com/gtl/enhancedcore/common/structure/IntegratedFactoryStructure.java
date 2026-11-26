@@ -1,44 +1,54 @@
 package com.gtl.enhancedcore.common.structure;
 
 import com.gregtechceu.gtceu.api.machine.MultiblockMachineDefinition;
-import com.gregtechceu.gtceu.api.machine.multiblock.PartAbility;
 import com.gregtechceu.gtceu.api.pattern.BlockPattern;
 import com.gregtechceu.gtceu.api.pattern.Predicates;
 import com.gregtechceu.gtceu.api.pattern.TraceabilityPredicate;
 import com.gregtechceu.gtceu.common.block.LampBlock;
 import com.gtl.enhancedcore.integration.terminal.LampPlacement;
-import com.gtl.enhancedcore.common.recipe.iv.IvBufferRegistry;
-import org.gtlcore.gtlcore.integration.terminal.StableBlockCandidates;
 import com.lowdragmc.lowdraglib.utils.BlockInfo;
+import net.minecraft.world.level.block.Block;
+import org.gtlcore.gtlcore.integration.terminal.StableBlockCandidates;
 
 import static com.gtl.enhancedcore.common.registration.MachineRegistrationSupport.*;
 
-/** WorldEdit import: 49 x 31 x 49; only the central 11 x 13 front panel accepts hatches. */
+/** North console, four non-interchangeable workstations and a separate breaker cabinet. */
 public final class IntegratedFactoryStructure {
-    public static final int MAX_SUPER_BUFFERS = 30;
+    public static final String RESOURCE = "/data/gtl_enhancedcore/structures/joint_factory_four_stations_mv.pattern.gz";
 
     private IntegratedFactoryStructure() {}
 
     public static BlockPattern create(MultiblockMachineDefinition definition) {
-        var abilities = Predicates.abilities(PartAbility.MAINTENANCE).setMaxGlobalLimited(1).setPreviewCount(1)
-                .or(Predicates.abilities(PartAbility.INPUT_ENERGY).setMinGlobalLimited(1)
-                        .setMaxGlobalLimited(2).setPreviewCount(1))
-                .or(IvBufferRegistry.materialPorts(MAX_SUPER_BUFFERS));
-        var hatches = requiredBlock("gtlcore:multi_functional_casing").or(abilities);
-        return StructurePatterns.start("/data/gtl_enhancedcore/structures/integrated_universal_factory.pattern.gz")
+        var itemIn = ordinary("input_bus");
+        var fluidIn = ordinary("input_hatch");
+        var fluidOut = ordinary("output_hatch");
+        // Independent, closed MV flanges stay valid with no expansion installed.
+        var blank = requiredBlock("gtceu:mv_machine_casing");
+        return StructurePatterns.start(RESOURCE)
                 .where('C', Predicates.controller(Predicates.blocks(definition.get())))
-                .where('X', hatches)
-                .where('Q', hatches)
+                .where('i', itemIn).where('a', blank.or(itemIn))
+                .where('f', fluidIn).where('b', blank.or(fluidIn))
+                .where('o', ordinary("output_bus"))
+                .where('l', fluidOut).where('d', blank.or(fluidOut))
+                .where('e', Predicates.blocks(requiredBlockBlock("gtceu:mv_energy_input_hatch"),
+                        requiredBlockBlock("gtceu:lv_energy_input_hatch"), requiredBlockBlock("gtceu:ulv_energy_input_hatch")))
+                .where('m', requiredBlock("gtceu:maintenance_hatch").or(blank))
                 .where('A', requiredBlock("gtlcore:multi_functional_casing"))
-                .where('B', requiredBlock("gtceu:mv_machine_casing"))
-                .where('D', requiredBlock("gtceu:solid_machine_casing"))
+                .where('B', blank).where('D', requiredBlock("gtceu:solid_machine_casing"))
                 .where('E', requiredBlock("gtceu:steel_gearbox"))
                 .where('F', requiredBlock("gtceu:steel_pipe_casing"))
                 .where('G', requiredBlock("gtceu:cupronickel_coil_block"))
-                .where('I', requiredBlock("ae2:quartz_glass"))
-                .where('J', lamps())
-                .where(' ', Predicates.any())
-                .build();
+                .where('I', requiredBlock("ae2:quartz_glass")).where('J', lamps())
+                .where('K', requiredBlock("minecraft:waxed_cut_copper"))
+                .where('P', requiredBlock("minecraft:polished_andesite"))
+                .where('R', requiredBlock("minecraft:iron_bars"))
+                .where('S', requiredBlock("minecraft:polished_andesite_slab"))
+                .where('Y', requiredBlock("minecraft:yellow_terracotta"))
+                .where('#', Predicates.air()).build();
+    }
+
+    private static TraceabilityPredicate ordinary(String family) {
+        return Predicates.blocks(new Block[]{requiredBlockBlock("gtceu:lv_" + family), requiredBlockBlock("gtceu:mv_" + family)});
     }
 
     private static TraceabilityPredicate lamps() {

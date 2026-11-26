@@ -3,7 +3,7 @@
   "presetIdentity": "CAMPUS_FACTORY",
   "reviewedDate": "2026-11-04",
   "catalogResource": "factory_campus_machines.json",
-  "catalogSha256": "e2012d2259da80d2e599941dd6ec727d98f35c9d756c2b9a2f6a32245947224a",
+  "catalogSha256": "298ca677e303fe0e79e11ca13a48884833d1e080040abe05966e7a11c5d5490f",
   "frozenFrom": "planned_campus_machines.json on 2026-11-04; byte-identical independent snapshot",
   "boundary": "Stage uses audited construction voltage/component floor, not an exhaustive quest or material unlock graph. Function departments are architectural planning groups, not a change to recipes, machine behavior or binding range.",
   "groupingPolicy": "department + placementStage; early ULV-HV, mid EV-UV, late UHV-MAX. User-requested early machines retain original planningTier with the existing placementTier override. Large machines may occupy their own hall. Shared machines use the relevant departmental production floor without standalone machine markers.",
@@ -41,8 +41,8 @@
       "accentRgb": "68AAB0",
       "architecture": "process-plant-hall",
       "function": "Reaction, distillation, separation and bulk fluid processing",
-      "machineKinds": 34,
-      "dedicatedSlots": 40
+      "machineKinds": 33,
+      "dedicatedSlots": 36
     },
     {
       "id": "precision",
@@ -132,9 +132,9 @@
     }
   ],
   "counts": {
-    "machineKinds": 201,
-    "dedicatedKinds": 155,
-    "dedicatedSlots": 225,
+    "machineKinds": 200,
+    "dedicatedKinds": 154,
+    "dedicatedSlots": 221,
     "sharedKinds": 46,
     "excludedModuleKinds": 16
   },
@@ -3287,26 +3287,6 @@
         "recipeTypes": [
           "gtceu:digestion_treatment",
           "gtceu:dissolution_treatment"
-        ]
-      }
-    },
-    {
-      "id": "gtl_enhancedcore:hyperstructural_chemical_distorter",
-      "allocation": "dedicated",
-      "copies": 4,
-      "planningTier": 10,
-      "placementTier": 10,
-      "stage": "late",
-      "placementStage": "late",
-      "department": "chemistry",
-      "hallGroup": "chemistry-late",
-      "tierEvidenceStatus": "voltage-confirmed",
-      "tierEvidenceSource": "src/main/resources/data/gtl_enhancedcore/equipment_recipes.json",
-      "functionEvidence": {
-        "basis": "audited-runtime-recipe-types",
-        "source": "factory_campus_machines.json#machines/gtl_enhancedcore:hyperstructural_chemical_distorter/themeEvidence/recipeTypes",
-        "recipeTypes": [
-          "gtceu:distort"
         ]
       }
     },

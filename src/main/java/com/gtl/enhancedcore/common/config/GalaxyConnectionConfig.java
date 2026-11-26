@@ -25,11 +25,11 @@ public final class GalaxyConnectionConfig {
         for (String id : new String[]{"qft", "wood_distillation",
                 "advanced_integrated_ore_processor", "component_assembly_line", "mega_canner",
                 "mega_fluid_heater", "a_mass_fabricator", "nano_core"}) ids.add("gtceu:" + id);
-        for (String id : new String[]{"dimensionally_transcendent_chemical_plant",
-                "antientropy_condensation_center", "draconic_collapse_core"}) ids.add("gtladditions:" + id);
+        for (String id : new String[]{"exotic_chemical_complex", "heart_of_the_cosmos",
+                "apocalyptic_quantum_warp_matrix", "antientropy_condensation_center", "draconic_collapse_core"}) ids.add("gtladditions:" + id);
         for (String id : new String[]{"large_furnace", "basic_ore_processing_plant",
-                "universal_joint_factory", "star_core_stripper", "high_flux_breeder_reactor",
-                "hydrothermal_leaching_complex", "neutron_control_factory", "hyperstructural_chemical_distorter",
+                "star_core_stripper", "high_flux_breeder_reactor",
+                "hydrothermal_leaching_complex", "neutron_control_factory",
                 "processing_plus", "assembling_plus", "separating_plus", "mixing_plus",
                 "plasma_machine_tool", "hadron_catalytic_refinery", "quantum_mass_spectrum_array",
                 "superconducting_fusion_assembler", "industrial_steam_platform", "causality_terminal",
@@ -71,5 +71,8 @@ public final class GalaxyConnectionConfig {
             return Set.of();
         }
     }
-    public static boolean allows(ResourceLocation id) { return id != null && Snapshot.IDS.contains(id.toString()); }
+    public static boolean allows(ResourceLocation id) {
+        // A pre-existing allowlist must not turn either of the MV workshop's input ports into a galaxy socket.
+        return id != null && !id.toString().equals("gtl_enhancedcore:universal_joint_factory") && Snapshot.IDS.contains(id.toString());
+    }
 }

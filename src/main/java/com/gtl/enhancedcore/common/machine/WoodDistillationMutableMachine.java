@@ -7,7 +7,7 @@ import com.gtl.enhancedcore.common.recipe.WoodDistillationAllocation;
 import com.gtladd.gtladditions.api.machine.logic.MutableRecipesLogic;
 import com.gtladd.gtladditions.api.machine.mutable.MutableElectricParallelHatchMultiblockMachine;
 import com.gtladd.gtladditions.common.data.ParallelData;
-import com.gtladd.gtladditions.utils.RecipeCalculationHelper;
+import com.gtladd.gtladditions.utils.recipe.RecipeCalculationHelper;
 import it.unimi.dsi.fastutil.longs.LongArrayList;
 import org.gtlcore.gtlcore.api.recipe.IParallelLogic;
 import org.gtlcore.gtlcore.api.recipe.RecipeRunnerHelper;

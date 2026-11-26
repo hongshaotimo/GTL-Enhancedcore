@@ -3,7 +3,7 @@
   "presetIdentity": "pink_dream_home_v1",
   "reviewedDate": "2026-11-06",
   "catalogResource": "pink_dream_machines.json",
-  "catalogSha256": "e2012d2259da80d2e599941dd6ec727d98f35c9d756c2b9a2f6a32245947224a",
+  "catalogSha256": "298ca677e303fe0e79e11ca13a48884833d1e080040abe05966e7a11c5d5490f",
   "frozenFrom": "factory_campus_machines.json byte-identical independent snapshot on 2026-11-06",
   "boundary": "Stage uses audited construction voltage/component floor, not an exhaustive quest or material unlock graph. Function departments are architectural planning groups, not a change to recipes, machine behavior or binding range.",
   "groupingPolicy": "Department and placement stage compact open courts; complete module AABBs unchanged; all 66 ULV-HV dedicated copies placed by center first.",
@@ -41,8 +41,8 @@
       "accentRgb": "68AAB0",
       "architecture": "process-plant-hall",
       "function": "Reaction, distillation, separation and bulk fluid processing",
-      "machineKinds": 34,
-      "dedicatedSlots": 40
+      "machineKinds": 33,
+      "dedicatedSlots": 36
     },
     {
       "id": "precision",
@@ -77,8 +77,8 @@
       "accentRgb": "8E8AB6",
       "architecture": "research-control-hall",
       "function": "Research data, computation, pattern storage and site control",
-      "machineKinds": 9,
-      "dedicatedSlots": 4
+      "machineKinds": 8,
+      "dedicatedSlots": 3
     },
     {
       "id": "space",
@@ -132,9 +132,9 @@
     }
   ],
   "counts": {
-    "machineKinds": 201,
-    "dedicatedKinds": 155,
-    "dedicatedSlots": 225,
+    "machineKinds": 200,
+    "dedicatedKinds": 154,
+    "dedicatedSlots": 221,
     "sharedKinds": 46,
     "excludedModuleKinds": 16
   },
@@ -3291,26 +3291,6 @@
       }
     },
     {
-      "id": "gtl_enhancedcore:hyperstructural_chemical_distorter",
-      "allocation": "dedicated",
-      "copies": 4,
-      "planningTier": 10,
-      "placementTier": 10,
-      "stage": "late",
-      "placementStage": "late",
-      "department": "chemistry",
-      "hallGroup": "chemistry-late",
-      "tierEvidenceStatus": "voltage-confirmed",
-      "tierEvidenceSource": "src/main/resources/data/gtl_enhancedcore/equipment_recipes.json",
-      "functionEvidence": {
-        "basis": "audited-runtime-recipe-types",
-        "source": "factory_campus_machines.json#machines/gtl_enhancedcore:hyperstructural_chemical_distorter/themeEvidence/recipeTypes",
-        "recipeTypes": [
-          "gtceu:distort"
-        ]
-      }
-    },
-    {
       "id": "gtl_enhancedcore:industrial_steam_platform",
       "allocation": "dedicated",
       "copies": 15,
@@ -4301,13 +4281,13 @@
   ],
   "layoutAudit": {
     "halls": 70,
-    "dedicatedSlots": 225,
+    "dedicatedSlots": 221,
     "sharedIds": 46,
     "earlyDedicatedSlots": 66,
     "outdoorSites": 53,
     "compactCoveredHomes": 13,
     "maxCoveredHomeSide": 114,
-    "machineArea": 1101669,
+    "machineArea": 1070697,
     "hallArea": 1564677,
     "hallServiceArea": 1812009,
     "reservedLandscapeArea": 48640,

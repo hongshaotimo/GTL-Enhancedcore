@@ -10,16 +10,11 @@ import com.gregtechceu.gtceu.api.machine.trait.RecipeLogic;
 import com.gregtechceu.gtceu.api.registry.GTRegistries;
 import com.gtl.enhancedcore.client.renderer.machine.StellarVortexMachineRenderer;
 import com.gtl.enhancedcore.common.machine.galaxy.StellarVortexSpaceStationMachine;
-import com.gtl.enhancedcore.common.structure.CelestialEffectAnchors;
-import com.gtladd.gtladditions.client.render.machine.deferred.DeferredMachineRenderer;
-import com.gtladd.gtladditions.client.render.machine.deferred.DeferredRenderContext;
-import com.gtladd.gtladditions.client.render.machine.deferred.DeferredRenderEntry;
 import com.lowdragmc.lowdraglib.utils.DummyWorld;
 import com.mojang.blaze3d.pipeline.TextureTarget;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexSorting;
-import it.unimi.dsi.fastutil.longs.Long2ObjectLinkedOpenHashMap;
 import java.lang.reflect.Field;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -130,8 +125,6 @@ public final class CosmicVfxClientChecks {
         world.entity = entity;
         ObfuscationReflectionHelper.findField(Level.class, "f_46443_").setBoolean(world, true);
         entity.setLevel(world);
-        var queue = (Long2ObjectLinkedOpenHashMap<DeferredRenderEntry>) field(DeferredMachineRenderer.class, "entries").get(null);
-        require(!queue.containsKey(0), "Unoccupied fixture deferred entry");
         try {
             field(MultiblockControllerMachine.class, "isFormed").setBoolean(machine, true);
             var logic = machine.getRecipeLogic();
@@ -140,8 +133,8 @@ public final class CosmicVfxClientChecks {
             boolean astrograph = id.endsWith("arcanic_astrograph");
             Vec3 center;
             if (astrograph) {
-                field(machine.getClass(), "parallelAmount").setInt(machine, Integer.MAX_VALUE);
-                center = CelestialEffectAnchors.astrograph(machine);
+                // The title-screen fixture uses the native preview path at the ADD shell center.
+                center = new Vec3(.5, .5, -15.5);
             } else {
                 var station = (StellarVortexSpaceStationMachine) machine;
                 field(StellarVortexSpaceStationMachine.class, "fieldActive").setBoolean(station, true);
@@ -154,16 +147,18 @@ public final class CosmicVfxClientChecks {
                 // Capture the normal fully-visible state without waiting for the wall-clock fade.
                 var renderer = (StellarVortexMachineRenderer) definition.getRenderer();
                 var fade = Class.forName(StellarVortexMachineRenderer.class.getName() + "$Fade");
-                var constructor = fade.getDeclaredConstructor(float.class, long.class);
+                var constructor = fade.getDeclaredConstructor();
                 constructor.setAccessible(true);
+                var fadeState = constructor.newInstance();
+                field(fade, "visibility").setFloat(fadeState, 1F);
                 ((Map<BlockEntity, Object>) field(StellarVortexMachineRenderer.class, "visibility").get(renderer))
-                        .put(entity, constructor.newInstance(1F, System.nanoTime()));
+                        .put(entity, fadeState);
             }
             var ber = mc.getBlockEntityRenderDispatcher().getRenderer(entity);
             require(ber != null, "Registered BER " + id);
             for (String angle : List.of("front", "diagonal")) {
                 boolean front = angle.equals("front");
-                double range = astrograph ? 340 : 570;
+                double range = astrograph ? 80 : 570;
                 var camera = center.add(front ? new Vec3(0, 0, range) : new Vec3(range * .68, range * .40, range * .68));
                 var view = new Matrix4f().lookAt(camera.toVector3f(), center.toVector3f(), new Vector3f(0, 1, 0));
                 var pose = new PoseStack();
@@ -181,11 +176,6 @@ public final class CosmicVfxClientChecks {
                 var buffers = mc.renderBuffers().bufferSource();
                 ber.render(entity, .25F, pose, buffers, 0xF000F0, 0);
                 buffers.endBatch();
-                if (astrograph) {
-                    var entry = queue.remove(0);
-                    require(entry != null, "Astrograph registered BER enqueues effect");
-                    entry.render(new DeferredRenderContext(camera, new PoseStack(), null));
-                }
                 require(GL11.glGetError() == GL11.GL_NO_ERROR, "Production renderer GL state " + id);
                 String file = id.substring(id.indexOf(':') + 1) + "-" + angle + ".png";
                 try (var picture = Screenshot.takeScreenshot(target)) {
@@ -203,7 +193,6 @@ public final class CosmicVfxClientChecks {
                 }
             }
         } finally {
-            queue.remove(0);
             entity.setLevel(null);
         }
     }

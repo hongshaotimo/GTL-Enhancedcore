@@ -15,6 +15,7 @@ import com.gtladd.gtladditions.api.machine.logic.GTLAddMultipleRecipesLogic;
 import com.gtladd.gtladditions.api.machine.logic.MutableRecipesLogic;
 import com.gtladd.gtladditions.api.machine.logic.AddMutableRecipesLogic;
 import com.gtladd.gtladditions.api.machine.IGTLAddMultiRecipeMachine;
+import com.gtladd.gtladditions.api.machine.IWirelessElectricMultiblockMachine;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import org.gtlcore.gtlcore.api.recipe.IGTRecipe;
@@ -71,9 +72,17 @@ public final class GalaxyNativeRecipePreparation {
     /** Call once at final admission, never during candidate search or binary simulation. */
     public static boolean beforeAdmission(RecipeLogic logic) {
         if (!supports(logic)) return true;
+        var machine = (WorkableElectricMultiblockMachine) logic.getMachine();
+        if (logic instanceof MutableRecipesLogic<?> || logic instanceof GTLAddMultipleRecipesLogic) {
+            if (!machine.hasProxies() || machine.getOverclockVoltage() <= 0) return false;
+            if (machine instanceof IWirelessElectricMultiblockMachine wireless) {
+                var handler = wireless.getWirelessNetworkEnergyHandler();
+                if (handler != null && !handler.isOnline()) return false;
+            }
+        }
         if (logic instanceof GTLAddMultipleRecipesLogic) {
             var before = ((IvNativeAddMultipleAccessor) logic).iv$addBeforeWorking();
-            return before == null || before.test((WorkableElectricMultiblockMachine) logic.getMachine());
+            return before == null || before.test(machine);
         }
         return true;
     }

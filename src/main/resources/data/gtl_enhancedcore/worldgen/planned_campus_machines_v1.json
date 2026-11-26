@@ -7,7 +7,7 @@
   "generator": "tools/generate_planned_campus_catalog.py",
   "runtimeCoverage": {
     "registered": 289,
-    "included": 283,
+    "included": 282,
     "inventorySha256": "7a1d929b7a435b7d97de237e500321db711c88c8fe9170ee9f9532dd7ff1de93",
     "sourceCoreSha256": "17dce9afab5688d8736cab466689a94f2ec77352edc285d95238c088b468f671",
     "dependencies": {
@@ -17,6 +17,7 @@
     },
     "excludedRetired": [
       "gtceu:transfinite_computation_array",
+      "gtl_enhancedcore:hyperstructural_chemical_distorter",
       "gtladditions:light_hunter_space_station",
       "gtladditions:nexus_satellite_factory_mk1",
       "gtladditions:nexus_satellite_factory_mk2",
@@ -16937,79 +16938,6 @@
           "gtlcore:fission_reactor_casing",
           "gtlcore:iridium_casing",
           "gtlcore:supercritical_turbine_casing"
-        ]
-      }
-    },
-    {
-      "id": "gtl_enhancedcore:hyperstructural_chemical_distorter",
-      "stage": "late",
-      "size": [
-        87,
-        109,
-        89
-      ],
-      "controller": [
-        43,
-        13,
-        70
-      ],
-      "frontFacing": "north",
-      "upwardsFacing": "up",
-      "flipped": false,
-      "groundOffset": [
-        43,
-        13,
-        18
-      ],
-      "controllerForward": [
-        0,
-        0,
-        -1
-      ],
-      "patternResource": "/data/gtl_enhancedcore/structures/hyperstructuralchemicaldistorterstructure.pattern.gz",
-      "patternSha256": "73fd9207a10134f009c9333bd3d1dcacb18b9302d345603a4cf2e113f4c46b82",
-      "sourceManifest": "registration:hyperstructural_chemical_distorter",
-      "controllerSymbol": "C",
-      "repetitions": {
-        "mode": "fixed",
-        "sourceAisles": 89,
-        "minimum": 89,
-        "maximum": 89
-      },
-      "copies": 4,
-      "sourceInventorySha256": "7a1d929b7a435b7d97de237e500321db711c88c8fe9170ee9f9532dd7ff1de93",
-      "theme": "chemistry",
-      "themeEvidence": {
-        "registryKeywords": [
-          "chemical",
-          "distort"
-        ],
-        "recipeTypes": [
-          "gtceu:distort"
-        ],
-        "materials": [
-          "gtceu:computer_heat_vent",
-          "gtceu:cyan_lamp",
-          "gtceu:inert_machine_casing",
-          "gtceu:laminated_glass",
-          "gtceu:superconducting_coil",
-          "gtceu:tritanium_coil_block",
-          "gtceu:white_lamp",
-          "gtlcore:dimension_injection_casing",
-          "gtlcore:extreme_strength_tritanium_casing",
-          "gtlcore:iridium_casing",
-          "gtlcore:molecular_casing",
-          "gtlcore:stellar_containment_casing",
-          "kubejs:abyssalalloy_coil_block",
-          "kubejs:adamantine_coil_block",
-          "kubejs:containment_field_generator",
-          "kubejs:eternity_coil_block",
-          "kubejs:force_field_glass",
-          "kubejs:hypogen_coil_block",
-          "kubejs:infinity_coil_block",
-          "kubejs:naquadriatictaranium_coil_block",
-          "kubejs:starmetal_coil_block",
-          "kubejs:titansteel_coil_block"
         ]
       }
     },

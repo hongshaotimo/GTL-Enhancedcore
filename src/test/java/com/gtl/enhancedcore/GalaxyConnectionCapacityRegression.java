@@ -62,14 +62,14 @@ final class GalaxyConnectionCapacityRegression {
         check(GalaxyConnectionConfig.defaults().contains("gtceu:mage_assembler")
                 && !GalaxyConnectionConfig.defaults().contains("gtceu:primitive_blast_furnace"),
                 "default scope follows enhanced support instead of every machine");
-        check(GalaxyConnectionConfig.defaults().size() == 56, "complete explicit supported default scope");
+        check(GalaxyConnectionConfig.defaults().size() == 55, "complete explicit supported default scope");
         check(GalaxyConnectionConfig.defaults().containsAll(Set.of(
                 "gtl_enhancedcore:industrial_steam_platform", "gtl_enhancedcore:causality_terminal",
                 "gtl_enhancedcore:infinity_singularity_compressor", "gtl_enhancedcore:platinum_refining_matrix",
                 "gtl_enhancedcore:void_constrained_mining_field", "gtl_enhancedcore:dragon_field_proliferation_core")),
                 "previously omitted own electric controllers are explicitly configurable");
         check(GalaxyConnectionConfig.defaults().stream().noneMatch(id -> Set.of(
-                "gtl_enhancedcore:weather_anchor",
+                "gtl_enhancedcore:universal_joint_factory", "gtl_enhancedcore:weather_anchor",
                 "gtl_enhancedcore:stellar_vortex_space_station", "gtl_enhancedcore:extreme_reactor",
                 "gtl_enhancedcore:stellar_confinement_fusion_reactor").contains(id)),
                 "no-input receivers, storage and source station are not targets");

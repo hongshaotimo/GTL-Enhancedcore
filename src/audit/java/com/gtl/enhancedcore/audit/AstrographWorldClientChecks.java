@@ -8,6 +8,9 @@ import com.gregtechceu.gtceu.api.machine.multiblock.MultiblockControllerMachine;
 import com.gregtechceu.gtceu.api.machine.multiblock.WorkableMultiblockMachine;
 import com.gregtechceu.gtceu.api.machine.trait.RecipeLogic;
 import com.gregtechceu.gtceu.api.registry.GTRegistries;
+import com.gtladd.gtladditions.api.client.scene.PartKey;
+import com.gtladd.gtladditions.api.client.scene.SceneRendering;
+import com.gtladd.gtladditions.client.render.scene.SceneFrameState;
 import com.mojang.blaze3d.systems.RenderSystem;
 import java.nio.file.*;
 import java.util.*;
@@ -32,8 +35,9 @@ import org.lwjgl.opengl.*;
 @Mod("enhancedcore_audit")
 public final class AstrographWorldClientChecks {
     private static final Path ROOT=Path.of("C:/IDEA/GTL-Enhancedcore/_work/astrograph-black-screen-20261107/validation");
-    private static final BlockPos POS=new BlockPos(0,-23,75);
+    private static final BlockPos POS=new BlockPos(0,80,16);
     private static final Vec3 CENTER=new Vec3(.5,80.5,.5);
+    private static final ResourceLocation ASTROGRAPH_PROVIDER = new ResourceLocation("gtladditions", "astrograph_star");
     private final List<Map<String,Object>> rows=new ArrayList<>(), errors=new ArrayList<>();
     private int state,ticks,scenario=-1,frames,glErrors;
     private boolean done,enabled;
@@ -42,6 +46,7 @@ public final class AstrographWorldClientChecks {
     private Class<?> iris;
     private GLDebugMessageCallback callback;
     private Map<String,Object> row;
+    private List<PartKey> sceneKeys = List.of();
     private java.util.concurrent.CompletableFuture<Void> reload;
     public AstrographWorldClientChecks(){ MinecraftForge.EVENT_BUS.addListener(this::tick); MinecraftForge.EVENT_BUS.addListener(this::render); }
 
@@ -79,7 +84,6 @@ public final class AstrographWorldClientChecks {
                 entity=def.getBlockEntityType().create(POS,block);entity.setLevel(mc.level);
                 machine=(WorkableMultiblockMachine)((IMachineBlockEntity)entity).getMetaMachine();
                 set(MultiblockControllerMachine.class,machine,"isFormed",true);
-                set(machine.getClass(),machine,"parallelAmount",Integer.MAX_VALUE);
                 if(mc.getBlockEntityRenderDispatcher().getRenderer(entity)==null)throw new AssertionError("Registered actual BER missing");
                 mc.setScreen(null);mc.options.hideGui=false;state=2;ticks=0;
                 mc.getSingleplayerServer().execute(()->{
@@ -94,7 +98,12 @@ public final class AstrographWorldClientChecks {
                     if(scenario>=0){
                         try(var image=Screenshot.takeScreenshot(mc.getMainRenderTarget())){image.writeToFile(dir.resolve("world-"+scenario+".png"));}
                         row.put("frames",frames);row.put("glErrors",glErrors);row.put("afterFrame",snapshot());
-                        row.put("astrographMeshTimeAfterFrames",meshTime());
+                        var outcomes = new LinkedHashMap<Integer, String>();
+                        for (var key : sceneKeys) {
+                            var outcome = SceneRendering.lastOutcome(key);
+                            if (outcome != null) outcomes.put(key.getPart(), outcome.name());
+                        }
+                        row.put("astrographSceneOutcomes", outcomes);
                     }
                     if(++scenario>=16){finish(null);return;}
                     int group=scenario/4,step=scenario%4;
@@ -107,7 +116,7 @@ public final class AstrographWorldClientChecks {
                     var uuid=mc.player.getUUID();mc.getSingleplayerServer().execute(()->{var p=mc.getSingleplayerServer().getPlayerList().getPlayer(uuid);p.getAbilities().flying=true;p.onUpdateAbilities();p.connection.teleport(x,y,z,143.13F,18);mc.getSingleplayerServer().overworld().setDayTime(6000);});
                     row=new LinkedHashMap<>();row.put("scenario",scenario);row.put("resourcesReloaded",group==3);row.put("shadersEnabled",group==1);row.put("effectEnabled",enabled);row.put("cameraDistance",distance);
                     var manager=iris.getMethod("getPipelineManager").invoke(null);var pipeline=manager.getClass().getMethod("getPipelineNullable").invoke(manager);
-                    row.put("pipeline",pipeline==null?"null":pipeline.getClass().getName());rows.add(row);ticks=0;frames=0;
+                    row.put("pipeline",pipeline==null?"null":pipeline.getClass().getName());rows.add(row);ticks=0;frames=0;sceneKeys=List.of();
                 }
                 ticks++;
             }
@@ -118,16 +127,17 @@ public final class AstrographWorldClientChecks {
         try{
             var mc=Minecraft.getInstance();var logic=machine.getRecipeLogic();
             set(RecipeLogic.class,logic,"isActive",enabled);set(RecipeLogic.class,logic,"status",enabled?RecipeLogic.Status.WORKING:RecipeLogic.Status.IDLE);
-            if(event.getCamera().getPosition().distanceTo(CENTER)>512)return;
+            if (!(SceneRendering.frame() instanceof SceneFrameState frame)) return;
             var pose=event.getPoseStack();pose.pushPose();
             try{var camera=event.getCamera().getPosition();pose.translate(POS.getX()-camera.x,POS.getY()-camera.y,POS.getZ()-camera.z);
                 if(frames==0)row.put("beforeBER",snapshot());
                 mc.getBlockEntityRenderDispatcher().render(entity,event.getPartialTick(),pose,mc.renderBuffers().bufferSource());
-                var queueOwner=Class.forName("com.gtladd.gtladditions.client.render.machine.deferred.DeferredMachineRenderer");
-                var queueField=queueOwner.getDeclaredField("entries");queueField.setAccessible(true);
-                var queue=queueField.get(null);
-                var get=queue.getClass().getMethod("get",long.class);var entry=get.invoke(queue,POS.asLong());
-                if(entry!=null)row.put("queuedDeferredEntry",entry.getClass().getName());
+                // The public API exposes outcomes for known keys. Discover ADD's native keys in this audit frame.
+                sceneKeys = frame.getParts().keySet().stream()
+                        .filter(key -> key.getInstance() == POS.asLong() && ASTROGRAPH_PROVIDER.equals(key.getProvider().getId()))
+                        .toList();
+                row.put("sceneComposition", frame.getComposition().name());
+                row.put("astrographSubmittedParts", sceneKeys.stream().map(PartKey::getPart).toList());
                 if(frames==0)row.put("afterBER",snapshot());frames++;
             }finally{pose.popPose();}
         }catch(Throwable failure){finish(failure);}
@@ -140,11 +150,6 @@ public final class AstrographWorldClientChecks {
         try{Files.writeString(mc.gameDirectory.toPath().resolve("astrograph-world.json"),new GsonBuilder().setPrettyPrinting().create().toJson(report));}catch(Exception error){error.printStackTrace();}mc.stop();
     }
     private static void set(Class<?> owner,Object target,String name,Object value)throws Exception{var f=owner.getDeclaredField(name);f.setAccessible(true);f.set(target,value);}
-    private static Object meshTime()throws Exception{
-        var renderer=Class.forName("com.gtl.enhancedcore.client.renderer.celestial.CelestialVfxRenderer");
-        var field=renderer.getDeclaredField("ASTROGRAPH");field.setAccessible(true);var cache=field.get(null);
-        var time=cache.getClass().getDeclaredField("time");time.setAccessible(true);float value=time.getFloat(cache);return Float.isFinite(value)?value:"not rendered yet";
-    }
     private static Map<String,Object> snapshot(){
         var s=new LinkedHashMap<String,Object>();s.put("program",GL11.glGetInteger(GL20.GL_CURRENT_PROGRAM));s.put("drawFBO",GL11.glGetInteger(GL30.GL_DRAW_FRAMEBUFFER_BINDING));s.put("readFBO",GL11.glGetInteger(GL30.GL_READ_FRAMEBUFFER_BINDING));s.put("depth",GL11.glIsEnabled(GL11.GL_DEPTH_TEST));s.put("depthMask",GL11.glGetBoolean(GL11.GL_DEPTH_WRITEMASK));s.put("blend",GL11.glIsEnabled(GL11.GL_BLEND));s.put("cull",GL11.glIsEnabled(GL11.GL_CULL_FACE));
         s.put("depthFunc",GL11.glGetInteger(GL11.GL_DEPTH_FUNC));s.put("stencil",GL11.glIsEnabled(GL11.GL_STENCIL_TEST));s.put("scissor",GL11.glIsEnabled(GL11.GL_SCISSOR_TEST));

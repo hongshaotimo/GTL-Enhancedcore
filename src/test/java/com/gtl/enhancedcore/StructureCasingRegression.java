@@ -15,7 +15,6 @@ final class StructureCasingRegression {
         var expected = Map.ofEntries(
                 Map.entry("crystalline_infinity", "gtlcore:extreme_strength_tritanium_casing"),
                 Map.entry("mega_distillery", "gtceu:clean_machine_casing"),
-                Map.entry("suprachronal_assembly_line", "gtlcore:molecular_casing"),
                 Map.entry("mega_fluid_heater", "gtlcore:iridium_casing"),
                 Map.entry("star_ultimate_material_forge_factory", "gtlcore:molecular_casing"),
                 Map.entry("nano_core", "gtlcore:hyper_mechanical_casing"),
@@ -36,11 +35,10 @@ final class StructureCasingRegression {
                 check(!spec.has("appearance"), name + ": native appearance retained");
                 check(bindings.getAsJsonObject("@").size() == 2, name + ": controller binding unchanged");
                 check(hatch.get("fallback").equals(spec.get("hatchFallback")), name + ": hatch casing metadata");
-                if (name.equals("mega_extractor") || name.equals("antientropy_condensation_center")
+                if (name.equals("mega_extractor")
                         || name.equals("advanced_sps_crafting")) {
                     String casing = name.equals("mega_extractor") ? "gtlcore:hyper_mechanical_casing"
-                            : name.equals("advanced_sps_crafting") ? "gtceu:fusion_casing_mk2"
-                            : "gtlcore:antifreeze_heatproof_machine_casing";
+                            : "gtceu:fusion_casing_mk2";
                     check(hatch.get("fallback").getAsString().equals(casing), name + ": requested empty port casing");
                     check(spec.get("sourceRevision").getAsString().equals(name.equals("mega_extractor") ? "user-request-20261027" : "user-request-20261102"),
                             name + ": new palette follows reviewed source rather than old recoloring");
@@ -73,7 +71,7 @@ final class StructureCasingRegression {
                 machines++;
             }
         }
-        check(machines == 27 && changed.equals(expected.keySet()), "exact native palette scope");
+        check(machines == 24 && changed.equals(expected.keySet()), "exact native palette scope");
         checks += RequestedStructuresRegression.run();
         return checks;
     }

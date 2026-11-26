@@ -83,7 +83,6 @@ public final class RegressionSuite {
         assertions += HydrothermalStructuresRegression.run();
         assertions += CopyKeysRegression.run();
         assertions += TerminalExtrasRegression.run();
-        assertions += DataItemBehaviorCompatibilityRegression.run();
         assertions += IvManipulatorTransferRegression.run();
         assertions += RemoteProviderRangeRegression.run();
         assertions += RemoteProviderMixinRegression.run();
@@ -126,9 +125,7 @@ public final class RegressionSuite {
         assertions += CoilDebugToolRegression.run();
         assertions += RecipeRecoveryRegression.run();
         assertions += IdleRecipeSearchRegression.run();
-        assertions += AddConfigFieldCompatibilityRegression.run();
         assertions += WorldLoadCompatibilityRegression.run();
-        assertions += SliderTextFieldSideCompatibilityRegression.run();
         assertions += AdvancedHatchLaserRecipeCompatibilityRegression.run();
         assertions += AdvancedHatchExGtlRecipeCompatibilityRegression.run();
         assertions += IvIdleOrderPollingRegression.run();
@@ -141,7 +138,6 @@ public final class RegressionSuite {
         assertions += CellPersistenceRegression.run();
         assertions += IvLoadedControllerRegression.run();
         assertions += ModuleStabilityRegression.run();
-        assertions += SuprachronalModuleRemovalRegression.run();
         assertions += IvNativeRecoveryRegression.run();
         assertions += TooltipPolicyRegression.run();
         assertions += ResonatorPlacementRegression.run();

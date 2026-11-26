@@ -21,32 +21,23 @@ final class RequestedStructuresRegression {
         Path root = Path.of("src/main/resources/data/gtl_enhancedcore/structures");
         var hollow = JsonParser.parseString(Files.readString(root.resolve("hollow/manifest.json"))).getAsJsonObject().getAsJsonObject("resources");
         var manifests = JsonParser.parseString(Files.readString(root.resolve("gtl/manifest.json"))).getAsJsonObject();
-        var upgrades = JsonParser.parseString(Files.readString(root.resolve("gtl/upgrades.json"))).getAsJsonObject();
-        for (var target : Map.of("mega_extractor", 174, "advanced_vacuum_drying_furnace", 58,
-                "antientropy_condensation_center", 30).entrySet()) {
+        for (var target : Map.of("mega_extractor", 174, "advanced_vacuum_drying_furnace", 58).entrySet()) {
             String name = target.getKey();
-            var spec = (name.equals("antientropy_condensation_center") ? upgrades : manifests).getAsJsonObject(name);
+            var spec = manifests.getAsJsonObject(name);
             check(spec.get("diamondOreMarkers").getAsInt() == target.getValue(), name + " exact reviewed hatch count");
             check(!spec.has("appearance") && !spec.has("casingReplacements"), name + " retain native controller and source palette");
             String fallback = name.equals("mega_extractor") ? "gtlcore:hyper_mechanical_casing"
-                    : name.equals("advanced_vacuum_drying_furnace") ? "gtceu:high_power_casing"
-                    : "gtlcore:antifreeze_heatproof_machine_casing";
+                    : "gtceu:high_power_casing";
             check(spec.getAsJsonObject("bindings").getAsJsonObject("#").get("fallback").getAsString().equals(fallback),
                     name + " requested empty port casing");
             var review = hollow.getAsJsonObject("/data/gtl_enhancedcore/structures/gtl/" + name + ".pattern.gz");
             check(!review.has("optimizedResource") && review.get("removed").getAsInt() == 0, name + " cannot load stale deletion mask");
         }
-        var skeleton = JsonParser.parseString(Files.readString(root.resolve("gtl/upgrades_20261013.json")))
-                .getAsJsonObject().getAsJsonObject("skeleton_shift_rift_engine");
-        check(skeleton.get("hatchFallback").getAsString().equals("gtlcore:hyper_mechanical_casing")
-                && !skeleton.has("appearance"), "skeleton retains appearance and requested port fallback");
         var targets = Map.of("dragon_field_proliferation_core", new int[]{252,108,120,24},
-                "high_flux_breeder_reactor", new int[]{47,55,48,112},
-                "skeleton_shift_rift_engine", new int[]{31,31,48,80});
+                "high_flux_breeder_reactor", new int[]{47,55,48,112});
         for (var target : targets.entrySet()) {
             String name = target.getKey();
-            var spec = name.equals("skeleton_shift_rift_engine") ? skeleton
-                    : JsonParser.parseString(Files.readString(root.resolve(name + ".json"))).getAsJsonObject();
+            var spec = JsonParser.parseString(Files.readString(root.resolve(name + ".json"))).getAsJsonObject();
             int[] expected = target.getValue();
             for (int i=0;i<3;i++) check(spec.getAsJsonArray("size").get(i).getAsInt() == expected[i], name + " reviewed dimension");
             check(spec.get("diamondOreMarkers").getAsInt() == expected[3], name + " reviewed marker count");
@@ -54,8 +45,7 @@ final class RequestedStructuresRegression {
             var digest = java.security.MessageDigest.getInstance("SHA-256");
             check(java.util.HexFormat.of().formatHex(digest.digest(Files.readAllBytes(Path.of(spec.get("sourceSchematic").getAsString()))))
                     .equals(spec.get("sourceSha256").getAsString()), name + " exact source schematic");
-            String resource = name.equals("skeleton_shift_rift_engine") ? "gtl/" + name
-                    : name.equals("dragon_field_proliferation_core") ? "dragonfieldproliferationcorestructure" : name;
+            String resource = name.equals("dragon_field_proliferation_core") ? "dragonfieldproliferationcorestructure" : name;
             byte[] payload;
             try (var input = new java.util.zip.GZIPInputStream(Files.newInputStream(root.resolve(resource + ".pattern.gz")))) { payload=input.readAllBytes(); }
             check(java.util.HexFormat.of().formatHex(digest.digest(payload)).equals(spec.get("sha256").getAsString()), name + " exact geometry hash");

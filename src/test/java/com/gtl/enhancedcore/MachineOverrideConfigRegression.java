@@ -53,18 +53,10 @@ final class MachineOverrideConfigRegression {
     }
 
     private static void selection(Settings settings) throws Exception {
-        Set<String> structures = Set.of("gtceu.GtlMegastructurePatternMixin", "gtceu.LucidEtchdreamerPreviewMixin",
-                "gtlcore.client.LucidSparsePreviewShapeMixin",
+        Set<String> structures = Set.of("gtceu.GtlMegastructurePatternMixin",
                 "gtlcore.client.EyeOfHarmonyEffectAnchorMixin",
-                "gtlcore.client.CelestialEffectViewDistanceMixin",
-                "gtladditions.client.ArcanicAstrographEffectAnchorMixin",
-                "gtladditions.client.HeartOfTheUniverseEffectSizeMixin",
-                "gtladditions.client.HeartOfTheUniverseEffectBoundsMixin",
-                "gtladditions.client.HeartOfTheUniverseShaderMixin",
-                "gtladditions.ArcanicAstrographCollectionAnchorMixin");
-        Set<String> shared = Set.of("gtceu.DataItemBehaviorCompatibilityMixin", "gtceu.IdleRecipeSearchMixin",
-                "gtladditions.AddConfigFieldCompatibilityMixin",
-                "gtladditions.SliderTextFieldSideCompatibilityMixin",
+                "gtlcore.client.CelestialEffectViewDistanceMixin");
+        Set<String> shared = Set.of("gtceu.IdleRecipeSearchMixin", "gtladditions.AddSkyTearsRecipeCompatibilityMixin",
                 "gtmadvancedhatch.AdvancedHatchLaserRecipeCompatibilityMixin",
                 "gtceu.IvNativeRecipeLogicMixin", "gtceu.IvNativeParallelMixin", "gtceu.GalaxyRecipeLogicMixin", "gtceu.GalaxyMachineDisplayMixin", "gtceu.GalaxyConnectionHatchUiMixin", "gtladditions.GalaxyMutableModeMixin", "gtceu.RetiredLightHunterDefinitionMixin",
                 // These hooks also serve our own machines; foreign targets are guarded inside the panel palette.

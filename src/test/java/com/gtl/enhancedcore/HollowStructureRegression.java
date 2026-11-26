@@ -34,7 +34,8 @@ final class HollowStructureRegression {
         Map<String, com.google.gson.JsonObject> specs = new HashMap<>();
         for (var entry : bindings.entrySet()) {
             var spec = entry.getValue().getAsJsonObject();
-            specs.put(spec.get("resource").getAsString(), spec);
+            String resource = spec.get("resource").getAsString();
+            if (Files.isRegularFile(resources.resolve(resource.substring(1)))) specs.put(resource, spec);
         }
         check(manifest.getAsJsonObject("resources").keySet().equals(specs.keySet()), "every reviewed active layout audited");
         long total = 0;

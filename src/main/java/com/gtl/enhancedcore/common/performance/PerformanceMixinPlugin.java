@@ -3,17 +3,17 @@ package com.gtl.enhancedcore.common.performance;
 import com.gtl.enhancedcore.common.config.ForeignMachineMixinPolicy;
 import com.gtl.enhancedcore.common.config.MachineOverrideConfig;
 import com.gtl.enhancedcore.common.integration.GtlTerminalExtras;
-import com.gtl.enhancedcore.common.integration.DataItemBehaviorCompatibility;
-import com.gtl.enhancedcore.common.integration.AddConfigFieldCompatibility;
 import com.gtl.enhancedcore.common.integration.AdvancedHatchLaserRecipeCompatibility;
-import com.gtl.enhancedcore.common.integration.SliderTextFieldSideCompatibility;
+import com.gtl.enhancedcore.common.integration.AddSkyTearsRecipeCompatibility;
 import com.gtl.enhancedcore.common.integration.GtlFtbRectangleClaim;
 import com.gtl.enhancedcore.common.integration.ExPatternTerminalExtras;
 import com.gtl.enhancedcore.common.integration.JerMobWorldLaziness;
 import com.gtl.enhancedcore.common.integration.MultiblockPreviewLaziness;
 import java.util.List;
 import java.util.Set;
+import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.tree.ClassNode;
+import org.objectweb.asm.tree.MethodInsnNode;
 import org.spongepowered.asm.mixin.extensibility.IMixinConfigPlugin;
 import org.spongepowered.asm.mixin.extensibility.IMixinInfo;
 
@@ -78,17 +78,32 @@ public final class PerformanceMixinPlugin implements IMixinConfigPlugin {
 
     @Override
     public void preApply(String targetClassName, ClassNode targetClass, String mixinClassName, IMixinInfo mixinInfo) {
-        DataItemBehaviorCompatibility.preApply(targetClassName, targetClass, mixinClassName);
         if (targetClassName.equals("net.minecraft.Util")) ClientThreadSettings.configureBackground();
     }
 
     @Override
     public void postApply(String targetClassName, ClassNode targetClass, String mixinClassName, IMixinInfo mixinInfo) {
-        AddConfigFieldCompatibility.postApply(targetClassName, targetClass, mixinClassName);
         if (AdvancedHatchLaserRecipeCompatibility.MARKER.equals(mixinClassName))
             AdvancedHatchLaserRecipeCompatibility.transform(targetClass);
-        if (SliderTextFieldSideCompatibility.MARKER.equals(mixinClassName))
-            SliderTextFieldSideCompatibility.transform(targetClass);
+        if (AddSkyTearsRecipeCompatibility.MARKER.equals(mixinClassName))
+            AddSkyTearsRecipeCompatibility.transform(targetClass);
+        if (mixinClassName.equals("com.gtl.enhancedcore.mixin.gtladditions.client.CreativeStructureTierLabelMixin")
+                && !hasClass("dev.emi.emi.api.stack.EmiStack")) {
+            for (var method : targetClass.methods) {
+                if (!method.name.equals("getXEIIngredientOverMouse") || !method.desc.equals("(DD)Ljava/lang/Object;")) {
+                    continue;
+                }
+                for (var instruction : method.instructions.toArray()) {
+                    if (instruction instanceof MethodInsnNode call && call.getOpcode() == Opcodes.INVOKESTATIC
+                            && call.owner.equals("dev/emi/emi/api/stack/EmiStack") && call.name.equals("of")
+                            && call.desc.equals("(Lnet/minecraft/world/item/ItemStack;)Ldev/emi/emi/api/stack/EmiStack;")) {
+                        // Leave the ItemStack on the stack so Forge can merge the return paths without EMI.
+                        method.instructions.remove(call);
+                        break;
+                    }
+                }
+            }
+        }
         GtlTerminalExtras.postApply(targetClassName, targetClass, mixinClassName);
         ExPatternTerminalExtras.postApply(targetClassName, targetClass, mixinClassName);
         MultiblockPreviewLaziness.postApply(targetClassName, targetClass, mixinClassName);

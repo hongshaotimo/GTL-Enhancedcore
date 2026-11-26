@@ -288,7 +288,7 @@ public final class IvNativeFixture {
         var logic = (com.gtl.enhancedcore.mixin.gtlcore.IvNativeMultipleAccessor)machine.getRecipeLogic();
         for (var job : IvBuffers.state(buffer).jobs) if (job.active()) {
             double cost = logic.iv$totalEu(job.recipe) * job.parallel * logic.iv$euMultiplier();
-            var expected = com.gtladd.gtladditions.utils.RecipeCalculationHelper.INSTANCE.buildNormalRecipe(
+            var expected = com.gtladd.gtladditions.utils.recipe.RecipeCalculationHelper.INSTANCE.buildNormalRecipe(
                     List.of(), List.of(), cost, machine.getOverclockVoltage(), 20);
             if (job.duration != expected.duration || job.eut != com.gregtechceu.gtceu.api.recipe.RecipeHelper.getInputEUt(expected))
                 throw new AssertionError("Isolated batch lost native coil timing/energy");

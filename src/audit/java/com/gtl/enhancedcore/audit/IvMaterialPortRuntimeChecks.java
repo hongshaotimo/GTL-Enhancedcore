@@ -12,7 +12,6 @@ import com.gtl.enhancedcore.common.recipe.iv.IvBuffers;
 import com.gtl.enhancedcore.common.recipe.iv.IvMachineScope;
 import com.gtl.enhancedcore.common.recipe.iv.IvNativeHatches;
 import com.gtl.enhancedcore.mixin.gtceu.BlockPatternAccessor;
-import com.gtl.enhancedcore.common.structure.StructureData;
 import com.lowdragmc.lowdraglib.utils.BlockInfo;
 import com.lowdragmc.lowdraglib.utils.TrackedDummyWorld;
 import java.nio.charset.StandardCharsets;
@@ -41,14 +40,12 @@ import org.gtlcore.gtlcore.mixin.gtm.api.machine.IMultiblockStateInvoker;
 /** Executes the final registered production material rules in Forge without opening any world. */
 @Mod("enhancedcore_audit")
 public final class IvMaterialPortRuntimeChecks {
-    private static final String FACTORY = "gtl_enhancedcore:universal_joint_factory";
     private static final String HYDROTHERMAL = "gtl_enhancedcore:hydrothermal_leaching_complex";
     private static final List<String> OWN_IV = List.of("plasma_machine_tool", "hadron_catalytic_refinery",
             "quantum_mass_spectrum_array", "superconducting_fusion_assembler");
     private final List<String> checks = new ArrayList<>();
     private final List<Map<String, Object>> machines = new ArrayList<>();
     private final Map<String, String> ordinaryIds = new LinkedHashMap<>();
-    private final int expectedJointLimit = Integer.getInteger("gtl.enhancedcore.ivMaterialPortsExpectedMax", 30);
     private List<List<Port>> finalLayouts = List.of();
     private boolean done;
     private int scenarios;
@@ -80,12 +77,11 @@ public final class IvMaterialPortRuntimeChecks {
             report.put("error", failure.toString());
         }
         report.put("scope", "Both original material SimplePredicate identities and complete final production TraceabilityPredicates "
-                + "at distinct actual pattern grid positions, including both factory X/Q zones; real registered hatch block states, "
+                + "at distinct actual pattern grid positions, for isolated machines; real registered hatch block states, "
                 + "transformed TraceabilityPredicate.test and MultiblockState clean/update; "
                 + "no complete geometry formation, machine entity lifecycle, recipes or player world");
         report.put("checks", checks);
         report.put("scenarioCount", scenarios);
-        report.put("expectedJointLimit", expectedJointLimit);
         report.put("machineCount", machines.size());
         report.put("ordinaryMaterialBlocks", ordinaryIds);
         report.put("machines", machines);
@@ -98,8 +94,6 @@ public final class IvMaterialPortRuntimeChecks {
     }
 
     private void run() throws Exception {
-        check(expectedJointLimit > 0 && expectedJointLimit < 142,
-                "Explicit expected joint-factory endpoint limit fits its real 142-position panel");
         Block superBuffer = block("gtladditions:me_super_pattern_buffer");
         check(IvBufferRegistry.contains(ForgeRegistries.BLOCKS.getKey(superBuffer)),
                 "Actual ADD super buffer is a registered isolation endpoint");
@@ -115,19 +109,18 @@ public final class IvMaterialPortRuntimeChecks {
             ordinaryIds.put(ability.toString(), ForgeRegistries.BLOCKS.getKey(selected).toString());
         }
         List<String> targets = new ArrayList<>();
-        targets.add(FACTORY);
         OWN_IV.forEach(id -> targets.add("gtl_enhancedcore:" + id));
         targets.add(HYDROTHERMAL);
         var controllersField = IvBuffers.class.getDeclaredField("CONTROLLERS");
         controllersField.setAccessible(true);
         Object controllers = controllersField.get(null);
         check(controllers instanceof Set<?> ownControllers && ownControllers.equals(Set.copyOf(targets)),
-                "Enumerated six own isolation machines exactly equal production IvBuffers.CONTROLLERS");
+                "Enumerated five own isolation machines exactly equal production IvBuffers.CONTROLLERS");
         IvMachineScope.NATIVE_IDS.stream().sorted().forEach(id -> targets.add("gtceu:" + id));
         IvMachineScope.FOREIGN_NATIVE_IDS.entrySet().stream().sorted(Map.Entry.comparingByKey())
                 .forEach(entry -> entry.getValue().stream().sorted()
                         .forEach(id -> targets.add(entry.getKey() + ":" + id)));
-        check(targets.size() == 25, "All six own machines and all nineteen native isolation targets enumerated");
+        check(targets.size() == 24, "All five own machines and all nineteen native isolation targets enumerated");
         var unsafeField = sun.misc.Unsafe.class.getDeclaredField("theUnsafe");
         unsafeField.setAccessible(true);
         var unsafe = (sun.misc.Unsafe) unsafeField.get(null);
@@ -157,7 +150,6 @@ public final class IvMaterialPortRuntimeChecks {
         Set<TraceabilityPredicate> seenRules = Collections.newSetFromMap(new IdentityHashMap<>());
         Set<SimplePredicate> materials = Collections.newSetFromMap(new IdentityHashMap<>());
         List<Port> ports = new ArrayList<>();
-        Map<BlockPos, Character> factorySymbols = FACTORY.equals(id) ? factorySymbols() : Map.of();
         int portPositions = 0;
         Map<TraceabilityPredicate, Boolean> materialRules = new IdentityHashMap<>();
         for (int z = 0; z < grid.length; z++) for (int y = 0; y < grid[z].length; y++)
@@ -180,34 +172,24 @@ public final class IvMaterialPortRuntimeChecks {
             if (Boolean.TRUE.equals(materialRules.get(rule))) {
                 portPositions++;
                 var sourcePosition = new BlockPos(x, y, z);
-                ports.add(new Port(sourcePosition, rule, factorySymbols.getOrDefault(sourcePosition, '?')));
+                ports.add(new Port(sourcePosition, rule));
             }
         }
-        boolean factory = FACTORY.equals(id);
-        int count = factory ? expectedJointLimit : id.startsWith("gtl_enhancedcore:") && !HYDROTHERMAL.equals(id) ? 32 : 3;
-        int endpointLimit = factory ? expectedJointLimit : Integer.MAX_VALUE;
-        check(!materials.isEmpty() && portPositions >= (factory ? expectedJointLimit + 1 : count),
+        int count = id.startsWith("gtl_enhancedcore:") && !HYDROTHERMAL.equals(id) ? 32 : 3;
+        check(!materials.isEmpty() && portPositions >= count,
                 id + " final pattern has real shared material rules and enough distinct hatch positions");
         int before = scenarios;
         for (SimplePredicate material : materials) {
             var matchedPorts = ports.stream().filter(port -> port.rule.common.stream().anyMatch(part -> part == material)
                     || port.rule.limited.stream().anyMatch(part -> part == material)).toList();
-            finalLayouts = layouts(matchedPorts, factory);
+            finalLayouts = layouts(matchedPorts);
             check(!finalLayouts.isEmpty() && finalLayouts.stream().allMatch(layout -> layout.size() == matchedPorts.size()),
                     id + " final complete rules retain the exact production material identity at each distinct grid position");
             var rule = new TraceabilityPredicate(material);
             check(material.minCount == 1 && material.maxCount == -1
                             && material.minLayerCount == -1 && material.maxLayerCount == -1,
                     id + " production material minimum has no accidental global/layer maximum");
-            if (factory) {
-                for (int amount : new int[]{1, 2, 3, 30}) {
-                    expect(id, "super-" + amount, world, state, rule, repeated(superBuffer, amount), amount <= expectedJointLimit);
-                }
-                expect(id, "super-at-limit", world, state, rule, repeated(superBuffer, expectedJointLimit), true);
-                expect(id, "super-over-limit", world, state, rule, repeated(superBuffer, expectedJointLimit + 1), false);
-            } else {
-                expect(id, "multiple-super-" + count, world, state, rule, repeated(superBuffer, count), true);
-            }
+            expect(id, "multiple-super-" + count, world, state, rule, repeated(superBuffer, count), true);
             expect(id, "all-four-ordinary-io", world, state, rule, ordinary, true);
             for (Block input : ordinary) {
                 String name = ForgeRegistries.BLOCKS.getKey(input).toString();
@@ -216,12 +198,10 @@ public final class IvMaterialPortRuntimeChecks {
             }
             // Each expect reuses exactly the same state and invokes the actual upstream cleanState().
             expect(id, "retry-after-exclusion-ordinary", world, state, rule, List.of(ordinary.getFirst()), true);
-            expect(id, "retry-after-ordinary-super", world, state, rule, repeated(superBuffer, Math.min(3, endpointLimit)), true);
+            expect(id, "retry-after-ordinary-super", world, state, rule, repeated(superBuffer, 3), true);
         }
         machines.add(Map.of("id", id, "materialRuleIdentities", materials.size(), "portPositions", portPositions,
                 "finalRuleIdentities", ports.stream().map(Port::rule).distinct().count(),
-                "factoryXPositions", ports.stream().filter(port -> port.symbol == 'X').count(),
-                "factoryQPositions", ports.stream().filter(port -> port.symbol == 'Q').count(),
                 "multipleBufferCount", count, "scenarios", scenarios - before));
     }
 
@@ -256,13 +236,7 @@ public final class IvMaterialPortRuntimeChecks {
         scenarios++;
     }
 
-    private List<List<Port>> layouts(List<Port> ports, boolean factory) {
-        if (factory) {
-            var xs = ports.stream().filter(port -> port.symbol == 'X').toList();
-            var qs = ports.stream().filter(port -> port.symbol == 'Q').toList();
-            check(xs.size() == 24 && qs.size() == 118, "Factory final rules cover all 24 X and 118 Q positions");
-            return List.of(interleave(xs, qs), interleave(qs, xs));
-        }
+    private List<List<Port>> layouts(List<Port> ports) {
         Set<TraceabilityPredicate> seen = Collections.newSetFromMap(new IdentityHashMap<>());
         List<Port> representatives = ports.stream().filter(port -> seen.add(port.rule)).toList();
         List<List<Port>> result = new ArrayList<>();
@@ -275,33 +249,7 @@ public final class IvMaterialPortRuntimeChecks {
         return result;
     }
 
-    private static List<Port> interleave(List<Port> first, List<Port> second) {
-        List<Port> result = new ArrayList<>();
-        for (int index = 0; index < Math.max(first.size(), second.size()); index++) {
-            if (index < first.size()) result.add(first.get(index));
-            if (index < second.size()) result.add(second.get(index));
-        }
-        return result;
-    }
-
-    private static Map<BlockPos, Character> factorySymbols() throws Exception {
-        var result = new LinkedHashMap<BlockPos, Character>();
-        try (var input = StructureData.class.getResourceAsStream(
-                "/data/gtl_enhancedcore/structures/integrated_universal_factory.pattern.gz")) {
-            var structure = StructureData.read(input);
-            int[] depth = {0};
-            structure.forEachAisle(rows -> {
-                int z = depth[0]++;
-                for (int y = 0; y < rows.length; y++) for (int x = 0; x < rows[y].length(); x++) {
-                    char symbol = rows[y].charAt(x);
-                    if (symbol == 'X' || symbol == 'Q') result.put(new BlockPos(x, y, z), symbol);
-                }
-            });
-        }
-        return result;
-    }
-
-    private record Port(BlockPos position, TraceabilityPredicate rule, char symbol) {}
+    private record Port(BlockPos position, TraceabilityPredicate rule) {}
 
     private static List<Block> repeated(Block block, int amount) {
         return new ArrayList<>(Collections.nCopies(amount, block));

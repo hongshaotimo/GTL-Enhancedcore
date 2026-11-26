@@ -58,11 +58,8 @@ public final class TooltipClientChecks {
     private static final List<String> LOCALES = List.of("zh_cn", "en_us", "zh_cn");
     private static final List<Long> SAMPLE_DELAYS_MILLIS = List.of(250L, 350L, 450L, 300L, 550L, 400L, 650L);
     private static final Set<String> ANIMATED_KEYS = Set.of(TooltipPolicy.SOURCE_KEY, TooltipPolicy.CROSS_RECIPE_KEY);
-    private static final Map<String, String> RETIRED_MODULE_KEYS = Map.of(
-            "gtceu:suprachronal_assembly_line", "gtceu.machine.suprachronal_assembly_line.tooltip.1",
-            "gtceu:suprachronal_assembly_line_module", "gtceu.machine.suprachronal_assembly_line_module.tooltip.0");
     private static final Set<String> DIRECT_TARGETS = Set.of("fission_reactor", "star_ultimate_material_forge_factory",
-            "engraving_laser_plant", "assembly_line", "circuit_assembly_line", "suprachronal_assembly_line_module");
+            "engraving_laser_plant", "assembly_line", "circuit_assembly_line");
     private static final Pattern UNEXPANDED_ARGUMENT = Pattern.compile("%(?:(\\d+)\\$)?s");
     private static final List<String> failures = new ArrayList<>();
     private static final Map<String, Map<String, List<String>>> snapshots = new LinkedHashMap<>();
@@ -237,7 +234,6 @@ public final class TooltipClientChecks {
         check(registered.containsAll(owned), "Owned machine facade contains unregistered definitions");
         var rendered = new LinkedHashMap<String, List<String>>();
         var nativeSeen = new HashSet<String>();
-        var suprachronalSeen = new HashSet<String>();
         int ownCount = 0;
         int foreignCount = 0;
         for (var definition : registered) {
@@ -277,12 +273,10 @@ public final class TooltipClientChecks {
                 ownCount++;
             }
             if (IvMachineScope.nativeTarget(definition.getId())) nativeSeen.add(definition.getId().getPath());
-            if (RETIRED_MODULE_KEYS.containsKey(definition.getId().toString())) suprachronalSeen.add(definition.getId().toString());
             rendered.put(definition.getId().toString(), lines.stream().map(TooltipClientChecks::visibleText).toList());
         }
         check(ownCount == owned.size(), "Not every owned registered builder was inspected");
         check(nativeSeen.equals(IvMachineScope.NATIVE_IDS), "Missing native tooltip targets: " + nativeSeen);
-        check(suprachronalSeen.equals(RETIRED_MODULE_KEYS.keySet()), "The real host/retired-module definitions were not both inspected");
         check(foreignCount > 0, "No third-party wrappers were inspected");
         check(animationTargets.stream().map(AnimationTarget::key).collect(java.util.stream.Collectors.toSet())
                 .equals(ANIMATED_KEYS), "Actual registered builders did not expose both dynamic project keys");
@@ -396,7 +390,6 @@ public final class TooltipClientChecks {
             var id = recipe.registryName;
             keys.add(id.getNamespace() + "." + id.getPath());
         }
-        if (activeOnly && definition.getId().toString().equals("gtceu:suprachronal_assembly_line_module")) return List.of();
         return List.copyOf(keys);
     }
 
@@ -437,9 +430,7 @@ public final class TooltipClientChecks {
         report.add("registeredMetadata", new GsonBuilder().create().toJsonTree(recipeKeys(definition, false)));
         report.add("expectedActiveTypes", new GsonBuilder().create().toJsonTree(expected));
         report.add("defaultGroups", groups);
-        if (definition.getId().toString().equals("gtceu:suprachronal_assembly_line_module")) {
-            report.addProperty("metadataException", "USER_DISABLED_EXTENSION_MODULE_NO_ACTIVE_RECIPE_MAP");
-        } else if (!recipeKeys(definition, false).equals(expected)) {
+        if (!recipeKeys(definition, false).equals(expected)) {
             report.addProperty("metadataException", "EXACT_EMPTY_CAUSALITY_TERMINAL_OR_WIRELESS_CHARGER_TYPES");
         }
         return report;
@@ -468,27 +459,11 @@ public final class TooltipClientChecks {
     private static void verifyOriginal(MachineDefinition definition, BiConsumer<ItemStack, List<Component>> raw,
                                        List<Component> inherited, List<Component> lines, List<Component> itemLines, String locale) {
         String context = locale + ":" + definition.getId();
-        String retiredKey = RETIRED_MODULE_KEYS.get(definition.getId().toString());
-        Set<String> declaredRemovals = retiredKey == null ? Set.of()
-                : TooltipPolicy.replacedKeys(definition.getId().getPath().equals("suprachronal_assembly_line")
-                        ? "suprachronal_module_host" : "suprachronal_module");
         var retained = new ArrayList<Component>();
-        var exceptions = new JsonArray();
         int recipeRewrites = 0;
         for (Component original : inherited) {
-            String removedKey = declaredRemovals.stream().filter(key -> MachineTooltips.containsKey(original, key))
-                    .sorted().findFirst().orElse(null);
-            if (removedKey != null) {
-                var exception = new JsonObject();
-                exception.addProperty("key", removedKey);
-                exception.addProperty("original", visibleText(original));
-                exception.addProperty("reason", "USER_REQUESTED_MODULE_PROMISE_REMOVAL");
-                exceptions.add(exception);
-            } else if (recipeRow(original)) {
-                recipeRewrites++;
-            } else {
-                retained.add(original);
-            }
+            if (recipeRow(original)) recipeRewrites++;
+            else retained.add(original);
         }
         var expectedCounts = semanticCounts(retained);
         var defaultCounts = semanticCounts(lines);
@@ -512,24 +487,11 @@ public final class TooltipClientChecks {
             if (cursor < expectedOrder.size() && expectedOrder.get(cursor).equals(meaning)) cursor++;
         }
         check(cursor == expectedOrder.size(), "Foreign original default information was reordered or folded: " + context);
-        if (retiredKey != null) {
-            for (String removedKey : declaredRemovals) {
-                check(count(itemLines, removedKey) == 0 && count(lines, removedKey) == 0,
-                        "A declared module removal escaped into the full item tooltip: " + context + ":" + removedKey);
-            }
-            String warningKey = definition.getId().getPath().equals("suprachronal_assembly_line")
-                    ? "tooltip.gtl_enhancedcore.suprachronal_no_modules" : "tooltip.gtl_enhancedcore.suprachronal_module_disabled";
-            check(count(itemLines, warningKey) == 1, "Full item tooltip lost/duplicated the module warning: " + context);
-        }
         var report = new JsonObject();
         report.addProperty("machine", definition.getId().toString());
         report.addProperty("unwrappedCallback", raw.getClass().getName());
         report.addProperty("rawRows", inherited.size());
         report.addProperty("recipeMapRewrites", recipeRewrites);
-        report.addProperty("retiredModuleKey", retiredKey);
-        report.addProperty("retiredModuleRawRows", retiredKey == null ? 0 : count(inherited, retiredKey));
-        report.add("declaredModuleReplacementKeys", new GsonBuilder().create().toJsonTree(declaredRemovals.stream().sorted().toList()));
-        report.add("intentionalRemovals", exceptions);
         report.add("retainedMeaningCounts", evidence);
         activeLocaleReport.getAsJsonArray("originalContent").add(report);
     }
@@ -608,19 +570,9 @@ public final class TooltipClientChecks {
                 for (String key : TooltipPolicy.nativeSummaryKeys(definition.getId().getPath())) check(count(lines, key) >= 1,
                         "Original machine-specific requirement was hidden: " + context + ":" + key);
             }
-            String retiredKey = RETIRED_MODULE_KEYS.get(definition.getId().toString());
-            if (retiredKey != null) {
-                check(count(lines, retiredKey) == 0, "Removed module promise remains default-visible: " + context + ":" + retiredKey);
-                String warningKey = definition.getId().getPath().equals("suprachronal_assembly_line")
-                        ? "tooltip.gtl_enhancedcore.suprachronal_no_modules" : "tooltip.gtl_enhancedcore.suprachronal_module_disabled";
-                check(count(lines, warningKey) == 1, "Host/module disable warning is not default-visible exactly once: " + context);
-                if (definition.getId().getPath().equals("suprachronal_assembly_line")) {
-                    check(count(inherited, "gtceu.machine.suprachronal_assembly_line.tooltip.0") > 0,
-                            "The unwrapped host callback did not expose its real original flavor");
-                    check(count(lines, "gtceu.machine.suprachronal_assembly_line.tooltip.0")
-                                    == count(inherited, "gtceu.machine.suprachronal_assembly_line.tooltip.0"),
-                            "Host flavor was removed, collapsed, or duplicated");
-                }
+            if (definition.getId().toString().equals("gtceu:suprachronal_assembly_line")) {
+                check(count(lines, "gtceu.machine.suprachronal_assembly_line.tooltip.1") == 1,
+                        "The assembly line must show its original module support: " + context);
             }
         }
     }
@@ -637,7 +589,6 @@ public final class TooltipClientChecks {
                 case "fission_reactor", "engraving_laser_plant" -> pages.add(id.getPath());
                 case "star_ultimate_material_forge_factory" -> pages.add("star_ultimate_material_forge");
                 case "assembly_line", "circuit_assembly_line" -> pages.add("pattern_buffer");
-                case "suprachronal_assembly_line_module" -> pages.add("suprachronal_module");
                 default -> {}
             }
         }
@@ -857,7 +808,6 @@ public final class TooltipClientChecks {
                 result.addProperty("builderColorAnimation", localeIndex == LOCALES.size() ? "ALL_LOCALES_SAMPLED" : "INCOMPLETE");
                 result.addProperty("foreignShiftPolicy", "SAME_CAPTURED_INHERITED_INPUT_LOGIC_ONLY");
                 result.addProperty("originalValidation", "RAW_BACKING_CALLBACK_SEMANTIC_MULTISET");
-                result.add("suprachronalExactRemovals", new GsonBuilder().create().toJsonTree(RETIRED_MODULE_KEYS));
                 result.addProperty("elapsedMillis", started == 0 ? 0 : (System.nanoTime() - started) / 1_000_000);
                 result.add("locales", localeReports);
                 result.add("snapshots", new GsonBuilder().create().toJsonTree(snapshots));

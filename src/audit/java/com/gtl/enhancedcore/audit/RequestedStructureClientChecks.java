@@ -9,7 +9,6 @@ import com.gregtechceu.gtceu.api.pattern.MultiblockState;
 import com.gregtechceu.gtceu.api.pattern.TraceabilityPredicate;
 import com.gregtechceu.gtceu.api.pattern.predicates.SimplePredicate;
 import com.gregtechceu.gtceu.api.registry.GTRegistries;
-import com.gregtechceu.gtceu.common.block.CoilBlock;
 import com.gtl.enhancedcore.common.structure.StructureData;
 import com.gtl.enhancedcore.common.structure.HollowStructureResources;
 import com.gtl.enhancedcore.mixin.gtceu.BlockPatternAccessor;
@@ -35,15 +34,9 @@ import net.minecraftforge.registries.ForgeRegistries;
 @Mod("enhancedcore_audit")
 public final class RequestedStructureClientChecks {
     private static final String ROOT = "/data/gtl_enhancedcore/structures/";
-    private static final List<String> IDS = List.of("gtladditions:antientropy_condensation_center",
-            "gtl_enhancedcore:stellar_confinement_fusion_reactor", "gtl_enhancedcore:hyperstructural_chemical_distorter",
-            "gtladditions:dimensionally_transcendent_chemical_plant", "gtladditions:lucid_etchdreamer",
-            "gtceu:advanced_sps_crafting", "gtceu:super_particle_collider",
-            "gtladditions:macro_atomic_resonant_fragment_stripper", "gtladditions:quantum_syphon_matrix",
-            "gtceu:huge_incubator", "gtladditions:titan_crip_earthbore", "gtceu:eye_of_harmony",
-            "gtladditions:arcanic_astrograph", "gtladditions:heart_of_the_universe",
-            "gtladditions:fuxi_bagua_heaven_forging_furnace",
-            "gtladditions:space_infinity_integrated_ore_processor", "gtladditions:apocalyptic_torsion_quantum_matrix",
+    private static final List<String> IDS = List.of(
+            "gtl_enhancedcore:stellar_confinement_fusion_reactor",
+            "gtceu:advanced_sps_crafting", "gtceu:super_particle_collider", "gtceu:huge_incubator", "gtceu:eye_of_harmony",
             "gtl_enhancedcore:stellar_vortex_space_station", "gtl_enhancedcore:lanthanide_refining_hub");
     private final List<String> checks = new ArrayList<>();
     private final List<String> failures = new ArrayList<>();
@@ -85,7 +78,7 @@ public final class RequestedStructureClientChecks {
         boolean own = definition.getId().getNamespace().equals("gtl_enhancedcore");
         JsonObject spec = specification(name, own);
         String resource = !own ? "gtl/" + name
-                : name.equals("stellar_confinement_fusion_reactor") || name.equals("hyperstructural_chemical_distorter")
+                : name.equals("stellar_confinement_fusion_reactor")
                 ? name.replace("_", "") + "structure" : name;
         var pattern = definition.getPatternFactory().get();
         var grid = ((BlockPatternAccessor) pattern).gtlEnhancedcore$getBlockMatches();
@@ -145,14 +138,14 @@ public final class RequestedStructureClientChecks {
         for (var entry : spec.getAsJsonObject("bindings").entrySet()) {
             var binding = entry.getValue().getAsJsonObject();
             String mode = binding.get("mode").getAsString();
-            if (mode.equals("heating_coils") || mode.equals("distorter_coils")
+            if (mode.equals("heating_coils")
                     || binding.has("block") && binding.get("block").getAsString().equals("gtceu:tritanium_coil_block"))
-                coils(id, predicates.get(entry.getKey().charAt(0)), name.equals("hyperstructural_chemical_distorter"));
+                coils(id, predicates.get(entry.getKey().charAt(0)));
         }
         var shapes = definition.getMatchingShapes();
         check(shapes.size() == 1, id + " one actual registered preview shape");
         BlockInfo[][][] preview = shapes.getFirst().getBlocks();
-        int controllers = 0, nulls = 0, shownPorts = 0;
+        int controllers = 0, nulls = 0;
         for (var plane : preview) for (var row : plane) for (var info : row) {
             if (info == null) { nulls++; continue; }
             if (info.getBlockState().is(definition.getBlock())) {
@@ -165,19 +158,6 @@ public final class RequestedStructureClientChecks {
         for (var plane : grid) for (var row : plane) for (var predicate : row)
             if (predicate.isController) controllerPredicates++;
         check(controllerPredicates == 1, id + " exactly one structural controller anchor");
-        if (name.equals("lucid_etchdreamer")) {
-            var sparse = new org.gtlcore.gtlcore.client.preview.SparsePreviewShape(shapes.getFirst(), definition);
-            check(sparse.controller.equals(new BlockPos(87, 87, 0)), id + " actual sparse page uses the new controller anchor");
-            check(nulls == counts.get(' '), id + " all " + nulls + " wildcard cells remain null in sparse preview");
-            var origin = spec.getAsJsonObject("previewPanel").getAsJsonArray("origin");
-            int z = origin.get(2).getAsInt();
-            for (int y = 82; y <= 92; y++) for (int x = 82; x <= 92; x++) if (grid[z][y][x] == port) {
-                var info = preview[w-1-x][y][d-1-z];
-                check(info != null && !info.getBlockState().isAir(), id + " actual 11x11 panel has a visible port at " + x + "," + y);
-                shownPorts++;
-            }
-            check(shownPorts == 108, id + " all 108 preview ports supplied");
-        }
         var holder = (com.gregtechceu.gtceu.api.blockentity.MetaMachineBlockEntity) definition.getBlockEntityType()
                 .create(BlockPos.ZERO, definition.defaultBlockState());
         check(holder.getMetaMachine().getDefinition() == definition, id + " actual controller constructor retains definition");
@@ -190,7 +170,7 @@ public final class RequestedStructureClientChecks {
     private static JsonObject specification(String name, boolean own) throws Exception {
         if (own) return read(name + ".json");
         for (String file : List.of("gtl/manifest.json", "gtl/upgrades.json", "gtl/upgrades_20260927.json",
-                "gtl/lucid_etchdreamer.json", "gtl/super_particle_collider.json", "gtl/upgrades_20261013.json",
+                "gtl/super_particle_collider.json", "gtl/upgrades_20261013.json",
                 "gtl/upgrades_20261102.json")) {
             var entries = read(file);
             if (entries.has(name)) return entries.getAsJsonObject(name);
@@ -205,17 +185,14 @@ public final class RequestedStructureClientChecks {
         }
     }
 
-    private void coils(String id, TraceabilityPredicate predicate, boolean minimum) {
+    private void coils(String id, TraceabilityPredicate predicate) {
         var accepted = new ArrayList<Block>();
         for (var entry : GTCEuAPI.HEATING_COILS.entrySet()) {
             var coil = entry.getValue().get();
             var state = new Cell(coil.defaultBlockState(), predicate);
-            boolean expected = !minimum || entry.getKey().getCoilTemperature() >= CoilBlock.CoilType.TRITANIUM.getCoilTemperature();
-            check(predicate.test(state) == expected, id + " registered coil temperature " + entry.getKey().getName());
-            if (expected) {
-                check(state.getMatchContext().get("CoilType") == entry.getKey(), id + " actual CoilType stored " + entry.getKey().getName());
-                accepted.add(coil);
-            }
+            check(predicate.test(state), id + " registered coil " + entry.getKey().getName());
+            check(state.getMatchContext().get("CoilType") == entry.getKey(), id + " actual CoilType stored " + entry.getKey().getName());
+            accepted.add(coil);
         }
         for (var left : accepted) for (var right : accepted) {
             var state = new Cell(left.defaultBlockState(), predicate);

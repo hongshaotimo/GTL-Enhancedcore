@@ -61,7 +61,7 @@ public final class LazyPreviewMemoryChecks {
                     check(loaded() == 0, "JEI startup eagerly loaded preview worlds: " + loaded());
                     check(cache().isEmpty(), "JEI startup retained shared pattern cache");
                     var ids = List.of(System.getProperty("gtl.enhancedcore.lazyPreviewMachines",
-                            "gtceu:coke_oven,gtl_enhancedcore:hyperstructural_chemical_distorter").split(","));
+                            "gtceu:coke_oven,gtl_enhancedcore:stellar_confinement_fusion_reactor").split(","));
                     selected = ids.stream().map(id -> recipes.stream()
                             .filter(recipe -> recipe.definition.getId().toString().equals(id.trim()))
                             .findFirst().orElseThrow()).toList();

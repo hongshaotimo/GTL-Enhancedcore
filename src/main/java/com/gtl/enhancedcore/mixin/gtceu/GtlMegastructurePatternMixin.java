@@ -4,11 +4,11 @@ import com.google.common.base.Suppliers;
 import com.gregtechceu.gtceu.api.machine.MultiblockMachineDefinition;
 import com.gregtechceu.gtceu.api.pattern.BlockPattern;
 import com.gregtechceu.gtceu.api.pattern.MultiblockShapeInfo;
+import com.gtl.enhancedcore.common.structure.AddStructureOwnership;
 import com.gtl.enhancedcore.common.structure.GtlMegastructurePatterns;
 import com.gtl.enhancedcore.common.structure.SpaceElevatorMaintenance;
 import com.gtl.enhancedcore.common.structure.NativeIsolationPatterns;
 import com.gtl.enhancedcore.common.structure.NativeStructureHollowing;
-import com.gtl.enhancedcore.common.structure.RetiredLightHunter;
 import com.gtl.enhancedcore.common.config.MachineOverrideConfig;
 import java.util.List;
 import java.util.function.Supplier;
@@ -34,7 +34,7 @@ public abstract class GtlMegastructurePatternMixin {
                 var pattern = NativeIsolationPatterns.restrict(definition.getId(), original.get());
                 return replace ? NativeStructureHollowing.optimize(definition.getId(), pattern) : pattern;
             });
-        if (!replace) return original;
+        if (!replace || AddStructureOwnership.owns(definition.getId())) return original;
         if (GtlMegastructurePatterns.targets(definition.getId()))
             return GtlMegastructurePatterns.wrapFactory(definition.getId(), original);
         return Suppliers.memoize(() -> NativeStructureHollowing.optimize(definition.getId(), original.get()));
@@ -45,12 +45,11 @@ public abstract class GtlMegastructurePatternMixin {
         var definition = (MultiblockMachineDefinition) (Object) this;
         boolean replace = MachineOverrideConfig.current().replaceOriginalStructures();
         boolean enhance = MachineOverrideConfig.current().enhanceOriginalMachines();
-        if (RetiredLightHunter.contains(definition.getId())
-                || !(replace && GtlMegastructurePatterns.targets(definition.getId())
-                        || enhance && SpaceElevatorMaintenance.matches(definition.getId()))) return original;
-        // Ability patches and hidden-cell optimization retain native geometry. Their
-        // supplied tier/length variants (or the native repetition DFS) must survive.
-        // Only a replaced blueprint needs a newly generated matching shape.
+        var id = definition.getId();
+        boolean baseElevator = enhance && id.getNamespace().equals("gtceu") && SpaceElevatorMaintenance.matches(id);
+        if (!(replace && GtlMegastructurePatterns.targets(id) || baseElevator)) return original;
+        // Keep native ADD preview suppliers and tier variants, including the MKII elevator.
+        // The base elevator still rebuilds its page to reflect the maintenance-port restriction.
         return Suppliers.memoize(() -> {
             var pattern = definition.getPatternFactory().get();
             int[] repetitions = NativeStructureHollowing.minimumRepetitions(pattern.aisleRepetitions);

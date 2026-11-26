@@ -8,7 +8,9 @@ import com.gregtechceu.gtceu.api.machine.multiblock.MultiblockControllerMachine;
 import com.gregtechceu.gtceu.api.machine.multiblock.WorkableMultiblockMachine;
 import com.gregtechceu.gtceu.api.machine.trait.RecipeLogic;
 import com.gregtechceu.gtceu.api.registry.GTRegistries;
+import com.gtl.enhancedcore.client.renderer.celestial.CelestialVfxRenderer;
 import com.gtl.enhancedcore.common.structure.CelestialEffectAnchors;
+import com.gtl.enhancedcore.common.structure.CelestialEffectSizing;
 import com.lowdragmc.lowdraglib.utils.DummyWorld;
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
@@ -21,10 +23,6 @@ import java.util.concurrent.CompletableFuture;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.Screenshot;
 import net.minecraft.client.gui.GuiGraphics;
-import com.gtladd.gtladditions.client.render.machine.deferred.DeferredMachineRenderer;
-import com.gtladd.gtladditions.client.render.machine.deferred.DeferredRenderContext;
-import com.gtladd.gtladditions.client.render.machine.deferred.DeferredRenderEntry;
-import it.unimi.dsi.fastutil.longs.Long2ObjectLinkedOpenHashMap;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -70,7 +68,7 @@ public final class CelestialRenderStateChecks {
             if (phase == 0) {
                 if (!dir.startsWith(ROOT) || !Files.isRegularFile(dir.resolve("celestial-state.marker"))
                         || mc.level != null || mc.getSingleplayerServer() != null) throw new AssertionError("Isolation boundary");
-                report.put("scope", "Actual registered astrograph BER, actual GL snapshots and successor GPU draws; no player save or stencil modification. Oculus native toggle/reload exercised when present; title-screen has no active world shader pipeline.");
+                report.put("scope", "Native ADD Astrograph preview BER, direct Core Eye effect, GL snapshots and successor GPU draws. Title-screen Oculus toggles use no world shader pipeline.");
                 if (GL.getCapabilities().OpenGL43) {
                     debugCallback = GLDebugMessageCallback.create((source, type, id, severity, length, message, user) -> {
                         if (type == GL43.GL_DEBUG_TYPE_ERROR) {
@@ -178,7 +176,6 @@ public final class CelestialRenderStateChecks {
         entity.setLevel(world);
         try {
             field(MultiblockControllerMachine.class, "isFormed").setBoolean(machine, true);
-            if (!eye) field(machine.getClass(), "parallelAmount").setInt(machine, Integer.MAX_VALUE);
             var logic = machine.getRecipeLogic();
             field(RecipeLogic.class, "isActive").setBoolean(logic, active);
             field(RecipeLogic.class, "status").set(logic, active ? RecipeLogic.Status.WORKING : RecipeLogic.Status.IDLE);
@@ -197,20 +194,25 @@ public final class CelestialRenderStateChecks {
             RenderSystem.getShader().apply();
             RenderSystem.activeTexture(GL13.GL_TEXTURE1);
             var before = snapshot(); row.put("before", before);
-            var center = eye ? CelestialEffectAnchors.eye(machine) : CelestialEffectAnchors.astrograph(machine);
+            var center = eye ? CelestialEffectAnchors.eye(machine) : new Vec3(.5, .5, -15.5);
             var camera = center.add(day ? new Vec3(68, 37, 58) : new Vec3(12, 8, 12));
             var view = new Matrix4f().lookAt(camera.toVector3f(), center.toVector3f(), new Vector3f(0, 1, 0));
             var pose = new PoseStack(); pose.last().pose().set(view); pose.last().normal().set(view).invert().transpose();
-            var renderer = mc.getBlockEntityRenderDispatcher().getRenderer(entity);
-            renderer.render(entity, .25F, pose, mc.renderBuffers().bufferSource(), 0xF000F0, 0);
-            @SuppressWarnings("unchecked")
-            var queue = (Long2ObjectLinkedOpenHashMap<DeferredRenderEntry>) field(DeferredMachineRenderer.class, "entries").get(null);
-            var pending = queue.remove(BlockPos.ZERO.asLong());
-            if (pending != null) {
-                row.put("drawPath", "Real BER enqueues; manually invoking actual deferred entry render. Scheduling and world identity gate are not tested here.");
-                row.put("deferredEntry", pending.getClass().getName());
-                pending.render(new DeferredRenderContext(camera, new PoseStack(), null));
-            } else row.put("drawPath", "Real BER immediate draw or idle");
+            var buffers = mc.renderBuffers().bufferSource();
+            if (eye) {
+                row.put("drawPath", "Direct Core Eye effect fixture");
+                if (active) {
+                    pose.translate(center.x, center.y, center.z);
+                    float scale = CelestialEffectSizing.EYE_SCALE;
+                    pose.scale(scale, scale, scale);
+                    CelestialVfxRenderer.eye(world.getGameTime() + .25F, pose, buffers);
+                }
+            } else {
+                row.put("drawPath", "Native ADD Astrograph preview BER");
+                var renderer = mc.getBlockEntityRenderDispatcher().getRenderer(entity);
+                renderer.render(entity, .25F, pose, buffers, 0xF000F0, 0);
+                buffers.endBatch();
+            }
             var after = snapshot(); row.put("after", after);
             var differences = new ArrayList<String>();
             for (var key : before.keySet()) if (!Objects.equals(before.get(key), after.get(key))) differences.add(key);

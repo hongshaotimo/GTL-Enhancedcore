@@ -9,7 +9,7 @@ import com.gregtechceu.gtceu.api.recipe.logic.*;
 import com.gtl.enhancedcore.common.machine.galaxy.GalaxyLinks;
 import com.gtl.enhancedcore.common.machine.galaxy.GalaxyPower;
 import com.gtladd.gtladditions.api.machine.logic.MutableRecipesLogic;
-import com.gtladd.gtladditions.utils.RecipeCalculationHelper;
+import com.gtladd.gtladditions.utils.recipe.RecipeCalculationHelper;
 import java.math.BigInteger;
 import java.util.*;
 import org.gtlcore.gtlcore.api.recipe.IGTRecipe;

@@ -1,59 +1,55 @@
 package com.gtl.enhancedcore.client.renderer.celestial;
 
+import com.gregtechceu.gtceu.api.machine.IMachineBlockEntity;
+import com.gregtechceu.gtceu.api.machine.multiblock.MultiblockControllerMachine;
+import com.gtl.enhancedcore.client.renderer.EnhancedMachineScene;
 import com.gtl.enhancedcore.client.renderer.MachineShaders;
-import com.gtladd.gtladditions.client.render.machine.deferred.DeferredMachineRenderer;
-import com.gtladd.gtladditions.client.render.machine.deferred.DeferredRenderContext;
-import com.gtladd.gtladditions.client.render.machine.deferred.DeferredRenderEntry;
+import com.gtl.enhancedcore.common.structure.CelestialEffectAnchors;
+import com.gtl.enhancedcore.common.structure.CelestialEffectSizing;
+import com.gtladd.gtladditions.api.client.scene.PartBlend;
+import com.gtladd.gtladditions.api.client.scene.PartBounds;
+import com.gtladd.gtladditions.api.client.scene.PartRenderer;
+import com.gtladd.gtladditions.api.client.scene.ScenePart;
+import com.gtladd.gtladditions.api.client.scene.SceneRendering;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import org.joml.Matrix4f;
 
-/** Uses ADD's verified after-translucent / after-shaderpack-final scheduling. */
+/** Submits Core's Eye of Harmony to the ADD world compositor. */
 @OnlyIn(Dist.CLIENT)
 public final class CelestialVfxDeferred {
+    private static final PartRenderer<Entry> RENDERER = (context, parts) -> {
+        var level = Minecraft.getInstance().level;
+        for (var part : parts) {
+            var entry = part.getPayload();
+            if (entry.entity().isRemoved() || entry.entity().getLevel() != level) continue;
+            // The Core BER already supplied view, chamber translation and scale.
+            var pose = new PoseStack();
+            pose.mulPoseMatrix(entry.pose());
+            CelestialVfxRenderer.eye(entry.time(), pose, null);
+        }
+    };
+
     private CelestialVfxDeferred() {}
 
-    /**
-     * Called once for this controller's complete celestial effect. The supplied
-     * pose already contains the camera view, blueprint center and visual scale.
-     * ADD owns the one-frame entry queue, keyed by the real controller position.
-     */
+    // Keep the call signature used by the existing Core Mixin.
     public static void dispatch(BlockEntity entity, boolean astrograph, int count, long seed,
             float time, PoseStack pose) {
-        if (MachineShaders.shadow()) return;
-        DeferredMachineRenderer.INSTANCE.enqueue$gtladditions(new Entry(entity, astrograph, count, seed,
-                time, new Matrix4f(pose.last().pose())));
+        if (astrograph || entity.getLevel() != Minecraft.getInstance().level || MachineShaders.shadow()) return;
+        var frame = SceneRendering.frame();
+        if (frame == null) return;
+        var machine = (MultiblockControllerMachine) ((IMachineBlockEntity) entity).getMetaMachine();
+        var center = Vec3.atLowerCornerOf(entity.getBlockPos()).add(CelestialEffectAnchors.eye(machine));
+        frame.submit(ScenePart.builder(EnhancedMachineScene.eye(entity.getBlockPos()), RENDERER,
+                        new Entry(entity, time, new Matrix4f(pose.last().pose())))
+                .blend(PartBlend.STRAIGHT)
+                .bounds(PartBounds.sphere(center.x, center.y, center.z, 16 * CelestialEffectSizing.EYE_SCALE))
+                .build());
     }
 
-    private record Entry(BlockEntity entity, boolean astrograph, int count, long seed,
-            float time, Matrix4f poseMatrix) implements DeferredRenderEntry {
-        @Override
-        public BlockEntity getBlockEntity() { return entity; }
-
-        @Override
-        public int getRenderOrder() { return 2; }
-
-        // Default null batch key keeps each controller's own view/seed/count.
-        // ADD's queue key is block position, never a profile-wide shared identity.
-        @Override
-        public boolean isVisible(DeferredRenderContext context) {
-            return !entity.isRemoved() && entity.getLevel() == Minecraft.getInstance().level;
-        }
-
-        @Override
-        public void render(DeferredRenderContext context) {
-            // The captured BER matrix is complete. Multiplying context's world
-            // view again would apply the camera transformation twice.
-            var pose = new PoseStack();
-            pose.mulPoseMatrix(poseMatrix);
-            if (astrograph) {
-                CelestialVfxRenderer.astrograph(count, seed, time, pose, null);
-            } else {
-                CelestialVfxRenderer.eye(time, pose, null);
-            }
-        }
-    }
+    private record Entry(BlockEntity entity, float time, Matrix4f pose) {}
 }

@@ -47,10 +47,9 @@ public final class TooltipPolicy {
             Map.entry("quantum_mass_array", isolatedPage("quantum_mass_array")),
             Map.entry("fusion_assembler", isolatedPage("fusion_assembler")),
             Map.entry("universal_joint_factory", page(
-                    List.of("iv_cross_recipe_toggle", "universal_joint_factory.summary", "iv_only_super_buffer",
-                            "universal_joint_factory.parallel", "universal_joint_factory.no_parallel_hatch",
-                            "iv_shared_catalysts", "iv_cancel", "iv_admission", "iv_break"),
-                    List.of("iv_result", "universal_joint_factory.intro"))),
+                    List.of("universal_joint_factory.summary", "universal_joint_factory.hatches", "universal_joint_factory.service",
+                            "universal_joint_factory.parallel", "universal_joint_factory.no_parallel_hatch"),
+                    List.of("universal_joint_factory.expansion", "universal_joint_factory.intro"))),
             Map.entry("processing_plus", plusPage("processing_plus")),
             Map.entry("assembling_plus", plusPage("assembling_plus")),
             Map.entry("separating_plus", plusPage("separating_plus")),
@@ -125,12 +124,6 @@ public final class TooltipPolicy {
                             "dragon_field_proliferation_core.parallel",
                             "supports_laser_hatch", "laser_requires_energy_hatch"),
                     List.of())),
-            Map.entry("hyperstructural_chemical_distorter", page(
-                    List.of("hyperstructural_chemical_distorter.flavor", "hyperstructural_chemical_distorter.tips",
-                            "hyperstructural_chemical_distorter.coil",
-                            "hyperstructural_chemical_distorter.parallel", "hyperstructural_chemical_distorter.thread",
-                            "supports_laser_hatch", "laser_requires_energy_hatch"),
-                    List.of("hyperstructural_chemical_distorter.coil_parallel", "engine_stars"))),
             // 用户 2026-10-05 指定：恒星堆提示只写“无限并行与无限线程”和“电量从电网直接获取”两句。
             Map.entry("stellar_confinement_fusion_reactor", page(
                     List.of("stellar_confinement_fusion_reactor.parallel",
@@ -167,8 +160,6 @@ public final class TooltipPolicy {
                             "gtl_enhancedcore.tooltip.iv_native_threads",
                             "iv_shared_catalysts",
                             "gtl_enhancedcore.tooltip.iv_native.3", "iv_break"), List.of())),
-            Map.entry("suprachronal_module_host", page(List.of("suprachronal_no_modules"), List.of())),
-            Map.entry("suprachronal_module", page(List.of("suprachronal_module_disabled"), List.of())),
             Map.entry("optional_maintenance", page(
                     List.of("gtl_enhancedcore.tooltip.optional_maintenance"), List.of())),
             Map.entry("forbidden_maintenance", page(List.of("no_maintenance_hatch"), List.of())),
@@ -223,7 +214,6 @@ public final class TooltipPolicy {
     public static List<String> nativePages(String path) {
         return switch (path) {
             case "dimensional_focus_engraving_array" -> List.of("dimensional_focus_engraving_array", "native_isolation");
-            case "suprachronal_assembly_line" -> List.of("suprachronal_module_host", "native_isolation");
             // qft 走 ADD 可变多配方路线（非 IV 隔离），只追加跨配方并行与线程声明。
             case "qft" -> List.of("qft");
             default -> List.of("native_isolation");
@@ -246,10 +236,6 @@ public final class TooltipPolicy {
         return switch (page) {
             case "primitive_void_ore" -> Set.of("tooltip.gtlcore.primitive_void_ore_random_output",
                     "tooltip.gtlcore.supports_dimensions");
-            case "suprachronal_module_host" -> Set.of("gtceu.machine.suprachronal_assembly_line.tooltip.1");
-            case "suprachronal_module" -> Set.of("gtceu.machine.suprachronal_assembly_line_module.tooltip.0",
-                    "gtceu.machine.available_recipe_map_1.tooltip", "gtceu.machine.available_recipe_map_2.tooltip",
-                    RECIPE_HEADER, RECIPE_GROUP);
             case "star_ultimate_material_forge" -> Set.of(PREFIX + "star_ultimate_material_forge.modified");
             case "dimensional_focus_engraving_array" -> Set.of("gtceu.machine.available_recipe_map_1.tooltip",
                     "gtceu.machine.available_recipe_map_2.tooltip", RECIPE_HEADER, RECIPE_GROUP);

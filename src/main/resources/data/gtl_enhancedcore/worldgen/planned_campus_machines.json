@@ -41,7 +41,7 @@
   },
   "runtimeCoverage": {
     "registered": 289,
-    "included": 283,
+    "included": 282,
     "inventorySha256": "7a1d929b7a435b7d97de237e500321db711c88c8fe9170ee9f9532dd7ff1de93",
     "sourceCoreSha256": "17dce9afab5688d8736cab466689a94f2ec77352edc285d95238c088b468f671",
     "dependencies": {
@@ -51,6 +51,7 @@
     },
     "excludedRetired": [
       "gtceu:transfinite_computation_array",
+      "gtl_enhancedcore:hyperstructural_chemical_distorter",
       "gtladditions:light_hunter_space_station",
       "gtladditions:nexus_satellite_factory_mk1",
       "gtladditions:nexus_satellite_factory_mk2",
@@ -18340,92 +18341,6 @@
       }
     },
     {
-      "id": "gtl_enhancedcore:hyperstructural_chemical_distorter",
-      "stage": "late",
-      "size": [
-        87,
-        109,
-        89
-      ],
-      "controller": [
-        43,
-        13,
-        70
-      ],
-      "frontFacing": "north",
-      "upwardsFacing": "up",
-      "flipped": false,
-      "groundOffset": [
-        43,
-        13,
-        18
-      ],
-      "controllerForward": [
-        0,
-        0,
-        -1
-      ],
-      "patternResource": "/data/gtl_enhancedcore/structures/hyperstructuralchemicaldistorterstructure.pattern.gz",
-      "patternSha256": "73fd9207a10134f009c9333bd3d1dcacb18b9302d345603a4cf2e113f4c46b82",
-      "sourceManifest": "registration:hyperstructural_chemical_distorter",
-      "controllerSymbol": "C",
-      "repetitions": {
-        "mode": "fixed",
-        "sourceAisles": 89,
-        "minimum": 89,
-        "maximum": 89
-      },
-      "planningTier": 10,
-      "tierEvidence": {
-        "kind": "project-construction-tier",
-        "source": "src/main/resources/data/gtl_enhancedcore/equipment_recipes.json",
-        "excerpt": "{\"output\":\"hyperstructural_chemical_distorter\",\"tier\":\"uev\",\"method\":\"assembly_line\",\"duration\":3600,\"ingredients\":[{\"item\":\"gtceu:chemical_distort\",\"count\":4},{\"item\":\"gtceu:uev_machine_hull\",\"count\":16},{\"item\":\"gtceu:uev_field_generator\",\"count\":32},{\"item\":\"gtceu:uev_electric_pump\",\"count\":32},{\"item\":\"gtceu:uev_robot_arm\",\"count\":16},{\"item\":\"gtceu:uev_emitter\",\"count\":16},{\"item\":\"gtceu:uev_sensor\",\"count\":16},{\"item\":\"gtlcore:uev_hermetic_casing\",\"count\":32},{\"item\":\"gtceu:tritanium_frame\",\"count\":16},{\"item\":\"kubejs:containment_field_generator\",\"count\":8},{\"item\":\"kubejs:exotic_mainframe\",\"count\":16},{\"tag\":\"gtceu:circuits/uev\",\"count\":8}],\"fluids\":[{\"fluid\":\"gtceu:soldering_alloy\",\"amount\":4608},{\"fluid\":\"gtceu:polyetheretherketone\",\"amount\":2304}]}",
-        "sourceSha256": "80334ae318aa3ee6f75c2dca1c9075af489a981f5e0bd1bcebfafbc21efb751f",
-        "status": "voltage-confirmed",
-        "controllerPrerequisites": [
-          "gtceu:chemical_distort"
-        ],
-        "directTier": 10
-      },
-      "allocation": "dedicated",
-      "copies": 4,
-      "sourceInventorySha256": "7a1d929b7a435b7d97de237e500321db711c88c8fe9170ee9f9532dd7ff1de93",
-      "theme": "chemistry",
-      "themeEvidence": {
-        "registryKeywords": [
-          "chemical",
-          "distort"
-        ],
-        "recipeTypes": [
-          "gtceu:distort"
-        ],
-        "materials": [
-          "gtceu:computer_heat_vent",
-          "gtceu:cyan_lamp",
-          "gtceu:inert_machine_casing",
-          "gtceu:laminated_glass",
-          "gtceu:superconducting_coil",
-          "gtceu:tritanium_coil_block",
-          "gtceu:white_lamp",
-          "gtlcore:dimension_injection_casing",
-          "gtlcore:extreme_strength_tritanium_casing",
-          "gtlcore:iridium_casing",
-          "gtlcore:molecular_casing",
-          "gtlcore:stellar_containment_casing",
-          "kubejs:abyssalalloy_coil_block",
-          "kubejs:adamantine_coil_block",
-          "kubejs:containment_field_generator",
-          "kubejs:eternity_coil_block",
-          "kubejs:force_field_glass",
-          "kubejs:hypogen_coil_block",
-          "kubejs:infinity_coil_block",
-          "kubejs:naquadriatictaranium_coil_block",
-          "kubejs:starmetal_coil_block",
-          "kubejs:titansteel_coil_block"
-        ]
-      }
-    },
-    {
       "id": "gtladditions:garden_of_hermes",
       "stage": "late",
       "size": [
@@ -27716,27 +27631,6 @@
       "placementTier": 10
     },
     {
-      "id": "gtl_enhancedcore:hyperstructural_chemical_distorter",
-      "stage": "late",
-      "planningTier": 10,
-      "size": [
-        87,
-        109,
-        89
-      ],
-      "groundOffset": [
-        43,
-        13,
-        18
-      ],
-      "copies": 4,
-      "theme": "chemistry",
-      "patternResource": "/data/gtl_enhancedcore/structures/hyperstructuralchemicaldistorterstructure.pattern.gz",
-      "frontFacing": "north",
-      "allocation": "dedicated",
-      "placementTier": 10
-    },
-    {
       "id": "gtladditions:primordial_evolution_nexus",
       "stage": "late",
       "planningTier": 10,
@@ -32265,7 +32159,7 @@
   ],
   "reservationPolicy": {
     "source": "tools/fixtures/planned_campus_reservations.json",
-    "sourceSha256": "e977c95441e98fbb4b0ee78aeedc1cbdc4f393543c991d04caef55fc301e9bd2",
+    "sourceSha256": "0bf454c04b7c47233315d8c0abcf8180f3116d8bbbd8306713eb3e1f3bef0526",
     "machinesMeaning": "Audited original machine definitions; geometry, voltage, allocation and copies remain unchanged",
     "reservationsMeaning": "Independent layout plots; modules excluded and upgrade families share their maximum member envelope",
     "planningTierMeaning": "Original controller construction voltage evidence",
@@ -32436,7 +32330,6 @@
       "gtceu:uev_fusion_reactor",
       "gtl_enhancedcore:dragon_field_proliferation_core",
       "gtl_enhancedcore:hydrothermal_leaching_complex",
-      "gtl_enhancedcore:hyperstructural_chemical_distorter",
       "gtladditions:primordial_evolution_nexus",
       "gtceu:advanced_hyper_reactor",
       "gtceu:advanced_vacuum_drying_furnace",
@@ -32582,9 +32475,9 @@
       "gtceu:zpm_fluid_drilling_rig",
       "gtladditions:garden_of_hermes"
     ],
-    "retainedNonModuleDefinitions": 204,
-    "dedicatedDefinitions": 155,
-    "dedicatedPlots": 225,
+    "retainedNonModuleDefinitions": 203,
+    "dedicatedDefinitions": 154,
+    "dedicatedPlots": 221,
     "sharedDefinitions": 46
   }
 }

@@ -17,8 +17,17 @@ public abstract class NeutronStarRenderTypes extends RenderType {
                 });
     }
 
-    public static final RenderType ENERGY = create(
-            "gtl_enhancedcore_neutron_star_energy",
+    public static final RenderType ENERGY = energy("gtl_enhancedcore_neutron_star_energy", TRANSLUCENT_TARGET);
+    public static final RenderType WORLD_ENERGY = energy("gtl_enhancedcore_neutron_star_scene_energy", MAIN_TARGET);
+    // Vanilla translucent settings with a no-op output shard so ADD retains the composition target.
+    public static final RenderType WORLD_TRANSLUCENT = create("gtl_enhancedcore_scene_translucent",
+            DefaultVertexFormat.BLOCK, VertexFormat.Mode.QUADS, 2097152, true, true,
+            CompositeState.builder().setShaderState(RENDERTYPE_TRANSLUCENT_SHADER)
+                    .setTextureState(BLOCK_SHEET_MIPPED).setTransparencyState(TRANSLUCENT_TRANSPARENCY)
+                    .setLightmapState(LIGHTMAP).setOutputState(MAIN_TARGET).createCompositeState(true));
+
+    private static RenderType energy(String name, OutputStateShard target) {
+        return create(name,
             DefaultVertexFormat.BLOCK,
             VertexFormat.Mode.QUADS,
             2097152,
@@ -31,6 +40,7 @@ public abstract class NeutronStarRenderTypes extends RenderType {
                     .setWriteMaskState(COLOR_WRITE)
                     .setCullState(NO_CULL)
                     .setLightmapState(LIGHTMAP)
-                    .setOutputState(TRANSLUCENT_TARGET)
+                    .setOutputState(target)
                     .createCompositeState(false));
+    }
 }

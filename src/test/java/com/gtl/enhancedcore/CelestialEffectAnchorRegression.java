@@ -42,11 +42,8 @@ final class CelestialEffectAnchorRegression {
                 "Approved Heart shader/culling and renderer distance");
         var spec = JsonParser.parseString(Files.readString(STRUCTURES.resolve("upgrades_20261102.json"))).getAsJsonObject();
         cavity(spec, "eye_of_harmony", new int[]{95,95,95}, new int[]{0,-55,-91}, 36);
-        // Only the opaque singularity must fit wholly inside the cavity; its additive field spans the hoop.
-        cavity(spec, "arcanic_astrograph", new int[]{145,145,73}, new int[]{0,103,-75}, 12);
-        check(number(sizing, "ASTROGRAPH_OUTER_RADIUS") == 150, "Astrograph light reaches the outer blueprint hoop");
-        double clearance = cavity(spec, "heart_of_the_universe", new int[]{120,118,108}, new int[]{0,36,-39}, heartRadius * heartFade);
-        check(heartCull > heartRadius * heartFade && heartCull < clearance, "Heart cull envelope covers shader volume inside real chamber");
+        check(!spec.has("arcanic_astrograph") && !spec.has("heart_of_the_universe"),
+                "ADD machines no longer use the enlarged celestial cavity blueprints");
         try (var core = new ZipFile("libs/gtlcore-1.2.3.3-fix3.jar"); var add = new ZipFile("libs/gtladditions-3.3.1Custom.jar")) {
             var eye = read(core, CORE + "client/renderer/machine/EyeOfHarmonyRenderer");
             check(calls(method(eye, "render"), "com/mojang/blaze3d/vertex/PoseStack", "m_85837_") == 1, "Eye has one parent translation");

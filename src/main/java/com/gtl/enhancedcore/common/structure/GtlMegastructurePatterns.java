@@ -41,7 +41,7 @@ public final class GtlMegastructurePatterns {
     private static JsonObject readManifest() {
         var manifest = new JsonObject();
         for (String name : new String[]{"manifest.json", "upgrades.json", "upgrades_20260927.json",
-                "lucid_etchdreamer.json", "super_particle_collider.json", "upgrades_20261013.json",
+                "super_particle_collider.json", "upgrades_20261013.json",
                 "upgrades_20261102.json"}) {
             try (var input = GtlMegastructurePatterns.class.getResourceAsStream(ROOT + name)) {
                 if (input == null) throw new IOException("Missing GTL structure manifest: " + name);
@@ -74,32 +74,9 @@ public final class GtlMegastructurePatterns {
     }
 
     public static boolean targets(ResourceLocation id) {
-        if (id == null || !MANIFEST.has(id.getPath())) return false;
+        if (id == null || AddStructureOwnership.owns(id) || !MANIFEST.has(id.getPath())) return false;
         var spec = MANIFEST.getAsJsonObject(id.getPath());
         return id.getNamespace().equals(spec.has("namespace") ? spec.get("namespace").getAsString() : "gtceu");
-    }
-
-    public static boolean needsLucidPreview(BlockPattern pattern) {
-        return new ResourceLocation("gtladditions", "lucid_etchdreamer").equals(REPLACEMENTS.get(pattern));
-    }
-
-    public static BlockInfo lucidPreviewCoil() {
-        var binding = MANIFEST.getAsJsonObject("lucid_etchdreamer")
-                .getAsJsonObject("bindings").getAsJsonObject("P");
-        return BlockInfo.fromBlockState(block(binding, "preview").defaultBlockState());
-    }
-
-    static int[] lucidCoordinates(String key) {
-        var values = MANIFEST.getAsJsonObject("lucid_etchdreamer").getAsJsonArray(key);
-        return new int[]{values.get(0).getAsInt(), values.get(1).getAsInt(), values.get(2).getAsInt()};
-    }
-
-    static int[] lucidPanel() {
-        var panel = MANIFEST.getAsJsonObject("lucid_etchdreamer").getAsJsonObject("previewPanel");
-        var origin = panel.getAsJsonArray("origin");
-        var size = panel.getAsJsonArray("size");
-        return new int[]{origin.get(0).getAsInt(), origin.get(1).getAsInt(), origin.get(2).getAsInt(),
-                size.get(0).getAsInt(), size.get(1).getAsInt()};
     }
 
     public static Supplier<BlockPattern> wrapFactory(ResourceLocation id, Supplier<BlockPattern> source) {

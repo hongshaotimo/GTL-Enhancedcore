@@ -22,7 +22,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
         "com.gtladd.gtladditions.common.machine.multiblock.MultiBlockMachine$28$1",
         "com.gtladd.gtladditions.common.machine.multiblock.MultiBlockMachine$32$1",
         "com.gtladd.gtladditions.common.machine.multiblock.controller.AdvancedSpaceElevatorModuleMachine",
-        "com.gtladd.gtladditions.common.machine.multiblock.controller.ApocalypticTorsionQuantumMatrix",
+        "com.gtladd.gtladditions.common.machine.multiblock.controller.ApocalypticWarpQuantumMatrix",
         "com.gtladd.gtladditions.common.machine.multiblock.controller.BiologicalSimulationLaboratory",
         "com.gtladd.gtladditions.common.machine.multiblock.controller.DimensionFocusInfinityCraftingArray",
         "com.gtladd.gtladditions.common.machine.multiblock.controller.HeartOfTheUniverse",

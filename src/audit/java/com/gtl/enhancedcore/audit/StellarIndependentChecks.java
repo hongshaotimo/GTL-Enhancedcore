@@ -4,7 +4,6 @@ import com.google.gson.GsonBuilder;
 import com.gregtechceu.gtceu.api.capability.recipe.*;
 import com.gregtechceu.gtceu.api.machine.trait.NotifiableItemStackHandler;
 import com.gregtechceu.gtceu.api.recipe.*;
-import com.gregtechceu.gtceu.common.block.CoilBlock;
 import com.gregtechceu.gtceu.data.recipe.builder.GTRecipeBuilder;
 import com.gtl.enhancedcore.common.machine.galaxy.*;
 import com.gtl.enhancedcore.common.recipe.*;
@@ -35,7 +34,7 @@ import org.gtlcore.gtlcore.api.machine.trait.IBatchMachine;
 import org.gtlcore.gtlcore.api.recipe.IGTRecipe;
 import org.lwjgl.glfw.GLFW;
 
-/** One title-screen reproduction using the registered distorter and transformed RecipeLogic. */
+/** Title-screen reproduction using the registered platinum refinery and transformed RecipeLogic. */
 @Mod("enhancedcore_audit")
 public final class StellarIndependentChecks {
     private static final int[][] SIZES = {{960,600,2},{1280,720,3},{640,480,2}};
@@ -101,14 +100,13 @@ public final class StellarIndependentChecks {
         statistics.setAccessible(true); previousServer = statistics.get(null);
         var field = sun.misc.Unsafe.class.getDeclaredField("theUnsafe"); field.setAccessible(true);
         statistics.set(null, ((sun.misc.Unsafe)field.get(null)).allocateInstance(net.minecraft.client.server.IntegratedServer.class));
-        fixture = StellarIvGuiChecks.fixture("gtl_enhancedcore:hyperstructural_chemical_distorter", false, false, true);
+        fixture = StellarIvGuiChecks.fixture("gtl_enhancedcore:platinum_refining_matrix", false, false, true);
         var machine = fixture.machine(); var logic = machine.getRecipeLogic();
         var parts = machine.getParts().stream().filter(p -> p instanceof GalaxyConnectionHatch).toList();
         set(machine,"parts",new ArrayList<>(parts));
         set(machine,"partPositions",parts.stream().map(p -> p.self().getPos()).toArray(net.minecraft.core.BlockPos[]::new));
-        set(machine,"coilType",CoilBlock.CoilType.TRITANIUM);
         ((IBatchMachine)machine).setBatchEnabled(false);
-        require(GalaxyIndependentRecipeEngine.supports(logic) && GalaxyLinks.unlimited(machine), "Registered non-IV distorter resolves the 64-array source");
+        require(GalaxyIndependentRecipeEngine.supports(logic) && GalaxyLinks.unlimited(machine), "Registered non-IV platinum refinery resolves the 64-array source");
         UUID owner = UUID.randomUUID(); set(GalaxyLinks.linkedStation(machine),"userId",owner);
         BigInteger initial = BigInteger.TEN.pow(30); WirelessEnergyManager.setUserEU(owner,initial);
         var input = new NotifiableItemStackHandler(machine,8,IO.IN);
@@ -130,7 +128,7 @@ public final class StellarIndependentChecks {
         try {
             var prepared = GalaxyRecipeBatch.prepareIndependent(machine,logic,0,Set.of(),0,2,BigInteger.ZERO);
             require(prepared.size() == 2 && prepared.stream().map(p -> p.recipe().data.getInt("ebf_temp")).distinct().count() == 2,
-                    "Real preparation admits distinct recipe temperatures together");
+                    "Real preparation preserves distinct recipe metadata");
             require(input.getStackInSlot(0).getCount() == 3 && input.getStackInSlot(1).getCount() == 5,
                     "Preparation leaves inputs untouched");
         } finally { runners.remove(shortRunner); runners.remove(longRunner); }
@@ -143,20 +141,6 @@ public final class StellarIndependentChecks {
         jobs.add(job(longOrigin,paid(longOrigin,Items.IRON_NUGGET,5,9,17),0));
         seed.put("jobs",jobs); seed.putBoolean("cycleActive",true); engine.load(seed);
         set(logic,"galaxy$independent",engine);
-        var overheated=seed.copy(); var hotJobs=overheated.getList("jobs",Tag.TAG_COMPOUND);
-        int unsupportedTemperature=CoilBlock.CoilType.TRITANIUM.getCoilTemperature()+1;
-        for(int i=0;i<hotJobs.size();i++) {
-            var entry=hotJobs.getCompound(i);
-            var recipe=GTRecipeSerializer.CODEC.parse(NbtOps.INSTANCE,entry.get("recipe")).getOrThrow(false,ignored -> {});
-            recipe.data.putInt("ebf_temp",unsupportedTemperature);
-            entry.put("recipe",GTRecipeSerializer.CODEC.encodeStart(NbtOps.INSTANCE,recipe).getOrThrow(false,ignored -> {}));
-        }
-        engine.load(overheated); logic.serverTick();
-        require(WirelessEnergyManager.getUserEU(owner).equals(initial)
-                        && engine.save().getList("jobs",Tag.TAG_COMPOUND).stream()
-                                .allMatch(entry -> ((CompoundTag)entry).getInt("elapsed")==0),
-                "Insufficient coil temperature pauses both paid jobs without EU payment; " + state(logic,engine));
-        engine.load(seed);
         logic.serverTick();
         require(WirelessEnergyManager.getUserEU(owner).equals(initial.subtract(BigInteger.valueOf(30))),
                 "Two jobs deduct exactly one combined tick of real wireless EU; actualPaid="

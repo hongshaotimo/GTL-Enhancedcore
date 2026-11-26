@@ -9,7 +9,7 @@ import com.gtl.enhancedcore.common.config.MachineOverrideConfig;
 import com.gtladd.gtladditions.api.machine.IHarmonyMachineAccessor;
 import com.gtladd.gtladditions.common.data.ParallelData;
 import com.gtladd.gtladditions.common.machine.multiblock.controller.ArcanicAstrograph;
-import com.gtladd.gtladditions.utils.RecipeCalculationHelper;
+import com.gtladd.gtladditions.utils.recipe.RecipeCalculationHelper;
 import it.unimi.dsi.fastutil.longs.LongLongPair;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -88,7 +88,7 @@ public final class HarmonyAddRecipes {
                         return LongLongPair.of(0, 0);
                     }
                     return LongLongPair.of(parallel, 1);
-                });
+                }, RecipeCalculationHelper.INSTANCE::multipleRecipe);
         if (data == null) return null;
         GTRecipe batch = merge(data.getProcessedRecipeList());
         batch.data.putInt(RECIPE_COUNT, data.getOriginRecipeList().size());

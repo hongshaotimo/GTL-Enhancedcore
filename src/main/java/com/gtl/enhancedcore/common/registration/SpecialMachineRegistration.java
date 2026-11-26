@@ -296,46 +296,6 @@ public final class SpecialMachineRegistration {
                 .register();
     }
 
-    // ==================== 超构化学扭曲仪（UEV） ====================
-    /**
-     * 超构化学扭曲仪：UEV 阶段多方块，是 gtlcore「深层化学扭曲仪」({@code gtceu:chemical_distort}) 的上位机器。
-     * <p>
-     * 配方类型（用户指定）：{@code gtceu:distort}（javap 实证 = {@code GTLRecipeTypes.DISTORT_RECIPES}，
-     * 注册名 "distort"，形状 ≤9 物品入/出 + ≤9 流体入/出，数据键 {@code ebf_temp} 由线圈温度把关）。
-     * <p>
-     * 材质（用户指定）：主方块与仓室成型方块 = {@code gtlcore:iridium_casing}
-     * （材质路径 {@code gtlcore:block/casings/iridium_casing}）。
-     * 正面：用户给的 {@code gtladditions:nexus_satellite_factory_mk1} **在本包内不存在任何贴图资源**
-     * （已逐 jar 核验：gtladditions 无该 blockstate/model/texture；该 id 是机器方块，
-     * 其自身 {@code workableCasingRenderer} 用的就是 {@code gtceu:block/multiblock/fusion_reactor}）。
-     * 故取该机器实际使用的正面 overlay {@code gtceu:block/multiblock/fusion_reactor}
-     * （2026-09-26 修正：先前误用 {@code block/multiblock/gcym/large_chemical_reactor}，
-     * 该路径**不存在**，导致主方块没有主面材质）。
-     * <p>
-     * 仓室（用户指定）：维护仓、并行控制仓、激光靶仓、输入输出仓、Ω-天球分歧引擎
-     * （{@code GTLAddPartAbility.INSTANCE.getTHREAD_MODIFIER()}，与大型熔炉同款写法）。
-     * <p>
-     * 机制：控制器先验证温度，将线圈、并行仓和天球通道合并后交给原生并行结算，再完美超频。
-     */
-    public static MultiblockMachineDefinition registerHyperstructuralChemicalDistorter() {
-        return GTLEnhancedcore.REGISTRATE
-                .multiblock("hyperstructural_chemical_distorter", HyperstructuralChemicalDistorterMachine::new)
-                .langValue("超构化学扭曲仪")
-                .rotationState(RotationState.NON_Y_AXIS)
-                .appearanceBlock(() -> requiredBlockBlock("gtlcore:iridium_casing"))
-                .recipeTypes(GTLRecipeTypes.DISTORT_RECIPES)
-                .recipeModifiers(new RecipeModifier[]{
-                        HyperstructuralChemicalDistorterMachine.PARALLEL,
-                        GTRecipeModifiers.ELECTRIC_OVERCLOCK.apply(OverclockingLogic.PERFECT_OVERCLOCK_SUBTICK)
-                })
-                .pattern(definition -> GTLStructures.hyperstructuralChemicalDistorter(definition))
-                .tooltipBuilder(MachineTooltips.create("hyperstructural_chemical_distorter", GTLRecipeTypes.DISTORT_RECIPES))
-                .workableCasingRenderer(
-                        new ResourceLocation("gtlcore", "block/casings/iridium_casing"),
-                        GTCEu.id("block/multiblock/fusion_reactor"))
-                .register();
-    }
-
     // ==================== 恒星约束聚变堆（UIV） ====================
     /**
      * 恒星约束聚变堆：UIV 阶段多方块，核聚变反应堆上位机器。

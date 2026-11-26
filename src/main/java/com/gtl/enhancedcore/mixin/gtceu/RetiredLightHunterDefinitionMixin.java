@@ -10,6 +10,7 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.*;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
+// Historical mixin name kept for the shared registration. Only our retired controllers use it.
 @Mixin(value = MultiblockMachineDefinition.class, remap = false)
 public abstract class RetiredLightHunterDefinitionMixin {
     @ModifyVariable(method = "setPatternFactory", at = @At("HEAD"), argsOnly = true, require = 1)

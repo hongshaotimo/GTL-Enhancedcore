@@ -41,6 +41,7 @@ public final class StructurePanelAppearance {
     }
 
     public static Supplier<BlockState> panel(ResourceLocation id) {
+        if (AddStructureOwnership.owns(id)) return null;
         if (!id.getNamespace().equals("gtl_enhancedcore")
                 && !MachineOverrideConfig.current().replaceOriginalStructures()) return null;
         return PANELS.get(id);

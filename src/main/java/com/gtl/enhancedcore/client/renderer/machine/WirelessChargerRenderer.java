@@ -1,5 +1,7 @@
 package com.gtl.enhancedcore.client.renderer.machine;
 
+import com.gtladd.gtladditions.api.client.scene.PartBlend;
+import com.gtladd.gtladditions.api.client.scene.PartBounds;
 import com.gregtechceu.gtceu.api.GTValues;
 import com.gregtechceu.gtceu.api.machine.IMachineBlockEntity;
 import com.gregtechceu.gtceu.api.machine.MachineDefinition;
@@ -75,6 +77,17 @@ public final class WirelessChargerRenderer extends TieredHullMachineRenderer imp
     }
 
     @Override
+    public PartBounds effectBounds(BlockEntity entity, WirelessChargerMachine charger) {
+        var pos = entity.getBlockPos();
+        double x = pos.getX() + .5, y = pos.getY() + 1.02, z = pos.getZ() + .5;
+        double r = WirelessChargerField.maxRadius(mv);
+        return PartBounds.box(x - r, y - .1, z - r, x + r, y + WirelessChargerField.maxHeight(mv), z + r);
+    }
+
+    // The shader weights the additive contribution by alpha; RGB still adds independently of order.
+    @Override public PartBlend effectBlend() { return PartBlend.ADDITIVE; }
+
+    @Override
     public void drawEffect(BlockEntity entity, WirelessChargerMachine charger, float partial,
                            PoseStack pose, MultiBufferSource buffers) {
         // Decorative field is always visible while loaded, independently of power and work state.
@@ -83,7 +96,8 @@ public final class WirelessChargerRenderer extends TieredHullMachineRenderer imp
                 entity.getBlockPos().getY() + 1.02 + WirelessChargerField.coreCenterHeight(mv), entity.getBlockPos().getZ() + 0.5);
         double time = (double) entity.getLevel().getGameTime() + partial;
         WirelessChargerField.Mesh mesh = (distance > 32 * 32 ? far : near).at(time);
-        VertexConsumer lightField = buffers.getBuffer(WirelessChargerRenderTypes.FIELD);
+        VertexConsumer lightField = buffers.getBuffer(entity.getLevel() == Minecraft.getInstance().level
+                ? WirelessChargerRenderTypes.WORLD_FIELD : WirelessChargerRenderTypes.FIELD);
         pose.pushPose();
         pose.translate(0.5, 1.02, 0.5);
         pose.pushPose();

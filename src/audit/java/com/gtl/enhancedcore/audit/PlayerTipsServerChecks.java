@@ -264,7 +264,7 @@ public final class PlayerTipsServerChecks {
             verifyTips();
             if (restart) verifyRestartState();
             else createPaidState();
-            verifyModuleGate();
+            verifyAssemblyResearch();
             verifyJade();
             if (restart) finishRestart();
             else finishFresh();
@@ -355,7 +355,7 @@ public final class PlayerTipsServerChecks {
             require(legacyStock().insertItem(0, new ItemStack(Items.EMERALD, 37), false).isEmpty(),
                     "The physical module input bus rejected the legacy material sentinel");
             legacyModule.getEnergyContainer().addEnergy(legacyModule.getEnergyContainer().getEnergyCapacity());
-            require(legacyModule.getEnergyContainer().getEnergyStored() > 0, "The disabled module has no real saved energy");
+            require(legacyModule.getEnergyContainer().getEnergyStored() > 0, "The module has no real saved energy");
             legacyModule.markDirty();
             world.getBlockEntity(legacyInput).setChanged();
             scenarios.add("native_research_material_energy_gate");
@@ -368,7 +368,7 @@ public final class PlayerTipsServerChecks {
             require(TagParser.parseTag(checkpoint.get("paidOrders").getAsString()).equals(IvBuffers.state(paidBuffer).save()),
                     "The independent JVM changed paid orders, identities, material or settled output");
             require(checkpoint.getAsJsonObject("moduleState").equals(moduleState()),
-                    "Reload or the disabled-module gate erased physical material, energy, recipe or paid progress");
+                    "Reload erased physical module material, energy, recipe or saved progress");
             for (JsonElement entry : checkpoint.getAsJsonArray("names")) {
                 JsonObject saved = entry.getAsJsonObject();
                 var buffer = machine(position(saved.getAsJsonArray("pos")), MESuperPatternBufferPartMachine.class);
@@ -377,38 +377,13 @@ public final class PlayerTipsServerChecks {
                 require(saved.get("automatic").getAsString().equals(names.enhanced$getAutomaticName())
                         && saved.get("manual").getAsBoolean() == names.enhanced$isManualName(), "Restart changed name ownership");
             }
-            require(!legacyModule.findAndConnectToHost() && legacyModule.getHost() == null
-                    && legacyModule.getHostPosition() == null, "The disk-restored hostPosition reconnected the disabled module");
-            require(!legacyModule.isRecipeLogicAvailable(), "The disabled module became available after real restart");
             scenarios.add("independent_jvm_saved_paid_state");
-            scenarios.add("persisted_legacy_host_position_detached");
         }
 
-        private void verifyModuleGate() throws Exception {
-            require(controller.isFormed() && controller.isRecipeLogicAvailable() && legacyModule.isFormed(),
-                    "The module audit requires an actually formed main and legacy extension");
-            var paidBefore = IvBuffers.state(paidBuffer).save();
-            var moduleBefore = moduleState();
-            var mainLogic = controller.getRecipeLogic();
-            long mainEnergy = controller.getEnergyContainer().getEnergyStored();
-            BigInteger wirelessBefore = wireless == null ? BigInteger.ZERO : wireless.available;
-            var capabilities = (IRecipeCapabilityMachine) (Object) controller;
-            var dataHatch = capabilities.getDataAccessHatch();
-            var predicate = ((IvNativeMutableAccessor) mainLogic).iv$recipeCheck();
+        private void verifyAssemblyResearch() {
+            var predicate = ((IvNativeMutableAccessor) controller.getRecipeLogic()).iv$recipeCheck();
             require(predicate != null && Arrays.asList(controller.getRecipeTypes()).contains(GTRecipeTypes.ASSEMBLY_LINE_RECIPES),
-                    "The original research predicate or main assembly-line recipe type was removed");
-            int delegated = SuprachronalModuleRemovalChecks.run(controller, legacyModule);
-            require(delegated > 0, "The concrete Carson audit did not execute");
-            checks += delegated;
-            require(moduleBefore.equals(moduleState()), "The removal gate changed physical module material or paid progress");
-            require(paidBefore.equals(IvBuffers.state(paidBuffer).save()), "The removal gate changed isolated main orders");
-            require(mainLogic == controller.getRecipeLogic() && mainLogic instanceof IvNativeAccess
-                    && predicate == ((IvNativeMutableAccessor) mainLogic).iv$recipeCheck()
-                    && dataHatch == capabilities.getDataAccessHatch(), "The gate replaced IV logic, research or the data hatch");
-            require(mainEnergy == controller.getEnergyContainer().getEnergyStored()
-                    && (wireless == null || wirelessBefore.equals(wireless.available)), "The gate changed main energy");
-            scenarios.add("carson_real_formed_available_main");
-            scenarios.add("module_material_energy_saved_progress_conservation");
+                    "The original research predicate and main assembly-line recipe type must remain available");
             scenarios.add("research_recipe_types_native_iv_retained");
         }
 
@@ -446,7 +421,6 @@ public final class PlayerTipsServerChecks {
         private void verifyTips() throws Exception {
             var definitions = new ArrayList<MultiblockMachineDefinition>();
             definitions.add(controller.getDefinition());
-            definitions.add(legacyModule.getDefinition());
             Field originalBuilder = com.gregtechceu.gtceu.api.machine.MachineDefinition.class.getDeclaredField("tooltipBuilder");
             originalBuilder.setAccessible(true);
             for (var definition : definitions) {
@@ -458,29 +432,20 @@ public final class PlayerTipsServerChecks {
                 require(count(actual, TooltipPolicy.SOURCE_KEY) == 1, "Registered foreign tips lost or duplicated the modification source");
                 require(count(actual, TooltipPolicy.SHIFT_HINT) == count(inherited, TooltipPolicy.SHIFT_HINT),
                         "A new project Shift menu hid foreign-machine defaults");
-                boolean disabledModule = definition.getId().toString().equals("gtceu:suprachronal_assembly_line_module");
-                if (disabledModule) {
-                    require(count(actual, TooltipPolicy.RECIPE_HEADER) == 0 && count(actual, TooltipPolicy.RECIPE_GROUP) == 0,
-                            "The disabled extension still advertises an active recipe catalog");
-                    require(count(actual, "gtceu.machine.available_recipe_map_1.tooltip") == 0
-                                    && count(actual, "gtceu.machine.available_recipe_map_2.tooltip") == 0,
-                            "The disabled extension retained an obsolete recipe promise");
-                } else {
-                    var recipeTypes = definition.getRecipeTypes();
-                    require(recipeTypes != null && recipeTypes.length > 0, "The real controller lost its registered recipe types");
-                    require(count(actual, TooltipPolicy.RECIPE_HEADER) == (recipeTypes.length + TooltipPolicy.RECIPES_PER_LINE - 1)
-                                    / TooltipPolicy.RECIPES_PER_LINE,
-                            "Registered recipe catalogs are incomplete or not default-visible");
-                    for (var type : recipeTypes) {
-                        require(type != null && type.registryName != null, "Invalid real registered recipe metadata");
-                        require(count(actual, type.registryName.toLanguageKey()) > 0, "A real recipe type is missing from the default catalog");
-                    }
+                var recipeTypes = definition.getRecipeTypes();
+                require(recipeTypes != null && recipeTypes.length > 0, "The real controller lost its registered recipe types");
+                require(count(actual, TooltipPolicy.RECIPE_HEADER) == (recipeTypes.length + TooltipPolicy.RECIPES_PER_LINE - 1)
+                                / TooltipPolicy.RECIPES_PER_LINE,
+                        "Registered recipe catalogs are incomplete or not default-visible");
+                for (var type : recipeTypes) {
+                    require(type != null && type.registryName != null, "Invalid real registered recipe metadata");
+                    require(count(actual, type.registryName.toLanguageKey()) > 0, "A real recipe type is missing from the default catalog");
                 }
                 boolean nativeTarget = IvMachineScope.nativeTarget(definition.getId());
                 require(count(actual, TooltipPolicy.CROSS_RECIPE_KEY) == (nativeTarget && definition.getRecipeTypes().length > 1 ? 1 : 0),
                         "Cross-recipe claims differ from the registered native contract");
                 var removed = new ArrayList<String>();
-                var pages = nativeTarget ? TooltipPolicy.nativePages(definition.getId().getPath()) : List.of("suprachronal_module");
+                var pages = TooltipPolicy.nativePages(definition.getId().getPath());
                 for (String page : pages) {
                     removed.addAll(TooltipPolicy.replacedKeys(page));
                     for (String key : TooltipPolicy.page(page).summary()) require(count(actual, key) == 1, "Missing default-visible summary: " + key);
@@ -498,12 +463,7 @@ public final class PlayerTipsServerChecks {
                     }
                 }
             }
-            require(count(tips(controller.getDefinition()), "gtceu.machine.suprachronal_assembly_line.tooltip.1") == 0,
-                    "The removed extension promise remains on the main item");
-            require(count(tips(legacyModule.getDefinition()), "gtceu.machine.suprachronal_assembly_line_module.tooltip.0") == 0,
-                    "The disabled extension item still promises operation");
             scenarios.add("registered_default_player_tips_catalog_and_limits");
-            scenarios.add("registered_host_and_module_disable_warnings");
         }
 
         private IItemHandler legacyStock() {

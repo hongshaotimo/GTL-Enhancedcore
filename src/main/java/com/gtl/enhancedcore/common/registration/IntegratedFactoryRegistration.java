@@ -30,8 +30,7 @@ public final class IntegratedFactoryRegistration {
                 .pattern(IntegratedFactoryStructure::create)
                 .tooltipBuilder(MachineTooltips.create("universal_joint_factory", Map.of(
                         "tooltip.gtl_enhancedcore.universal_joint_factory.parallel",
-                        new Object[]{IntegratedUniversalFactoryMachine.THREADS,
-                                (long) IntegratedUniversalFactoryMachine.THREADS * IntegratedUniversalFactoryMachine.PARALLEL}),
+                        new Object[]{IntegratedUniversalFactoryMachine.PARALLEL, IntegratedUniversalFactoryMachine.THREADS}),
                         recipeTypes))
                 .workableCasingRenderer(new ResourceLocation("gtlcore", "block/multi_functional_casing"),
                         GTCEu.id("block/multiblock/processing_array"))

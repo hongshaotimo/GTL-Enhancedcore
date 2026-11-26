@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "catalogSha256": "e2012d2259da80d2e599941dd6ec727d98f35c9d756c2b9a2f6a32245947224a",
+  "catalogSha256": "298ca677e303fe0e79e11ca13a48884833d1e080040abe05966e7a11c5d5490f",
   "bounds": [
     -750,
     -750,
@@ -2833,42 +2833,6 @@
       "machineGeometry": true
     },
     {
-      "id": "gtl_enhancedcore:hyperstructural_chemical_distorter",
-      "slotIndex": 0,
-      "hall": "dream-032",
-      "x": 162,
-      "z": 415,
-      "stage": "late_south",
-      "machineGeometry": true
-    },
-    {
-      "id": "gtl_enhancedcore:hyperstructural_chemical_distorter",
-      "slotIndex": 1,
-      "hall": "dream-032",
-      "x": 162,
-      "z": 512,
-      "stage": "late_south",
-      "machineGeometry": true
-    },
-    {
-      "id": "gtl_enhancedcore:hyperstructural_chemical_distorter",
-      "slotIndex": 2,
-      "hall": "dream-027",
-      "x": -136,
-      "z": -710,
-      "stage": "late_north",
-      "machineGeometry": true
-    },
-    {
-      "id": "gtl_enhancedcore:hyperstructural_chemical_distorter",
-      "slotIndex": 3,
-      "hall": "dream-027",
-      "x": -136,
-      "z": -613,
-      "stage": "late_north",
-      "machineGeometry": true
-    },
-    {
       "id": "gtl_enhancedcore:industrial_steam_platform",
       "slotIndex": 0,
       "hall": "dream-055",
@@ -3826,13 +3790,13 @@
   },
   "audit": {
     "halls": 70,
-    "dedicatedSlots": 225,
+    "dedicatedSlots": 221,
     "sharedIds": 46,
     "earlyDedicatedSlots": 66,
     "outdoorSites": 53,
     "compactCoveredHomes": 13,
     "maxCoveredHomeSide": 114,
-    "machineArea": 1101669,
+    "machineArea": 1070697,
     "hallArea": 1564677,
     "hallServiceArea": 1812009,
     "reservedLandscapeArea": 48640,
@@ -3941,7 +3905,6 @@
     "gtceu:uev_fusion_reactor": "9507b9bcfa4869c0c6c58addd11a48a421ef612d48cbdfc41b20cdb21c596505",
     "gtl_enhancedcore:dragon_field_proliferation_core": "591de30961d879a077b8e8908d2d8d194f013c673c33c2c836e9788bee174426",
     "gtl_enhancedcore:hydrothermal_leaching_complex": "0cd594670f83b45693dd98cdceec58a390fdce436fb1b6c36e358c4f1ed25a07",
-    "gtl_enhancedcore:hyperstructural_chemical_distorter": "0882ffa8a0c0e37d69201f688d46d3e5a5cf79f7d8c3ba5da8446b20cfdc8095",
     "gtladditions:primordial_evolution_nexus": "4d95a8217488a4a9f6d73d22e0ad5058d3cbd43b37d56b934508a3427e2f1244",
     "gtceu:advanced_hyper_reactor": "695644a8cc4f55d6ba654b649d324bbdc08abc37f1ce95c560f4595c10e9a64a",
     "gtceu:advanced_vacuum_drying_furnace": "fdbafe98dca23b72dca98d858c4f4399cba5721feee74a883bc775b8d230526e",

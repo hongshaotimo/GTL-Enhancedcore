@@ -40,25 +40,6 @@
       "candidatePositionsXYZ": [],
       "cells": [],
       "reason": "Infinity material blocks are generated at runtime and lack complete static opacity evidence; infinity glass and ability positions conduct sight."
-    },
-    "gtladditions:inferno_cleft_smelting_vault": {
-      "size": [
-        17,
-        46,
-        17
-      ],
-      "sourceArtifactSha256": "89c847cfd4ae4195cfd657126524ba8e0493be1baf6c05c227c18c307ce7d6ff",
-      "sourcePatternSha256": "50ede728c767c9e0b44790f9162d0d1f5099ebfa473fb69735e4e2a919fd5e70",
-      "fixture": "inferno_cleft_smelting_vault.pattern.gz",
-      "opaqueSymbols": "ABCDE",
-      "nonSpace": 3764,
-      "certifiedHidden": 0,
-      "eligibleHidden": 0,
-      "removed": 0,
-      "candidateSymbols": {},
-      "candidatePositionsXYZ": [],
-      "cells": [],
-      "reason": "All registered heating-coil variants lack complete opacity proof; glass, controller and ability positions conduct sight, yielding no certified hidden cells."
     }
   },
   "opacity": {

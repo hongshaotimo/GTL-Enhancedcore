@@ -10,6 +10,7 @@ import com.gtl.enhancedcore.common.machine.galaxy.GalaxyConnectionHatch;
 import com.gtl.enhancedcore.mixin.gtceu.BlockPatternAccessor;
 import java.util.IdentityHashMap;
 import java.util.stream.Stream;
+import org.gtlcore.gtlcore.api.pattern.AdvancedBlockPattern;
 
 /** Admit the target at existing input ports without spending their material quotas. */
 public final class GalaxyConnectionPatterns {
@@ -55,7 +56,9 @@ public final class GalaxyConnectionPatterns {
             }
         }
         // Original SimplePredicate identities carry all shared global/layer limits and IO metadata.
-        return new BlockPattern(copy, source.structureDir, source.aisleRepetitions,
-                access.enhanced$getCenterOffset().clone());
+        var center = access.enhanced$getCenterOffset().clone();
+        return source instanceof AdvancedBlockPattern
+                ? new AdvancedBlockPattern(copy, source.structureDir, source.aisleRepetitions, center)
+                : new BlockPattern(copy, source.structureDir, source.aisleRepetitions, center);
     }
 }

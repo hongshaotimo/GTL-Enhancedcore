@@ -6,8 +6,10 @@ import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.JumpInsnNode;
 import org.objectweb.asm.tree.MethodInsnNode;
 
-/** ADD 3.3.1Custom reads stacks[0] after its empty-input branch; continue its existing input loop instead. */
+/** Skip empty match sets in ADD’s world-fragment recipe callback. */
 public final class AddSkyTearsRecipeCompatibility {
+    public static final String MARKER =
+            "com.gtl.enhancedcore.mixin.gtladditions.AddSkyTearsRecipeCompatibilityMixin";
     public static final String TARGET = "com/gtladd/gtladditions/common/modify/SkyTearsAndGregHeart";
     private static final String STACK = "net/minecraft/world/item/ItemStack";
 

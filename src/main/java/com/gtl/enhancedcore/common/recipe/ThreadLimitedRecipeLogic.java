@@ -17,7 +17,7 @@ import com.gtladd.gtladditions.api.machine.multiblock.GTLAddWorkableElectricMult
 import com.gtladd.gtladditions.api.machine.trait.IWirelessNetworkEnergyHandler;
 import com.gtladd.gtladditions.api.recipe.WirelessGTRecipe;
 import com.gtladd.gtladditions.common.data.ParallelData;
-import com.gtladd.gtladditions.utils.RecipeCalculationHelper;
+import com.gtladd.gtladditions.utils.recipe.RecipeCalculationHelper;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.ArrayList;

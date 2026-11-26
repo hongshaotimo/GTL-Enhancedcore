@@ -256,21 +256,18 @@ public final class DataCausalityChecks {
     }
 
     private static void equipmentChecks(MinecraftServer server) {
-        for (var entry : java.util.Map.of("stellar_confinement_fusion_reactor", "kubejs:cosmic_mainframe",
-                "hyperstructural_chemical_distorter", "kubejs:exotic_mainframe").entrySet()) {
-            var item = ForgeRegistries.ITEMS.getValue(new ResourceLocation(entry.getValue()));
-            check(item != null && item != Items.AIR, "Requested KubeJS mainframe not registered");
-            var recipe = server.getRecipeManager().getAllRecipesFor(GTRecipeTypes.ASSEMBLY_LINE_RECIPES).stream()
-                    .filter(r -> r.getOutputContents(ItemRecipeCapability.CAP).stream().anyMatch(c ->
-                            java.util.Arrays.stream(ItemRecipeCapability.CAP.of(c.content).getItems())
-                                    .anyMatch(s -> ForgeRegistries.ITEMS.getKey(s.getItem()).equals(
-                                            new ResourceLocation("gtl_enhancedcore", entry.getKey())))))
-                    .findFirst().orElseThrow();
-            check(recipe.getInputContents(ItemRecipeCapability.CAP).stream().anyMatch(c ->
-                    java.util.Arrays.stream(ItemRecipeCapability.CAP.of(c.content).getItems())
-                            .anyMatch(s -> s.is(item) && s.getCount() == 16)), "Runtime recipe lacks new mainframe x16");
-        }
-        log("both_equipment_recipes_registered_with_requested_mainframes_x16=OK");
+        var item = ForgeRegistries.ITEMS.getValue(new ResourceLocation("kubejs:cosmic_mainframe"));
+        check(item != null && item != Items.AIR, "Requested KubeJS mainframe not registered");
+        var output = new ResourceLocation("gtl_enhancedcore", "stellar_confinement_fusion_reactor");
+        var recipe = server.getRecipeManager().getAllRecipesFor(GTRecipeTypes.ASSEMBLY_LINE_RECIPES).stream()
+                .filter(r -> r.getOutputContents(ItemRecipeCapability.CAP).stream().anyMatch(c ->
+                        java.util.Arrays.stream(ItemRecipeCapability.CAP.of(c.content).getItems())
+                                .anyMatch(s -> ForgeRegistries.ITEMS.getKey(s.getItem()).equals(output))))
+                .findFirst().orElseThrow();
+        check(recipe.getInputContents(ItemRecipeCapability.CAP).stream().anyMatch(c ->
+                java.util.Arrays.stream(ItemRecipeCapability.CAP.of(c.content).getItems())
+                        .anyMatch(s -> s.is(item) && s.getCount() == 16)), "Runtime recipe lacks new mainframe x16");
+        log("fusion_equipment_recipe_registered_with_requested_mainframes_x16=OK");
     }
 
     private static void tooltipChecks() {
@@ -304,16 +301,14 @@ public final class DataCausalityChecks {
                 definition.setTooltipBuilder(original);
             }
         }
-        for (var definition : List.of(GTLEnhancedcoreMachines.getHyperstructuralChemicalDistorter(),
-                GTLEnhancedcoreMachines.getStellarConfinementFusionReactor())) {
-            var lines = new ArrayList<Component>();
-            definition.getTooltipBuilder().accept(definition.asStack(), lines);
-            String key = "tooltip.gtl_enhancedcore." + definition.getId().getPath() + ".tips";
-            var intro = lines.stream().filter(c -> hasKey(c, key)).findFirst().orElseThrow();
-            check(intro.getStyle().getColor() != null
-                    && intro.getStyle().getColor().getValue() == net.minecraft.ChatFormatting.DARK_AQUA.getColor(),
-                    "Requested intro lost its dark-aqua color");
-        }
+        var definition = GTLEnhancedcoreMachines.getStellarConfinementFusionReactor();
+        var lines = new ArrayList<Component>();
+        definition.getTooltipBuilder().accept(definition.asStack(), lines);
+        String key = "tooltip.gtl_enhancedcore." + definition.getId().getPath() + ".tips";
+        var intro = lines.stream().filter(c -> hasKey(c, key)).findFirst().orElseThrow();
+        check(intro.getStyle().getColor() != null
+                && intro.getStyle().getColor().getValue() == net.minecraft.ChatFormatting.DARK_AQUA.getColor(),
+                "Requested intro lost its dark-aqua color");
         log("all_ten_isolated_machines_and_optional_maintenance_tooltips_four_nested_wrappers=OK");
     }
 

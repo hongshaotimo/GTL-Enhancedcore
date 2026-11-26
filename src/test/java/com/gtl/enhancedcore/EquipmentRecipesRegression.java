@@ -45,8 +45,7 @@ public final class EquipmentRecipesRegression {
         expected.removeIf(output -> !EquipmentRecipeCatalog.requiresEquipmentRecipe(output));
         require(byOutput.keySet().equals(expected), "Every recipe-required registered item needs exactly one acquisition recipe"); checked++;
         var upgradedCircuits = java.util.Map.of(
-                "stellar_confinement_fusion_reactor", "kubejs:cosmic_mainframe",
-                "hyperstructural_chemical_distorter", "kubejs:exotic_mainframe");
+                "stellar_confinement_fusion_reactor", "kubejs:cosmic_mainframe");
         for (var entry : upgradedCircuits.entrySet()) {
             var recipe = byOutput.get(entry.getKey());
             require(recipe.ingredients().stream().anyMatch(i -> i.id().equals(entry.getValue()) && i.count() == 16),
