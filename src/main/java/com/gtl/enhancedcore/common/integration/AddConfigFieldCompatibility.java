@@ -14,6 +14,7 @@ public final class AddConfigFieldCompatibility {
     public static final String MARKER = "com.gtl.enhancedcore.mixin.gtladditions.AddConfigFieldCompatibilityMixin";
     public static final String CONFIG = "org/gtlcore/gtlcore/config/ConfigHolder";
     public static final String CONTENT = CONFIG + "$ContentOptions";
+    private static final String CONTENT_DESCRIPTOR = "L" + CONTENT + ";";
     private static final String PREFIX = "com/gtladd/gtladditions/";
     private static final String CONSUMER = "(Ljava/util/function/Consumer;)V";
     private static final Map<String, Map<String, Integer>> EXPECTED = Map.of(
@@ -47,7 +48,7 @@ public final class AddConfigFieldCompatibility {
         if (config.fields.stream().noneMatch(value -> value.name.equals("INSTANCE") && value.desc.equals("L" + CONFIG + ";")
                 && (value.access & (Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC)) == (Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC)))
             throw new IllegalStateException("GTLCore config singleton field changed");
-        if (!field(config, "content", "L" + CONTENT + ";")) throw new IllegalStateException("Missing GTLCore content category");
+        if (!field(config, "content", CONTENT_DESCRIPTOR)) throw new IllegalStateException("Missing GTLCore content category");
         for (var entry : FIELDS.entrySet()) {
             if (config.fields.stream().anyMatch(value -> value.name.equals(entry.getKey())))
                 throw new IllegalStateException("Unexpected flat GTLCore config field: " + entry.getKey());
@@ -55,17 +56,24 @@ public final class AddConfigFieldCompatibility {
                 throw new IllegalStateException("GTLCore content field changed: " + entry.getKey());
         }
         Map<String, Integer> actual = new LinkedHashMap<>();
+        boolean readsContent = false;
         for (var method : node.methods) for (var instruction : method.instructions) {
             if (!(instruction instanceof FieldInsnNode access) || !CONFIG.equals(access.owner) || access.name.equals("INSTANCE")) continue;
+            if (access.getOpcode() == Opcodes.GETFIELD && access.name.equals("content") && access.desc.equals(CONTENT_DESCRIPTOR)) {
+                readsContent = true;
+                continue;
+            }
             if (access.getOpcode() != Opcodes.GETFIELD || !access.desc.equals(FIELDS.get(access.name)))
                 throw new IllegalStateException("Unexpected ADD config access: " + access.name + access.desc);
             actual.merge(method.name + method.desc + "/" + access.name + ":" + access.desc, 1, Integer::sum);
         }
+        // Newer ADD already uses the categorized fields, so there are no flat reads to migrate.
+        if (readsContent && actual.isEmpty()) return 0;
         if (!expected.equals(actual)) throw new IllegalStateException("ADD config accesses changed: " + node.name + " " + actual);
         int changed = 0;
         for (var method : node.methods) for (var instruction : method.instructions.toArray()) {
             if (!(instruction instanceof FieldInsnNode access) || !CONFIG.equals(access.owner) || !FIELDS.containsKey(access.name)) continue;
-            method.instructions.insertBefore(access, new FieldInsnNode(Opcodes.GETFIELD, CONFIG, "content", "L" + CONTENT + ";"));
+            method.instructions.insertBefore(access, new FieldInsnNode(Opcodes.GETFIELD, CONFIG, "content", CONTENT_DESCRIPTOR));
             access.owner = CONTENT;
             changed++;
         }

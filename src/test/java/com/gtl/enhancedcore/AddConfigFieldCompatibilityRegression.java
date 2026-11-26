@@ -56,7 +56,9 @@ public final class AddConfigFieldCompatibilityRegression {
                             && category.getOpcode() == Opcodes.GETFIELD,
                             "Migrated field reads its current content object directly: " + field.name + field.desc);
                 }
-                fails(() -> AddConfigFieldCompatibility.transform(node, config, content), "Already-transformed or missing access counts fail visibly");
+                check(AddConfigFieldCompatibility.transform(node, config, content) == 0
+                                && node.methods.stream().mapToInt(method -> method.instructions.size()).sum() == before + count,
+                        "Categorized reads need no further rewrite in " + node.name);
             }
         }
         check(targets.size() == 7 && replacements == 13, "Whole ADD jar contains exactly seven affected classes and thirteen migrated accesses");
