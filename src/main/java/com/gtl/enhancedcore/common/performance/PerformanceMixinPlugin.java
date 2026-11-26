@@ -30,6 +30,9 @@ public final class PerformanceMixinPlugin implements IMixinConfigPlugin {
     @Override public String getRefMapperConfig() { return null; }
 
     @Override public boolean shouldApplyMixin(String targetClassName, String mixinClassName) {
+        // These renderer patches target the legacy ADD implementations replaced by the scene API.
+        if (mixinClassName.startsWith("com.gtl.enhancedcore.mixin.gtladditions.client."))
+            return hasClass("com.gtladd.gtladditions.client.render.machine.deferred.DeferredRenderEntry") && hasClass(targetClassName);
         if (mixinClassName.equals("com.gtl.enhancedcore.mixin.gtceu.ServerAmountSetWidgetMixin"))
             return org.spongepowered.asm.mixin.MixinEnvironment.getDefaultEnvironment().getSide()
                     == org.spongepowered.asm.mixin.MixinEnvironment.Side.SERVER;
